@@ -1,0 +1,54 @@
+image: node:18
+
+stages:
+  - lint
+  - test
+  - build
+
+.distributed:
+  interruptible: true
+  only:
+    - main
+    - merge_requests
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn/
+  before_script:
+    - yarn ci --cache .yarn --prefer-offline
+    - NX_HEAD=$CI_COMMIT_SHA
+    - NX_BASE=${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$CI_COMMIT_BEFORE_SHA}
+  artifacts:
+    paths:
+      - node_modules/.cache/nx
+
+lint-all:
+  stage: lint
+  extends: .distributed
+  script:
+    - npx nx workspace-lint --base=$NX_BASE --head=$NX_HEAD
+
+lint:commit:
+  stage: lint
+  script:
+    - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
+
+lint:
+  stage: lint
+  extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=lint --parallel=3
+
+test:
+  stage: test
+  extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
+
+build:
+  stage: build
+  extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
