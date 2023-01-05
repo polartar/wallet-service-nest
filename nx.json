@@ -31,5 +31,8 @@
       "!{projectRoot}/.eslintrc.json"
     ],
     "sharedGlobals": []
+  },
+  "cli": {
+    "packageManager": "yarn"
   }
 }
