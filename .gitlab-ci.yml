@@ -17,7 +17,7 @@ stages:
     paths:
       - .yarn/
   before_script:
-    - yarn ci --cache .yarn --prefer-offline
+    - yarn install --frozen-lockfile --cache .yarn --prefer-offline
     - NX_HEAD=$CI_COMMIT_SHA
     - NX_BASE=${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$CI_COMMIT_BEFORE_SHA}
   artifacts:
