@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common'
+import { AnonGateway } from '../gateways/anon.gateway'
+import { AnonModule } from '../gateways/anon.module'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 
 @Module({
-  imports: [],
+  imports: [AnonModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AnonGateway, //
+    AppService,
+  ],
 })
 export class AppModule {}

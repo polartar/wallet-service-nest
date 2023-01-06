@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Get, Injectable } from '@nestjs/common'
 
 @Injectable()
 export class AppService {
-  getData(): { message: string } {
-    return { message: 'Welcome to princess!' }
+  static readonly welcomeMessage = 'Princess is up and running!'
+  get welcomeMessage() {
+    return AppService.welcomeMessage
   }
 }
