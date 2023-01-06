@@ -14,13 +14,13 @@ describe('AnonGateway', () => {
     }).compile()
 
     app = module.createNestApplication()
-    await app.listen(3333)
+    await app.listen(3000)
   })
 
   describe('Welcome Message', () => {
     it('', async () => {
       expect.assertions(2)
-      const data = await fetch('http://localhost:3333/')
+      const data = await fetch('http://localhost:3000/')
       expect(data.status).toEqual(200)
       expect(await data.text()).toEqual(AppService.welcomeMessage)
     })
