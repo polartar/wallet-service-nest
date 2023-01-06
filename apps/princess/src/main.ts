@@ -13,20 +13,10 @@ async function bootstrap() {
     https://docs.nestjs.com/techniques/performance#installation
   */
   const app = await NestFactory.create(AppModule)
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-    }),
-  )
-  // const app.setGlobalPrefix(restPrefix)
   // TODO: Check NestJS config
   const port = process.env.PORT || 3333
   await app.listen(port)
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/`)
+  Logger.log(`🚀 Application is running on: ${await app.getUrl()}/`)
 }
 
-try {
-  bootstrap()
-} catch (e) {
-  console.error('Error starting the app', e)
-}
+bootstrap()

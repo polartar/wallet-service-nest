@@ -8,18 +8,16 @@ export class Message implements IMessage {
   readonly type: EMessage
 
   @IsUUID(4)
-  readonly id: string
+  readonly id: string = randomUUID()
 
-  constructor(
-    type: EMessage,
-    id: string = randomUUID(),
-    readonly content?: IData,
-  ) {
-    this.type = type
-    this.id = id
+  constructor(partial: Partial<Message>) {
+    Object.assign(this, partial)
   }
 
   public static Ack(msg: Message) {
-    return new Message(EMessage.Acknowledgment, msg.id)
+    return new Message({
+      type: EMessage.Acknowledgment,
+      id: msg.id,
+    })
   }
 }
