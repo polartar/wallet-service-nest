@@ -1,4 +1,8 @@
-import { ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common'
+import {
+  ClassSerializerInterceptor,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common'
 import {
   MessageBody,
   SubscribeMessage,
@@ -20,8 +24,16 @@ export class AnonGateway {
 
   @SubscribeMessage('anonymous')
   @UseInterceptors(ClassSerializerInterceptor)
-  handleMessage(@MessageBody() payload: Message) {
-    console.log('Got a message', payload)
+  handleMessage(
+    @MessageBody(
+      new ValidationPipe({
+        expectedType: Message,
+        transform: true,
+      }),
+    )
+    payload: Message,
+  ): Message {
+    console.log('Got a message', payload, payload instanceof Message)
     return Message.Ack(payload)
   }
 }
