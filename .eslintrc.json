@@ -27,7 +27,9 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nrwl/nx/typescript"],
-      "rules": {}
+      "rules": {
+        "array-element-newline": ["error", "always"]
+      }
     },
     {
       "files": ["*.js", "*.jsx"],
