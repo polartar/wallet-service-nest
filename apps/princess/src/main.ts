@@ -15,6 +15,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   // TODO: Check NestJS config
   const port = process.env.PORT || 3333
+  app.useGlobalPipes(
+    new ValidationPipe({
+      enableDebugMessages: true,
+      stopAtFirstError: true,
+      always: true,
+    }),
+  )
   await app.listen(port)
   Logger.log(`🚀 Application is running on: ${await app.getUrl()}/`)
 }
