@@ -6,5 +6,7 @@ import { AppService } from './app.service'
 
 @Module({
   imports: [AnonModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

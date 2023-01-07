@@ -1,7 +1,10 @@
 import { IsEnum, IsUUID } from 'class-validator'
 import { randomUUID } from 'crypto'
 
-import { EMessage, IData, IMessage } from './message.types'
+import {
+  EMessage, //
+  IMessage,
+} from './message.types'
 
 export class Message implements IMessage {
   @IsEnum(EMessage)

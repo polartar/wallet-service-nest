@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
-import { EMessage, Message } from '../src/oop'
 import { AnonGateway } from '../src/gateways/anon.gateway'
 import { io, Socket } from 'socket.io-client'
 
