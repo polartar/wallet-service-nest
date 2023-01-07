@@ -1,4 +1,8 @@
 import { INestApplication } from '@nestjs/common'
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AppController } from '../src/app/app.controller'
 import { AppService } from '../src/app/app.service'
@@ -13,7 +17,9 @@ describe('AnonGateway', () => {
       providers: [AppService],
     }).compile()
 
-    app = module.createNestApplication()
+    app = module.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    )
     await app.listen(3000)
   })
 
