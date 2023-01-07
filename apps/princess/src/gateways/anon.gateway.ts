@@ -3,15 +3,25 @@ import {
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets'
+import { Server } from 'socket.io'
+
 import { Message } from '../oop'
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class AnonGateway {
-  @UseInterceptors(ClassSerializerInterceptor)
+  @WebSocketServer()
+  server: Server
+
   @SubscribeMessage('anonymous')
+  @UseInterceptors(ClassSerializerInterceptor)
   handleMessage(@MessageBody() payload: Message) {
-    console.log('Got a message')
+    console.log('Got a message', payload)
     return Message.Ack(payload)
   }
 }
