@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AnonGateway } from '../src/gateways/anon.gateway'
 import { io, Socket } from 'socket.io-client'
+import { EMessage } from '../src/oop'
 
 describe('AnonGateway', () => {
   let app: INestApplication
@@ -33,12 +34,32 @@ describe('AnonGateway', () => {
       })
     })
 
+    it('Verify input data', async () => {
+      expect.assertions(2)
+      const data = await new Promise((resolve) => {
+        socket.on('message', (data) => {
+          resolve(JSON.parse(data))
+        })
+        socket.emit('anonymous', 'bla')
+      })
+      expect(data).toBeDefined()
+      expect(data).toMatchObject({
+        type: 'error',
+      })
+    })
+
     it('Always sends ACK', async () => {
       expect.assertions(2)
       const data = await new Promise((resolve) => {
-        socket.emit('anonymous', 'basd', (data) => {
-          resolve(data)
-        })
+        socket.emit(
+          'anonymous',
+          {
+            type: EMessage.Handshake,
+          },
+          (data) => {
+            resolve(data)
+          },
+        )
       })
       expect(data).toBeDefined()
       expect(data).toMatchObject({

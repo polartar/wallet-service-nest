@@ -1,5 +1,6 @@
 import {
   ClassSerializerInterceptor,
+  UseFilters,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common'
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/websockets'
 import { Server } from 'socket.io'
 
+import { WebSocketExceptionFilter } from '../filters/web-socket-exception.filter'
 import { Message } from '../oop'
 
 @WebSocketGateway({
@@ -18,6 +20,7 @@ import { Message } from '../oop'
     origin: '*',
   },
 })
+@UseFilters(WebSocketExceptionFilter)
 export class AnonGateway {
   @WebSocketServer()
   server: Server
