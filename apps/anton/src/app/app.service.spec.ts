@@ -15,7 +15,7 @@ describe('AppService', () => {
 
   describe('getData', () => {
     it('should return "Welcome to anton!"', () => {
-      expect(service.getData()).toEqual({ message: 'Welcome to anton!' })
+      expect(service.welcomeMessage).toEqual(AppService.welcomeMessage)
     })
   })
 })
