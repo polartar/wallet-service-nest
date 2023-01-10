@@ -5,6 +5,10 @@
 
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify'
 
 import { AppModule } from './app/app.module'
 
@@ -12,7 +16,12 @@ async function bootstrap() {
   /* TODO: Switch to fastify by defauly
     https://docs.nestjs.com/techniques/performance#installation
   */
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({
+      logger: true,
+    }),
+  )
   // TODO: Check NestJS config
   const port = process.env.PORT || 3333
   app.useGlobalPipes(
