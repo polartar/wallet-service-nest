@@ -16,7 +16,7 @@ describe('AppController', () => {
   describe('getData', () => {
     it('should return "Welcome to anton!"', () => {
       const appController = app.get<AppController>(AppController)
-      expect(appController.welcome).toEqual(AppService.welcomeMessage)
+      expect(appController.welcome()).toEqual(AppService.welcomeMessage)
     })
   })
 })
