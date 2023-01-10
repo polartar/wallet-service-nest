@@ -1,3 +1,5 @@
+import { IData } from '@rana/core'
+
 export interface IMessage {
   type: EMessage
   id?: string
@@ -8,12 +10,3 @@ export enum EMessage {
   Acknowledgment = 'ACK',
   Handshake = 'HANDSHAKE',
 }
-
-export type IData =
-  | string
-  | boolean
-  | number
-  | null
-  | {
-      [key: string]: IData
-    }
