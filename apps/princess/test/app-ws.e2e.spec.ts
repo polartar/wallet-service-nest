@@ -3,6 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { AnonGateway } from '../src/gateways/anon.gateway'
 import { io, Socket } from 'socket.io-client'
 import { EMessage } from '../src/oop'
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify'
 
 describe('AnonGateway', () => {
   let app: INestApplication
@@ -16,7 +20,11 @@ describe('AnonGateway', () => {
       ],
     }).compile()
 
-    app = module.createNestApplication()
+    app = module.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter({
+        logger: true,
+      }),
+    )
     await app.listen(3333)
 
     // Connect the client
