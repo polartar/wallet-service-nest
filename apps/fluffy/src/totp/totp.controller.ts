@@ -5,17 +5,13 @@ import { TotpService } from './totp.service'
 export class TotpController {
   constructor(private readonly service: TotpService) {}
 
-  @Post('generate')
-  generate(@Body() accountID: string) {
+  @Post('pair')
+  generate(@Body() { accountID }: { [key: string]: string }) {
     return this.service.generate(accountID)
   }
 
   @Post('verify')
-  verify(
-    @Body() accountID: string,
-    @Body() deviceID: string,
-    @Body() token: string,
-  ) {
+  verify(@Body() { accountID, deviceID, token }: { [key: string]: string }) {
     return this.service.verify(accountID, deviceID, token)
   }
 }

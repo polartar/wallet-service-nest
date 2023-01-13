@@ -1,62 +1,37 @@
 import { Injectable } from '@nestjs/common'
-import { randomBytes, randomUUID } from 'crypto'
-import { encode } from 'hi-base32'
-import { totp } from 'otplib'
+import { authenticator } from 'otplib'
+import { PairingService } from '../pairing/pairing.service'
 
 @Injectable()
 export class TotpService {
-  private async _getRandomKey(len: number = 10) {
-    return new Promise<string>((resolve) =>
-      randomBytes(len, (error, buffer) => {
-        resolve(buffer.toString())
-      }),
-    )
+  constructor(private readonly pairingService: PairingService) {}
+
+  private async pairDevice(userID: string) {
+    return this.pairingService.create({
+      userID: userID,
+    })
   }
 
-  private _encodeBase32(key: string) {
-    return encode(key)
-  }
+  async generate(userID: string) {
+    const pairing = await this.pairDevice(userID)
 
-  private _generateUniqueId() {
-    return randomUUID()
-  }
-
-  private async pairDevice(
-    accountID: string,
-    deviceID: string,
-    secret: string,
-  ) {
-    // TODO Save to DB
-  }
-
-  async generate(accountID: string) {
-    const randomKey = await this._getRandomKey()
-    const deviceID = this._generateUniqueId()
-    const encodedKey = this._encodeBase32(randomKey)
-    // Pair accountID with devideID using the key
-    await this.pairDevice(accountID, deviceID, encodedKey)
-
-    const token = totp.generate(encodedKey)
     return {
-      totp: token,
-      deviceID: this._generateUniqueId(),
+      userID: pairing.userID,
+      totp: pairing.secret,
+      deviceID: pairing.deviceID,
     }
   }
 
-  private async _verifyDevicePairing(accountID: string, deviceID: string) {
-    // TODO Check DB
-    return true
-  }
-
-  private async _verifyToken(deviceID: string, token: string) {
-    const secret = '' // TODO Get from DB
-    return totp.check(token, secret)
-  }
-
-  async verify(accountID: string, deviceID: string, token: string) {
-    return (
-      this._verifyDevicePairing(accountID, deviceID) &&
-      this._verifyToken(deviceID, token)
-    )
+  async verify(userID: string, deviceID: string, token: string) {
+    const pairingEntity = await this.pairingService.lookup({
+      userID,
+      deviceID,
+    })
+    // First, is there a pairing?
+    if (pairingEntity === null) {
+      return [false, 'Not a paired device']
+    }
+    // Now, do the final check of TOTP
+    return ['Validation', authenticator.check(token, pairingEntity.secret)]
   }
 }

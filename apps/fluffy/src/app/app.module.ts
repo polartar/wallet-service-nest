@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 
-import { TotpController } from '../totp/totp.controller'
+import { TotpModule } from '../totp/totp.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 
 @Module({
-  imports: [TotpController],
+  imports: [TotpModule],
   controllers: [AppController],
   providers: [AppService],
 })
