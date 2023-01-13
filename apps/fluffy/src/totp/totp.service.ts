@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { authenticator } from 'otplib'
+
 import { PairingService } from '../pairing/pairing.service'
 
 @Injectable()
@@ -27,11 +28,19 @@ export class TotpService {
       userID,
       deviceID,
     })
+
     // First, is there a pairing?
     if (pairingEntity === null) {
-      return [false, 'Not a paired device']
+      return [
+        false, //
+        'Not a paired device',
+      ]
     }
+
     // Now, do the final check of TOTP
-    return ['Validation', authenticator.check(token, pairingEntity.secret)]
+    return [
+      'Validation', //
+      authenticator.check(token, pairingEntity.secret),
+    ]
   }
 }

@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { PairingModule } from '../pairing/pairing.module'
 
-import { PairingService } from '../pairing/pairing.service'
+import { PairingModule } from '../pairing/pairing.module'
 import { TotpController } from './totp.controller'
 import { TotpService } from './totp.service'
 

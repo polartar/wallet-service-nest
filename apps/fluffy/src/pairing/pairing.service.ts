@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { TotpService } from '../totp/totp.service'
 import { CreatePairingDto } from './dto/create-pairing.dto'
 import { FindPairingDto } from './dto/find-pairing.dto'
 import { PairingEntity } from './pairing.entity'

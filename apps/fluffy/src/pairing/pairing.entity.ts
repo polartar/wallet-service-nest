@@ -1,6 +1,5 @@
-import { totp } from 'otplib'
 import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { randomBytes, randomUUID } from 'crypto'
+import { randomBytes } from 'crypto'
 import { encode } from 'hi-base32'
 
 @Entity()
@@ -29,7 +28,7 @@ export class PairingEntity {
     return encode(key)
   }
 
-  async _generateSecret(len: number = 10) {
+  async _generateSecret(len = 10) {
     return this._encodeBase32(await this._getRandomKey(len))
   }
 
