@@ -1,5 +1,5 @@
 import { AuthService } from './auth.service';
-import { Body, Controller, Post } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
 
 export type IAuthData = {
   idToken: string,
@@ -9,8 +9,17 @@ export type IAuthData = {
 export class AuthController {
     constructor(private readonly service: AuthService) {}
 
-    @Post('login')
-    login(@Body() data: IAuthData) {
-        return this.service.authorize(data)
+    @Post()
+    async login(@Body() data: IAuthData) {
+        if (!data.idToken) {
+            throw new BadRequestException("Token can't be null");
+        }
+        try {
+            const response = await this.service.authorize(data)
+            return response;
+        } catch(err) {
+            throw new BadRequestException(err.message);
+        }
+
     }
 }

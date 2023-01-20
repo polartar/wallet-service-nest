@@ -1,9 +1,9 @@
-import { SenderController } from './../../../kafo/src/sender/sender.controller';
 import { Module } from '@nestjs/common'
 import { AuthService } from './auth.service'
+import { AuthController } from './auth.controller';
 
 @Module({
-  controllers: [SenderController],
+  controllers: [AuthController],
   providers: [AuthService],
 })
 export class AuthModule {}
