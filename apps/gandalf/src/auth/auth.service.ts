@@ -11,14 +11,16 @@ export class AuthService {
       try {
         const response = await client.verifyIdToken({
           idToken: data.idToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
         })
+
         const payload = response.getPayload()
+
         if (
           payload.iss !== 'accounts.google.com' &&
           payload.aud !== process.env.GOOGLE_CLIENT_ID
-        )
+        ) {
           throw new Error('Invalid token')
+        }
         const email = payload.email
 
         return email
