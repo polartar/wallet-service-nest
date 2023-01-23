@@ -27,14 +27,11 @@ export class AuthController {
     try {
       const res = schema.validate(data)
       if (res.error) {
-        console.log(res.error.message)
         throw new Error(res.error.message)
       }
 
-      const response = await this.service.authorize(data)
-      return response
+      return await this.service.authorize(data)
     } catch (err) {
-      console.log({ err })
       throw new BadRequestException(err.message)
     }
   }
