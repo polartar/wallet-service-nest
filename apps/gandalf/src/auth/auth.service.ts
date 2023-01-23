@@ -19,7 +19,7 @@ export class AuthService {
           payload.iss !== 'accounts.google.com' &&
           payload.aud !== process.env.GOOGLE_CLIENT_ID
         ) {
-          throw new Error('Invalid token')
+          throw new Error('Invalid Google Id token')
         }
         const email = payload.email
 
