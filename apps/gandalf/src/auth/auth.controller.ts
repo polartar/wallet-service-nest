@@ -1,9 +1,13 @@
 import { AuthService } from './auth.service'
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
 
+export enum IAuthType {
+  GOOGLE = 'GOOGLE',
+  APPLE = 'APPLE',
+}
 export type IAuthData = {
   idToken: string
-  type: 'GOOGLE' | 'APPLE'
+  type: IAuthType
 }
 @Controller('auth')
 export class AuthController {
