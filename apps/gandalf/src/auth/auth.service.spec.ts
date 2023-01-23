@@ -18,11 +18,11 @@ describe('AuthService', () => {
   })
 
   describe('Authorize', () => {
-    // it('should throw error', () => {
-    //   expect(
-    //     service.authorize({ idToken: 'test', type: 'GOOGLE' }),
-    //   ).rejects.toThrowError(BadRequestException)
-    // })
+    it('should throw error', () => {
+      expect(
+        service.authorize({ idToken: 'test', type: 'GOOGLE' }),
+      ).rejects.toThrowError(BadRequestException)
+    })
     it('should return gmail address', async () => {
       const response = await service.authorize({
         idToken:
