@@ -1,16 +1,19 @@
 import { ConfigService } from '@nestjs/config'
 import { Injectable } from '@nestjs/common'
-import { IAuthData } from './auth.controller'
+import { IAuthData, EAuth } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
+import { EEnvironment } from '../environments/environment.types'
 
 @Injectable()
 export class AuthService {
   constructor(private configService: ConfigService) {}
 
   async authorize(data: IAuthData): Promise<string> {
-    if (data.type === 'GOOGLE') {
-      const google_client_id = this.configService.get('google_client_id')
+    if (data.type === EAuth.Google) {
+      const google_client_id = this.configService.get<string>(
+        EEnvironment.googleClientID,
+      )
       const client = new OAuth2Client(google_client_id)
       try {
         const response = await client.verifyIdToken({
@@ -31,11 +34,11 @@ export class AuthService {
       } catch (err) {
         throw new Error('Invalid token')
       }
-    } else if (data.type === 'APPLE') {
+    } else if (data.type === EAuth.Apple) {
       try {
         const jwtClaims = await verifyAppleToken({
           idToken: data.idToken,
-          clientId: this.configService.get('apple_client_id'),
+          clientId: this.configService.get(EEnvironment.googleClientID),
         })
 
         return jwtClaims.email

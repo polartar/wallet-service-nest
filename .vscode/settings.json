@@ -1,6 +1,13 @@
 {
-  "conventionalCommits.scopes": ["princess", "anton", "core", "kafo", "fluffy"],
+  "conventionalCommits.scopes": [
+    "princess",
+    "anton",
+    "core",
+    "kafo",
+    "fluffy",
+    "gandalf"
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  },
+  }
 }

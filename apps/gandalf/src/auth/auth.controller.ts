@@ -2,15 +2,8 @@ import { AuthService } from './auth.service'
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
 // import {Joi} from 'joi'
 import Joi = require('joi')
+import { IAuthData, EAuth } from './auth.types'
 
-export enum IAuthType {
-  GOOGLE = 'GOOGLE',
-  APPLE = 'APPLE',
-}
-export type IAuthData = {
-  idToken: string
-  type: IAuthType
-}
 @Controller('auth')
 export class AuthController {
   constructor(private readonly service: AuthService) {}
@@ -21,7 +14,7 @@ export class AuthController {
       idToken: Joi.string().regex(
         /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/,
       ),
-      type: Joi.string().valid(IAuthType.GOOGLE, IAuthType.APPLE),
+      type: Joi.string().valid(EAuth.Google, EAuth.Apple),
     })
 
     try {
