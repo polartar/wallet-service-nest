@@ -1,5 +1,11 @@
 import { AuthService } from './auth.service'
-import { Body, Controller, Post, UsePipes } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  UsePipes,
+} from '@nestjs/common'
 import { IAuthData } from './auth.types'
 import { LoginValidationPipe } from './auth.pipe'
 
@@ -10,6 +16,10 @@ export class AuthController {
   @Post()
   @UsePipes(new LoginValidationPipe())
   async login(@Body() data: IAuthData) {
-    return this.service.authorize(data)
+    try {
+      return this.service.authorize(data)
+    } catch (e) {
+      throw new BadRequestException(e?.message)
+    }
   }
 }

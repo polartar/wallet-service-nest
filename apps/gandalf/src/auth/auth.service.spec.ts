@@ -26,7 +26,7 @@ describe('AuthService', () => {
     it('should throw error', () => {
       expect(
         service.authorize({ idToken: 'test', type: EAuth.Google }),
-      ).rejects.toThrowError(BadRequestException)
+      ).rejects.toThrowError('Invalid token')
     })
     it('should return gmail address', async () => {
       const response = await service.authorize({
