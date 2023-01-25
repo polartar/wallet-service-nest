@@ -11,13 +11,16 @@ import { LoginValidationPipe } from './auth.pipe'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly accountService: AuthService,
+  ) {}
 
   @Post()
   @UsePipes(new LoginValidationPipe())
   async login(@Body() data: IAuthData) {
     try {
-      return this.service.authorize(data)
+      return await this.authService.authorize(data)
     } catch (e) {
       throw new BadRequestException(e?.message)
     }

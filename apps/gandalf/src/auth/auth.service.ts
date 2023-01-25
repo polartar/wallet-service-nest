@@ -28,6 +28,7 @@ export class AuthService {
         ) {
           throw new Error('Invalid Google Id token')
         }
+        console.log({ payload })
         const email = payload.email
 
         return email

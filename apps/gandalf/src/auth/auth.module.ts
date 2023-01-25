@@ -6,9 +6,10 @@ import { ConfigModule } from '@nestjs/config'
 import { AccountModule } from '../account/account.module'
 
 @Module({
-  imports: [AccountModule,
-ConfigModule.forRoot({ load: [Environment] })],
+  // eslint-disable-next-line array-element-newline
+  imports: [AccountModule, ConfigModule.forRoot({ load: [Environment] })],
   controllers: [AuthController],
+  // eslint-disable-next-line array-element-newline
   providers: [AuthService],
 })
 export class AuthModule {}
