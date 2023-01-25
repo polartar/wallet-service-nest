@@ -1,9 +1,4 @@
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  BadRequestException,
-} from '@nestjs/common'
+import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 
 import { EAuth, IAuthData } from './auth.types'

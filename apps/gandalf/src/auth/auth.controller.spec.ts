@@ -34,8 +34,8 @@ describe('AuthController', () => {
         AccountModule,
       ],
       controllers: [AuthController],
-      providers: [AuthService,
-AccountService],
+      // eslint-disable-next-line array-element-newline
+      providers: [AuthService, AccountService],
     }).compile()
 
     controller = module.get<AuthController>(AuthController)

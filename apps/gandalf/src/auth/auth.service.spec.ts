@@ -1,12 +1,9 @@
-import { AccountModule } from './../account/account.module'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthService } from './auth.service'
-import { BadRequestException } from '@nestjs/common'
 
 import { EAuth } from './auth.types'
 import { Environment } from './../environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
-import { TypeOrmModule } from '@nestjs/typeorm'
 
 describe('AuthService', () => {
   let service: AuthService
