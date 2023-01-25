@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config'
 import { Injectable } from '@nestjs/common'
-import { IAuthData, EAuth } from './auth.types'
+import { IAuthData, EAuth, IAuthResponse } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
@@ -9,7 +9,7 @@ import { EEnvironment } from '../environments/environment.types'
 export class AuthService {
   constructor(private configService: ConfigService) {}
 
-  async authorize(data: IAuthData): Promise<string> {
+  async authorize(data: IAuthData): Promise<IAuthResponse> {
     if (data.type === EAuth.Google) {
       const google_client_id = this.configService.get<string>(
         EEnvironment.googleClientID,
@@ -28,10 +28,11 @@ export class AuthService {
         ) {
           throw new Error('Invalid Google Id token')
         }
-        console.log({ payload })
-        const email = payload.email
 
-        return email
+        return {
+          email: payload.email,
+          name: payload.name,
+        }
       } catch (err) {
         throw new Error('Invalid token')
       }
@@ -42,7 +43,10 @@ export class AuthService {
           clientId: this.configService.get(EEnvironment.googleClientID),
         })
 
-        return jwtClaims.email
+        return {
+          email: jwtClaims.email,
+          name: jwtClaims.name,
+        }
       } catch (err) {
         throw new Error('Invalid token')
       }
