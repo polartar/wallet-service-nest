@@ -14,7 +14,9 @@ describe('AccountService', () => {
           database: ':memory:',
           dropSchema: true,
           synchronize: true,
+          entities: [AccountEntity],
         }),
+        TypeOrmModule.forFeature([AccountEntity]),
       ],
       providers: [AccountService],
     }).compile()
