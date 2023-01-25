@@ -3,22 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { AccountService } from './account.service'
 import { AccountEntity } from './account.entity'
 
-const createMock = jest.fn((dto: any) => {
-  return dto
-})
-
-const saveMock = jest.fn((dto: any) => {
-  return dto
-})
-
-const MockRepository = jest.fn().mockImplementation(() => {
-  return {
-    create: createMock,
-    save: saveMock,
-  }
-})
-const mockRepository = new MockRepository()
-
 describe('AccountService', () => {
   let service: AccountService
 
@@ -26,19 +10,11 @@ describe('AccountService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: 'localhost',
-          port: 5431,
-          username: 'myusername',
-          password: 'mypassword',
-          database: 'gandalf',
-
-          // TODO: Maybe disable in production?
-          autoLoadEntities: true,
+          type: 'better-sqlite3',
+          database: ':memory:',
+          dropSchema: true,
           synchronize: true,
         }),
-
-        TypeOrmModule.forFeature([AccountEntity]),
       ],
       providers: [AccountService],
     }).compile()
