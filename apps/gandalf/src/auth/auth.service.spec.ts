@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthService } from './auth.service'
-import { BadRequestException } from '@nestjs/common'
 
 import { EAuth } from './auth.types'
 import { Environment } from './../environments/environment.dev'
