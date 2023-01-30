@@ -7,10 +7,11 @@ import { PortfolioService } from '../portfolio/portfolio.service'
 @Module({
   imports: [],
   controllers: [AppController],
-  providers: [AppService, PortfolioService],
+  providers: [AppService,
+PortfolioService],
 })
 export class AppModule {
   constructor(private readonly portfolioService: PortfolioService) {
-    portfolioService.runPortfolioStream()
+    portfolioService.runService()
   }
 }
