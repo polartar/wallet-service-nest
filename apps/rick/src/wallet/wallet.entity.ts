@@ -10,7 +10,7 @@ export class WalletEntity {
   @Column()
   balance: string
 
-  @Column()
+  @Column('text')
   type: IWalletType
 
   @Column()
