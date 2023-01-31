@@ -1,3 +1,4 @@
 export class FindAccountDto {
-  email: string
+  email?: string
+  id?: number
 }

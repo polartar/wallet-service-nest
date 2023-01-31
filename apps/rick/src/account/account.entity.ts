@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { WalletEntity } from '../wallet/wallet.entity'
 
 @Entity()
 export class AccountEntity {
@@ -11,6 +12,6 @@ export class AccountEntity {
   @Column()
   name: string
 
-  @Column()
-  wallet: string
+  @OneToMany(() => WalletEntity, (wallet) => wallet.account)
+  wallets: WalletEntity[]
 }

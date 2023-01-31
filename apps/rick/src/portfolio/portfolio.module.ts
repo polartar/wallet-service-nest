@@ -1,3 +1,4 @@
+import { WalletModule } from './../wallet/wallet.module'
 import { Module } from '@nestjs/common'
 import { PortfolioService } from './portfolio.service'
 import { AccountModule } from '../account/account.module'
@@ -8,6 +9,7 @@ import { Environment } from '../environments/environment.dev'
 @Module({
   imports: [
     AccountModule,
+    WalletModule,
     ConfigModule.forRoot({ load: [Environment] }),
     TypeOrmModule.forRoot({
       type: 'postgres',

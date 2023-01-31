@@ -16,7 +16,6 @@ export class AccountService {
     const account = new AccountEntity()
     account.email = createAccount.email
     account.name = createAccount.name
-    account.wallet = createAccount.wallet
 
     return this.accountRepository.save(account)
   }
@@ -25,10 +24,5 @@ export class AccountService {
     return this.accountRepository.findOne({
       where: findAccount,
     })
-  }
-
-  async getAllWalets(): Promise<string[]> {
-    const allAccounts = await this.accountRepository.find()
-    return allAccounts.map((account) => account.wallet)
   }
 }
