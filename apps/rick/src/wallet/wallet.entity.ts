@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { IWalletType } from './wallet.types'
 import { AccountEntity } from '../account/account.entity'
 
@@ -15,6 +21,9 @@ export class WalletEntity {
 
   @Column()
   address: string
+
+  @CreateDateColumn()
+  created_at: Date
 
   @ManyToOne(() => AccountEntity, (account) => account.wallets)
   account: AccountEntity
