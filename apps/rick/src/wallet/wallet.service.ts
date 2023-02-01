@@ -1,6 +1,8 @@
+import { formatEther } from 'ethers/lib/utils'
+import { UpdateWalletBalancesDto } from './dto/update-wallet.dto copy'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { IWallet } from './wallet.types'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { Injectable } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -32,5 +34,21 @@ export class WalletService {
     wallet.type = data.type
 
     return this.walletRepository.save(wallet)
+  }
+
+  async updateBalances(data: UpdateWalletBalancesDto[]) {
+    const ids = data.map((wallet) => wallet.id)
+    let wallets = await this.walletRepository.find({
+      where: { id: In(ids) },
+    })
+    wallets = wallets.map((wallet) => {
+      const updatedWallet = data.find((item) => item.id === wallet.id)
+      return {
+        ...wallet,
+        balance: updatedWallet.balance.toString(),
+      }
+    })
+
+    this.walletRepository.save(wallets)
   }
 }

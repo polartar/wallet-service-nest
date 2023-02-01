@@ -4,7 +4,13 @@ export enum IWalletType {
 }
 
 export interface IWallet {
+  id?: number
   address: string
   type: IWalletType
   balance: string
+}
+
+export interface IBalanceData {
+  ids: number[]
+  balances: string[]
 }

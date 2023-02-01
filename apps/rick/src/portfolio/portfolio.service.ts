@@ -1,4 +1,4 @@
-import { IWallet, IWalletType } from './../wallet/wallet.types'
+import { IBalanceData, IWallet, IWalletType } from './../wallet/wallet.types'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { formatEther } from 'ethers/lib/utils'
@@ -15,6 +15,7 @@ export class PortfolioService {
   btcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
+  intervalBlocks = 1
 
   constructor(
     private configService: ConfigService,
@@ -40,27 +41,61 @@ export class PortfolioService {
       this.btcWallets = wallets.filter(
         (wallet) => wallet.type === IWalletType.BITCOIN,
       )
-      this.addWallet(
-        1,
-        '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-        IWalletType.ETHEREUM,
-      )
     })
   }
 
-  async getCurrentBalances() {
-    const calls = this.ethWallets.map((wallet) => {
+  async getEthBalances(
+    wallets: IWallet[],
+  ): Promise<{ wallets: IWallet[]; balances: string[] }> {
+    const calls = wallets.map((wallet) => {
       return this.ethcallProvider.getEthBalance(wallet.address)
     })
 
     const balances = await this.ethcallProvider.all(calls)
-    console.log({ balances })
+    return {
+      wallets,
+      balances,
+    }
+  }
+
+  /**
+   * Only update the changed balances in wallet database
+   * @param wallets wallets
+   * @param balances balances
+   */
+  updateWalletBalances(wallets: IWallet[], balances: string[]) {
+    const updatedBalances = []
+    this.ethWallets = this.ethWallets.map((wallet) => {
+      const balanceIndex = wallets.findIndex(
+        (newWallet) => newWallet.id === wallet.id,
+      )
+      const newBalance = balances[balanceIndex].toString()
+      if (balanceIndex !== -1 && wallet.balance !== newBalance) {
+        updatedBalances.push({
+          id: wallet.id,
+          balance: newBalance,
+        })
+        return {
+          ...wallet,
+          balance: newBalance,
+        }
+      }
+      return wallet
+    })
+    this.walletService.updateBalances(updatedBalances)
   }
 
   runService() {
-    this.provider.on('block', () => {
-      console.log('Latest')
-      this.getCurrentBalances()
+    let blockCount = 0
+    this.provider.on('block', async () => {
+      console.log('Run the Portfolio service')
+      console.log({ blockCount })
+      if (blockCount % this.intervalBlocks === 0) {
+        const { wallets, balances } = await this.getEthBalances(this.ethWallets)
+        this.updateWalletBalances(wallets, balances)
+        blockCount = 0
+      }
+      blockCount++
     })
   }
 
