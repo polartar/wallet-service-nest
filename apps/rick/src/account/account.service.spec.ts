@@ -2,6 +2,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AccountService } from './account.service'
 import { AccountEntity } from './account.entity'
+import { WalletEntity } from '../wallet/wallet.entity'
 
 describe('AccountService', () => {
   let service: AccountService
@@ -14,9 +15,15 @@ describe('AccountService', () => {
           database: ':memory:',
           dropSchema: true,
           synchronize: true,
-          entities: [AccountEntity],
+          entities: [
+            AccountEntity, //
+            WalletEntity,
+          ],
         }),
-        TypeOrmModule.forFeature([AccountEntity]),
+        TypeOrmModule.forFeature([
+          AccountEntity, //
+          WalletEntity,
+        ]),
       ],
       providers: [AccountService],
     }).compile()

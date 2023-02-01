@@ -15,7 +15,7 @@ export class PortfolioService {
   btcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 1
+  intervalBlocks = 10
 
   constructor(
     private configService: ConfigService,
@@ -44,6 +44,14 @@ export class PortfolioService {
     })
   }
 
+  async getEthWallets(): Promise<IWallet[]> {
+    return this.ethWallets
+  }
+
+  async getBtcWallets(): Promise<IWallet[]> {
+    return this.btcWallets
+  }
+
   async getEthBalances(
     wallets: IWallet[],
   ): Promise<{ wallets: IWallet[]; balances: string[] }> {
@@ -52,6 +60,7 @@ export class PortfolioService {
     })
 
     const balances = await this.ethcallProvider.all(calls)
+    console.log({ balances })
     return {
       wallets,
       balances,
@@ -89,7 +98,6 @@ export class PortfolioService {
     let blockCount = 0
     this.provider.on('block', async () => {
       console.log('Run the Portfolio service')
-      console.log({ blockCount })
       if (blockCount % this.intervalBlocks === 0) {
         const { wallets, balances } = await this.getEthBalances(this.ethWallets)
         this.updateWalletBalances(wallets, balances)

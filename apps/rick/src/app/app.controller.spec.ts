@@ -2,6 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { ConfigModule } from '@nestjs/config'
+import { Environment } from '../environments/environment.dev'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { AccountEntity } from '../account/account.entity'
+import { WalletEntity } from '../wallet/wallet.entity'
 
 describe('AppController', () => {
   let app: TestingModule

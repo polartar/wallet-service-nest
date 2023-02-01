@@ -16,16 +16,11 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: 'localhost',
-          port: 5431,
-          username: 'myusername',
-          password: 'mypassword',
-          database: 'gandalf',
-
-          // TODO: Maybe disable in production?
-          autoLoadEntities: true,
+          type: 'better-sqlite3',
+          database: ':memory:',
+          dropSchema: true,
           synchronize: true,
+          entities: [AccountEntity],
         }),
 
         TypeOrmModule.forFeature([AccountEntity]),
