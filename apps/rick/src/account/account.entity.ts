@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToMany,
+  ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
@@ -18,7 +18,7 @@ export class AccountEntity {
   @Column()
   name: string
 
-  @OneToMany(() => WalletEntity, (wallet) => wallet.account)
+  @ManyToMany(() => WalletEntity, (wallet) => wallet.accounts)
   @JoinColumn()
   wallets: WalletEntity[]
 }

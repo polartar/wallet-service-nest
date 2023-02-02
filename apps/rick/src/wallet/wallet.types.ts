@@ -1,6 +1,7 @@
 export enum IWalletType {
-  ETHEREUM = 'eth',
-  BITCOIN = 'btc',
+  XPUB = 'xpub',
+  METAMASK = 'metamask',
+  LEDGER = 'ledger',
 }
 
 export interface IWallet {

@@ -2,29 +2,33 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { IWalletType } from './wallet.types'
 import { AccountEntity } from '../account/account.entity'
+import { AddressEntity } from '../address/address.entity'
 
 @Entity()
 export class WalletEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  balance: string
-
   @Column('text')
   type: IWalletType
 
   @Column()
-  address: string
+  publicKey: string
 
   @CreateDateColumn()
   created_at: Date
 
-  @ManyToOne(() => AccountEntity, (account) => account.wallets)
-  account: AccountEntity
+  @ManyToMany(() => AccountEntity, (account) => account.wallets)
+  accounts: AccountEntity[]
+
+  @OneToMany(() => AddressEntity, (address) => address.wallet)
+  @JoinColumn()
+  addresses: AddressEntity[]
 }
