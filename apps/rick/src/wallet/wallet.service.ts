@@ -1,12 +1,10 @@
-import { formatEther } from 'ethers/lib/utils'
-import { UpdateWalletBalancesDto } from './dto/update-wallet.dto copy'
+import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { IWallet } from './wallet.types'
-import { In, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Injectable } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-// import { CreateWalletDto } from './dto/create-wallet.dto'
 
 @Injectable()
 export class WalletService {
@@ -15,18 +13,12 @@ export class WalletService {
     private readonly walletRepository: Repository<WalletEntity>,
   ) {}
 
-  // create(createWallet: CreateWalletDto): Promise<WalletEntity> {
-  //   const Wallet = new WalletEntity()
-
-  //   return this.WalletRepository.save(Wallet)
-  // }
-
-  async getAllWalets(): Promise<IWallet[]> {
+  async getAllWallets(): Promise<IWallet[]> {
     const allWallets = await this.walletRepository.find()
     return allWallets
   }
 
-  async addWallets(data: AddWalletDto): Promise<WalletEntity> {
+  addWallet(data: AddWalletDto): Promise<WalletEntity> {
     const wallet = new WalletEntity()
     wallet.account = data.account
     wallet.address = data.address
@@ -36,19 +28,22 @@ export class WalletService {
     return this.walletRepository.save(wallet)
   }
 
-  async updateBalances(data: UpdateWalletBalancesDto[]) {
-    const ids = data.map((wallet) => wallet.id)
-    let wallets = await this.walletRepository.find({
-      where: { id: In(ids) },
-    })
-    wallets = wallets.map((wallet) => {
-      const updatedWallet = data.find((item) => item.id === wallet.id)
-      return {
-        ...wallet,
-        balance: updatedWallet.balance.toString(),
-      }
+  addWallets(data: AddWalletDto[]) {
+    const wallets = data.map((newWallet) => {
+      const wallet = new WalletEntity()
+      wallet.account = newWallet.account
+      wallet.address = newWallet.address
+      wallet.balance = newWallet.balance
+      wallet.type = newWallet.type
+      return wallet
     })
 
     this.walletRepository.save(wallets)
+  }
+
+  async getUserWalletHistory(data: GetWalletHistoryDto) {
+    return this.walletRepository.find({
+      where: { account: { id: data.accountId } },
+    })
   }
 }

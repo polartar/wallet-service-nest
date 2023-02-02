@@ -1,4 +1,3 @@
-import { PortfolioModule } from './portfolio.module'
 import { WalletModule } from './../wallet/wallet.module'
 import { AccountModule } from './../account/account.module'
 import { ConfigModule } from '@nestjs/config'
@@ -9,8 +8,6 @@ import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { Environment } from './../environments/environment.dev'
 import { IWalletType } from '../wallet/wallet.types'
-import { AccountService } from '../account/account.service'
-import { WalletService } from '../wallet/wallet.service'
 
 describe('PortfolioService', () => {
   let service: PortfolioService

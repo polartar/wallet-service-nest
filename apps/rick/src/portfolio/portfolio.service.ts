@@ -1,7 +1,6 @@
-import { IBalanceData, IWallet, IWalletType } from './../wallet/wallet.types'
+import { IWallet, IWalletType } from './../wallet/wallet.types'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
 import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -15,7 +14,7 @@ export class PortfolioService {
   btcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 10
+  intervalBlocks = 1
 
   constructor(
     private configService: ConfigService,
@@ -34,7 +33,7 @@ export class PortfolioService {
   }
 
   initializeWallets = () => {
-    this.walletService.getAllWalets().then((wallets) => {
+    this.walletService.getAllWallets().then((wallets) => {
       this.ethWallets = wallets.filter(
         (wallet) => wallet.type === IWalletType.ETHEREUM,
       )
@@ -72,16 +71,16 @@ export class PortfolioService {
    * @param wallets wallets
    * @param balances balances
    */
-  updateWalletBalances(wallets: IWallet[], balances: string[]) {
-    const updatedBalances = []
+  addWallets(wallets: IWallet[], balances: string[]) {
+    const updatedWallets = []
     this.ethWallets = this.ethWallets.map((wallet) => {
       const balanceIndex = wallets.findIndex(
         (newWallet) => newWallet.id === wallet.id,
       )
       const newBalance = balances[balanceIndex].toString()
       if (balanceIndex !== -1 && wallet.balance !== newBalance) {
-        updatedBalances.push({
-          id: wallet.id,
+        updatedWallets.push({
+          ...wallet,
           balance: newBalance,
         })
         return {
@@ -91,7 +90,7 @@ export class PortfolioService {
       }
       return wallet
     })
-    this.walletService.updateBalances(updatedBalances)
+    this.walletService.addWallets(updatedWallets)
   }
 
   runService() {
@@ -100,7 +99,7 @@ export class PortfolioService {
       console.log('Run the Portfolio service')
       if (blockCount % this.intervalBlocks === 0) {
         const { wallets, balances } = await this.getEthBalances(this.ethWallets)
-        this.updateWalletBalances(wallets, balances)
+        this.addWallets(wallets, balances)
         blockCount = 0
       }
       blockCount++
@@ -135,7 +134,7 @@ export class PortfolioService {
       const account = await this.accountService.lookup({
         id: account_id,
       })
-      const response = await this.walletService.addWallets({
+      const response = await this.walletService.addWallet({
         account: account,
         address: newAddress,
         type,

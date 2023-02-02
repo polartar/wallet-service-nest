@@ -10,8 +10,6 @@ import { AccountEntity } from '../account/account.entity'
 
 @Module({
   imports: [
-    AccountModule,
-    WalletModule,
     ConfigModule.forRoot({ load: [Environment] }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -28,6 +26,8 @@ import { AccountEntity } from '../account/account.entity'
       autoLoadEntities: true,
       synchronize: true,
     }),
+    AccountModule,
+    WalletModule,
   ],
   providers: [PortfolioService],
 })
