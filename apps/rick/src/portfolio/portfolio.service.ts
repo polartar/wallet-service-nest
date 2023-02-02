@@ -14,7 +14,7 @@ export class PortfolioService {
   btcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 1
+  intervalBlocks = 10
 
   constructor(
     private configService: ConfigService,

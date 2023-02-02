@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Environment } from '../environments/environment.dev'
 import { AccountEntity } from '../account/account.entity'
+import { PortfolioController } from './portfolio.controller'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AccountEntity } from '../account/account.entity'
     WalletModule,
   ],
   providers: [PortfolioService],
+  controllers: [PortfolioController],
 })
 export class PortfolioModule {
   constructor(private readonly portfolioService: PortfolioService) {
