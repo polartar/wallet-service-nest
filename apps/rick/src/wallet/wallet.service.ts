@@ -14,8 +14,15 @@ export class WalletService {
   ) {}
 
   async getAllWallets(): Promise<IWallet[]> {
-    const allWallets = await this.walletRepository.find()
-    return allWallets
+    const allWallets = await this.walletRepository.find({
+      relations: ['account'],
+    })
+    const addresses = allWallets.map((wallet) => wallet.address)
+    const uniqueWallets = allWallets.filter(
+      (wallet: IWallet, index: number) =>
+        !addresses.includes(wallet.address, index + 1),
+    )
+    return uniqueWallets
   }
 
   addWallet(data: AddWalletDto): Promise<WalletEntity> {
