@@ -1,9 +1,10 @@
 import { AccountEntity } from '../../account/account.entity'
 import { IWalletType } from '../wallet.types'
 
-export class AddWalletDto {
+export class UpdateWalletsDto {
+  id: number
   account: AccountEntity
   address: string
   type: IWalletType
-  initialBalance: string
+  balanceHistory: string
 }

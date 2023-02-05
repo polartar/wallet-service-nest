@@ -7,10 +7,10 @@ export interface IWallet {
   id?: number
   address: string
   type: IWalletType
-  balance: string
+  balanceHistory: string
 }
 
-export interface IBalanceData {
-  ids: number[]
-  balances: string[]
+export interface IBalanceHistory {
+  balance: string
+  date: Date
 }

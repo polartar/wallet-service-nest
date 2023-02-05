@@ -13,8 +13,8 @@ export class WalletEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  balance: string
+  @Column('text', { nullable: true })
+  balanceHistory: string
 
   @Column('text')
   type: IWalletType

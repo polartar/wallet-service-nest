@@ -5,6 +5,7 @@ import { Repository } from 'typeorm'
 import { Injectable } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
+import { UpdateWalletsDto } from './dto/update-wallets.dto'
 
 @Injectable()
 export class WalletService {
@@ -14,38 +15,27 @@ export class WalletService {
   ) {}
 
   async getAllWallets(): Promise<IWallet[]> {
-    const allWallets = await this.walletRepository.find({
+    return await this.walletRepository.find({
       relations: ['account'],
     })
-    const addresses = allWallets.map((wallet) => wallet.address)
-    const uniqueWallets = allWallets.filter(
-      (wallet: IWallet, index: number) =>
-        !addresses.includes(wallet.address, index + 1),
-    )
-    return uniqueWallets
   }
 
-  addWallet(data: AddWalletDto): Promise<WalletEntity> {
+  addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const wallet = new WalletEntity()
     wallet.account = data.account
     wallet.address = data.address
-    wallet.balance = data.balance
+    wallet.balanceHistory = data.initialBalance
     wallet.type = data.type
 
     return this.walletRepository.save(wallet)
   }
 
-  addWallets(data: AddWalletDto[]) {
-    const wallets = data.map((newWallet) => {
-      const wallet = new WalletEntity()
-      wallet.account = newWallet.account
-      wallet.address = newWallet.address
-      wallet.balance = newWallet.balance
-      wallet.type = newWallet.type
-      return wallet
+  updateWallets(data: UpdateWalletsDto[]) {
+    const promises = data.map((wallet) => {
+      this.walletRepository.update(wallet.id, wallet)
     })
 
-    this.walletRepository.save(wallets)
+    return Promise.all(promises)
   }
 
   async getUserWalletHistory(data: GetWalletHistoryDto) {

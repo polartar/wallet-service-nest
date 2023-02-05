@@ -1,10 +1,9 @@
-import { IWallet, IWalletType } from './../wallet/wallet.types'
+import { IBalanceHistory, IWallet, IWalletType } from './../wallet/wallet.types'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-// import { AccountService } from '../account/account.service'
 import { WalletService } from '../wallet/wallet.service'
 import { AccountService } from '../account/account.service'
 
@@ -59,7 +58,7 @@ export class PortfolioService {
     })
 
     const balances = await this.ethcallProvider.all(calls)
-    console.log({ balances })
+
     return {
       wallets,
       balances,
@@ -78,19 +77,38 @@ export class PortfolioService {
         (newWallet) => newWallet.id === wallet.id,
       )
       const newBalance = balances[balanceIndex].toString()
-      if (balanceIndex !== -1 && wallet.balance !== newBalance) {
+      // check if the balance is changed
+      let balanceHistory: IBalanceHistory[]
+      try {
+        balanceHistory = JSON.parse(wallet.balanceHistory)
+      } catch (err) {
+        console.log(err)
+      }
+      if (!balanceHistory) {
+        balanceHistory = []
+      }
+
+      if (
+        balanceIndex !== -1 &&
+        (balanceHistory.length === 0 ||
+          balanceHistory[balanceHistory.length - 1].balance !== newBalance)
+      ) {
+        balanceHistory.push({
+          balance: newBalance,
+          date: new Date(),
+        })
         updatedWallets.push({
           ...wallet,
-          balance: newBalance,
+          balanceHistory: JSON.stringify(balanceHistory),
         })
         return {
           ...wallet,
-          balance: newBalance,
+          balanceHistory: JSON.stringify(balanceHistory),
         }
       }
       return wallet
     })
-    this.walletService.addWallets(updatedWallets)
+    this.walletService.updateWallets(updatedWallets)
   }
 
   runService() {
@@ -106,49 +124,25 @@ export class PortfolioService {
     })
   }
 
-  async addWallet(
+  async addNewWallet(
     account_id: number,
     newAddress: string,
     type: IWalletType,
-  ): Promise<{ status: boolean; message?: string; data?: IWallet }> {
-    let existingWallet: IWallet
-    if (type === IWalletType.ETHEREUM) {
-      existingWallet = this.ethWallets.find(
-        (wallet) => wallet.address === newAddress,
-      )
-      if (!existingWallet) {
-        this.ethWallets.push({
-          address: newAddress,
-          balance: '',
-          type,
-        })
-      }
-    } else {
-      this.btcWallets.push({
-        address: newAddress,
-        balance: '',
-        type,
-      })
-    }
-    if (!existingWallet) {
-      const account = await this.accountService.lookup({
-        id: account_id,
-      })
-      const response = await this.walletService.addWallet({
-        account: account,
-        address: newAddress,
-        type,
-        balance: '',
-      })
-      return {
-        status: true,
-        data: response,
-      }
-    } else {
-      return {
-        status: false,
-        message: 'already exist',
-      }
-    }
+    initialBalance?: string,
+  ): Promise<IWallet> {
+    const account = await this.accountService.lookup({
+      id: account_id,
+    })
+    return this.walletService.addNewWallet({
+      account,
+      address: newAddress,
+      type,
+      initialBalance: initialBalance
+        ? JSON.stringify({
+            balance: initialBalance,
+            date: new Date(),
+          })
+        : null,
+    })
   }
 }
