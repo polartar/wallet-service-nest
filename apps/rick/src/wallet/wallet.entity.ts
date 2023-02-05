@@ -27,4 +27,7 @@ export class WalletEntity {
 
   @ManyToOne(() => AccountEntity, (account) => account.wallets)
   account: AccountEntity
+
+  @Column('boolean', { default: true })
+  isActive = true
 }

@@ -1,3 +1,4 @@
+import { UpdateWalletsActiveDto } from './dto/update-wallets-active.dto'
 import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { IWallet } from './wallet.types'
@@ -30,12 +31,24 @@ export class WalletService {
     return this.walletRepository.save(wallet)
   }
 
-  updateWallets(data: UpdateWalletsDto[]) {
+  updateWalletsHistory(data: UpdateWalletsDto[]) {
     const promises = data.map((wallet) => {
       this.walletRepository.update(wallet.id, wallet)
     })
 
     return Promise.all(promises)
+  }
+
+  updateWalletsActive(data: UpdateWalletsActiveDto[]) {
+    const updates = data.map(async (wallet) => {
+      const newWallet = await this.walletRepository.findOne({
+        where: { id: wallet.id, account: { id: wallet.accountId } },
+      })
+      newWallet.isActive = wallet.isActive
+      return this.walletRepository.save(newWallet)
+    })
+
+    return Promise.all(updates)
   }
 
   async getUserWalletHistory(data: GetWalletHistoryDto) {

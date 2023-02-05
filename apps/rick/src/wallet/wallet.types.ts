@@ -8,6 +8,7 @@ export interface IWallet {
   address: string
   type: IWalletType
   balanceHistory: string
+  isActive?: boolean
 }
 
 export interface IBalanceHistory {

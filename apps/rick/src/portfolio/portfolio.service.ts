@@ -9,11 +9,11 @@ import { AccountService } from '../account/account.service'
 
 @Injectable()
 export class PortfolioService {
-  ethWallets: IWallet[]
-  btcWallets: IWallet[]
+  activeEthWallets: IWallet[]
+  activeBtcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 10
+  intervalBlocks = 1
 
   constructor(
     private configService: ConfigService,
@@ -33,21 +33,22 @@ export class PortfolioService {
 
   initializeWallets = () => {
     this.walletService.getAllWallets().then((wallets) => {
-      this.ethWallets = wallets.filter(
+      wallets = wallets.filter((wallet) => wallet.isActive)
+      this.activeEthWallets = wallets.filter(
         (wallet) => wallet.type === IWalletType.ETHEREUM,
       )
-      this.btcWallets = wallets.filter(
+      this.activeBtcWallets = wallets.filter(
         (wallet) => wallet.type === IWalletType.BITCOIN,
       )
     })
   }
 
   async getEthWallets(): Promise<IWallet[]> {
-    return this.ethWallets
+    return this.activeEthWallets
   }
 
   async getBtcWallets(): Promise<IWallet[]> {
-    return this.btcWallets
+    return this.activeBtcWallets
   }
 
   async getEthBalances(
@@ -72,7 +73,7 @@ export class PortfolioService {
    */
   addWallets(wallets: IWallet[], balances: string[]) {
     const updatedWallets = []
-    this.ethWallets = this.ethWallets.map((wallet) => {
+    this.activeEthWallets = this.activeEthWallets.map((wallet) => {
       const balanceIndex = wallets.findIndex(
         (newWallet) => newWallet.id === wallet.id,
       )
@@ -108,7 +109,7 @@ export class PortfolioService {
       }
       return wallet
     })
-    this.walletService.updateWallets(updatedWallets)
+    this.walletService.updateWalletsHistory(updatedWallets)
   }
 
   runService() {
@@ -116,7 +117,9 @@ export class PortfolioService {
     this.provider.on('block', async () => {
       console.log('Run the Portfolio service')
       if (blockCount % this.intervalBlocks === 0) {
-        const { wallets, balances } = await this.getEthBalances(this.ethWallets)
+        const { wallets, balances } = await this.getEthBalances(
+          this.activeEthWallets,
+        )
         this.addWallets(wallets, balances)
         blockCount = 0
       }
