@@ -7,7 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { Environment } from './../environments/environment.dev'
-import { IWalletType } from '../wallet/wallet.types'
 
 describe('PortfolioService', () => {
   let service: PortfolioService

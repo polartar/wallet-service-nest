@@ -18,7 +18,7 @@ export class PortfolioController {
   ) {}
 
   @Get(':id')
-  async login(@Param('id') id: number) {
+  async getHistory(@Param('id') id: number) {
     try {
       return await this.walletService.getUserWalletHistory({ accountId: id })
     } catch (e) {
