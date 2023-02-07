@@ -16,7 +16,6 @@ describe('PortfolioController', () => {
   let controller: PortfolioController
   let portfolioService: PortfolioService
   let accountService: AccountService
-  let walletService: WalletService
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,7 +47,6 @@ describe('PortfolioController', () => {
     }).compile()
 
     controller = module.get<PortfolioController>(PortfolioController)
-    walletService = module.get<WalletService>(WalletService)
     portfolioService = module.get<PortfolioService>(PortfolioService)
     accountService = module.get<AccountService>(AccountService)
   })
