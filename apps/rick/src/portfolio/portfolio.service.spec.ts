@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { Environment } from './../environments/environment.dev'
+import { IWalletType } from '../wallet/wallet.types'
+import { AccountService } from '../account/account.service'
 
 describe('PortfolioService', () => {
   let service: PortfolioService
@@ -42,18 +44,4 @@ describe('PortfolioService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
-
-  // it('should add new wallet', async () => {
-  //   await service.addWallet(
-  //     1,
-  //     '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-  //     IWalletType.ETHEREUM,
-  //   )
-
-  //   const ethWallets = await service.getEthWallets()
-  //   expect(ethWallets.length).toBe(1)
-  //   expect(ethWallets[0].address).toBe(
-  //     '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-  //   )
-  // })
 })

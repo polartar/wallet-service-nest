@@ -31,16 +31,15 @@ export class PortfolioService {
     this.ethcallProvider.init()
   }
 
-  initializeWallets = () => {
-    this.walletService.getAllWallets().then((wallets) => {
-      wallets = wallets.filter((wallet) => wallet.isActive)
-      this.activeEthWallets = wallets.filter(
-        (wallet) => wallet.type === IWalletType.ETHEREUM,
-      )
-      this.activeBtcWallets = wallets.filter(
-        (wallet) => wallet.type === IWalletType.BITCOIN,
-      )
-    })
+  async initializeWallets() {
+    let wallets = await this.walletService.getAllWallets()
+    wallets = wallets.filter((wallet) => wallet.isActive)
+    this.activeEthWallets = wallets.filter(
+      (wallet) => wallet.type === IWalletType.ETHEREUM,
+    )
+    this.activeBtcWallets = wallets.filter(
+      (wallet) => wallet.type === IWalletType.BITCOIN,
+    )
   }
 
   async getEthWallets(): Promise<IWallet[]> {
@@ -131,21 +130,19 @@ export class PortfolioService {
     account_id: number,
     newAddress: string,
     type: IWalletType,
-    initialBalance?: string,
   ): Promise<IWallet> {
     const account = await this.accountService.lookup({
       id: account_id,
     })
-    return this.walletService.addNewWallet({
+    if (!account) {
+      throw new Error('Invalid account')
+    }
+    const res = await this.walletService.addNewWallet({
       account,
       address: newAddress,
       type,
-      initialBalance: initialBalance
-        ? JSON.stringify({
-            balance: initialBalance,
-            date: new Date(),
-          })
-        : null,
     })
+    await this.initializeWallets()
+    return res
   }
 }

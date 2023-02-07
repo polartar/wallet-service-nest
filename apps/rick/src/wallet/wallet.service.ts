@@ -25,7 +25,7 @@ export class WalletService {
     const wallet = new WalletEntity()
     wallet.account = data.account
     wallet.address = data.address
-    wallet.balanceHistory = data.initialBalance
+    wallet.balanceHistory = '[]'
     wallet.type = data.type
 
     return this.walletRepository.save(wallet)

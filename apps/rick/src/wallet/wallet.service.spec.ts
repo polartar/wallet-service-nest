@@ -34,15 +34,4 @@ describe('WalletService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
-
-  // it('should lookUp return empty', async () => {
-  //   const Wallet = await service.lookup({ email: 'test@gmail.com' })
-  //   expect(Wallet).toBeNull()
-  // })
-
-  // it('should create new Wallet', async () => {
-  //   await service.create({ email: 'test@gmail.com', name: 'test' })
-  //   const Wallet = await service.lookup({ email: 'test@gmail.com' })
-  //   expect(Wallet.email).toBe('test@gmail.com')
-  // })
 })

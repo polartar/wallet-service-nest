@@ -5,5 +5,4 @@ export class AddWalletDto {
   account: AccountEntity
   address: string
   type: IWalletType
-  initialBalance: string
 }
