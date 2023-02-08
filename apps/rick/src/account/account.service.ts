@@ -16,11 +16,7 @@ export class AccountService {
   ) {}
 
   create(createAccount: CreateAccountDto): Promise<AccountEntity> {
-    const account = new AccountEntity()
-    account.email = createAccount.email
-    account.name = createAccount.name
-
-    return this.accountRepository.save(account)
+    return this.accountRepository.save(createAccount)
   }
 
   lookup(
