@@ -23,7 +23,7 @@ export class WalletEntity {
   address: string
 
   @CreateDateColumn()
-  created_at: Date
+  createdAt: Date
 
   @ManyToOne(() => AccountEntity, (account) => account.wallets)
   account: AccountEntity
