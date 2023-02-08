@@ -25,7 +25,11 @@ export class PortfolioService {
       process.env.GOERLI_RPC_URL,
     )
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
-    this.provider = new Ethers.providers.InfuraProvider('goerli', infura_key)
+    const isProd = this.configService.get<boolean>(EEnvironment.production)
+    this.provider = new Ethers.providers.InfuraProvider(
+      isProd ? 'mainnet' : 'goerli',
+      infura_key,
+    )
 
     this.ethcallProvider = new Provider(this.provider)
     this.ethcallProvider.init()
