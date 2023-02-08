@@ -21,9 +21,7 @@ export class PortfolioService {
     private readonly accountService: AccountService,
   ) {
     this.initializeWallets()
-    this.provider = new Ethers.providers.JsonRpcProvider(
-      process.env.GOERLI_RPC_URL,
-    )
+
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     const isProd = this.configService.get<boolean>(EEnvironment.production)
     this.provider = new Ethers.providers.InfuraProvider(

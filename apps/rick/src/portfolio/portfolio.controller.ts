@@ -1,5 +1,6 @@
 import {
-  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
   Body,
   Controller,
   Get,
@@ -22,7 +23,7 @@ export class PortfolioController {
     try {
       return await this.walletService.getUserWalletHistory({ accountId: id })
     } catch (e) {
-      throw new BadRequestException(e?.message)
+      throw new InternalServerErrorException(e?.message)
     }
   }
 
@@ -37,7 +38,7 @@ export class PortfolioController {
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
-      throw new BadRequestException(e?.message)
+      throw new NotFoundException(e?.message)
     }
   }
 }
