@@ -1,4 +1,7 @@
-export class FindAccountDto {
-  email?: string
-  id?: number
+export class FindAccountByEmailDto {
+  email: string
+}
+
+export class FindAccountByIdDto {
+  id: number
 }

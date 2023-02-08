@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common'
 import { AccountEntity } from './account.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateAccountDto } from './dto/create-account.dto'
-import { FindAccountDto } from './dto/find-account.dto'
+import {
+  FindAccountByIdDto,
+  FindAccountByEmailDto,
+} from './dto/find-account.dto'
 
 @Injectable()
 export class AccountService {
@@ -20,7 +23,9 @@ export class AccountService {
     return this.accountRepository.save(account)
   }
 
-  lookup(findAccount: FindAccountDto): Promise<AccountEntity> {
+  lookup(
+    findAccount: FindAccountByIdDto | FindAccountByEmailDto,
+  ): Promise<AccountEntity> {
     return this.accountRepository.findOne({
       where: findAccount,
     })
