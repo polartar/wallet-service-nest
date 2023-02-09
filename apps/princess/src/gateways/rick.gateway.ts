@@ -3,27 +3,25 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsResponse,
 } from '@nestjs/websockets'
 import { Server } from 'socket.io'
+import { PortfolioService } from '../portfolio/portfolio.service'
 type IRickSocketData = {
-  accountId: string
+  accountId: number
 }
 @WebSocketGateway() //, { namespace: 'rick', transports: ['websocket'] })
 export class RickGateway {
   @WebSocketServer()
   server: Server
 
+  constructor(private readonly portfolioService: PortfolioService) {}
+
   @SubscribeMessage('rick')
   async handleMessage(
     @MessageBody()
     data: IRickSocketData,
   ) {
-    this.server.emit('balance_history', JSON.stringify({ balance: 123 }))
-    // return await this.test(data.accountId)
-  }
-
-  async test(id) {
-    return id
+    const history = await this.portfolioService.getWalletHistory(data.accountId)
+    this.server.emit('wallet_history', JSON.stringify(history))
   }
 }

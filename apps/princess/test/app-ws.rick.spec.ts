@@ -1,12 +1,15 @@
+import { PortfolioModule } from '../src/portfolio/portfolio.module'
+import { HttpModule } from '@nestjs/axios'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { RickGateway } from '../src/gateways/rick.gateway'
 import { io, Socket } from 'socket.io-client'
-import { EMessage } from '../src/oop'
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
+import { PortfolioService } from '../src/portfolio/portfolio.service'
+import { HttpService } from '@nestjs/axios'
 
 describe('RickGateway', () => {
   let app: INestApplication
@@ -17,7 +20,10 @@ describe('RickGateway', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         RickGateway, //
+        HttpModule,
+        PortfolioModule,
       ],
+      providers: [PortfolioService],
     }).compile()
 
     app = module.createNestApplication<NestFastifyApplication>(
@@ -42,53 +48,16 @@ describe('RickGateway', () => {
       })
     })
 
-    it('Verify input data', async () => {
+    it('Get wallet history', async () => {
       // expect.assertions(2)
       const data = await new Promise((resolve) => {
-        socket.on('balance_history', (data) => {
-          console.log('balance received', data)
+        socket.on('wallet_history', (data) => {
+          console.log('history received', data)
           resolve(JSON.parse(data))
         })
         socket.emit('rick', { accountId: 1 })
       })
       expect(data).toBeDefined()
-      expect(data).toMatchObject({
-        balance: 123,
-      })
     })
-
-    // it('Always sends ACK', async () => {
-    //   expect.assertions(2)
-    //   const data = await new Promise((resolve) => {
-    //     socket.emit(
-    //       'anonymous',
-    //       {
-    //         type: EMessage.Handshake,
-    //       },
-    //       (data) => {
-    //         resolve(data)
-    //       },
-    //     )
-    //   })
-    //   expect(data).toBeDefined()
-    //   expect(data).toMatchObject({
-    //     type: 'ACK',
-    //   })
-    // })
-
-    // TODO: Handle unknown events. Maybe not possible with socket.io?
-    // https://github.com/nestjs/nest/issues/1969#issuecomment-481613583
-    //   it('Trying unknown events', async () => {
-    //     expect.assertions(2)
-    //     const data = await new Promise((resolve) => {
-    //       socket.emit('blaaaa', 'basd', (data) => {
-    //         resolve(data)
-    //       })
-    //     })
-    //     expect(data).toBeDefined()
-    //     expect(data).toMatchObject({
-    //       type: 'ACK',
-    //     })
-    //   })
   })
 })
