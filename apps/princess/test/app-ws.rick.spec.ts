@@ -1,15 +1,15 @@
+import { RickGateway } from './../src/gateways/rick.gateway'
 import { PortfolioModule } from '../src/portfolio/portfolio.module'
 import { HttpModule } from '@nestjs/axios'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
-import { RickGateway } from '../src/gateways/rick.gateway'
+import { RickModule } from '../src/gateways/rick.module'
 import { io, Socket } from 'socket.io-client'
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
 import { PortfolioService } from '../src/portfolio/portfolio.service'
-import { HttpService } from '@nestjs/axios'
 
 describe('RickGateway', () => {
   let app: INestApplication
@@ -19,11 +19,14 @@ describe('RickGateway', () => {
     // Initialize and start the server
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        RickGateway, //
+        RickModule, //
         HttpModule,
         PortfolioModule,
       ],
-      providers: [PortfolioService],
+      providers: [
+        RickGateway, //
+        PortfolioService,
+      ],
     }).compile()
 
     app = module.createNestApplication<NestFastifyApplication>(

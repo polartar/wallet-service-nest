@@ -21,7 +21,10 @@ export class RickGateway {
     @MessageBody()
     data: IRickSocketData,
   ) {
-    const history = await this.portfolioService.getWalletHistory(data.accountId)
-    this.server.emit('wallet_history', JSON.stringify(history))
+    this.portfolioService
+      .getWalletHistory(data.accountId)
+      .subscribe((response) => {
+        this.server.emit('wallet_history', JSON.stringify(response.data))
+      })
   }
 }

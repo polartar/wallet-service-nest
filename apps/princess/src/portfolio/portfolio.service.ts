@@ -3,17 +3,16 @@ import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 
 import { Observable, catchError } from 'rxjs'
-import { IWallet } from './portfolio.types'
 
 @Injectable()
 export class PortfolioService {
   constructor(private readonly httpService: HttpService) {}
-  getWalletHistory(accountId: number): Observable<AxiosResponse<IWallet[]>> {
+  getWalletHistory(accountId: number): Observable<AxiosResponse> {
     return this.httpService
-      .get<IWallet[]>(`http://localhost:3334/api/portfolio/${accountId}`)
+      .get<AxiosResponse>(`http://localhost:3334/api/portfolio/${accountId}`)
       .pipe(
         catchError((error: AxiosError) => {
-          throw 'An error happened!'
+          throw 'An error happened!' + error.message
         }),
       )
   }
