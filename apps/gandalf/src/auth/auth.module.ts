@@ -7,7 +7,6 @@ import { AccountModule } from '../account/account.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 @Module({
-  // eslint-disable-next-line array-element-newline
   imports: [
     AccountModule,
     ConfigModule.forRoot({ load: [Environment] }),
@@ -25,7 +24,6 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     }),
   ],
   controllers: [AuthController],
-  // eslint-disable-next-line array-element-newline
   providers: [AuthService],
 })
 export class AuthModule {}
