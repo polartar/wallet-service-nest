@@ -2,6 +2,9 @@ import { ISockets, IWallet } from './../portfolio/portfolio.types'
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -12,13 +15,31 @@ type IRickSocketData = {
   accountId: number
 }
 @WebSocketGateway() //, { namespace: 'rick', transports: ['websocket'] })
-export class RickGateway {
+export class RickGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server
 
   PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
 
   constructor(private readonly portfolioService: PortfolioService) {}
+  afterInit(server: Server) {
+    console.log('Init')
+  }
+
+  handleDisconnect(client: Socket) {
+    console.log(`Client disconnected: ${client.id}`)
+    // this.clients = this.clients.filter((c) => c.sock.id !== client.id)
+    this.portfolioService.removeClient(client.id)
+  }
+
+  handleConnection(client: Socket, ...args: any[]) {
+    console.log(`Client connected: ${client.id}`)
+    // we should get the account Id from the authorization token
+    const accountId = 1
+    this.portfolioService.addClient(accountId, client)
+  }
 
   @SubscribeMessage('get_portfolio_history')
   async handleMessage(
@@ -26,7 +47,7 @@ export class RickGateway {
     data: IRickSocketData,
     @ConnectedSocket() client: Socket,
   ) {
-    this.portfolioService.addClient(data.accountId, client)
+    // this.portfolioService.addClient(data.accountId, client)
 
     this.portfolioService
       .getWalletHistory(data.accountId)

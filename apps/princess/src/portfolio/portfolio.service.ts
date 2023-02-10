@@ -31,6 +31,14 @@ export class PortfolioService {
     }
   }
 
+  removeClient(clientId: string) {
+    Object.keys(this.clients).map((accountId) => {
+      if (this.clients[accountId].id === clientId) {
+        delete this.clients[accountId]
+      }
+    })
+  }
+
   sendUpdatedHistory(accountId: string, history: IWallet[]) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
