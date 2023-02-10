@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { AccountService } from '../account/account.service'
+import { HttpService } from '@nestjs/axios'
 
 @Injectable()
 export class PortfolioService {
@@ -19,6 +20,7 @@ export class PortfolioService {
     private configService: ConfigService,
     private readonly walletService: WalletService,
     private readonly accountService: AccountService,
+    private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
 
@@ -72,7 +74,7 @@ export class PortfolioService {
    * @param wallets wallets
    * @param balances balances
    */
-  addWallets(wallets: IWallet[], balances: string[]) {
+  updateWalletHistory(wallets: IWallet[], balances: string[]) {
     const updatedWallets = []
     this.activeEthWallets = this.activeEthWallets.map((wallet) => {
       const balanceIndex = wallets.findIndex(
@@ -110,7 +112,13 @@ export class PortfolioService {
       }
       return wallet
     })
-    this.walletService.updateWalletsHistory(updatedWallets)
+    if (updatedWallets.length > 0) {
+      this.httpService.post(`http://localhost:3333/api/portfolio/updated`, {
+        updatedWallets,
+      })
+
+      this.walletService.updateWalletsHistory(updatedWallets)
+    }
   }
 
   runService() {
@@ -121,7 +129,7 @@ export class PortfolioService {
         const { wallets, balances } = await this.getEthBalances(
           this.activeEthWallets,
         )
-        this.addWallets(wallets, balances)
+        this.updateWalletHistory(wallets, balances)
         blockCount = 0
       }
       blockCount++

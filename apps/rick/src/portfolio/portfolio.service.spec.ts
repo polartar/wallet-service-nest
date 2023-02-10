@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { Environment } from './../environments/environment.dev'
+import { HttpModule } from '@nestjs/axios'
 
 describe('PortfolioService', () => {
   let service: PortfolioService
@@ -32,6 +33,7 @@ describe('PortfolioService', () => {
         ]),
         AccountModule,
         WalletModule,
+        HttpModule,
       ],
       providers: [PortfolioService],
     }).compile()

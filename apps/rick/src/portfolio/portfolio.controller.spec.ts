@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { AccountService } from '../account/account.service'
 import { IWalletType } from '../wallet/wallet.types'
+import { HttpModule } from '@nestjs/axios'
 
 describe('PortfolioController', () => {
   let controller: PortfolioController
@@ -37,6 +38,7 @@ describe('PortfolioController', () => {
         ]),
         WalletModule,
         AccountModule,
+        HttpModule,
       ],
       controllers: [PortfolioController],
       providers: [
