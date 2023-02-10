@@ -1,3 +1,4 @@
+import { ISockets, IWallet } from './../portfolio/portfolio.types'
 import {
   ConnectedSocket,
   MessageBody,
@@ -15,6 +16,8 @@ export class RickGateway {
   @WebSocketServer()
   server: Server
 
+  PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
+
   constructor(private readonly portfolioService: PortfolioService) {}
 
   @SubscribeMessage('get_portfolio_history')
@@ -23,11 +26,15 @@ export class RickGateway {
     data: IRickSocketData,
     @ConnectedSocket() client: Socket,
   ) {
-    const channelId = `portfolio_history`
+    this.portfolioService.addClient(data.accountId, client)
+
     this.portfolioService
       .getWalletHistory(data.accountId)
       .subscribe((response) => {
-        client.emit(channelId, JSON.stringify(response.data))
+        client.emit(
+          this.PORTFOLIO_HISTORY_CHANNEL,
+          JSON.stringify(response.data),
+        )
       })
   }
 }
