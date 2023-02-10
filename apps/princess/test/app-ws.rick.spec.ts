@@ -53,13 +53,13 @@ describe('RickGateway', () => {
 
     it('Get wallet history', async () => {
       const accountId = 1
-      const channelId = `wallet_history_${accountId}`
+      const channelId = `portfolio_history`
       const data = await new Promise((resolve) => {
         socket.on(channelId, (data) => {
           console.log('history received', data)
           resolve(JSON.parse(data))
         })
-        socket.emit('get_wallet_history', { accountId })
+        socket.emit('get_portfolio_history', { accountId })
       })
       expect(data).toBeDefined()
     })

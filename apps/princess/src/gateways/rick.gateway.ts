@@ -1,10 +1,11 @@
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import { PortfolioService } from '../portfolio/portfolio.service'
 type IRickSocketData = {
   accountId: number
@@ -16,16 +17,17 @@ export class RickGateway {
 
   constructor(private readonly portfolioService: PortfolioService) {}
 
-  @SubscribeMessage('get_wallet_history')
+  @SubscribeMessage('get_portfolio_history')
   async handleMessage(
     @MessageBody()
     data: IRickSocketData,
+    @ConnectedSocket() client: Socket,
   ) {
-    const channelId = `wallet_history_${data.accountId}`
+    const channelId = `portfolio_history`
     this.portfolioService
       .getWalletHistory(data.accountId)
       .subscribe((response) => {
-        this.server.emit(channelId, JSON.stringify(response.data))
+        client.emit(channelId, JSON.stringify(response.data))
       })
   }
 }
