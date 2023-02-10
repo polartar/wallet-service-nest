@@ -34,10 +34,10 @@ describe('RickGateway', () => {
         logger: true,
       }),
     )
-    await app.listen(3333)
+    await app.listen(3335)
 
     // Connect the client
-    socket = io('http://localhost:3333/')
+    socket = io('http://localhost:3335/')
   })
 
   afterAll(async () => {
@@ -52,13 +52,14 @@ describe('RickGateway', () => {
     })
 
     it('Get wallet history', async () => {
-      // expect.assertions(2)
+      const accountId = 1
+      const channelId = `wallet_history_${accountId}`
       const data = await new Promise((resolve) => {
-        socket.on('wallet_history', (data) => {
+        socket.on(channelId, (data) => {
           console.log('history received', data)
           resolve(JSON.parse(data))
         })
-        socket.emit('rick', { accountId: 1 })
+        socket.emit('get_wallet_history', { accountId })
       })
       expect(data).toBeDefined()
     })

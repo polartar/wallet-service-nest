@@ -16,15 +16,16 @@ export class RickGateway {
 
   constructor(private readonly portfolioService: PortfolioService) {}
 
-  @SubscribeMessage('rick')
+  @SubscribeMessage('get_wallet_history')
   async handleMessage(
     @MessageBody()
     data: IRickSocketData,
   ) {
+    const channelId = `wallet_history_${data.accountId}`
     this.portfolioService
       .getWalletHistory(data.accountId)
       .subscribe((response) => {
-        this.server.emit('wallet_history', JSON.stringify(response.data))
+        this.server.emit(channelId, JSON.stringify(response.data))
       })
   }
 }
