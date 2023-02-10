@@ -3,7 +3,6 @@ import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 
 import { Observable, catchError } from 'rxjs'
-import { RickGateway } from '../gateways/rick.gateway'
 import { ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
 import { Socket } from 'socket.io'
 

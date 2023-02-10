@@ -1,4 +1,3 @@
-import { ISockets, IWallet } from './../portfolio/portfolio.types'
 import {
   ConnectedSocket,
   MessageBody,
@@ -24,7 +23,7 @@ export class RickGateway
   PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
 
   constructor(private readonly portfolioService: PortfolioService) {}
-  afterInit(server: Server) {
+  afterInit() {
     console.log('Init')
   }
 
