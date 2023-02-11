@@ -4,7 +4,6 @@ import { PortfolioController } from './portfolio.controller'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { AccountEntity } from '../account/account.entity'
-import { WalletService } from '../wallet/wallet.service'
 import { PortfolioService } from './portfolio.service'
 import { AccountModule } from '../account/account.module'
 import { ConfigModule } from '@nestjs/config'
@@ -41,11 +40,7 @@ describe('PortfolioController', () => {
         HttpModule,
       ],
       controllers: [PortfolioController],
-      providers: [
-        WalletService, //
-        PortfolioService,
-        AccountService,
-      ],
+      providers: [PortfolioService],
     }).compile()
 
     controller = module.get<PortfolioController>(PortfolioController)
