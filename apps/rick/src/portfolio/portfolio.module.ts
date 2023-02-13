@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Environment } from '../environments/environment.dev'
 import { AccountEntity } from '../account/account.entity'
 import { PortfolioController } from './portfolio.controller'
+import { HttpModule } from '@nestjs/axios'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PortfolioController } from './portfolio.controller'
     }),
     AccountModule,
     WalletModule,
+    HttpModule,
   ],
   providers: [PortfolioService],
   controllers: [PortfolioController],

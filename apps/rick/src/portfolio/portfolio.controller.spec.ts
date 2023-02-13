@@ -4,13 +4,13 @@ import { PortfolioController } from './portfolio.controller'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { AccountEntity } from '../account/account.entity'
-import { WalletService } from '../wallet/wallet.service'
 import { PortfolioService } from './portfolio.service'
 import { AccountModule } from '../account/account.module'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { AccountService } from '../account/account.service'
 import { IWalletType } from '../wallet/wallet.types'
+import { HttpModule } from '@nestjs/axios'
 
 describe('PortfolioController', () => {
   let controller: PortfolioController
@@ -37,13 +37,10 @@ describe('PortfolioController', () => {
         ]),
         WalletModule,
         AccountModule,
+        HttpModule,
       ],
       controllers: [PortfolioController],
-      providers: [
-        WalletService, //
-        PortfolioService,
-        AccountService,
-      ],
+      providers: [PortfolioService],
     }).compile()
 
     controller = module.get<PortfolioController>(PortfolioController)
