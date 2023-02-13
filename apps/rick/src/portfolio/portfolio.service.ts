@@ -15,7 +15,7 @@ export class PortfolioService {
   activeBtcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 1
+  intervalBlocks = 5
 
   constructor(
     private configService: ConfigService,
@@ -135,25 +135,5 @@ export class PortfolioService {
       }
       blockCount++
     })
-  }
-
-  async addNewWallet(
-    account_id: number,
-    newAddress: string,
-    type: IWalletType,
-  ): Promise<IWallet> {
-    const account = await this.accountService.lookup({
-      id: account_id,
-    })
-    if (!account) {
-      throw new Error('Invalid account')
-    }
-    const res = await this.walletService.addNewWallet({
-      account,
-      address: newAddress,
-      type,
-    })
-    await this.initializeWallets()
-    return res
   }
 }
