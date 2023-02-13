@@ -1,3 +1,4 @@
+import { IRickSocketData } from './rick.types'
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,9 +13,6 @@ import { Server, Socket } from 'socket.io'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
 
-type IRickSocketData = {
-  accountId: number
-}
 @WebSocketGateway() //, { namespace: 'rick', transports: ['websocket'] })
 export class RickGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -23,6 +21,7 @@ export class RickGateway
   server: Server
 
   PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
+  ACCOUNT_INFO_CHANNEL = 'account_info'
 
   constructor(private readonly portfolioService: PortfolioService) {}
   afterInit() {
@@ -43,20 +42,28 @@ export class RickGateway
   }
 
   @SubscribeMessage('get_portfolio_history')
-  async handleMessage(
+  async handlePortfolioHistory(
     @MessageBody()
     data: IRickSocketData,
     @ConnectedSocket() client: Socket,
   ) {
-    // this.portfolioService.addClient(data.accountId, client)
+    this.portfolioService.addPeriod(data.accountId, data.period)
 
-    this.portfolioService
-      .getWalletHistory(data.accountId)
-      .subscribe((response) => {
-        client.emit(
-          this.PORTFOLIO_HISTORY_CHANNEL,
-          JSON.stringify(response.data),
-        )
-      })
+    this.portfolioService.getWalletHistory(data.accountId).then((response) => {
+      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, JSON.stringify(response))
+    })
+  }
+
+  @SubscribeMessage('get_account')
+  async handleGetAccount(
+    @MessageBody()
+    data: {
+      accountId: number
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.portfolioService.getAccount(data.accountId).subscribe((response) => {
+      client.emit(this.ACCOUNT_INFO_CHANNEL, JSON.stringify(response.data))
+    })
   }
 }

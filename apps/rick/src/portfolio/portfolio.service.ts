@@ -15,7 +15,7 @@ export class PortfolioService {
   activeBtcWallets: IWallet[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 5
+  intervalBlocks = 1
 
   constructor(
     private configService: ConfigService,
@@ -100,7 +100,7 @@ export class PortfolioService {
       ) {
         balanceHistory.push({
           balance: newBalance,
-          date: new Date(),
+          date: new Date().getTime(),
         })
         updatedWallets.push({
           ...wallet,
@@ -114,7 +114,7 @@ export class PortfolioService {
       return wallet
     })
     if (updatedWallets.length > 0) {
-      this.httpService.post(`http://localhost:3333/api/portfolio/updated`, {
+      this.httpService.post(`http://localhost:3000/portfolio/updated`, {
         updatedWallets,
       })
 

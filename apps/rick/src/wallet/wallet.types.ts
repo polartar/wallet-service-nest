@@ -13,5 +13,5 @@ export interface IWallet {
 
 export interface IBalanceHistory {
   balance: string
-  date: Date
+  date: number
 }
