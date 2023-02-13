@@ -25,9 +25,12 @@ export class WalletController {
   ) {}
 
   @Get(':id')
-  async getHistory(@Param('id') id: number) {
+  async getHistory(@Param('id') id: number, @Param('period') period: string) {
     try {
-      return await this.walletService.getUserWalletHistory({ accountId: id })
+      return await this.walletService.getUserWalletHistory({
+        accountId: id,
+        period,
+      })
     } catch (e) {
       throw new InternalServerErrorException(e?.message)
     }

@@ -7,12 +7,14 @@ import { WalletController } from './wallet.controller'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { AccountModule } from '../account/account.module'
+import { RecordEntity } from './record.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       WalletEntity, //
       AccountEntity,
+      RecordEntity,
     ]),
     forwardRef(() => PortfolioModule),
     AccountModule,
