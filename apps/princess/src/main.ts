@@ -23,7 +23,7 @@ async function bootstrap() {
     }),
   )
   // TODO: Check NestJS config
-  const port = process.env.PORT || 3333
+  const port = process.env.PORT || 3000
   app.useGlobalPipes(
     new ValidationPipe({
       enableDebugMessages: true,
