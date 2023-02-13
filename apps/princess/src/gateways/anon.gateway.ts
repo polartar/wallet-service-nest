@@ -11,6 +11,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets'
 import { Server } from 'socket.io'
+import { Logger } from '@nestjs/common'
 
 import { WebSocketExceptionFilter } from '../filters/web-socket-exception.filter'
 import { Message } from '../oop'
@@ -36,7 +37,7 @@ export class AnonGateway {
     )
     payload: Message,
   ): Message {
-    console.log('Got a message', payload, payload instanceof Message)
+    Logger.log('Got a message', payload, payload instanceof Message)
     return Message.Ack(payload)
   }
 }

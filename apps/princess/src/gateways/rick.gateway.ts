@@ -10,6 +10,8 @@ import {
 } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { PortfolioService } from '../portfolio/portfolio.service'
+import { Logger } from '@nestjs/common'
+
 type IRickSocketData = {
   accountId: number
 }
@@ -24,17 +26,17 @@ export class RickGateway
 
   constructor(private readonly portfolioService: PortfolioService) {}
   afterInit() {
-    console.log('Init')
+    Logger.log('Init')
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`)
+    Logger.log(`Client disconnected: ${client.id}`)
     // this.clients = this.clients.filter((c) => c.sock.id !== client.id)
     this.portfolioService.removeClient(client.id)
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
-    console.log(`Client connected: ${client.id}`)
+  handleConnection(client: Socket) {
+    Logger.log(`Client connected: ${client.id}`)
     // we should get the account Id from the authorization token
     const accountId = 1
     this.portfolioService.addClient(accountId, client)

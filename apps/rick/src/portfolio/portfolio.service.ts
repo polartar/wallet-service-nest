@@ -7,6 +7,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { AccountService } from '../account/account.service'
 import { HttpService } from '@nestjs/axios'
+import { Logger } from '@nestjs/common'
 
 @Injectable()
 export class PortfolioService {
@@ -86,7 +87,7 @@ export class PortfolioService {
       try {
         balanceHistory = JSON.parse(wallet.balanceHistory)
       } catch (err) {
-        console.log(err)
+        Logger.error(err)
       }
       if (!balanceHistory) {
         balanceHistory = []
@@ -124,7 +125,7 @@ export class PortfolioService {
   runService() {
     let blockCount = 0
     this.provider.on('block', async () => {
-      console.log('Run the Portfolio service')
+      Logger.log('Run the Portfolio service')
       if (blockCount % this.intervalBlocks === 0) {
         const { wallets, balances } = await this.getEthBalances(
           this.activeEthWallets,

@@ -10,7 +10,7 @@ import { Environment } from '../../rick/src/environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
 import { RickGateway } from '../src/gateways/rick.gateway'
 import { PortfolioModule } from '../src/portfolio/portfolio.module'
-import { HttpModule, HttpService } from '@nestjs/axios'
+import { HttpModule } from '@nestjs/axios'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { RickModule } from '../src/gateways/rick.module'
@@ -21,8 +21,7 @@ import {
 } from '@nestjs/platform-fastify'
 import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { WalletService } from '../../rick/src/wallet/wallet.service'
-import { AccountService } from '../../rick/src/account/account.service'
+import { Logger } from '@nestjs/common'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
@@ -85,10 +84,12 @@ describe('RickGateway', () => {
   beforeAll(async () => {
     // Initialize and start the server
     princessPortfoloApp = await runPrincessPortfolioModule()
+
+    princessPortfoloApp.useLogger(new Logger())
     await princessPortfoloApp.listen(3335)
 
     portfoloApp = await runPortfolioModule()
-    // await portfoloApp.listen(3333)
+    await portfoloApp.listen(3333)
     // Connect the client
     socket = io('http://localhost:3335/')
   })
@@ -109,7 +110,8 @@ describe('RickGateway', () => {
       const channelId = `portfolio_history`
       const data = await new Promise((resolve) => {
         socket.on(channelId, (data) => {
-          console.log('history received', data)
+          Logger.log('history received', data)
+
           resolve(JSON.parse(data))
         })
         socket.emit('get_portfolio_history', { accountId })
