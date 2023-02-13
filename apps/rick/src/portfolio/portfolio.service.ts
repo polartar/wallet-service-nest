@@ -1,4 +1,4 @@
-import { IBalanceHistory, IWallet, IWalletType } from './../wallet/wallet.types'
+import { IWalletType } from './../wallet/wallet.types'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { Provider } from 'ethers-multicall'
@@ -8,11 +8,12 @@ import { WalletService } from '../wallet/wallet.service'
 import { AccountService } from '../account/account.service'
 import { HttpService } from '@nestjs/axios'
 import { Logger } from '@nestjs/common'
+import { WalletEntity } from '../wallet/wallet.entity'
 
 @Injectable()
 export class PortfolioService {
-  activeEthWallets: IWallet[]
-  activeBtcWallets: IWallet[]
+  activeEthWallets: WalletEntity[]
+  activeBtcWallets: WalletEntity[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
   intervalBlocks = 1
@@ -47,17 +48,17 @@ export class PortfolioService {
     )
   }
 
-  async getEthWallets(): Promise<IWallet[]> {
+  async getEthWallets(): Promise<WalletEntity[]> {
     return this.activeEthWallets
   }
 
-  async getBtcWallets(): Promise<IWallet[]> {
+  async getBtcWallets(): Promise<WalletEntity[]> {
     return this.activeBtcWallets
   }
 
   async getEthBalances(
-    wallets: IWallet[],
-  ): Promise<{ wallets: IWallet[]; balances: string[] }> {
+    wallets: WalletEntity[],
+  ): Promise<{ wallets: WalletEntity[]; balances: string[] }> {
     const calls = wallets.map((wallet) => {
       return this.ethcallProvider.getEthBalance(wallet.address)
     })
@@ -75,54 +76,43 @@ export class PortfolioService {
    * @param wallets wallets
    * @param balances balances
    */
-  updateWalletHistory(wallets: IWallet[], balances: string[]) {
+  async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
     const updatedWallets = []
-    this.activeEthWallets = this.activeEthWallets.map((wallet) => {
-      const balanceIndex = wallets.findIndex(
-        (newWallet) => newWallet.id === wallet.id,
-      )
-      const newBalance = balances[balanceIndex].toString()
-      // check if the balance is changed
-      let balanceHistory: IBalanceHistory[]
-      try {
-        balanceHistory = JSON.parse(wallet.balanceHistory)
-      } catch (err) {
-        Logger.error(err)
-      }
-      if (!balanceHistory) {
-        balanceHistory = []
-      }
-
-      if (
-        balanceIndex !== -1 &&
-        (balanceHistory.length === 0 ||
-          balanceHistory[balanceHistory.length - 1].balance !== newBalance)
-      ) {
-        balanceHistory.push({
-          balance: newBalance,
-          date: new Date().getTime(),
-        })
-        updatedWallets.push({
-          ...wallet,
-          balanceHistory: JSON.stringify(balanceHistory),
-        })
-        return {
-          ...wallet,
-          balanceHistory: JSON.stringify(balanceHistory),
+    this.activeEthWallets = await Promise.all(
+      this.activeEthWallets.map(async (wallet) => {
+        const balanceIndex = wallets.findIndex(
+          (newWallet) => newWallet.id === wallet.id,
+        )
+        const newBalance = balances[balanceIndex].toString()
+        const history = wallet.history || []
+        // check if the balance is changed
+        if (
+          balanceIndex !== -1 &&
+          (history.length === 0 ||
+            history[history.length - 1].balance !== newBalance)
+        ) {
+          const record = await this.walletService.addRecord({
+            wallet: wallet,
+            balance: newBalance,
+            timestamp: Date.now(),
+          })
+          history.push(record)
+          updatedWallets.push(record)
         }
-      }
-      return wallet
-    })
+        wallet.history = history
+        return wallet
+      }),
+    )
     if (updatedWallets.length > 0) {
       this.httpService.post(`http://localhost:3000/portfolio/updated`, {
         updatedWallets,
       })
 
-      this.walletService.updateWalletsHistory(updatedWallets)
+      return this.walletService.updateWallets(this.activeEthWallets)
     }
   }
 
-  runService() {
+  async runService() {
     let blockCount = 0
     this.provider.on('block', async () => {
       Logger.log('Run the Portfolio service')
@@ -130,7 +120,12 @@ export class PortfolioService {
         const { wallets, balances } = await this.getEthBalances(
           this.activeEthWallets,
         )
-        this.updateWalletHistory(wallets, balances)
+        try {
+          await this.updateWalletHistory(wallets, balances)
+        } catch (e) {
+          console.log('Error here')
+          console.log(e)
+        }
         blockCount = 0
       }
       blockCount++
