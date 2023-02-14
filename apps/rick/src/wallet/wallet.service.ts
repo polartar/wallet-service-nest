@@ -42,7 +42,11 @@ export class WalletService {
     prototype.history = []
     prototype.type = data.type
 
-    const [history, balance, wallet] = await Promise.all([
+    const [
+      history, //
+      balance,
+      wallet,
+    ] = await Promise.all([
       provider.getHistory(data.address),
       provider.getBalance(data.address),
       this.walletRepository.save(prototype),
@@ -101,7 +105,7 @@ export class WalletService {
   }
 
   private _getDurationTime(period: string): number | null {
-    let oneHour = 1000 * 3600
+    const oneHour = 1000 * 3600
     switch (period) {
       case EPeriod.Day:
         return oneHour * 24
