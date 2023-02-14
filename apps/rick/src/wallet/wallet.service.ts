@@ -7,7 +7,7 @@ import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RecordEntity } from './record.entity'
 import { AddRecordDto } from './dto/add-record.dto'
-import { EPeriod } from './wallet.types'
+import { EPeriod, SecondsIn } from './wallet.types'
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -104,25 +104,10 @@ export class WalletService {
     return this.recordRepository.save(record)
   }
 
-  private _getDurationTime(period: string): number | null {
-    const oneHour = 1000 * 3600
-    switch (period) {
-      case EPeriod.Day:
-        return oneHour * 24
-      case EPeriod.Month:
-        return oneHour * 24 * 30
-      case EPeriod.Months:
-        return oneHour * 24 * 30 * 6
-      case EPeriod.Year:
-        return oneHour * 24 * 365
-      case EPeriod.All:
-      default:
-        return null
-    }
-  }
-
   async getUserWalletHistory(data: GetWalletHistoryDto) {
-    const periodAsNumber = this._getDurationTime(data.period)
+    const periodAsNumber =
+      data.period in SecondsIn ? SecondsIn[data.period] : null
+    const timeInPast = Math.floor(Date.now() / 1000 - periodAsNumber || 0)
     return this.walletRepository.find({
       where: {
         account: { id: data.accountId },
@@ -130,7 +115,7 @@ export class WalletService {
           periodAsNumber === null
             ? null
             : {
-                timestamp: MoreThanOrEqual(periodAsNumber),
+                timestamp: MoreThanOrEqual(timeInPast),
               },
       },
       relations: {
