@@ -22,4 +22,11 @@ export class RecordEntity {
 
   @Column('bigint')
   timestamp: number
+
+  toJSON() {
+    return {
+      balance: this.balance,
+      timestamp: this.timestamp,
+    }
+  }
 }

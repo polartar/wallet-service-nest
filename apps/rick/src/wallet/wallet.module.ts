@@ -8,9 +8,12 @@ import { PortfolioModule } from '../portfolio/portfolio.module'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { AccountModule } from '../account/account.module'
 import { RecordEntity } from './record.entity'
+import { Environment } from '../environments/environment.dev'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ load: [Environment] }),
     TypeOrmModule.forFeature([
       WalletEntity, //
       AccountEntity,

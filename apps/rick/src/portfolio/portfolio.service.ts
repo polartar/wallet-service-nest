@@ -123,8 +123,8 @@ export class PortfolioService {
         try {
           await this.updateWalletHistory(wallets, balances)
         } catch (e) {
-          console.log('Error here')
-          console.log(e)
+          Logger.log('Error inside runService')
+          Logger.log(e)
         }
         blockCount = 0
       }
