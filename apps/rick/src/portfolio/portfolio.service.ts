@@ -16,7 +16,6 @@ export class PortfolioService {
   activeBtcWallets: WalletEntity[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
-  intervalBlocks = 1
 
   constructor(
     private configService: ConfigService,
@@ -112,23 +111,46 @@ export class PortfolioService {
     }
   }
 
-  async runService() {
-    let blockCount = 0
-    this.provider.on('block', async () => {
+  runService() {
+    this.provider.on('block', async (blockNumber) => {
       Logger.log('Run the Portfolio service')
-      if (blockCount % this.intervalBlocks === 0) {
-        const { wallets, balances } = await this.getEthBalances(
-          this.activeEthWallets,
+      Logger.log(blockNumber)
+
+      const block = await this.provider.getBlock(blockNumber)
+      if (block && block.transactions) {
+        const promises = block.transactions.map((txHash) =>
+          this.provider.getTransaction(txHash),
         )
-        try {
-          await this.updateWalletHistory(wallets, balances)
-        } catch (e) {
-          Logger.log('Error inside runService')
-          Logger.log(e)
-        }
-        blockCount = 0
+
+        const updatedAddresses = []
+        Promise.allSettled(promises).then(async (results) => {
+          results.map((tx) => {
+            if (
+              tx.status === 'fulfilled' &&
+              tx.value.value.toString() !== '0'
+            ) {
+              if (
+                tx.value.from &&
+                !updatedAddresses.includes(tx.value.from.toLowerCase())
+              ) {
+                updatedAddresses.push(tx.value.from)
+              }
+              if (
+                tx.value.to &&
+                !updatedAddresses.includes(tx.value.to.toLowerCase())
+              ) {
+                updatedAddresses.push(tx.value.to)
+              }
+            }
+          })
+          const { wallets, balances } = await this.getEthBalances(
+            this.activeEthWallets.filter((wallet) =>
+              updatedAddresses.includes(wallet.address),
+            ),
+          )
+          this.updateWalletHistory(wallets, balances)
+        })
       }
-      blockCount++
     })
   }
 }
