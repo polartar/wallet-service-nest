@@ -1,4 +1,4 @@
-import { IRickSocketData } from './rick.types'
+import { IRickGetPortfolioHistory } from './rick.types'
 import {
   ConnectedSocket,
   MessageBody,
@@ -44,12 +44,10 @@ export class RickGateway
   @SubscribeMessage('get_portfolio_history')
   async handlePortfolioHistory(
     @MessageBody()
-    data: IRickSocketData,
+    data: IRickGetPortfolioHistory,
     @ConnectedSocket() client: Socket,
   ) {
-    this.portfolioService.addPeriod(data.accountId, data.period)
-
-    this.portfolioService.getWalletHistory(data.accountId).then((response) => {
+    this.portfolioService.getWalletHistory(data).then((response) => {
       client.emit(this.PORTFOLIO_HISTORY_CHANNEL, JSON.stringify(response))
     })
   }
