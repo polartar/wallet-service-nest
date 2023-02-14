@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
+import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
@@ -11,6 +12,7 @@ import {
 } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
+import { max } from 'class-validator'
 
 @Injectable()
 export class PortfolioService {
@@ -27,17 +29,39 @@ export class PortfolioService {
       data.periods.map((period) =>
         firstValueFrom(
           this.httpService.get(
-            `${this.RICK_API_URL}/wallet/${
-              data.accountId
-            }?period=${period.toLowerCase()}`,
+            `${this.RICK_API_URL}/wallet/${data.accountId}?period=${period}`,
           ),
         ),
       ),
     )
-    return data.periods.map((period, index) => ({
-      period,
-      spots: res[index],
-    }))
+    return data.periods.map((period, index) => {
+      const history = res[index].data[1].history
+      let max = BigNumber.from(history[0].balance),
+        maxIndex = 0,
+        min = BigNumber.from(history[0].balance),
+        minIndex = 0
+      history.forEach((spot, index) => {
+        const balance = BigNumber.from(spot.balance)
+        if (max.lt(balance)) {
+          max = balance
+          maxIndex = index
+        }
+        if (min.gt(balance)) {
+          min = balance
+          minIndex = index
+        }
+      })
+      return {
+        period: period,
+        spots: history,
+        stats: {
+          max: max.toString(),
+          maxLocation: maxIndex / (history.length - 1),
+          min: min.toString(),
+          minLocation: minIndex / (history.length - 1),
+        },
+      }
+    })
   }
 
   addClient(accountId: number, client: Socket) {

@@ -8,6 +8,7 @@ import {
   Get,
   forwardRef,
   NotFoundException,
+  Query,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
@@ -25,7 +26,7 @@ export class WalletController {
   ) {}
 
   @Get(':id')
-  async getHistory(@Param('id') id: number, @Param('period') period: string) {
+  async getHistory(@Param('id') id: number, @Query('period') period: string) {
     try {
       return await this.walletService.getUserWalletHistory({
         accountId: id,

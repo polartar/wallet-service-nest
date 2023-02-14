@@ -48,7 +48,7 @@ export class RickGateway
     @ConnectedSocket() client: Socket,
   ) {
     this.portfolioService.getWalletHistory(data).then((response) => {
-      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, JSON.stringify(response))
+      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, response)
     })
   }
 
