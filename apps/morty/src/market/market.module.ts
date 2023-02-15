@@ -1,7 +1,7 @@
 import { ConfigModule } from '@nestjs/config'
 import { Module } from '@nestjs/common'
-import { PriceController } from './price.controller'
-import { PriceService } from './price.service'
+import { MarketController } from './market.controller'
+import { MarketService } from './market.service'
 import { Environment } from '../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
 
@@ -10,7 +10,7 @@ import { HttpModule } from '@nestjs/axios'
     ConfigModule.forRoot({ load: [Environment] }), //
     HttpModule,
   ],
-  controllers: [PriceController],
-  providers: [PriceService],
+  controllers: [MarketController],
+  providers: [MarketService],
 })
-export class PriceModule {}
+export class MarketModule {}

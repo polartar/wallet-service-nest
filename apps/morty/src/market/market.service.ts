@@ -1,6 +1,6 @@
-import { EEnvironment } from './../environments/environment.types'
+import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { ICoinType, IDuration } from './price.type'
+import { ICoinType, IDuration } from './market.type'
 import { Injectable } from '@nestjs/common'
 import { Socket, io } from 'socket.io-client'
 import * as WebSocket from 'ws'
@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config'
 import * as CoinMarketCap from 'coinmarketcap-api'
 
 @Injectable()
-export class PriceService {
+export class MarketService {
   COINMARKETCAP_RUL =
     'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?limit=2'
   private ethClient
@@ -86,16 +86,13 @@ export class PriceService {
     return snapshotDate.toISOString()
   }
 
-  getMarketData(duration?: IDuration) {
-    this.coinMarketClient
-      .getQuotes({
-        symbol: [
-          'BTC', //
-          'ETH',
-        ],
-        date: this.getSnapshotDate(duration),
-      })
-      .then(console.log)
-      .catch(console.error)
+  async getMarketData(duration?: IDuration) {
+    return await this.coinMarketClient.getQuotes({
+      symbol: [
+        'BTC', //
+        'ETH',
+      ],
+      date: this.getSnapshotDate(duration),
+    })
   }
 }
