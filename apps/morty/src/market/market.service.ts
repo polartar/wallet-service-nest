@@ -14,6 +14,7 @@ export class MarketService {
   private ethClient
   private btcClient
   private coinMarketClient
+  ethIntervalInstance
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
@@ -26,26 +27,19 @@ export class MarketService {
 
     this.subscribeETHPrice()
     this.subscribeBTCPrice()
-    this.getMarketData()
-    // setInterval(() => this.keepAlive(this.ethClient), 5000)
-    // this.keepAlive(this.ethClient)
+    // this.getMarketData()
   }
 
   private ethConnect() {
-    this.ethClient = new WebSocket(`wss://ws.coincap.io/prices?assets=ethereum`)
+    try {
+      this.ethClient = new WebSocket(`ws://127.0.0.1:10000`)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   private btcConnect() {
     this.btcClient = new WebSocket(`wss://ws.coincap.io/prices?assets=bitcoin`)
-  }
-
-  keepAlive = function (client) {
-    Logger.log('alive', client.readyState)
-    if (client.readyState === client.OPEN) {
-      client.send('ping')
-    }
-
-    setTimeout(() => this.keepAlive(client), 50000)
   }
 
   subscribeETHPrice() {
@@ -54,12 +48,14 @@ export class MarketService {
     }
 
     this.ethClient.on('message', function (response) {
-      const ethPrice = JSON.parse(response)['ethereum']
-      Logger.log('ETH price', ethPrice)
+      console.log({ response })
+      // const ethPrice = JSON.parse(response)['ethereum']
+      // Logger.log('ETH price', ethPrice)
     })
 
-    this.ethClient.on('close', function () {
+    this.ethClient.on('close', () => {
       Logger.log('closed')
+      this.ethIntervalInstance = setInterval(() => this.ethConnect(), 1000)
     })
     this.ethClient.on('error', function (e) {
       Logger.log('error', e)
