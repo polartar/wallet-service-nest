@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
+import { MarketService } from '../market/market.service'
 
 type IRickSocketData = {
   accountId: number
@@ -24,9 +25,13 @@ export class RickGateway
 
   PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
 
-  constructor(private readonly portfolioService: PortfolioService) {}
+  constructor(
+    private readonly portfolioService: PortfolioService,
+    private readonly marketService: MarketService,
+  ) {}
   afterInit() {
     Logger.log('Init')
+    this.marketService.server = this.server
   }
 
   handleDisconnect(client: Socket) {

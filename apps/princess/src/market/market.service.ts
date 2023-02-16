@@ -3,9 +3,11 @@ import { IDuration } from './market.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
+import { Server } from 'socket.io'
 
 @Injectable()
 export class MarketService {
+  server: Server
   constructor(private readonly httpService: HttpService) {}
 
   async getMarketData(duration: IDuration) {
@@ -21,9 +23,9 @@ export class MarketService {
     }
   }
   setEthPrice(price: string) {
-    console.log('ETH', price)
+    this.server.emit('ethereum_price', price)
   }
   setBtcPrice(price: string) {
-    console.log('Bit', price)
+    this.server.emit('bitcoin_price', price)
   }
 }
