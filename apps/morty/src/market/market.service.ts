@@ -1,11 +1,9 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { ICoinType, IDuration } from './market.type'
-import { Injectable } from '@nestjs/common'
-import { Socket, io } from 'socket.io-client'
+import { IDuration } from './market.type'
+import { Injectable, Logger } from '@nestjs/common'
+// import { Socket, io } from 'socket.io-client'
 import * as WebSocket from 'ws'
-import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { AxiosError, AxiosResponse } from 'axios'
 import { ConfigService } from '@nestjs/config'
 import * as CoinMarketCap from 'coinmarketcap-api'
 
@@ -29,6 +27,8 @@ export class MarketService {
     this.subscribeETHPrice()
     this.subscribeBTCPrice()
     this.getMarketData()
+    // setInterval(() => this.keepAlive(this.ethClient), 5000)
+    // this.keepAlive(this.ethClient)
   }
 
   private ethConnect() {
@@ -39,6 +39,15 @@ export class MarketService {
     this.btcClient = new WebSocket(`wss://ws.coincap.io/prices?assets=bitcoin`)
   }
 
+  keepAlive = function (client) {
+    Logger.log('alive', client.readyState)
+    if (client.readyState === client.OPEN) {
+      client.send('ping')
+    }
+
+    setTimeout(() => this.keepAlive(client), 50000)
+  }
+
   subscribeETHPrice() {
     if (!this.ethClient) {
       this.ethConnect()
@@ -46,7 +55,14 @@ export class MarketService {
 
     this.ethClient.on('message', function (response) {
       const ethPrice = JSON.parse(response)['ethereum']
-      console.log('ETH price', ethPrice)
+      Logger.log('ETH price', ethPrice)
+    })
+
+    this.ethClient.on('close', function () {
+      Logger.log('closed')
+    })
+    this.ethClient.on('error', function (e) {
+      Logger.log('error', e)
     })
   }
   subscribeBTCPrice() {
@@ -55,7 +71,7 @@ export class MarketService {
     }
     this.btcClient.on('message', function (response) {
       const btcPrice = JSON.parse(response)['bitcoin']
-      console.log('BTC price', btcPrice)
+      Logger.log('BTC price', btcPrice)
     })
   }
 
