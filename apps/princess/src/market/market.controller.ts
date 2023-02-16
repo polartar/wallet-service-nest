@@ -7,17 +7,18 @@ export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
   @Post('ethereum')
-  async setEthPrice(@Body() price: string) {
-    this.marketService.setEthPrice(price)
+  async setEthPrice(@Body() data: { ethereum: string }) {
+    this.marketService.setEthPrice(data.ethereum)
+    return true
   }
   @Post('bitcoin')
-  async setBtcPrice(@Body() price: string) {
-    this.marketService.setBtcPrice(price)
+  async setBtcPrice(@Body() data: { bitcoin: string }) {
+    this.marketService.setBtcPrice(data.bitcoin)
+    return true
   }
 
   @Get(':duration')
   async getMarketData(@Param('duration') duration: IDuration) {
-    console.log('getting marketdata')
     return this.marketService.getMarketData(duration)
   }
 }

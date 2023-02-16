@@ -6,6 +6,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import * as CoinMarketCap from 'coinmarketcap-api'
+import { catchError, firstValueFrom } from 'rxjs'
+import { AxiosError } from 'axios'
 
 @Injectable()
 export class MarketService {
@@ -50,8 +52,13 @@ export class MarketService {
     }
 
     this.ethClient.on('message', (response) => {
-      const ethPrice = JSON.parse(response)['ethereum']
-      this.httpService.post(`http://localhost:3000/market/ethereum`, ethPrice)
+      const res = JSON.parse(response)
+      // try {
+      firstValueFrom(
+        this.httpService.post(`http://localhost:3000/market/ethereum`, res),
+      ).catch(() => {
+        Logger.log('Princess market/ethereum api error')
+      })
     })
 
     this.ethClient.on('close', () => {
@@ -63,8 +70,12 @@ export class MarketService {
       this.btcConnect()
     }
     this.btcClient.on('message', (response) => {
-      const btcPrice = JSON.parse(response)['bitcoin']
-      this.httpService.post(`http://localhost:3000/market/bitcoin`, btcPrice)
+      const res = JSON.parse(response)
+      firstValueFrom(
+        this.httpService.post(`http://localhost:3000/market/bitcoin`, res),
+      ).catch(() => {
+        Logger.log('Princess market/bitcoin api error')
+      })
     })
   }
 

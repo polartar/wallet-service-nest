@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { IDuration } from './market.types'
-import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { AxiosError, AxiosResponse } from 'axios'
+import { firstValueFrom } from 'rxjs'
+import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 
 @Injectable()
@@ -9,7 +9,6 @@ export class MarketService {
   constructor(private readonly httpService: HttpService) {}
 
   async getMarketData(duration: IDuration) {
-    console.log('ee', duration)
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
