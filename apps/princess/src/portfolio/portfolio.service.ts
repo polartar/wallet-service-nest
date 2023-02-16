@@ -34,8 +34,9 @@ export class PortfolioService {
         ),
       ),
     )
+    if (!data.periods) console.log(data)
     return data.periods.map((period, index) => {
-      const history = res[index].data[1].history
+      const history = res[index].data[0].history
       let max = BigNumber.from(history[0].balance),
         maxIndex = 0,
         min = BigNumber.from(history[0].balance),

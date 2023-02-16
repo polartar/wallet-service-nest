@@ -55,6 +55,7 @@ export class WalletService {
     let currentBalance = balance
     const allHistories = await Promise.all(
       history
+        .filter((item) => item.value.isZero)
         .reverse()
         .map((record) => {
           currentBalance =
@@ -66,8 +67,7 @@ export class WalletService {
             balance: currentBalance.toString(),
             timestamp: record.timestamp,
           })
-        })
-        .reverse(),
+        }),
     )
     wallet.history = allHistories
     return this.walletRepository.save(wallet)
@@ -117,6 +117,11 @@ export class WalletService {
             : {
                 timestamp: MoreThanOrEqual(timeInPast),
               },
+      },
+      order: {
+        history: {
+          timestamp: 'DESC',
+        },
       },
       relations: {
         history: true,
