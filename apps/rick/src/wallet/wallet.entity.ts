@@ -10,7 +10,6 @@ import {
 import { IWalletType } from './wallet.types'
 import { AccountEntity } from '../account/account.entity'
 import { RecordEntity } from './record.entity'
-import { Exclude } from 'class-transformer'
 
 @Entity()
 export class WalletEntity {

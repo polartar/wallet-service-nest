@@ -7,7 +7,6 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { AccountService } from '../account/account.service'
 import { HttpService } from '@nestjs/axios'
-import { Logger } from '@nestjs/common'
 import { WalletEntity } from '../wallet/wallet.entity'
 
 @Injectable()
