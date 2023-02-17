@@ -9,6 +9,7 @@ import * as CoinMarketCap from 'coinmarketcap-api'
 import { catchError, firstValueFrom } from 'rxjs'
 import { AxiosError, AxiosResponse } from 'axios'
 import * as child_process from 'child_process'
+import { BTCMarketData, ETHMarketData } from './Marketdata.json'
 @Injectable()
 export class MarketService {
   COINMARKETCAP_RUL =
@@ -28,9 +29,9 @@ export class MarketService {
 
     this.coinMarketClient = new CoinMarketCap(this.coinMarketAPI)
 
-    // this.subscribeETHPrice()
-    // this.subscribeBTCPrice()
-    this.getMarketData(ICoinType.BITCOIN, IDuration.DAY)
+    this.subscribeETHPrice()
+    this.subscribeBTCPrice()
+    // this.getMarketData(ICoinType.BITCOIN, IDuration.DAY)
     // process.on('exit', function () {
     //   child_process.spawn(process.argv.shift(), process.argv, {
     //     cwd: process.cwd(),
@@ -41,9 +42,8 @@ export class MarketService {
   }
 
   private ethConnect() {
-    this.ethClient = new WebSocket(
-      `wss://ws.coincap.io/prices1?assets=ethereum`,
-    )
+    // this.ethClient = new WebSocket(`wss://localhost:8080`)
+    this.ethClient = new WebSocket(`wss://ws.coincap.io/prices?assets=ethereum`)
   }
 
   private btcConnect() {
@@ -134,12 +134,12 @@ export class MarketService {
     // })
     // if (res) return res?.data
 
-    return await this.coinMarketClient.getQuotes({
-      symbol: [
-        'BTC', //
-        'ETH',
-      ],
-    })
+    if (coin === ICoinType.BITCOIN) {
+      console.log({ ETHMarketData })
+      return ETHMarketData.data.quotes
+    } else {
+      return BTCMarketData.data.quotes
+    }
   }
 
   getDurationTime(duration: IDuration) {
