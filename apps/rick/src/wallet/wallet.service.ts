@@ -22,6 +22,10 @@ export class WalletService {
     private readonly recordRepository: Repository<RecordEntity>,
   ) {}
 
+  getCurrentTimeBySeconds() {
+    return Math.floor(Date.now() / 1000)
+  }
+
   async getAllWallets(): Promise<WalletEntity[]> {
     return await this.walletRepository.find({
       relations: {
@@ -107,7 +111,7 @@ export class WalletService {
   async getUserWalletHistory(data: GetWalletHistoryDto) {
     const periodAsNumber =
       data.period in SecondsIn ? SecondsIn[data.period] : null
-    const timeInPast = Math.floor(Date.now() / 1000 - periodAsNumber || 0)
+    const timeInPast = this.getCurrentTimeBySeconds() - periodAsNumber || 0
     return this.walletRepository.find({
       where: {
         account: { id: data.accountId },
