@@ -113,9 +113,6 @@ export class PortfolioService {
 
   runService() {
     this.provider.on('block', async (blockNumber) => {
-      Logger.log('Run the Portfolio service')
-      Logger.log(blockNumber)
-
       const block = await this.provider.getBlock(blockNumber)
       if (block && block.transactions) {
         const promises = block.transactions.map((txHash) =>
@@ -148,7 +145,9 @@ export class PortfolioService {
               updatedAddresses.includes(wallet.address),
             ),
           )
-          this.updateWalletHistory(wallets, balances)
+          if (wallets.length !== 0) {
+            this.updateWalletHistory(wallets, balances)
+          }
         })
       }
     })
