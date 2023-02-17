@@ -9,7 +9,7 @@ import * as CoinMarketCap from 'coinmarketcap-api'
 import { catchError, firstValueFrom } from 'rxjs'
 import { AxiosError, AxiosResponse } from 'axios'
 import * as child_process from 'child_process'
-import { BTCMarketData, ETHMarketData } from './Marketdata.json'
+import { BTCMarketData, ETHMarketData } from './MarketData'
 @Injectable()
 export class MarketService {
   COINMARKETCAP_RUL =
@@ -65,7 +65,7 @@ export class MarketService {
     })
 
     this.ethClient.on('error', () => {
-      setTimeout(() => process.exit(), 20000)
+      // setTimeout(() => process.exit(), 20000)
     })
   }
   subscribeBTCPrice() {
@@ -81,7 +81,7 @@ export class MarketService {
       })
     })
     this.ethClient.on('error', () => {
-      setTimeout(() => process.exit(), 20000)
+      // setTimeout(() => process.exit(), 20000)
     })
   }
 
