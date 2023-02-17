@@ -93,7 +93,7 @@ export class PortfolioService {
           const record = await this.walletService.addRecord({
             wallet: wallet,
             balance: newBalance,
-            timestamp: Math.floor(Date.now() / 1000),
+            timestamp: this.walletService.getCurrentTimeBySeconds(),
           })
           history.push(record)
           updatedWallets.push(record)
