@@ -39,11 +39,9 @@ export class MarketService {
   }
 
   private ethConnect() {
-    this.ethClient = new WebSocket(`wss://localhost:8080`)
-
-    // this.ethClient = new WebSocket(
-    //   `wss://ws.coincap.io/prices1?assets=ethereum`,
-    // )
+    this.ethClient = new WebSocket(
+      `wss://ws.coincap.io/prices1?assets=ethereum`,
+    )
   }
 
   private btcConnect() {
@@ -57,15 +55,15 @@ export class MarketService {
 
     this.ethClient.on('message', (response) => {
       const res = JSON.parse(response)
-      // firstValueFrom(
-      //   this.httpService.post(`http://localhost:3000/market/ethereum`, res),
-      // ).catch(() => {
-      //   Logger.log('Princess market/ethereum api error')
-      // })
+      firstValueFrom(
+        this.httpService.post(`http://localhost:3000/market/ethereum`, res),
+      ).catch(() => {
+        Logger.log('Princess market/ethereum api error')
+      })
     })
 
     this.ethClient.on('error', () => {
-      setTimeout(() => process.exit(), 10000)
+      setTimeout(() => process.exit(), 20000)
     })
   }
   subscribeBTCPrice() {
@@ -79,6 +77,9 @@ export class MarketService {
       ).catch(() => {
         Logger.log('Princess market/bitcoin api error')
       })
+    })
+    this.ethClient.on('error', () => {
+      setTimeout(() => process.exit(), 20000)
     })
   }
 
