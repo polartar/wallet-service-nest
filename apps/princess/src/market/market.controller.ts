@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
 import { MarketService } from './market.service'
-import { IDuration } from './market.types'
+import { ICoinType, IDuration } from './market.types'
 
 @Controller('market')
 export class MarketController {
@@ -17,8 +17,24 @@ export class MarketController {
     return true
   }
 
-  @Get(':duration')
-  async getMarketData(@Param('duration') duration: IDuration) {
-    return this.marketService.getMarketData(duration)
+  @Get('/eth/:duration')
+  async getEthMarketData(@Param('duration') duration: IDuration) {
+    return this.marketService.getMarketData(ICoinType.ETHEREUM, duration)
+  }
+  @Get('/btc/:duration')
+  async getBtMarketData(@Param('duration') duration: IDuration) {
+    return this.marketService.getMarketData(ICoinType.BITCOIN, duration)
+  }
+
+  @Get('eth/historical')
+  getEthHistoricalData(@Query() query: { period: IDuration }) {
+    return this.marketService.getHistoricalData(
+      ICoinType.ETHEREUM,
+      query.period,
+    )
+  }
+  @Get('btc/historical')
+  getBtcHistoricalData(@Query() query: { period: IDuration }) {
+    return this.marketService.getHistoricalData(ICoinType.BITCOIN, query.period)
   }
 }

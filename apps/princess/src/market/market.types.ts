@@ -5,3 +5,7 @@ export enum IDuration {
   MONTHS = '6months',
   YEAR = '1year',
 }
+export enum ICoinType {
+  ETHEREUM = 'eth',
+  BITCOIN = 'bit',
+}

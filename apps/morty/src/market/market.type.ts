@@ -1,6 +1,6 @@
 export enum ICoinType {
-  ETHEREUM = 'eth',
-  BITCOIN = 'btc',
+  ETHEREUM = 'ethereum',
+  BITCOIN = 'bitcoin',
 }
 export enum IDuration {
   DAY = '1day',
@@ -8,4 +8,5 @@ export enum IDuration {
   MONTH = '1month',
   MONTHS = '6months',
   YEAR = '1year',
+  All = 'all',
 }
