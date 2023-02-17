@@ -17,25 +17,27 @@ export class MarketService {
   private btcClient
   private coinMarketClient
   ethIntervalInstance
+  coinMarketAPI
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
   ) {
-    const coinMarketAPI = this.configService.get<string>(
+    this.coinMarketAPI = this.configService.get<string>(
       EEnvironment.coinMarketAPI,
     )
 
-    this.coinMarketClient = new CoinMarketCap(coinMarketAPI)
+    this.coinMarketClient = new CoinMarketCap(this.coinMarketAPI)
 
-    this.subscribeETHPrice()
-    this.subscribeBTCPrice()
-    process.on('exit', function () {
-      child_process.spawn(process.argv.shift(), process.argv, {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: 'inherit',
-      })
-    })
+    // this.subscribeETHPrice()
+    // this.subscribeBTCPrice()
+    this.getMarketData(ICoinType.BITCOIN, IDuration.DAY)
+    // process.on('exit', function () {
+    //   child_process.spawn(process.argv.shift(), process.argv, {
+    //     cwd: process.cwd(),
+    //     detached: true,
+    //     stdio: 'inherit',
+    //   })
+    // })
   }
 
   private ethConnect() {
@@ -108,13 +110,30 @@ export class MarketService {
   }
 
   async getMarketData(coin: ICoinType, duration?: IDuration) {
-    // const days = this.getDays(duration)
+    // const startDate = new Date(this.getDurationTime(duration))
+    // const interval = this.getInterval(this.getDurationTime(duration))
 
-    // const apiURL = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?&vs_currency=USD&days=${days}`
+    // // const apiURL = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?&vs_currency=USD&days=${days}`
+    // const apiURL =
+    //   'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
     // const res = await firstValueFrom(
-    //   this.httpService.get<AxiosResponse>(apiURL),
-    // )
-    // return res.data
+    //   this.httpService.get<AxiosResponse>(apiURL, {
+    //     params: {
+    //       time_start: startDate,
+    //       interval,
+    //       symbol: 'BTC,ETH',
+    //     },
+    //     headers: {
+    //       'X-CMC_PRO_API_KEY': this.coinMarketAPI,
+    //       Accept: 'application/json',
+    //       'Accept-Encoding': 'deflate, gzip',
+    //     },
+    //   }),
+    // ).catch((err) => {
+    //   Logger.log(`Coinmarket cap API error: ${err.message}`)
+    // })
+    // if (res) return res?.data
+
     return await this.coinMarketClient.getQuotes({
       symbol: [
         'BTC', //
