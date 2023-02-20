@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { AccountService } from './account.service'
 import { AccountEntity } from './account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
+import { RecordEntity } from '../wallet/record.entity'
 
 describe('AccountService', () => {
   let service: AccountService
@@ -18,11 +19,13 @@ describe('AccountService', () => {
           entities: [
             AccountEntity, //
             WalletEntity,
+            RecordEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           AccountEntity, //
           WalletEntity,
+          RecordEntity,
         ]),
       ],
       providers: [AccountService],
