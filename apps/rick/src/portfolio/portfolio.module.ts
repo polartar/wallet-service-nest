@@ -33,9 +33,7 @@ import { HttpModule } from '@nestjs/axios'
   ],
   providers: [
     PortfolioService, //
-    // WalletService,
   ],
-  // controllers: [PortfolioController],
   exports: [PortfolioService],
 })
 export class PortfolioModule {
