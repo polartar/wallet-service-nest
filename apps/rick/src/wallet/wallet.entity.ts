@@ -16,7 +16,7 @@ export class WalletEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @OneToMany(() => RecordEntity, (recond) => recond.wallet)
+  @OneToMany(() => RecordEntity, (record) => record.wallet)
   @JoinColumn()
   history: RecordEntity[]
 

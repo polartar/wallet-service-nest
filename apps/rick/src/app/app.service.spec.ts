@@ -18,4 +18,7 @@ describe('AppService', () => {
       expect(service.getData()).toEqual({ message: 'Welcome to rick!' })
     })
   })
+  it('should be defined', () => {
+    expect(service).toBeDefined()
+  })
 })
