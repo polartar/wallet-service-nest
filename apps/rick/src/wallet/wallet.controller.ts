@@ -41,6 +41,7 @@ export class WalletController {
   async createPortfolio(
     @Param('address') address: string,
     @Body('account_id') account_id: number,
+    @Body('account_id') type: IWalletType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,
@@ -52,7 +53,7 @@ export class WalletController {
       const res = await this.walletService.addNewWallet({
         account,
         address: address,
-        type: IWalletType.ETHEREUM,
+        type: type,
       })
       await this.portfolioService.initializeWallets()
       return res

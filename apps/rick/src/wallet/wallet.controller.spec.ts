@@ -15,7 +15,7 @@ import { RecordEntity } from './record.entity'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { ethers } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
-import { SecondsIn } from './wallet.types'
+import { IWalletType, SecondsIn } from './wallet.types'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -74,6 +74,7 @@ describe('WalletController', () => {
     await controller.createPortfolio(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
+      IWalletType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
