@@ -62,13 +62,14 @@ export class WalletService {
         // .filter((item) => !item.value.isZero()) // we should filter all transactions because they will take transaction fee although their value are 0.
         .reverse()
         .map((record) => {
+          const prevBalance = currentBalance
           currentBalance =
             record.from === data.address
               ? currentBalance.add(record.value)
               : currentBalance.sub(record.value)
           return this.addRecord({
             wallet: wallet,
-            balance: currentBalance.toString(),
+            balance: prevBalance.toString(),
             timestamp: record.timestamp,
           })
         }),
