@@ -59,13 +59,13 @@ export class WalletService {
     let currentBalance = balance
     const allHistories = await Promise.all(
       history
-        .filter((item) => item.value.isZero)
+        // .filter((item) => !item.value.isZero()) // we should filter all transactions because they will take transaction fee although their value are 0.
         .reverse()
         .map((record) => {
           currentBalance =
             record.from === data.address
-              ? currentBalance.sub(record.value)
-              : currentBalance.add(record.value)
+              ? currentBalance.add(record.value)
+              : currentBalance.sub(record.value)
           return this.addRecord({
             wallet: wallet,
             balance: currentBalance.toString(),
