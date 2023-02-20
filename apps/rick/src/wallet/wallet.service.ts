@@ -38,7 +38,7 @@ export class WalletService {
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const provider = new ethers.providers.EtherscanProvider(
       'goerli',
-      this.configService.get<string>(EEnvironment.infuraAPIKey),
+      this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
     const prototype = new WalletEntity()
     prototype.account = data.account
@@ -53,9 +53,9 @@ export class WalletService {
     ] = await Promise.all([
       provider.getHistory(data.address),
       provider.getBalance(data.address),
+      prototype,
       this.walletRepository.save(prototype),
     ])
-
     let currentBalance = balance
     const allHistories = await Promise.all(
       history
