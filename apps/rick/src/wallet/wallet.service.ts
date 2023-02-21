@@ -7,15 +7,19 @@ import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RecordEntity } from './record.entity'
 import { AddRecordDto } from './dto/add-record.dto'
-import { SecondsIn } from './wallet.types'
+import { IWalletType, SecondsIn } from './wallet.types'
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
+import { HttpService } from '@nestjs/axios'
+import { firstValueFrom } from 'rxjs'
+import { parseUnits } from 'ethers/lib/utils'
 
 @Injectable()
 export class WalletService {
   constructor(
     private configService: ConfigService,
+    private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
     @InjectRepository(RecordEntity)
@@ -35,26 +39,47 @@ export class WalletService {
     })
   }
 
-  async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
+  async getBTCTransactionHistories(
+    address: string,
+    wallet: WalletEntity,
+  ): Promise<RecordEntity[]> {
+    const txResponse = await firstValueFrom(
+      this.httpService.get(
+        `https://api.blockcypher.com/v1/btc/main/addrs/${address}`,
+      ),
+    )
+
+    let currentBalance = txResponse.data.balance
+    const allHistories = await Promise.all(
+      txResponse.data.txrefs.map((record) => {
+        const prevBalance = currentBalance
+        currentBalance = record.spent
+          ? currentBalance - record.value
+          : currentBalance + record.value
+        return this.addRecord({
+          wallet: wallet,
+          balance: parseUnits(prevBalance.toString(), 8).toString(),
+          timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
+        })
+      }),
+    )
+
+    return allHistories
+  }
+  async getETHTransactionHistories(
+    address: string,
+    wallet: WalletEntity,
+  ): Promise<RecordEntity[]> {
     const provider = new ethers.providers.EtherscanProvider(
       'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
-    const prototype = new WalletEntity()
-    prototype.account = data.account
-    prototype.address = data.address
-    prototype.history = []
-    prototype.type = data.type
-
     const [
       history, //
       balance,
-      wallet,
     ] = await Promise.all([
-      provider.getHistory(data.address),
-      provider.getBalance(data.address),
-      prototype,
-      this.walletRepository.save(prototype),
+      provider.getHistory(address),
+      provider.getBalance(address),
     ])
     let currentBalance = balance
     const allHistories = await Promise.all(
@@ -64,7 +89,7 @@ export class WalletService {
         .map((record) => {
           const prevBalance = currentBalance
           currentBalance =
-            record.from === data.address
+            record.from === address
               ? currentBalance.add(record.value)
               : currentBalance.sub(record.value)
           return this.addRecord({
@@ -74,6 +99,56 @@ export class WalletService {
           })
         }),
     )
+    return allHistories
+  }
+
+  async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
+    // const provider = new ethers.providers.EtherscanProvider(
+    //   'goerli',
+    //   this.configService.get<string>(EEnvironment.etherscanAPIKey),
+    // )
+    const prototype = new WalletEntity()
+    prototype.account = data.account
+    prototype.address = data.address
+    prototype.history = []
+    prototype.type = data.type
+    const wallet = await this.walletRepository.save(prototype)
+
+    // const [
+    //   history, //
+    //   balance,
+    //   wallet,
+    // ] = await Promise.all([
+    //   provider.getHistory(data.address),
+    //   provider.getBalance(data.address),
+    //   prototype,
+    //   this.walletRepository.save(prototype),
+    // ])
+    // let currentBalance = balance
+    // const allHistories = await Promise.all(
+    //   history
+    //     // .filter((item) => !item.value.isZero()) // we should filter all transactions because they will take transaction fee although their value are 0.
+    //     .reverse()
+    //     .map((record) => {
+    //       const prevBalance = currentBalance
+    //       currentBalance =
+    //         record.from === data.address
+    //           ? currentBalance.add(record.value)
+    //           : currentBalance.sub(record.value)
+    //       return this.addRecord({
+    //         wallet: wallet,
+    //         balance: prevBalance.toString(),
+    //         timestamp: record.timestamp,
+    //       })
+    //     }),
+    // )
+    let allHistories
+    if (data.type === IWalletType.ETHEREUM) {
+      allHistories = await this.getETHTransactionHistories(data.address, wallet)
+    } else {
+      allHistories = await this.getBTCTransactionHistories(data.address, wallet)
+    }
+
     wallet.history = allHistories
     return this.walletRepository.save(wallet)
   }
