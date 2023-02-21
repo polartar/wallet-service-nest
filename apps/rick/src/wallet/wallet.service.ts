@@ -81,32 +81,29 @@ export class WalletService {
       provider.getHistory(address),
       provider.getBalance(address),
     ])
+    console.log(history[history.length - 1])
     let currentBalance = balance
     const allHistories = await Promise.all(
-      history
-        // .filter((item) => !item.value.isZero()) // we should filter all transactions because they will take transaction fee although their value are 0.
-        .reverse()
-        .map((record) => {
-          const prevBalance = currentBalance
-          currentBalance =
-            record.from === address
-              ? currentBalance.add(record.value)
-              : currentBalance.sub(record.value)
-          return this.addRecord({
-            wallet: wallet,
-            balance: prevBalance.toString(),
-            timestamp: record.timestamp,
-          })
-        }),
+      history.reverse().map((record) => {
+        const prevBalance = currentBalance
+        const fee = record.gasLimit.mul(record.gasPrice)
+        currentBalance = currentBalance.add(fee)
+        currentBalance =
+          record.from === address
+            ? currentBalance.add(record.value)
+            : currentBalance.sub(record.value)
+
+        return this.addRecord({
+          wallet: wallet,
+          balance: prevBalance.toString(),
+          timestamp: record.timestamp,
+        })
+      }),
     )
     return allHistories
   }
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
-    // const provider = new ethers.providers.EtherscanProvider(
-    //   'goerli',
-    //   this.configService.get<string>(EEnvironment.etherscanAPIKey),
-    // )
     const prototype = new WalletEntity()
     prototype.account = data.account
     prototype.address = data.address
@@ -114,34 +111,6 @@ export class WalletService {
     prototype.type = data.type
     const wallet = await this.walletRepository.save(prototype)
 
-    // const [
-    //   history, //
-    //   balance,
-    //   wallet,
-    // ] = await Promise.all([
-    //   provider.getHistory(data.address),
-    //   provider.getBalance(data.address),
-    //   prototype,
-    //   this.walletRepository.save(prototype),
-    // ])
-    // let currentBalance = balance
-    // const allHistories = await Promise.all(
-    //   history
-    //     // .filter((item) => !item.value.isZero()) // we should filter all transactions because they will take transaction fee although their value are 0.
-    //     .reverse()
-    //     .map((record) => {
-    //       const prevBalance = currentBalance
-    //       currentBalance =
-    //         record.from === data.address
-    //           ? currentBalance.add(record.value)
-    //           : currentBalance.sub(record.value)
-    //       return this.addRecord({
-    //         wallet: wallet,
-    //         balance: prevBalance.toString(),
-    //         timestamp: record.timestamp,
-    //       })
-    //     }),
-    // )
     let allHistories
     if (data.type === IWalletType.ETHEREUM) {
       allHistories = await this.getETHTransactionHistories(data.address, wallet)
