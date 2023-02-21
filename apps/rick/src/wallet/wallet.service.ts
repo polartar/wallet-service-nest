@@ -81,7 +81,7 @@ export class WalletService {
       provider.getHistory(address),
       provider.getBalance(address),
     ])
-    console.log(history[history.length - 1])
+
     let currentBalance = balance
     const allHistories = await Promise.all(
       history.reverse().map((record) => {
