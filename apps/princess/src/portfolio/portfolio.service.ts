@@ -27,18 +27,39 @@ export class PortfolioService {
 
   async getWalletHistory(data: IRickGetPortfolioHistory) {
     if (!data.periods) data.periods = ['All']
-
-    const res = await Promise.all(
-      data.periods.map((period) =>
-        firstValueFrom(
-          this.httpService.get(
-            `${this.rickApiUrl}/wallet/${data.accountId}?period=${period}`,
+    let res
+    try {
+      res = await Promise.all(
+        data.periods.map((period) =>
+          firstValueFrom(
+            this.httpService.get(
+              `${this.rickApiUrl}/wallet1/${data.accountId}?period=${period}`,
+            ),
           ),
         ),
-      ),
-    )
+      )
+      // eslint-disable-next-line no-empty
+    } catch (err: any) {}
+
+    if (!res)
+      return {
+        status: false,
+      }
     return data.periods.map((period, index) => {
       const history = res[index].data[0].history
+      if (history.length === 0) {
+        return {
+          status: true,
+          period: period,
+          spots: history,
+          stats: {
+            max: undefined,
+            maxLocation: undefined,
+            min: undefined,
+            minLocation: undefined,
+          },
+        }
+      }
       let max = BigNumber.from(history[0].balance),
         maxIndex = 0,
         min = BigNumber.from(history[0].balance),
