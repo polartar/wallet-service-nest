@@ -134,7 +134,7 @@ describe('RickGateway', () => {
         })
         socket.emit('get_portfolio_history', {
           accountId,
-          period: '1D',
+          period: ['1D'],
         })
       })
       expect(data).toBeDefined()
