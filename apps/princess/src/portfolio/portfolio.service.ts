@@ -4,12 +4,11 @@ import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { IAccount, ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
+import { ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
 import { ConfigService } from '@nestjs/config'
-import { IWalletType } from './portfolio.types'
 
 @Injectable()
 export class PortfolioService {
@@ -143,33 +142,6 @@ export class PortfolioService {
   getAccount(accountId: number): Observable<AxiosResponse> {
     return this.httpService
       .get<AxiosResponse>(`${this.rickApiUrl}/account/${accountId}`)
-      .pipe(
-        catchError((error: AxiosError) => {
-          throw 'An error happened!' + error.message
-        }),
-      )
-  }
-
-  createAccount(data: IAccount): Observable<AxiosResponse> {
-    return this.httpService
-      .post<AxiosResponse>(`${this.rickApiUrl}/account`, { ...data })
-      .pipe(
-        catchError((error: AxiosError) => {
-          throw 'An error happened!' + error.message
-        }),
-      )
-  }
-
-  addWallet(
-    address: string,
-    accountId: number,
-    type: IWalletType,
-  ): Observable<AxiosResponse> {
-    return this.httpService
-      .post<AxiosResponse>(`${this.rickApiUrl}/wallet/${address}`, {
-        account_id: accountId,
-        type,
-      })
       .pipe(
         catchError((error: AxiosError) => {
           throw 'An error happened!' + error.message
