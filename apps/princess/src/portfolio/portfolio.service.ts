@@ -26,6 +26,8 @@ export class PortfolioService {
   }
 
   async getWalletHistory(data: IRickGetPortfolioHistory) {
+    if (!data.periods) data.periods = ['All']
+
     const res = await Promise.all(
       data.periods.map((period) =>
         firstValueFrom(
@@ -35,7 +37,6 @@ export class PortfolioService {
         ),
       ),
     )
-    if (!data.periods) console.log(data)
     return data.periods.map((period, index) => {
       const history = res[index].data[0].history
       let max = BigNumber.from(history[0].balance),
