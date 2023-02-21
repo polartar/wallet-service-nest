@@ -9,6 +9,7 @@ import { AccountModule } from '../account/account.module'
 import { RecordEntity } from './record.entity'
 import { Environment } from '../environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
+import { HttpModule } from '@nestjs/axios'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ConfigModule } from '@nestjs/config'
     ]),
     forwardRef(() => PortfolioModule),
     AccountModule,
+    HttpModule,
   ],
   controllers: [WalletController],
   providers: [WalletService],

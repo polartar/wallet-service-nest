@@ -41,7 +41,7 @@ export class WalletController {
   async createPortfolio(
     @Param('address') address: string,
     @Body('account_id') account_id: number,
-    @Body('account_id') type: IWalletType,
+    @Body('type') type: IWalletType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,
