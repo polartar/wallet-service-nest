@@ -16,8 +16,8 @@ export class AccountService {
   ) {}
 
   async create(createAccount: CreateAccountDto): Promise<AccountEntity> {
-    const existingAcount = await this.lookup({ email: createAccount.email })
-    if (existingAcount) {
+    const existingAccount = await this.lookup({ email: createAccount.email })
+    if (existingAccount) {
       throw new Error('Email already exists')
     }
     return this.accountRepository.save(createAccount)

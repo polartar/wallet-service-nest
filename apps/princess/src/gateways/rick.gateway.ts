@@ -35,7 +35,6 @@ export class RickGateway
 
   handleDisconnect(client: Socket) {
     Logger.log(`Client disconnected: ${client.id}`)
-    // this.clients = this.clients.filter((c) => c.sock.id !== client.id)
     this.portfolioService.removeClient(client.id)
   }
 
