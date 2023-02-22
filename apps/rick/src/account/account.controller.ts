@@ -20,7 +20,7 @@ export class AccountController {
   async createAccount(@Body() data: CreateAccountDto) {
     try {
       return await this.accountService.create(data)
-    } catch (err: any) {
+    } catch (err) {
       throw new BadRequestException(err.message)
     }
   }
