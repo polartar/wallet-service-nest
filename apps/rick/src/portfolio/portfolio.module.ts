@@ -38,6 +38,6 @@ import { HttpModule } from '@nestjs/axios'
 })
 export class PortfolioModule {
   constructor(private readonly portfolioService: PortfolioService) {
-    portfolioService.runService()
+    this.portfolioService.runService()
   }
 }

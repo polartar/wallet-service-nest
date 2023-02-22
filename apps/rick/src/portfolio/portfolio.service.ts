@@ -1,5 +1,5 @@
 import { IWalletType } from './../wallet/wallet.types'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
@@ -7,7 +7,6 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import { WalletEntity } from '../wallet/wallet.entity'
-import { catchError } from 'rxjs'
 
 @Injectable()
 export class PortfolioService {
@@ -132,7 +131,12 @@ export class PortfolioService {
 
   runService() {
     this.provider.on('block', async (blockNumber) => {
-      const block = await this.provider.getBlock(blockNumber)
+      let block
+      try {
+        block = await this.provider.getBlock(blockNumber)
+      } catch (err) {
+        Logger.error(err.message)
+      }
       if (block && block.transactions) {
         const promises = block.transactions.map((txHash) =>
           this.provider.getTransaction(txHash),
