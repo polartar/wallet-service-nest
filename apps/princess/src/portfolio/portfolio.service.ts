@@ -14,14 +14,14 @@ import { ConfigService } from '@nestjs/config'
 export class PortfolioService {
   clients: ISockets
   PORTFOLIO_UPDATE_CHANNEL = 'portfolio_update'
-  rickApiUrl
+  rickApiUrl: string
 
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
     this.clients = {}
-    this.rickApiUrl = this.configService.get<string>(EEnvironment.rickApiUrl)
+    this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
   async getWalletHistory(data: IRickGetPortfolioHistory) {
