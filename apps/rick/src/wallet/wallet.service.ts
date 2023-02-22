@@ -2,7 +2,7 @@ import { UpdateWalletsActiveDto } from './dto/update-wallets-active.dto'
 import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { MoreThanOrEqual, Repository } from 'typeorm'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RecordEntity } from './record.entity'
@@ -112,13 +112,24 @@ export class WalletService {
     const wallet = await this.walletRepository.save(prototype)
 
     let allHistories
-    if (data.type === IWalletType.ETHEREUM) {
-      allHistories = await this.getETHTransactionHistories(data.address, wallet)
-    } else {
-      allHistories = await this.getBTCTransactionHistories(data.address, wallet)
+    try {
+      if (data.type === IWalletType.ETHEREUM) {
+        allHistories = await this.getETHTransactionHistories(
+          data.address,
+          wallet,
+        )
+      } else {
+        allHistories = await this.getBTCTransactionHistories(
+          data.address,
+          wallet,
+        )
+      }
+      wallet.history = allHistories
+    } catch (err) {
+      Logger.log(err.message)
+      throw new Error('Invalid API key or API limit error')
     }
 
-    wallet.history = allHistories
     return this.walletRepository.save(wallet)
   }
 

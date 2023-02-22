@@ -1,5 +1,5 @@
 import { IWalletType } from './../wallet/wallet.types'
-import { Injectable } from '@nestjs/common'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
@@ -7,6 +7,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import { WalletEntity } from '../wallet/wallet.entity'
+import { catchError } from 'rxjs'
 
 @Injectable()
 export class PortfolioService {
@@ -59,15 +60,28 @@ export class PortfolioService {
   async getEthBalances(
     wallets: WalletEntity[],
   ): Promise<{ wallets: WalletEntity[]; balances: string[] }> {
+    if (wallets.length === 0) {
+      return {
+        wallets: [],
+        balances: [],
+      }
+    }
     const calls = wallets.map((wallet) => {
       return this.ethcallProvider.getEthBalance(wallet.address)
     })
+    try {
+      const balances = await this.ethcallProvider.all(calls)
 
-    const balances = await this.ethcallProvider.all(calls)
-
-    return {
-      wallets,
-      balances,
+      return {
+        wallets,
+        balances,
+      }
+    } catch (err) {
+      Logger.log(err.message)
+      return {
+        wallets: [],
+        balances: [],
+      }
     }
   }
 
@@ -78,37 +92,41 @@ export class PortfolioService {
    */
   async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
     const updatedWallets = []
-    this.activeEthWallets = await Promise.all(
-      this.activeEthWallets.map(async (wallet) => {
-        const balanceIndex = wallets.findIndex(
-          (newWallet) => newWallet.id === wallet.id,
-        )
-        const newBalance = balances[balanceIndex].toString()
-        const history = wallet.history || []
-        // check if the balance is changed
-        if (
-          balanceIndex !== -1 &&
-          (history.length === 0 ||
-            history[history.length - 1].balance !== newBalance)
-        ) {
-          const record = await this.walletService.addRecord({
-            wallet: wallet,
-            balance: newBalance,
-            timestamp: this.walletService.getCurrentTimeBySeconds(),
-          })
-          history.push(record)
-          updatedWallets.push(record)
-        }
-        wallet.history = history
-        return wallet
-      }),
-    )
-    if (updatedWallets.length > 0) {
-      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-        updatedWallets,
-      })
+    try {
+      this.activeEthWallets = await Promise.all(
+        this.activeEthWallets.map(async (wallet) => {
+          const balanceIndex = wallets.findIndex(
+            (newWallet) => newWallet.id === wallet.id,
+          )
+          const newBalance = balances[balanceIndex].toString()
+          const history = wallet.history || []
+          // check if the balance is changed
+          if (
+            balanceIndex !== -1 &&
+            (history.length === 0 ||
+              history[history.length - 1].balance !== newBalance)
+          ) {
+            const record = await this.walletService.addRecord({
+              wallet: wallet,
+              balance: newBalance,
+              timestamp: this.walletService.getCurrentTimeBySeconds(),
+            })
+            history.push(record)
+            updatedWallets.push(record)
+          }
+          wallet.history = history
+          return wallet
+        }),
+      )
+      if (updatedWallets.length > 0) {
+        this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+          updatedWallets,
+        })
 
-      return this.walletService.updateWallets(this.activeEthWallets)
+        return this.walletService.updateWallets(this.activeEthWallets)
+      }
+    } catch (err) {
+      Logger.error(err.message)
     }
   }
 
