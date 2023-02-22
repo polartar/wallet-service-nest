@@ -6,6 +6,7 @@ export const Environment = () => {
     infura_api_key: process.env.INFURA_API_KEY,
     etherscan_api_key: process.env.ETHERSCAN_API_KEY,
     production: false,
+    princess_api_url: process.env.PRINCESS_API_URL || 'http://localhost3000',
   }
   return env
 }

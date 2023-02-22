@@ -5,7 +5,6 @@ import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
-import { AccountService } from '../account/account.service'
 import { HttpService } from '@nestjs/axios'
 import { WalletEntity } from '../wallet/wallet.entity'
 
@@ -15,17 +14,20 @@ export class PortfolioService {
   activeBtcWallets: WalletEntity[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
+  princessAPIUrl: string
 
   constructor(
     private configService: ConfigService,
     private readonly walletService: WalletService,
-    private readonly accountService: AccountService,
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     const isProd = this.configService.get<boolean>(EEnvironment.production)
+    this.princessAPIUrl = this.configService.get<string>(
+      EEnvironment.princessAPIUrl,
+    )
     this.provider = new Ethers.providers.InfuraProvider(
       isProd ? 'mainnet' : 'goerli',
       infura_key,
@@ -102,7 +104,7 @@ export class PortfolioService {
       }),
     )
     if (updatedWallets.length > 0) {
-      this.httpService.post(`http://localhost:3000/portfolio/updated`, {
+      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
         updatedWallets,
       })
 
