@@ -26,7 +26,6 @@ export class PortfolioService {
     this.initializeWallets()
     this.btcSocket = new BlockchainSocket()
     this.btcSocket.onTransaction((transaction) => {
-      // console.log({ transaction })
       this.onBTCTransaction(transaction)
     })
 
@@ -45,8 +44,6 @@ export class PortfolioService {
   }
 
   async onBTCTransaction(transaction) {
-    console.log('input', transaction.inputs)
-    console.log('output', transaction)
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
@@ -64,15 +61,15 @@ export class PortfolioService {
               (input) => input.prev_out.addr === wallet.address,
             )
             const senderInfo = transaction.inputs[index]
+
             transaction.inputs.splice(index, 1)
 
             const currBalance = history.length
               ? Number(history[history.length - 1].balance)
               : 0
-
             const record = await this.walletService.addRecord({
               wallet: wallet,
-              balance: (currBalance - senderInfo.value).toString(),
+              balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
