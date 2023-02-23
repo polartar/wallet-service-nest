@@ -58,7 +58,7 @@ export class WalletService {
           : currentBalance + record.value
         return this.addRecord({
           wallet: wallet,
-          balance: parseUnits(prevBalance.toString(), 8).toString(),
+          balance: prevBalance.toString(),
           timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
         })
       }),
