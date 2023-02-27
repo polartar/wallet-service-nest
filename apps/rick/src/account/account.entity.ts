@@ -19,6 +19,5 @@ export class AccountEntity {
   name: string
 
   @ManyToMany(() => WalletEntity, (wallet) => wallet.accounts)
-  @JoinColumn()
   wallets: WalletEntity[]
 }

@@ -89,27 +89,29 @@ export class WalletService {
       provider.getBalance(address.address),
     ])
 
-    let currentBalance = balance
+    // let currentBalance = balance
     const allHistories = await Promise.all(
       history.reverse().map((record) => {
-        const prevBalance = currentBalance
+        // const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
         let amount = BigNumber.from(0)
         const walletAddress = address.address.toLowerCase()
         if (
-          record.from === walletAddress ||
-          (record.to === walletAddress && record.from !== record.to)
+          record.from.toLowerCase() === walletAddress ||
+          record.to.toLowerCase() === walletAddress
         ) {
-          amount = record.value
+          if (record.from !== record.to) {
+            amount = record.value
+          }
           if (record.from === walletAddress) {
             amount = amount.add(fee)
           }
         }
-        currentBalance = currentBalance.add(fee)
-        currentBalance =
-          record.from === address.address
-            ? currentBalance.add(record.value)
-            : currentBalance.sub(record.value)
+        // currentBalance = currentBalance.add(fee)
+        // currentBalance =
+        //   record.from === address.address
+        //     ? currentBalance.add(record.value)
+        //     : currentBalance.sub(record.value)
 
         return this.addHistory({
           address,
@@ -117,7 +119,7 @@ export class WalletService {
           to: record.to,
           hash: record.hash,
           amount: amount.toString(),
-          balance: prevBalance.toString(),
+          balance: balance.toString(),
           timestamp: record.timestamp,
         })
       }),
@@ -126,11 +128,15 @@ export class WalletService {
   }
 
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
-    return await this.walletRepository.findOne({ where: { xPub } })
+    return await this.walletRepository.findOne({
+      where: { xPub },
+      relations: { accounts: true },
+    })
   }
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(data.xPub)
+    console.log({ wallet })
     if (wallet) {
       if (
         wallet.coinType === data.coinType &&
@@ -146,6 +152,7 @@ export class WalletService {
     } else {
       const prototype = new WalletEntity()
       prototype.xPub = data.xPub
+      prototype.accounts = [data.account]
       prototype.coinType = data.coinType
       prototype.type = data.walletType
       prototype.address = data.xPub

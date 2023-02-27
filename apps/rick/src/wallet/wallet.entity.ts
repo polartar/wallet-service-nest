@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm'
 import { ICoinType, IWalletType } from './wallet.types'
 import { AddressEntity } from './address.entity'
@@ -29,7 +31,7 @@ export class WalletEntity {
   address: string
 
   @ManyToMany(() => AccountEntity, (account) => account.wallets)
-  @JoinColumn()
+  @JoinTable()
   accounts: AccountEntity[]
 
   @OneToMany(() => AddressEntity, (address) => address.wallet)
@@ -38,6 +40,7 @@ export class WalletEntity {
 
   @Column('boolean', { default: true })
   isActive = true
+
   @Column()
   path: string
 
