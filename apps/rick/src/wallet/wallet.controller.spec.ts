@@ -81,7 +81,7 @@ describe('WalletController', () => {
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
       IWalletType.METAMASK,
-      ICoinType.ETHEREUM,
+      // ICoinType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
@@ -117,7 +117,7 @@ describe('WalletController', () => {
       '1P9qzdZ9g2nEgnDrzy5ny7eeUBc1TJMqSd',
       1,
       IWalletType.METAMASK,
-      ICoinType.ETHEREUM,
+      // ICoinType.ETHEREUM,
     )
 
     const btcWallets = await portfolioService.getBtcWallets()

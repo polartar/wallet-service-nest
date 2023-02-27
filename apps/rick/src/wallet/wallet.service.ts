@@ -1,7 +1,7 @@
 import { UpdateWalletsActiveDto } from './dto/update-wallets-active.dto'
 import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
-import { MoreThanOrEqual, Repository, SelectQueryBuilder } from 'typeorm'
+import { MoreThanOrEqual, Repository } from 'typeorm'
 import { Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import { firstValueFrom } from 'rxjs'
-import { parseUnits } from 'ethers/lib/utils'
 import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddressEntity } from './address.entity'
@@ -62,9 +61,9 @@ export class WalletService {
         // need to get from and to addresses
         return this.addHistory({
           address: address,
-          from: '',
-          to: '',
-          amount: '',
+          from: record.spent ? address.address : '',
+          to: record.spent ? '' : address.address,
+          amount: record.value.toString(),
           hash: record.tx_hash,
           balance: prevBalance.toString(),
           timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
@@ -136,16 +135,16 @@ export class WalletService {
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(data.xPub)
-    console.log({ wallet })
     if (wallet) {
-      if (
-        wallet.coinType === data.coinType &&
-        wallet.type === data.walletType
-      ) {
-        if (!wallet.accounts.includes(data.account)) {
+      if (wallet.type === data.walletType) {
+        if (
+          !wallet.accounts
+            .map((account) => account.id)
+            .includes(data.account.id)
+        ) {
           wallet.accounts.push(data.account)
         }
-        return wallet
+        return this.walletRepository.save(wallet)
       } else {
         throw new Error('The parameters are not matched with existing one')
       }
@@ -153,15 +152,18 @@ export class WalletService {
       const prototype = new WalletEntity()
       prototype.xPub = data.xPub
       prototype.accounts = [data.account]
-      prototype.coinType = data.coinType
       prototype.type = data.walletType
       prototype.address = data.xPub
       prototype.addresses = []
       prototype.path = 'path' // need to get the path from xpub
-
+      if (data.walletType === IWalletType.METAMASK) {
+        prototype.coinType = ICoinType.ETHEREUM
+      } else if (data.walletType === IWalletType.VAULT) {
+        prototype.coinType = ICoinType.BITCOIN
+      }
       const wallet = await this.walletRepository.save(prototype)
 
-      if (data.walletType === IWalletType.METAMASK) {
+      if (data.walletType !== IWalletType.HOTWALLET) {
         this.addNewAddress({ wallet, address: data.xPub, path: 'path' })
       } else {
         this.addAddressesFromXPub(wallet, data.xPub)

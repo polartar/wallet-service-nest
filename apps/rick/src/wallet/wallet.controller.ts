@@ -42,7 +42,6 @@ export class WalletController {
     @Param('xPub') xPub: string,
     @Body('account_id') account_id: number,
     @Body('wallet_type') walletType: IWalletType,
-    @Body('coin_type') coinType: ICoinType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,
@@ -55,7 +54,6 @@ export class WalletController {
         account,
         xPub,
         walletType,
-        coinType,
       })
       await this.portfolioService.initializeWallets()
       return res

@@ -1,5 +1,5 @@
 import { AddressEntity } from './../wallet/address.entity'
-import { ICoinType, IWalletType } from './../wallet/wallet.types'
+import { ICoinType } from './../wallet/wallet.types'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
@@ -8,7 +8,6 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
-import { WalletEntity } from '../wallet/wallet.entity'
 import BlockchainSocket = require('blockchain.info/Socket')
 
 @Injectable()
@@ -28,7 +27,6 @@ export class PortfolioService {
     this.initializeWallets()
     this.btcSocket = new BlockchainSocket()
     this.btcSocket.onTransaction((transaction) => {
-      // console.log({ transaction })
       this.onBTCTransaction(transaction)
     })
 
@@ -238,61 +236,63 @@ export class PortfolioService {
           this.provider.getTransaction(txHash),
         )
 
-        const updatedAddresses = []
         const currentAddresses: string[] = this.activeEthAddresses.map(
           (address) => address.address.toLowerCase(),
         )
         Promise.allSettled(promises).then(async (results) => {
-          results.map(async (tx) => {
-            if (
-              tx.status === 'fulfilled' &&
-              tx.value.value.toString() !== '0'
-            ) {
-              let amount = BigNumber.from(0)
+          const updatedAddresses = []
+          await Promise.all(
+            results.map(async (tx) => {
               if (
-                tx.value.from &&
-                currentAddresses.includes(tx.value.from.toLowerCase())
+                tx.status === 'fulfilled' &&
+                tx.value.value.toString() !== '0'
               ) {
-                const fee = BigNumber.from(tx.value.gasPrice).mul(
-                  BigNumber.from(tx.value.gasLimit),
-                )
-                amount = BigNumber.from(tx.value.value).add(fee)
-              }
-              if (
-                tx.value.to &&
-                currentAddresses.includes(tx.value.to.toLowerCase())
-              ) {
-                if (amount.isZero()) {
-                  amount = BigNumber.from(tx.value.value)
-                } else {
-                  amount = amount.sub(BigNumber.from(tx.value.value))
+                let amount = BigNumber.from(0)
+                if (
+                  tx.value.from &&
+                  currentAddresses.includes(tx.value.from.toLowerCase())
+                ) {
+                  const fee = BigNumber.from(tx.value.gasPrice).mul(
+                    BigNumber.from(tx.value.gasLimit),
+                  )
+                  amount = BigNumber.from(tx.value.value).add(fee)
+                }
+                if (
+                  tx.value.to &&
+                  currentAddresses.includes(tx.value.to.toLowerCase())
+                ) {
+                  if (amount.isZero()) {
+                    amount = BigNumber.from(tx.value.value)
+                  } else {
+                    amount = amount.sub(BigNumber.from(tx.value.value))
+                  }
+                }
+                if (!amount.isZero()) {
+                  const updatedAddress = this.activeEthAddresses.find(
+                    (address) => address.address === tx.value.from,
+                  )
+                  const history = updatedAddress.history
+                  const record = await this.walletService.addHistory({
+                    address: updatedAddress,
+                    from: tx.value.from,
+                    to: tx.value.to,
+                    amount: amount.toString(),
+                    hash: tx.value.hash,
+                    balance: '',
+                    timestamp: this.walletService.getCurrentTimeBySeconds(),
+                  })
+                  history.push(record)
+                  updatedAddress.history = history
+                  updatedAddresses.push(updatedAddress)
                 }
               }
-              if (!amount.isZero()) {
-                const updatedAddress = this.activeEthAddresses.find(
-                  (address) => address.address === tx.value.from,
-                )
-                const history = updatedAddress.history
-                const record = await this.walletService.addHistory({
-                  address: updatedAddress,
-                  from: tx.value.from,
-                  to: tx.value.to,
-                  amount: amount.toString(),
-                  hash: tx.value.hash,
-                  balance: '',
-                  timestamp: this.walletService.getCurrentTimeBySeconds(),
-                })
-                history.push(record)
-                updatedAddress.history = history
-                updatedAddresses.push(updatedAddress)
-              }
-            }
-          })
+            }),
+          )
+
           if (updatedAddresses.length > 0) {
             this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
               updatedAddresses,
             })
-            console.log({ updatedAddresses })
 
             return this.walletService.updateWallets(updatedAddresses)
           }
