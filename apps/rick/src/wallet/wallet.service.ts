@@ -88,29 +88,26 @@ export class WalletService {
       provider.getBalance(address.address),
     ])
 
-    // let currentBalance = balance
+    let currentBalance = balance
     const allHistories = await Promise.all(
       history.reverse().map((record) => {
-        // const prevBalance = currentBalance
+        const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
         let amount = BigNumber.from(0)
         const walletAddress = address.address.toLowerCase()
-        if (
-          record.from.toLowerCase() === walletAddress ||
-          record.to.toLowerCase() === walletAddress
-        ) {
-          if (record.from !== record.to) {
-            amount = record.value
-          }
-          if (record.from === walletAddress) {
-            amount = amount.add(fee)
-          }
+
+        if (record.from !== record.to) {
+          amount = record.value
         }
-        // currentBalance = currentBalance.add(fee)
-        // currentBalance =
-        //   record.from === address.address
-        //     ? currentBalance.add(record.value)
-        //     : currentBalance.sub(record.value)
+        if (record.from === walletAddress) {
+          amount = amount.add(fee)
+          currentBalance = currentBalance.add(fee)
+        }
+
+        currentBalance =
+          record.from.toLowerCase() === walletAddress
+            ? currentBalance.add(record.value)
+            : currentBalance.sub(record.value)
 
         return this.addHistory({
           address,
@@ -118,7 +115,7 @@ export class WalletService {
           to: record.to,
           hash: record.hash,
           amount: amount.toString(),
-          balance: balance.toString(),
+          balance: prevBalance.toString(),
           timestamp: record.timestamp,
         })
       }),
