@@ -125,12 +125,12 @@ export class WalletService {
     return allHistories
   }
 
-  async lookUp(xPub: string): Promise<WalletEntity> {
+  async lookUpByXPub(xPub: string): Promise<WalletEntity> {
     return await this.walletRepository.findOne({ where: { xPub } })
   }
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
-    const wallet = await this.lookUp(data.xPub)
+    const wallet = await this.lookUpByXPub(data.xPub)
     if (wallet) {
       if (
         wallet.coinType === data.coinType &&
@@ -148,6 +148,8 @@ export class WalletService {
       prototype.xPub = data.xPub
       prototype.coinType = data.coinType
       prototype.type = data.walletType
+      prototype.address = data.xPub
+      prototype.addresses = []
       prototype.path = 'path' // need to get the path from xpub
 
       const wallet = await this.walletRepository.save(prototype)
