@@ -8,7 +8,7 @@ import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { Environment } from '../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
-import { RecordEntity } from '../wallet/record.entity'
+import { RecordEntity } from '../wallet/history.entity'
 
 describe('PortfolioService', () => {
   let service: PortfolioService

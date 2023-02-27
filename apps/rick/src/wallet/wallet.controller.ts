@@ -37,9 +37,9 @@ export class WalletController {
     }
   }
 
-  @Post(':address')
+  @Post(':xPub')
   async createPortfolio(
-    @Param('address') address: string,
+    @Param('xPub') address: string,
     @Body('account_id') account_id: number,
     @Body('type') type: IWalletType,
   ) {

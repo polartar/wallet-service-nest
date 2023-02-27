@@ -5,19 +5,31 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { WalletEntity } from '../wallet/wallet.entity'
+import { AddressEntity } from './address.entity'
 
 @Entity()
-export class RecordEntity {
+export class HistoryEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.history)
+  @ManyToOne(() => AddressEntity, (address) => address.history)
   @JoinColumn()
-  wallet: WalletEntity
+  address: AddressEntity
 
   @Column()
   balance: string
+
+  @Column()
+  from: string
+
+  @Column()
+  to: string
+
+  @Column()
+  hash: string
+
+  @Column()
+  amount: string
 
   @Column('bigint')
   timestamp: number

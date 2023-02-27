@@ -3,22 +3,23 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { IWalletType } from './wallet.types'
+import { ICoinType, IWalletType } from './wallet.types'
+import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
-import { RecordEntity } from './record.entity'
 
 @Entity()
 export class WalletEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @OneToMany(() => RecordEntity, (record) => record.wallet)
-  @JoinColumn()
-  history: RecordEntity[]
+  @Column('text')
+  coinType: ICoinType
+  @Column('text')
+  xPub: string
 
   @Column('text')
   type: IWalletType
@@ -26,12 +27,19 @@ export class WalletEntity {
   @Column()
   address: string
 
-  @CreateDateColumn()
-  createdAt: Date
+  @ManyToMany(() => AccountEntity, (account) => account.wallets)
+  @JoinColumn()
+  accounts: AccountEntity[]
 
-  @ManyToOne(() => AccountEntity, (account) => account.wallets)
-  account: AccountEntity
+  @OneToMany(() => AddressEntity, (address) => address.wallet)
+  @JoinColumn()
+  addresses: AddressEntity[]
 
   @Column('boolean', { default: true })
   isActive = true
+  @Column()
+  path: string
+
+  @CreateDateColumn()
+  createdAt: Date
 }

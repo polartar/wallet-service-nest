@@ -5,7 +5,6 @@ import { MoreThanOrEqual, Repository } from 'typeorm'
 import { Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { RecordEntity } from './record.entity'
 import { AddRecordDto } from './dto/add-record.dto'
 import { IWalletType, SecondsIn } from './wallet.types'
 import { ethers } from 'ethers'
@@ -14,6 +13,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import { firstValueFrom } from 'rxjs'
 import { parseUnits } from 'ethers/lib/utils'
+import { HistoryEntity } from './history.entity'
 
 @Injectable()
 export class WalletService {
@@ -22,8 +22,8 @@ export class WalletService {
     private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
-    @InjectRepository(RecordEntity)
-    private readonly recordRepository: Repository<RecordEntity>,
+    @InjectRepository(HistoryEntity)
+    private readonly historyRepository: Repository<HistoryEntity>,
   ) {}
 
   getCurrentTimeBySeconds() {
@@ -33,8 +33,8 @@ export class WalletService {
   async getAllWallets(): Promise<WalletEntity[]> {
     return await this.walletRepository.find({
       relations: {
-        account: true,
-        history: true,
+        accounts: true,
+        addresses: true,
       },
     })
   }
@@ -42,7 +42,7 @@ export class WalletService {
   async getBTCTransactionHistories(
     address: string,
     wallet: WalletEntity,
-  ): Promise<RecordEntity[]> {
+  ): Promise<HistoryEntity[]> {
     const txResponse = await firstValueFrom(
       this.httpService.get(
         `https://api.blockcypher.com/v1/btc/main/addrs/${address}`,
@@ -69,7 +69,7 @@ export class WalletService {
   async getETHTransactionHistories(
     address: string,
     wallet: WalletEntity,
-  ): Promise<RecordEntity[]> {
+  ): Promise<HistoryEntity[]> {
     const provider = new ethers.providers.EtherscanProvider(
       'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
@@ -105,7 +105,6 @@ export class WalletService {
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const prototype = new WalletEntity()
-    prototype.account = data.account
     prototype.address = data.address
     prototype.history = []
     prototype.type = data.type
@@ -156,12 +155,12 @@ export class WalletService {
   }
 
   addRecord(data: AddRecordDto) {
-    const record = new RecordEntity()
+    const record = new HistoryEntity()
     record.wallet = data.wallet
     record.timestamp = data.timestamp
     record.balance = data.balance
 
-    return this.recordRepository.save(record)
+    return this.historyRepository.save(record)
   }
 
   async getUserWalletHistory(data: GetWalletHistoryDto) {
