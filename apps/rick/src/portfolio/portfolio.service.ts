@@ -2,6 +2,7 @@ import { AddressEntity } from './../wallet/address.entity'
 import { ICoinType, IWalletType } from './../wallet/wallet.types'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
+import { BigNumber } from 'ethers'
 import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -238,26 +239,63 @@ export class PortfolioService {
         )
 
         const updatedAddresses = []
+        const currentAddresses: string[] = this.activeEthAddresses.map(
+          (address) => address.address.toLowerCase(),
+        )
         Promise.allSettled(promises).then(async (results) => {
-          results.map((tx) => {
+          results.map(async (tx) => {
             if (
               tx.status === 'fulfilled' &&
               tx.value.value.toString() !== '0'
             ) {
+              let amount = BigNumber.from(0)
               if (
                 tx.value.from &&
-                !updatedAddresses.includes(tx.value.from.toLowerCase())
+                currentAddresses.includes(tx.value.from.toLowerCase())
               ) {
-                updatedAddresses.push(tx.value.from)
+                const fee = BigNumber.from(tx.value.gasPrice).mul(
+                  BigNumber.from(tx.value.gasLimit),
+                )
+                amount = BigNumber.from(tx.value.value).add(fee)
               }
               if (
                 tx.value.to &&
-                !updatedAddresses.includes(tx.value.to.toLowerCase())
+                currentAddresses.includes(tx.value.to.toLowerCase())
               ) {
-                updatedAddresses.push(tx.value.to)
+                if (amount.isZero()) {
+                  amount = BigNumber.from(tx.value.value)
+                } else {
+                  amount = amount.sub(BigNumber.from(tx.value.value))
+                }
+              }
+              if (!amount.isZero()) {
+                const updatedAddress = this.activeEthAddresses.find(
+                  (address) => address.address === tx.value.from,
+                )
+                const history = updatedAddress.history
+                const record = await this.walletService.addHistory({
+                  address: updatedAddress,
+                  from: tx.value.from,
+                  to: tx.value.to,
+                  amount: amount.toString(),
+                  hash: tx.value.hash,
+                  balance: '',
+                  timestamp: this.walletService.getCurrentTimeBySeconds(),
+                })
+                history.push(record)
+                updatedAddress.history = history
+                updatedAddresses.push(updatedAddress)
               }
             }
           })
+          if (updatedAddresses.length > 0) {
+            this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+              updatedAddresses,
+            })
+            console.log({ updatedAddresses })
+
+            return this.walletService.updateWallets(updatedAddresses)
+          }
           // need to update this logic
           // const { wallets, balances } = await this.getEthBalances(
           //   this.activeEthAddresses.filter((wallet) =>
