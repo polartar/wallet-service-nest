@@ -1,7 +1,7 @@
 import { WalletEntity } from '../wallet.entity'
 
-export class AddRecordDto {
+export class AddAddressDto {
   wallet: WalletEntity
-  balance: string
-  timestamp: number
+  address: string
+  path: string
 }

@@ -13,7 +13,7 @@ import {
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { IWalletType } from './wallet.types'
+import { ICoinType, IWalletType } from './wallet.types'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 
 @Controller('wallet')
@@ -39,9 +39,10 @@ export class WalletController {
 
   @Post(':xPub')
   async createPortfolio(
-    @Param('xPub') address: string,
+    @Param('xPub') xPub: string,
     @Body('account_id') account_id: number,
-    @Body('type') type: IWalletType,
+    @Body('wallet_type') walletType: IWalletType,
+    @Body('coin_type') coinType: ICoinType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,
@@ -52,8 +53,9 @@ export class WalletController {
     try {
       const res = await this.walletService.addNewWallet({
         account,
-        address: address,
-        type: type,
+        xPub,
+        walletType,
+        coinType,
       })
       await this.portfolioService.initializeWallets()
       return res

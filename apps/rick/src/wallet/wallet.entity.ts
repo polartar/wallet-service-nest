@@ -18,6 +18,7 @@ export class WalletEntity {
 
   @Column('text')
   coinType: ICoinType
+
   @Column('text')
   xPub: string
 

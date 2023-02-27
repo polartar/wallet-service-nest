@@ -11,12 +11,13 @@ import { AccountService } from '../account/account.service'
 import { HttpModule, HttpService } from '@nestjs/axios'
 import { WalletController } from './wallet.controller'
 import { WalletService } from './wallet.service'
-import { RecordEntity } from './history.entity'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { ethers } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
-import { IWalletType, SecondsIn } from './wallet.types'
+import { ICoinType, IWalletType, SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
+import { HistoryEntity } from './history.entity'
+import { AddressEntity } from './address.entity'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -38,13 +39,15 @@ describe('WalletController', () => {
           entities: [
             WalletEntity, //
             AccountEntity,
-            RecordEntity,
+            AddressEntity,
+            HistoryEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           WalletEntity, //
           AccountEntity,
-          RecordEntity,
+          AddressEntity,
+          HistoryEntity,
         ]),
         WalletModule,
         AccountModule,
@@ -77,7 +80,8 @@ describe('WalletController', () => {
     await controller.createPortfolio(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
-      IWalletType.ETHEREUM,
+      IWalletType.METAMASK,
+      ICoinType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
@@ -103,14 +107,17 @@ describe('WalletController', () => {
     )
     const walletsHistory = await controller.getHistory(1, '1M')
 
-    expect(walletsHistory[0].history.length).toBe(filteredHistory.length)
+    expect(walletsHistory[0].addresses[0].history.length).toBe(
+      filteredHistory.length,
+    )
   })
 
   it('should add new BTC wallet', async () => {
     await controller.createPortfolio(
       '1P9qzdZ9g2nEgnDrzy5ny7eeUBc1TJMqSd',
       1,
-      IWalletType.BITCOIN,
+      IWalletType.METAMASK,
+      ICoinType.ETHEREUM,
     )
 
     const btcWallets = await portfolioService.getBtcWallets()
@@ -126,7 +133,9 @@ describe('WalletController', () => {
     )
 
     const walletsHistory = await controller.getHistory(1, 'All')
-    expect(walletsHistory[1].history.length).toBe(txResponse.data.txrefs.length)
+    expect(walletsHistory[1].addresses[0].history.length).toBe(
+      txResponse.data.txrefs.length,
+    )
   })
 
   it('should inactive the wallets', async () => {

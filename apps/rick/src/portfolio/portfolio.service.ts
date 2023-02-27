@@ -1,4 +1,5 @@
-import { IWalletType } from './../wallet/wallet.types'
+import { AddressEntity } from './../wallet/address.entity'
+import { ICoinType, IWalletType } from './../wallet/wallet.types'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { Provider } from 'ethers-multicall'
@@ -11,8 +12,8 @@ import BlockchainSocket = require('blockchain.info/Socket')
 
 @Injectable()
 export class PortfolioService {
-  activeEthWallets: WalletEntity[]
-  activeBtcWallets: WalletEntity[]
+  activeEthAddresses: AddressEntity[]
+  activeBtcAddresses: AddressEntity[]
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
   princessAPIUrl: string
@@ -26,6 +27,7 @@ export class PortfolioService {
     this.initializeWallets()
     this.btcSocket = new BlockchainSocket()
     this.btcSocket.onTransaction((transaction) => {
+      // console.log({ transaction })
       this.onBTCTransaction(transaction)
     })
 
@@ -52,13 +54,13 @@ export class PortfolioService {
     const updatedWallets = []
 
     try {
-      this.activeBtcWallets = await Promise.all(
-        this.activeBtcWallets.map(async (wallet) => {
-          const history = wallet.history || []
-          if (senderAddresses.includes(wallet.address)) {
+      this.activeBtcAddresses = await Promise.all(
+        this.activeBtcAddresses.map(async (address) => {
+          const history = address.history || []
+          if (senderAddresses.includes(address.address)) {
             // handle if there are two senders with same address
             const index = transaction.inputs.findIndex(
-              (input) => input.prev_out.addr === wallet.address,
+              (input) => input.prev_out.addr === address.address,
             )
             const senderInfo = transaction.inputs[index]
 
@@ -67,20 +69,24 @@ export class PortfolioService {
             const currBalance = history.length
               ? Number(history[history.length - 1].balance)
               : 0
-            const record = await this.walletService.addRecord({
-              wallet: wallet,
+            const record = await this.walletService.addHistory({
+              address: address,
+              from: '',
+              to: '',
+              hash: '',
+              amount: '',
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
             updatedRecords.push(record)
 
-            wallet.history = history
+            address.history = history
           }
-          if (receiverAddresses.includes(wallet.address)) {
+          if (receiverAddresses.includes(address.address)) {
             // handle if sender transfer btc to same address more than twice
             const index = transaction.out.findIndex(
-              (out) => out.addr === wallet.address,
+              (out) => out.addr === address.address,
             )
             const receiverInfo = transaction.out[index]
             transaction.out.splice(index, 1)
@@ -88,24 +94,28 @@ export class PortfolioService {
               ? Number(history[history.length - 1].balance)
               : 0
 
-            const record = await this.walletService.addRecord({
-              wallet: wallet,
+            const record = await this.walletService.addHistory({
+              address,
+              from: '',
+              to: '',
+              amount: '',
+              hash: '',
               balance: (currBalance + receiverInfo.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
             updatedRecords.push(record)
 
-            wallet.history = history
+            address.history = history
           }
 
           if (
-            senderAddresses.includes(wallet.address) ||
-            receiverAddresses.includes(wallet.address)
+            senderAddresses.includes(address.address) ||
+            receiverAddresses.includes(address.address)
           ) {
-            updatedWallets.push(wallet)
+            updatedWallets.push(address)
           }
-          return wallet
+          return address
         }),
       )
 
@@ -122,97 +132,97 @@ export class PortfolioService {
   }
 
   async initializeWallets() {
-    let wallets = await this.walletService.getAllWallets()
-    wallets = wallets.filter((wallet) => wallet.isActive)
-    this.activeEthWallets = wallets.filter(
-      (wallet) => wallet.type === IWalletType.ETHEREUM,
+    let addresses = await this.walletService.getAllAddresses()
+    addresses = addresses.filter((wallet) => wallet.isActive)
+    this.activeEthAddresses = addresses.filter(
+      (address) => address.wallet.coinType === ICoinType.ETHEREUM,
     )
-    this.activeBtcWallets = wallets.filter(
-      (wallet) => wallet.type === IWalletType.BITCOIN,
+    this.activeBtcAddresses = addresses.filter(
+      (address) => address.wallet.coinType === ICoinType.BITCOIN,
     )
   }
 
-  async getEthWallets(): Promise<WalletEntity[]> {
-    return this.activeEthWallets
+  async getEthWallets(): Promise<AddressEntity[]> {
+    return this.activeEthAddresses
   }
 
-  async getBtcWallets(): Promise<WalletEntity[]> {
-    return this.activeBtcWallets
+  async getBtcWallets(): Promise<AddressEntity[]> {
+    return this.activeBtcAddresses
   }
 
-  async getEthBalances(
-    wallets: WalletEntity[],
-  ): Promise<{ wallets: WalletEntity[]; balances: string[] }> {
-    if (wallets.length === 0) {
-      return {
-        wallets: [],
-        balances: [],
-      }
-    }
-    const calls = wallets.map((wallet) => {
-      return this.ethcallProvider.getEthBalance(wallet.address)
-    })
-    try {
-      const balances = await this.ethcallProvider.all(calls)
+  // async getEthBalances(
+  //   wallets: WalletEntity[],
+  // ): Promise<{ wallets: WalletEntity[]; balances: string[] }> {
+  //   if (wallets.length === 0) {
+  //     return {
+  //       wallets: [],
+  //       balances: [],
+  //     }
+  //   }
+  //   const calls = wallets.map((wallet) => {
+  //     return this.ethcallProvider.getEthBalance(wallet.address)
+  //   })
+  //   try {
+  //     const balances = await this.ethcallProvider.all(calls)
 
-      return {
-        wallets,
-        balances,
-      }
-    } catch (err) {
-      Logger.log(err.message)
-      return {
-        wallets: [],
-        balances: [],
-      }
-    }
-  }
+  //     return {
+  //       wallets,
+  //       balances,
+  //     }
+  //   } catch (err) {
+  //     Logger.log(err.message)
+  //     return {
+  //       wallets: [],
+  //       balances: [],
+  //     }
+  //   }
+  // }
 
-  /**
-   * Only update the changed balances in wallet database
-   * @param wallets wallets
-   * @param balances balances
-   */
-  async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
-    const updatedRecords = []
-    try {
-      this.activeEthWallets = await Promise.all(
-        this.activeEthWallets.map(async (wallet) => {
-          const balanceIndex = wallets.findIndex(
-            (newWallet) => newWallet.id === wallet.id,
-          )
-          const newBalance = balances[balanceIndex].toString()
-          const history = wallet.history || []
-          // check if the balance is changed
-          if (
-            balanceIndex !== -1 &&
-            (history.length === 0 ||
-              history[history.length - 1].balance !== newBalance)
-          ) {
-            const record = await this.walletService.addRecord({
-              wallet: wallet,
-              balance: newBalance,
-              timestamp: this.walletService.getCurrentTimeBySeconds(),
-            })
-            history.push(record)
-            updatedRecords.push(record)
-          }
-          wallet.history = history
-          wallets[balanceIndex].history = history
-          return wallet
-        }),
-      )
-      if (updatedRecords.length > 0) {
-        this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-          updatedRecords,
-        })
+  // /**
+  //  * Only update the changed balances in wallet database
+  //  * @param wallets wallets
+  //  * @param balances balances
+  //  */
+  // async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
+  //   const updatedRecords = []
+  //   try {
+  //     this.activeEthAddresses = await Promise.all(
+  //       this.activeEthAddresses.map(async (wallet) => {
+  //         const balanceIndex = wallets.findIndex(
+  //           (newWallet) => newWallet.id === wallet.id,
+  //         )
+  //         const newBalance = balances[balanceIndex].toString()
+  //         const history = wallet.history || []
+  //         // check if the balance is changed
+  //         if (
+  //           balanceIndex !== -1 &&
+  //           (history.length === 0 ||
+  //             history[history.length - 1].balance !== newBalance)
+  //         ) {
+  //           const record = await this.walletService.addRecord({
+  //             wallet: wallet,
+  //             balance: newBalance,
+  //             timestamp: this.walletService.getCurrentTimeBySeconds(),
+  //           })
+  //           history.push(record)
+  //           updatedRecords.push(record)
+  //         }
+  //         wallet.history = history
+  //         wallets[balanceIndex].history = history
+  //         return wallet
+  //       }),
+  //     )
+  //     if (updatedRecords.length > 0) {
+  //       this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+  //         updatedRecords,
+  //       })
 
-        return this.walletService.updateWallets(wallets)
-      }
-    } catch (err) {
-      Logger.error(err.message)
-    }
-  }
+  //       return this.walletService.updateWallets(wallets)
+  //     }
+  //   } catch (err) {
+  //     Logger.error(err.message)
+  //   }
+  // }
 
   runService() {
     this.provider.on('block', async (blockNumber) => {
@@ -248,14 +258,15 @@ export class PortfolioService {
               }
             }
           })
-          const { wallets, balances } = await this.getEthBalances(
-            this.activeEthWallets.filter((wallet) =>
-              updatedAddresses.includes(wallet.address),
-            ),
-          )
-          if (wallets.length !== 0) {
-            this.updateWalletHistory(wallets, balances)
-          }
+          // need to update this logic
+          // const { wallets, balances } = await this.getEthBalances(
+          //   this.activeEthAddresses.filter((wallet) =>
+          //     updatedAddresses.includes(wallet.address),
+          //   ),
+          // )
+          // if (wallets.length !== 0) {
+          //   this.updateWalletHistory(wallets, balances)
+          // }
         })
       }
     })
