@@ -7,7 +7,6 @@ import {
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm'
 import { ICoinType, IWalletType } from './wallet.types'
 import { AddressEntity } from './address.entity'

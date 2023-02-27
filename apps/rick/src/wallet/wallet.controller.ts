@@ -13,7 +13,7 @@ import {
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { ICoinType, IWalletType } from './wallet.types'
+import { IWalletType } from './wallet.types'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 
 @Controller('wallet')

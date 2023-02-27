@@ -171,7 +171,7 @@ export class WalletService {
   }
 
   async addAddressesFromXPub(wallet, xPub) {
-    Logger.log('Should get all addresses')
+    Logger.log('Should get all addresses', xPub, wallet)
   }
 
   async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
