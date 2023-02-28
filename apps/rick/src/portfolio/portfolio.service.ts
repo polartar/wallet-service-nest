@@ -45,6 +45,9 @@ export class PortfolioService {
   }
 
   async onBTCTransaction(transaction) {
+    console.log(transaction)
+    console.log(transaction.inputs)
+    console.log(transaction.out)
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
@@ -58,12 +61,13 @@ export class PortfolioService {
           const history = address.history || []
           if (senderAddresses.includes(address.address)) {
             // handle if there are two senders with same address
-            const index = transaction.inputs.findIndex(
+            const inputs = transaction.inputs
+            const index = inputs.findIndex(
               (input) => input.prev_out.addr === address.address,
             )
-            const senderInfo = transaction.inputs[index]
+            const senderInfo = inputs[index]
 
-            transaction.inputs.splice(index, 1)
+            inputs.splice(index, 1)
 
             const currBalance = history.length
               ? Number(history[history.length - 1].balance)
@@ -71,9 +75,9 @@ export class PortfolioService {
             const record = await this.walletService.addHistory({
               address: address,
               from: '',
-              to: '',
-              hash: '',
-              amount: '',
+              to: senderInfo.prev_out.addr,
+              hash: transaction.hash,
+              amount: senderInfo.prev_out.value.toString(),
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
@@ -95,10 +99,10 @@ export class PortfolioService {
 
             const record = await this.walletService.addHistory({
               address,
-              from: '',
+              from: receiverInfo.addr,
               to: '',
-              amount: '',
-              hash: '',
+              amount: receiverInfo.value,
+              hash: transaction.hash,
               balance: (currBalance + receiverInfo.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
