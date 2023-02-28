@@ -50,52 +50,57 @@ export class PortfolioService {
       return []
     }
     return data.periods.map((period, index) => {
-      const walletsHistory = res[index].data.map((wallet) => {
-        const history = wallet.history
-        if (history.length === 0) {
+      const wallets = res[index].data.map((wallet) => {
+        const addresses = wallet.addresses.map((address) => {
+          const history = address.history
+          if (history.length === 0) {
+            return {
+              status: true,
+              period: period,
+              spots: history,
+              stats: {
+                max: undefined,
+                maxLocation: undefined,
+                min: undefined,
+                minLocation: undefined,
+              },
+            }
+          }
+          let max = BigNumber.from(history[0].balance),
+            maxIndex = 0,
+            min = BigNumber.from(history[0].balance),
+            minIndex = 0
+          history.forEach((spot, index) => {
+            const balance = BigNumber.from(spot.balance)
+            if (max.lt(balance)) {
+              max = balance
+              maxIndex = index
+            }
+            if (min.gt(balance)) {
+              min = balance
+              minIndex = index
+            }
+          })
           return {
-            status: true,
+            address: address.address,
             period: period,
             spots: history,
             stats: {
-              max: undefined,
-              maxLocation: undefined,
-              min: undefined,
-              minLocation: undefined,
+              max: max.toString(),
+              maxLocation: maxIndex / (history.length - 1),
+              min: min.toString(),
+              minLocation: minIndex / (history.length - 1),
             },
-          }
-        }
-        let max = BigNumber.from(history[0].balance),
-          maxIndex = 0,
-          min = BigNumber.from(history[0].balance),
-          minIndex = 0
-        history.forEach((spot, index) => {
-          const balance = BigNumber.from(spot.balance)
-          if (max.lt(balance)) {
-            max = balance
-            maxIndex = index
-          }
-          if (min.gt(balance)) {
-            min = balance
-            minIndex = index
           }
         })
         return {
-          address: wallet.address,
-          type: wallet.type,
-          period: period,
-          spots: history,
-          stats: {
-            max: max.toString(),
-            maxLocation: maxIndex / (history.length - 1),
-            min: min.toString(),
-            minLocation: minIndex / (history.length - 1),
-          },
+          ...wallet,
+          addresses: addresses,
         }
       })
       return {
         period,
-        walletsHistory,
+        wallets,
       }
     })
   }
