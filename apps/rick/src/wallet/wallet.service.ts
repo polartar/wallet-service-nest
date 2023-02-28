@@ -91,16 +91,14 @@ export class WalletService {
     let currentBalance = balance
     const allHistories = await Promise.all(
       history.reverse().map((record) => {
+        console.log({ record })
         const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
-        let amount = BigNumber.from(0)
         const walletAddress = address.address.toLowerCase()
 
-        if (record.from !== record.to) {
-          amount = record.value
-        }
-        if (record.from === walletAddress) {
-          amount = amount.add(fee)
+        //check if transferred itself
+
+        if (record.from.toLowerCase() === walletAddress) {
           currentBalance = currentBalance.add(fee)
         }
 
@@ -114,7 +112,7 @@ export class WalletService {
           from: record.from,
           to: record.to,
           hash: record.hash,
-          amount: amount.toString(),
+          amount: record.value.toString(),
           balance: prevBalance.toString(),
           timestamp: record.timestamp,
         })

@@ -255,17 +255,13 @@ export class PortfolioService {
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
                     BigNumber.from(tx.value.gasLimit),
                   )
-                  amount = BigNumber.from(tx.value.value).add(fee)
+                  amount = amount.sub(BigNumber.from(tx.value.value)).sub(fee)
                 }
                 if (
                   tx.value.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
                 ) {
-                  if (amount.isZero()) {
-                    amount = BigNumber.from(tx.value.value)
-                  } else {
-                    amount = amount.sub(BigNumber.from(tx.value.value))
-                  }
+                  amount = amount.add(BigNumber.from(tx.value.value))
                 }
                 if (!amount.isZero()) {
                   const updatedAddress = this.activeEthAddresses.find(
@@ -276,9 +272,13 @@ export class PortfolioService {
                     address: updatedAddress,
                     from: tx.value.from,
                     to: tx.value.to,
-                    amount: amount.toString(),
+                    amount: tx.value.value.toString(),
                     hash: tx.value.hash,
-                    balance: '',
+                    balance: history.length
+                      ? BigNumber.from(history[history.length - 1].balance)
+                          .add(amount)
+                          .toString()
+                      : amount.toString(),
                     timestamp: this.walletService.getCurrentTimeBySeconds(),
                   })
                   history.push(record)
