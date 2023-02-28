@@ -36,8 +36,4 @@ import { HttpModule } from '@nestjs/axios'
   ],
   exports: [PortfolioService],
 })
-export class PortfolioModule {
-  constructor(private readonly portfolioService: PortfolioService) {
-    this.portfolioService.runService()
-  }
-}
+export class PortfolioModule {}

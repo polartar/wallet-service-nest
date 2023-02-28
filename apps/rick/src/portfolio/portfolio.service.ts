@@ -37,6 +37,8 @@ export class PortfolioService {
       isProd ? 'mainnet' : 'goerli',
       infura_key,
     )
+
+    this.runService()
   }
 
   async onBTCTransaction(transaction) {
