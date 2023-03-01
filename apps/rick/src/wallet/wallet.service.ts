@@ -5,8 +5,16 @@ import { MoreThanOrEqual, Repository } from 'typeorm'
 import { Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ICoinType, IWalletType, SecondsIn } from './wallet.types'
-import { ethers } from 'ethers'
+import {
+  IAddressPath,
+  IBTCTransaction,
+  IBTCTransactionResponse,
+  ICoinType,
+  IWalletPath,
+  IWalletType,
+  SecondsIn,
+} from './wallet.types'
+import { BigNumber, ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
@@ -18,6 +26,7 @@ import { AddHistoryDto } from './dto/add-history.dto'
 
 @Injectable()
 export class WalletService {
+  provider: ethers.providers.EtherscanProvider
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
@@ -27,7 +36,12 @@ export class WalletService {
     private readonly addressRepository: Repository<AddressEntity>,
     @InjectRepository(HistoryEntity)
     private readonly historyRepository: Repository<HistoryEntity>,
-  ) {}
+  ) {
+    this.provider = new ethers.providers.EtherscanProvider(
+      'goerli',
+      this.configService.get<string>(EEnvironment.etherscanAPIKey),
+    )
+  }
 
   getCurrentTimeBySeconds() {
     return Math.floor(Date.now() / 1000)
@@ -42,23 +56,18 @@ export class WalletService {
     })
   }
 
-  async getBTCTransactionHistories(
+  async generateBTCHistories(
+    transactions: IBTCTransaction[],
     address: AddressEntity,
+    balance: number,
   ): Promise<HistoryEntity[]> {
-    const txResponse = await firstValueFrom(
-      this.httpService.get(
-        `https://api.blockcypher.com/v1/btc/main/addrs/${address.address}`,
-      ),
-    )
-
-    let currentBalance = txResponse.data.balance
+    let currentBalance = balance
     const allHistories = await Promise.all(
-      txResponse.data.txrefs.map((record) => {
+      transactions.map((record) => {
         const prevBalance = currentBalance
         currentBalance = record.spent
           ? currentBalance - record.value
           : currentBalance + record.value
-        // need to get from and to addresses
         return this.addHistory({
           address: address,
           from: record.spent ? address.address : '',
@@ -73,38 +82,28 @@ export class WalletService {
 
     return allHistories
   }
-  async getETHTransactionHistories(
+
+  async generateEthHistories(
+    transactions: ethers.providers.TransactionResponse[],
     address: AddressEntity,
   ): Promise<HistoryEntity[]> {
-    const provider = new ethers.providers.EtherscanProvider(
-      'goerli',
-      this.configService.get<string>(EEnvironment.etherscanAPIKey),
-    )
-    const [
-      history, //
-      balance,
-    ] = await Promise.all([
-      provider.getHistory(address.address),
-      provider.getBalance(address.address),
-    ])
+    const balance = await this.provider.getBalance(address.address)
 
     let currentBalance = balance
-    const allHistories = await Promise.all(
-      history.reverse().map((record) => {
+    const histories = await Promise.all(
+      transactions.reverse().map((record) => {
         const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
         const walletAddress = address.address.toLowerCase()
 
-        //check if transferred itself
-
         if (record.from.toLowerCase() === walletAddress) {
           currentBalance = currentBalance.add(fee)
+          currentBalance = currentBalance.add(record.value)
         }
-
-        currentBalance =
-          record.from.toLowerCase() === walletAddress
-            ? currentBalance.add(record.value)
-            : currentBalance.sub(record.value)
+        //consider if transferred itself
+        if (record.to.toLocaleLowerCase() === walletAddress) {
+          currentBalance = currentBalance.sub(record.value)
+        }
 
         return this.addHistory({
           address,
@@ -117,7 +116,7 @@ export class WalletService {
         })
       }),
     )
-    return allHistories
+    return histories
   }
 
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
@@ -152,13 +151,22 @@ export class WalletService {
       prototype.path = 'path' // need to get the path from xpub
       if (data.walletType === IWalletType.METAMASK) {
         prototype.coinType = ICoinType.ETHEREUM
+        prototype.path = IWalletPath.ETH
       } else if (data.walletType === IWalletType.VAULT) {
         prototype.coinType = ICoinType.BITCOIN
+        prototype.path = IWalletPath.BTC
       }
       const wallet = await this.walletRepository.save(prototype)
 
       if (data.walletType !== IWalletType.HOTWALLET) {
-        this.addNewAddress({ wallet, address: data.xPub, path: 'path' })
+        this.addNewAddress({
+          wallet,
+          address: data.xPub,
+          path:
+            prototype.path === IWalletPath.BTC
+              ? IAddressPath.BTC
+              : IAddressPath.ETH,
+        })
       } else {
         this.addAddressesFromXPub(wallet, data.xPub)
       }
@@ -182,9 +190,20 @@ export class WalletService {
     let allHistories
     try {
       if (data.wallet.coinType === ICoinType.ETHEREUM) {
-        allHistories = await this.getETHTransactionHistories(address)
+        const trxHistory = await this.provider.getHistory(address.address)
+        allHistories = await this.generateEthHistories(trxHistory, address)
       } else {
-        allHistories = await this.getBTCTransactionHistories(address)
+        const txResponse: { data: IBTCTransactionResponse } =
+          await firstValueFrom(
+            this.httpService.get(
+              `https://api.blockcypher.com/v1/btc/main/addrs/${address.address}`,
+            ),
+          )
+        allHistories = await this.generateBTCHistories(
+          txResponse.data.txrefs,
+          address,
+          txResponse.data.balance,
+        )
       }
       address.history = allHistories
     } catch (err) {
@@ -250,6 +269,51 @@ export class WalletService {
         },
       },
     })
-    // })
+  }
+
+  async confirmBTCBalance(address: AddressEntity): Promise<AddressEntity> {
+    const trxHistory = await this.provider.getHistory(address.address)
+    if (trxHistory.length > address.history.length) {
+      address.history = await this.generateEthHistories(
+        trxHistory.slice(address.history.length, trxHistory.length),
+        address,
+      )
+      return address
+    } else {
+      return null
+    }
+  }
+  async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
+    const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
+      this.httpService.get(
+        `https://api.blockcypher.com/v1/btc/main/addrs/${address.address}`,
+      ),
+    )
+    const trxHistory = txResponse.data.txrefs
+    if (trxHistory.length > address.history.length) {
+      address.history = await this.generateBTCHistories(
+        trxHistory.slice(address.history.length, trxHistory.length),
+        address,
+        txResponse.data.balance,
+      )
+      return address
+    } else {
+      return null
+    }
+  }
+
+  async confirmWalletBalances() {
+    const addresses = await this.getAllAddresses()
+    const updatedAddresses = await Promise.all(
+      addresses.map((address: AddressEntity) => {
+        if (address.path === IAddressPath.BTC) {
+          return this.confirmBTCBalance(address)
+        } else {
+          return this.confirmETHBalance(address)
+        }
+      }),
+    )
+
+    this.walletRepository.save(updatedAddresses.filter((address) => !address))
   }
 }
