@@ -13,18 +13,21 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 @Injectable()
 export class TransactionService {
   constructor(private readonly httpService: HttpService) {}
-  generate(data: ITransactionInput): Observable<AxiosResponse> {
+  async generate(data: ITransactionInput): Promise<AxiosResponse> {
     const newtx = {
       inputs: [{ addresses: [data.from] }],
       outputs: [{ addresses: [data.to], value: data.amount }],
     }
 
-    return this.httpService.post(
-      `https://api.blockcypher.com/v1/${
-        data.coinType === ICoinType.BITCOIN ? 'bcy' : 'beth'
-      }/test/txs/new`,
-      JSON.stringify(newtx),
+    const res = await firstValueFrom(
+      this.httpService.post(
+        `https://api.blockcypher.com/v1/${
+          data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
+        }/test3/txs/new`,
+        newtx,
+      ),
     )
+    return res.data
   }
   push(data: ITransactionPush): Observable<AxiosResponse> {
     const trxObj = JSON.parse(data.transaction)
