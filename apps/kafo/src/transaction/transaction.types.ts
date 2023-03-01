@@ -1,3 +1,7 @@
+export interface ITransactionResponse {
+  status: boolean
+  data?: any
+}
 export interface ITransactionInput {
   from: string
   to: string

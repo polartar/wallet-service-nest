@@ -5,6 +5,7 @@ import {
   IFeeResponse,
   ITransactionInput,
   ITransactionPush,
+  ITransactionResponse,
 } from './transaction.types'
 
 @Controller('transaction')
@@ -22,7 +23,7 @@ export class TransactionController {
   }
 
   @Get('fee/:coin')
-  async getFee(@Param('coin') coin: ICoinType): Promise<IFeeResponse> {
+  async getFee(@Param('coin') coin: ICoinType): Promise<ITransactionResponse> {
     return await this.service.getFee(coin)
   }
 }
