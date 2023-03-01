@@ -14,7 +14,7 @@ import {
   IWalletType,
   SecondsIn,
 } from './wallet.types'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
