@@ -1,38 +1,68 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
-import { ITransactionInput } from './transaction.types'
-import { Observable, catchError, firstValueFrom, map } from 'rxjs'
+import {
+  ICoinType,
+  IFeeResponse,
+  ITransactionInput,
+  ITransactionPush,
+} from './transaction.types'
+import { Observable, catchError, firstValueFrom } from 'rxjs'
 import { AxiosError, AxiosResponse } from 'axios'
 
 @Injectable()
 export class TransactionService {
   constructor(private readonly httpService: HttpService) {}
-  async generate(data: ITransactionInput) {
+  generate(data: ITransactionInput): Observable<AxiosResponse> {
     const newtx = {
       inputs: [{ addresses: [data.from] }],
       outputs: [{ addresses: [data.to], value: data.amount }],
     }
-    const aa = await firstValueFrom(
-      this.httpService.get(
-        `https://api.blockcypher.com/v1/btc/main/addrs/${data.from}`,
-      ),
-    )
-    console.log({ aa })
-    return aa
 
     return this.httpService
-      .post('https://api.blockcypher.com/v1/bcy/test/txs/new', {
-        inputs: [{ addresses: ['CEztKBAYNoUEEaPYbkyFeXC5v8Jz9RoZH9'] }],
-        outputs: [
-          { addresses: ['CEztKBAYNoUEEaPYbkyFeXC5v8Jz9RoZH9'], value: 123 },
-        ],
-      })
+      .post(
+        `https://api.blockcypher.com/v1/${
+          data.coinType === ICoinType.BITCOIN ? 'bcy' : 'beth'
+        }/test/txs/new`,
+        JSON.stringify(newtx),
+      )
       .pipe(
         catchError((error: AxiosError) => {
           throw 'An error happened!' + error.message
         }),
       )
+  }
+  push(data: ITransactionPush): Observable<AxiosResponse> {
+    const trxObj = JSON.parse(data.transaction)
 
-    // return newtx
+    return this.httpService
+      .post(
+        `https://api.blockcypher.com/v1/${
+          data.coinType === ICoinType.BITCOIN ? 'bcy' : 'beth'
+        }/test/txs/send`,
+        {
+          ...trxObj,
+        },
+      )
+      .pipe(
+        catchError((error: AxiosError) => {
+          throw 'An error happened!' + error.message
+        }),
+      )
+  }
+
+  async getFee(coin: ICoinType): Promise<IFeeResponse> {
+    const response: { data: IFeeResponse } = await firstValueFrom(
+      this.httpService.get(
+        `https://api.blockcypher.com/v1/${
+          coin === ICoinType.BITCOIN ? 'bcy' : 'beth'
+        }/test`,
+      ),
+    )
+
+    return {
+      high_fee_per_kb: response.data.high_fee_per_kb,
+      medium_fee_per_kb: response.data.medium_fee_per_kb,
+      low_fee_per_kb: response.data.low_fee_per_kb,
+    }
   }
 }
