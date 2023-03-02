@@ -1,5 +1,6 @@
 export interface ITransactionResponse {
-  status: boolean
+  success: boolean
+  errors?: []
   data?: any
 }
 export interface ITransactionInput {

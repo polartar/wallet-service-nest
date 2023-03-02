@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
@@ -7,33 +8,50 @@ import {
   ITransactionResponse,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
+import { EEnvironment } from '../environments/environment.types'
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly httpService: HttpService) {}
+  blockcypherToken: string
+  constructor(
+    private readonly httpService: HttpService,
+    private configService: ConfigService,
+  ) {
+    this.blockcypherToken = this.configService.get<string>(
+      EEnvironment.blockcypherToken,
+    )
+  }
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
     const newtx = {
       inputs: [{ addresses: [data.from] }],
-      outputs: [{ addresses: [data.to], value: data.amount }],
+      outputs: [
+        {
+          addresses: [data.to],
+          value: data.amount,
+        },
+      ],
     }
 
     try {
       const response = await firstValueFrom(
         this.httpService.post(
           `https://api.blockcypher.com/v1/${
-            data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
-          }/test3/txs/new`,
+            data.coinType === ICoinType.BITCOIN
+              ? 'btc/test3/txs/new'
+              : `beth/test/txs/new?token=${this.blockcypherToken}`
+          }`,
           JSON.stringify(newtx),
         ),
       )
       return {
-        status: true,
+        success: true,
         data: response.data,
       }
     } catch (err) {
-      Logger.error(err.message)
       return {
-        status: false,
+        success: false,
+        errors: err.response.data.errors || [err.response.data.error],
+        data: err.response.data.tx,
       }
     }
   }
@@ -43,20 +61,24 @@ export class TransactionService {
       const response = await firstValueFrom(
         this.httpService.post(
           `https://api.blockcypher.com/v1/${
-            data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
-          }/test3/txs/send`,
+            data.coinType === ICoinType.BITCOIN
+              ? 'btc/test3/txs/send'
+              : `beth/test/txs/send?token=${this.blockcypherToken}`
+          }`,
           {
             ...trxObj,
           },
         ),
       )
       return {
-        status: true,
+        success: true,
         data: response.data,
       }
     } catch (err) {
       return {
-        status: false,
+        success: false,
+        errors: err.response.data.errors || [err.response.data.error],
+        data: err.response.data.tx,
       }
     }
   }
@@ -73,7 +95,7 @@ export class TransactionService {
       const data = response.data
       //remember the fee is wei
       return {
-        status: true,
+        success: true,
         data: {
           high_fee_per_kb: data.high_fee_per_kb || data.high_gas_price,
           medium_fee_per_kb: data.medium_fee_per_kb || data.medium_gas_price,
@@ -83,7 +105,7 @@ export class TransactionService {
     } catch (err) {
       Logger.error(err.message)
       return {
-        status: false,
+        success: false,
       }
     }
   }
