@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common'
 import { TransactionService } from './transaction.service'
 import {
   ICoinType,
-  IFeeResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,

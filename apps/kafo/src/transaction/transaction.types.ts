@@ -17,9 +17,3 @@ export interface ITransactionPush {
   transaction: string
   coinType: ICoinType
 }
-
-export interface IFeeResponse {
-  high_fee_per_kb: number
-  medium_fee_per_kb: number
-  low_fee_per_kb: number
-}

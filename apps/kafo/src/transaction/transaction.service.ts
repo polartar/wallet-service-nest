@@ -2,13 +2,12 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   ICoinType,
-  IFeeResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import { AxiosError, AxiosResponse } from 'axios'
 
 @Injectable()
 export class TransactionService {
@@ -27,7 +26,7 @@ export class TransactionService {
         newtx,
       ),
     )
-    return res.data
+    return res
   }
   push(data: ITransactionPush): Observable<AxiosResponse> {
     const trxObj = JSON.parse(data.transaction)
@@ -50,20 +49,21 @@ export class TransactionService {
 
   async getFee(coin: ICoinType): Promise<ITransactionResponse> {
     try {
-      const response: { data: IFeeResponse } = await firstValueFrom(
+      const response: { data: any } = await firstValueFrom(
         this.httpService.get(
           `https://api.blockcypher.com/v1/${
             coin === ICoinType.BITCOIN ? 'bcy' : 'beth'
           }/test`,
         ),
       )
-
+      const data = response.data
+      //remember the fee is wei
       return {
         status: true,
         data: {
-          high_fee_per_kb: response.data.high_fee_per_kb,
-          medium_fee_per_kb: response.data.medium_fee_per_kb,
-          low_fee_per_kb: response.data.low_fee_per_kb,
+          high_fee_per_kb: data.high_fee_per_kb || data.high_gas_price,
+          medium_fee_per_kb: data.medium_fee_per_kb || data.medium_gas_price,
+          low_fee_per_kb: data.low_fee_per_kb || data.low_gas_price,
         },
       }
     } catch (err) {
