@@ -6,45 +6,59 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { AxiosError, AxiosResponse } from 'axios'
+import { firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class TransactionService {
   constructor(private readonly httpService: HttpService) {}
-  async generate(data: ITransactionInput): Promise<AxiosResponse> {
+  async generate(data: ITransactionInput): Promise<ITransactionResponse> {
     const newtx = {
       inputs: [{ addresses: [data.from] }],
       outputs: [{ addresses: [data.to], value: data.amount }],
     }
 
-    const res = await firstValueFrom(
-      this.httpService.post(
-        `https://api.blockcypher.com/v1/${
-          data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
-        }/test3/txs/new`,
-        newtx,
-      ),
-    )
-    return res
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `https://api.blockcypher.com/v1/${
+            data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
+          }/test3/txs/new`,
+          JSON.stringify(newtx),
+        ),
+      )
+      return {
+        status: true,
+        data: response.data,
+      }
+    } catch (err) {
+      Logger.error(err.message)
+      return {
+        status: false,
+      }
+    }
   }
-  push(data: ITransactionPush): Observable<AxiosResponse> {
+  async push(data: ITransactionPush): Promise<ITransactionResponse> {
     const trxObj = JSON.parse(data.transaction)
-
-    return this.httpService
-      .post(
-        `https://api.blockcypher.com/v1/${
-          data.coinType === ICoinType.BITCOIN ? 'bcy' : 'beth'
-        }/test/txs/send`,
-        {
-          ...trxObj,
-        },
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `https://api.blockcypher.com/v1/${
+            data.coinType === ICoinType.BITCOIN ? 'btc' : 'beth'
+          }/test3/txs/send`,
+          {
+            ...trxObj,
+          },
+        ),
       )
-      .pipe(
-        catchError((error: AxiosError) => {
-          throw 'An error happened!' + error.message
-        }),
-      )
+      return {
+        status: true,
+        data: response.data,
+      }
+    } catch (err) {
+      return {
+        status: false,
+      }
+    }
   }
 
   async getFee(coin: ICoinType): Promise<ITransactionResponse> {
