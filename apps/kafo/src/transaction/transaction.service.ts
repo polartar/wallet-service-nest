@@ -51,12 +51,11 @@ export class TransactionService {
       return {
         success: false,
         errors: err.response.data.errors || [err.response.data.error],
-        data: err.response.data.tx,
+        data: err.response.data,
       }
     }
   }
   async push(data: ITransactionPush): Promise<ITransactionResponse> {
-    const trxObj = JSON.parse(data.transaction)
     try {
       const response = await firstValueFrom(
         this.httpService.post(
@@ -65,9 +64,7 @@ export class TransactionService {
               ? 'btc/test3/txs/send'
               : `beth/test/txs/send?token=${this.blockcypherToken}`
           }`,
-          {
-            ...trxObj,
-          },
+          data.transaction,
         ),
       )
       return {
@@ -78,7 +75,7 @@ export class TransactionService {
       return {
         success: false,
         errors: err.response.data.errors || [err.response.data.error],
-        data: err.response.data.tx,
+        data: err.response.data,
       }
     }
   }
