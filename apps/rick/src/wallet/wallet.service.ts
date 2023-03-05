@@ -27,6 +27,7 @@ import { AddHistoryDto } from './dto/add-history.dto'
 @Injectable()
 export class WalletService {
   provider: ethers.providers.EtherscanProvider
+  isProduction: boolean
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
@@ -37,8 +38,11 @@ export class WalletService {
     @InjectRepository(HistoryEntity)
     private readonly historyRepository: Repository<HistoryEntity>,
   ) {
+    this.isProduction = this.configService.get<boolean>(
+      EEnvironment.isProduction,
+    )
     this.provider = new ethers.providers.EtherscanProvider(
-      'goerli',
+      this.isProduction ? 'mainnet' : 'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
   }
@@ -196,7 +200,9 @@ export class WalletService {
         const txResponse: { data: IBTCTransactionResponse } =
           await firstValueFrom(
             this.httpService.get(
-              `https://api.blockcypher.com/v1/btc/main/addrs/${address.address}`,
+              `https://api.blockcypher.com/v1/btc/${
+                this.isProduction ? 'main' : 'test3'
+              }/addrs/${address.address}`,
             ),
           )
         allHistories = await this.generateBTCHistories(

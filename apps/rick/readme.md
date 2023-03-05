@@ -27,6 +27,8 @@
 4. Check the History table in the database if all transaction histories are added.
 5. Generate the transaction through Metamask or any wallet and see if the transaction is added to the History table
 
+\*\* For the Bitcoin balance updates, now mainnet is only available
+
 ### APIs
 
 - Create new Account

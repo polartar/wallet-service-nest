@@ -23,13 +23,18 @@ export class PortfolioService {
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
+    // const isProduction = this.configService.get<boolean>(
+    //   EEnvironment.isProduction,
+    // )
     this.btcSocket = new BlockchainSocket()
+    // : new BlockchainSocket({ network: 3 }) // Testnet has error now
+
     this.btcSocket.onTransaction((transaction) => {
       this.onBTCTransaction(transaction)
     })
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
-    const isProd = this.configService.get<boolean>(EEnvironment.production)
+    const isProd = this.configService.get<boolean>(EEnvironment.isProduction)
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
     )
@@ -38,7 +43,7 @@ export class PortfolioService {
       infura_key,
     )
 
-    this.runService()
+    this.runEthereumService()
   }
 
   async onBTCTransaction(transaction) {
@@ -147,7 +152,7 @@ export class PortfolioService {
     return this.activeBtcAddresses
   }
 
-  runService() {
+  runEthereumService() {
     this.provider.on('block', async (blockNumber) => {
       let block
       try {
