@@ -4,7 +4,7 @@ import { EEnvironment } from './environment.types'
 export const Environment = () => {
   const env: { [key in EEnvironment]: IData } = {
     coin_market_api: process.env.COINMARKET_API_KEY,
-    production: false,
+    is_production: process.env.NODE_ENV === 'production',
   }
   return env
 }

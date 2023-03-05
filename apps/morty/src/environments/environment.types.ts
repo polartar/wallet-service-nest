@@ -1,4 +1,4 @@
 export enum EEnvironment {
   coinMarketAPI = 'coin_market_api',
-  production = 'production',
+  isProduction = 'is_production',
 }
