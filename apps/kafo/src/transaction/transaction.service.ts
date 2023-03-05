@@ -13,6 +13,7 @@ import { EEnvironment } from '../environments/environment.types'
 @Injectable()
 export class TransactionService {
   blockcypherToken: string
+  isProduction: boolean
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
@@ -20,9 +21,12 @@ export class TransactionService {
     this.blockcypherToken = this.configService.get<string>(
       EEnvironment.blockcypherToken,
     )
+    this.isProduction = this.configService.get<boolean>(
+      EEnvironment.isProduction,
+    )
   }
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
-    const newtx = {
+    const newTx = {
       inputs: [{ addresses: [data.from] }],
       outputs: [
         {
@@ -31,16 +35,23 @@ export class TransactionService {
         },
       ],
     }
-
+    let params = ''
+    if (this.isProduction) {
+      params =
+        data.coinType === ICoinType.BITCOIN
+          ? 'btc/main/txs/new'
+          : `eth/main/txs/new?token=${this.blockcypherToken}`
+    } else {
+      params =
+        data.coinType === ICoinType.BITCOIN
+          ? 'btc/test3/txs/new'
+          : `beth/test/txs/new?token=${this.blockcypherToken}`
+    }
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${
-            data.coinType === ICoinType.BITCOIN
-              ? 'btc/test3/txs/new'
-              : `beth/test/txs/new?token=${this.blockcypherToken}`
-          }`,
-          JSON.stringify(newtx),
+          `https://api.blockcypher.com/v1/${params}`,
+          JSON.stringify(newTx),
         ),
       )
       return {
@@ -56,14 +67,22 @@ export class TransactionService {
     }
   }
   async push(data: ITransactionPush): Promise<ITransactionResponse> {
+    let params
+    if (this.isProduction) {
+      params =
+        data.coinType === ICoinType.BITCOIN
+          ? 'btc/main/txs/send'
+          : `eth/main/txs/send?token=${this.blockcypherToken}`
+    } else {
+      params =
+        data.coinType === ICoinType.BITCOIN
+          ? 'btc/test3/txs/new'
+          : `beth/test/txs/new?token=${this.blockcypherToken}`
+    }
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${
-            data.coinType === ICoinType.BITCOIN
-              ? 'btc/test3/txs/send'
-              : `beth/test/txs/send?token=${this.blockcypherToken}`
-          }`,
+          `https://api.blockcypher.com/v1/${params}`,
           data.transaction,
         ),
       )
@@ -81,6 +100,13 @@ export class TransactionService {
   }
 
   async getFee(coin: ICoinType): Promise<ITransactionResponse> {
+    let params
+    if (this.isProduction) {
+      params = coin === ICoinType.BITCOIN ? 'btc/main' : `eth/main`
+    } else {
+      params = coin === ICoinType.BITCOIN ? 'btc/test3' : `beth/test`
+    }
+
     try {
       const response: { data: any } = await firstValueFrom(
         this.httpService.get(

@@ -10,6 +10,7 @@ export const Environment = () => {
     [key in EEnvironment]: IData
   } = {
     [EEnvironment.blockcypherToken]: process.env.BLOCKCYPHER_TOKEN,
+    [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
   }
   return env
 }
