@@ -109,11 +109,7 @@ export class TransactionService {
 
     try {
       const response: { data: any } = await firstValueFrom(
-        this.httpService.get(
-          `https://api.blockcypher.com/v1/${
-            coin === ICoinType.BITCOIN ? 'bcy' : 'beth'
-          }/test`,
-        ),
+        this.httpService.get(`https://api.blockcypher.com/v1/${params}`),
       )
       const data = response.data
       //remember the fee is wei
