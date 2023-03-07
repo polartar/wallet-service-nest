@@ -149,7 +149,7 @@ export class MarketService {
         },
       }),
     ).catch((err) => {
-      Logger.log(`Coinmarket cap API error: ${err.message}`)
+      Logger.log(`coinmarketcap API error: ${err.message}`)
     })
     if (res) return res?.data
 
@@ -180,23 +180,21 @@ export class MarketService {
     return newTimestamp
   }
 
-  getInterval(timestamp: number) {
-    const days = timestamp / 1000 / 3600 / 24
-    if (days <= 1) {
-      return 'hourly'
-    } else if (days < 180) {
-      return 'daily'
+  getInterval(duration: IDuration) {
+    if (duration === IDuration.DAY || duration === IDuration.MONTH) {
+      return '1HR'
     } else {
-      return 'weekly'
+      return '1DAY'
     }
   }
 
   async getHistoricalData(coin: ICoinType, duration: IDuration) {
     const startDate = new Date(this.getDurationTime(duration))
-    const interval = this.getInterval(this.getDurationTime(duration))
+    const interval = this.getInterval(duration)
+
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${
       coin === ICoinType.BITCOIN ? 'btc' : 'eth'
-    }/price`
+    }/price?startTime=${startDate}&timeFrame=${interval}`
     try {
       if (new Date().getTime() > this.expiredAt) {
         await this.getAuthToken()
@@ -206,7 +204,6 @@ export class MarketService {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
         }),
       )
-
       return res.data
     } catch (err) {
       Logger.error(err.message)
