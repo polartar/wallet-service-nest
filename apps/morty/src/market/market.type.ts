@@ -10,3 +10,9 @@ export enum IDuration {
   YEAR = '1year',
   All = 'all',
 }
+
+export interface IResponse {
+  success: boolean
+  data?: any
+  error?: string
+}

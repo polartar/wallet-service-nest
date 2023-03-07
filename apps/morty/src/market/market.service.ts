@@ -1,12 +1,12 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { ICoinType, IDuration } from './market.type'
+import { ICoinType, IDuration, IResponse } from './market.type'
 import { Injectable, Logger } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { BTCMarketData, ETHMarketData } from './MarketData'
+
 @Injectable()
 export class MarketService {
   private ethClient = null
@@ -134,33 +134,36 @@ export class MarketService {
     return 1
   }
 
-  async getMarketData(coin: ICoinType) {
+  async getMarketData(coin: ICoinType): Promise<IResponse> {
     const apiURL =
       'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-    const res = await firstValueFrom(
-      this.httpService.get<AxiosResponse>(apiURL, {
-        params: {
-          symbol: coin === ICoinType.BITCOIN ? 'BTC' : 'ETH',
-        },
-        headers: {
-          'X-CMC_PRO_API_KEY': this.coinMarketAPI,
-          Accept: 'application/json',
-          'Accept-Encoding': 'deflate, gzip',
-        },
-      }),
-    ).catch((err) => {
-      Logger.log(`coinmarketcap API error: ${err.message}`)
-    })
-    if (res) return res?.data
-
-    if (coin === ICoinType.BITCOIN) {
-      return ETHMarketData.data.quotes
-    } else {
-      return BTCMarketData.data.quotes
+    try {
+      const res = await firstValueFrom(
+        this.httpService.get<AxiosResponse>(apiURL, {
+          params: {
+            limit: 2,
+          },
+          headers: {
+            'X-CMC_PRO_API_KEY': this.coinMarketAPI,
+            Accept: 'application/json',
+            'Accept-Encoding': 'deflate, gzip',
+          },
+        }),
+      )
+      if (coin === ICoinType.BITCOIN) {
+        return { success: true, data: res.data.data[0]['quote']['USD'] }
+      } else {
+        return { success: true, data: res.data.data[1]['quote']['USD'] }
+      }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.response.data.status.error_message,
+      }
     }
   }
 
-  getDurationTime(duration: IDuration) {
+  getDurationTime(duration: IDuration): Date {
     const day = 3600 * 24 * 1000
     const now = Date.now()
     let newTimestamp
@@ -188,7 +191,10 @@ export class MarketService {
     }
   }
 
-  async getHistoricalData(coin: ICoinType, duration: IDuration) {
+  async getHistoricalData(
+    coin: ICoinType,
+    duration: IDuration,
+  ): Promise<IResponse> {
     const startDate = new Date(this.getDurationTime(duration))
     const interval = this.getInterval(duration)
 
@@ -196,7 +202,7 @@ export class MarketService {
       coin === ICoinType.BITCOIN ? 'btc' : 'eth'
     }/price?startTime=${startDate}&timeFrame=${interval}`
     try {
-      if (new Date().getTime() > this.expiredAt) {
+      if (new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
       const res = await firstValueFrom(
@@ -204,9 +210,16 @@ export class MarketService {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
         }),
       )
-      return res.data
+      return {
+        success: true,
+        data: res.data,
+      }
     } catch (err) {
       Logger.error(err.message)
+      return {
+        success: false,
+        error: JSON.stringify(err.response.data),
+      }
     }
   }
 }
