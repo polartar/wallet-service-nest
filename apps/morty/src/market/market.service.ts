@@ -15,6 +15,7 @@ export class MarketService {
   private fidelityAccessToken: string
   private fidelityClientId: string
   private fidelityClientSecret: string
+  private expiredAt: number
 
   constructor(
     private readonly httpService: HttpService,
@@ -54,6 +55,7 @@ export class MarketService {
           config,
         ),
       )
+      this.expiredAt = new Date().getTime() + 3599 * 1000
 
       this.fidelityAccessToken = response.data.access_token
     } catch (err) {
@@ -192,36 +194,22 @@ export class MarketService {
   async getHistoricalData(coin: ICoinType, duration: IDuration) {
     const startDate = new Date(this.getDurationTime(duration))
     const interval = this.getInterval(this.getDurationTime(duration))
-    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/btc/price`
-    const res = await firstValueFrom(
-      this.httpService.get<AxiosResponse>(apiURL, {
-        headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
-      }),
-    )
-    console.log(res)
-    return [
-      {
-        exchange: 'Summary',
-        periodStart: '2020-04-01T00:00:00.000Z',
-        periodEnd: '2020-04-01T01:00:00.000Z',
-        priceOpen: 6426.271239028723,
-        priceClose: 6317.290024984293,
-        priceLow: 6262.16210547219,
-        priceHigh: 6438.996970932659,
-        volumeQuote: 59092334.63107169,
-        vwap: 6323.496062828807,
-      },
-      {
-        exchange: 'Summary',
-        periodStart: '2020-04-01T01:00:00.000Z',
-        periodEnd: '2020-04-01T02:00:00.000Z',
-        priceOpen: 6314.628076256183,
-        priceClose: 6297.936546603603,
-        priceLow: 6292.639006713064,
-        priceHigh: 6333.610554360037,
-        volumeQuote: 14708488.699215978,
-        vwap: 6308.03756250981,
-      },
-    ]
+    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${
+      coin === ICoinType.BITCOIN ? 'btc' : 'eth'
+    }/price`
+    try {
+      if (new Date().getTime() > this.expiredAt) {
+        await this.getAuthToken()
+      }
+      const res = await firstValueFrom(
+        this.httpService.get<AxiosResponse>(apiURL, {
+          headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
+        }),
+      )
+
+      return res.data
+    } catch (err) {
+      Logger.error(err.message)
+    }
   }
 }
