@@ -13,6 +13,6 @@ export enum IDuration {
 
 export interface IResponse {
   success: boolean
-  data?: any
+  data?: unknown
   error?: string
 }

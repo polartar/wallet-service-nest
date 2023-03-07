@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { MarketService } from './market.service'
 import { ICoinType, IDuration } from './market.type'
 
