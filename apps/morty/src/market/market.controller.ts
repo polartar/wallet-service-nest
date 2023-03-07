@@ -6,14 +6,14 @@ import { ICoinType, IDuration } from './market.type'
 export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
-  @Get('eth/:duration')
-  getEthMarketDat(@Param('duration') duration: IDuration) {
-    return this.marketService.getMarketData(ICoinType.ETHEREUM, duration)
+  @Get('eth')
+  getEthMarketDat() {
+    return this.marketService.getMarketData(ICoinType.ETHEREUM)
   }
 
-  @Get('btc/:duration')
-  getBtcMarketDat(@Param('duration') duration: IDuration) {
-    return this.marketService.getMarketData(ICoinType.BITCOIN, duration)
+  @Get('btc')
+  getBtcMarketDat() {
+    return this.marketService.getMarketData(ICoinType.BITCOIN)
   }
   @Get('eth/historical')
   getEthHistoricalData(@Query() query: { period: IDuration }) {

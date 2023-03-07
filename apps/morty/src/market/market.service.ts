@@ -102,33 +102,30 @@ export class MarketService {
     return 1
   }
 
-  async getMarketData(coin: ICoinType, duration?: IDuration) {
+  async getMarketData(coin: ICoinType) {
     // const startDate = new Date(this.getDurationTime(duration))
     // const interval = this.getInterval(this.getDurationTime(duration))
 
     // // const apiURL = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?&vs_currency=USD&days=${days}`
-    // const apiURL =
-    //   'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-    // const res = await firstValueFrom(
-    //   this.httpService.get<AxiosResponse>(apiURL, {
-    //     params: {
-    //       time_start: startDate,
-    //       interval,
-    //       symbol: 'BTC,ETH',
-    //     },
-    //     headers: {
-    //       'X-CMC_PRO_API_KEY': this.coinMarketAPI,
-    //       Accept: 'application/json',
-    //       'Accept-Encoding': 'deflate, gzip',
-    //     },
-    //   }),
-    // ).catch((err) => {
-    //   Logger.log(`Coinmarket cap API error: ${err.message}`)
-    // })
-    // if (res) return res?.data
+    const apiURL =
+      'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    const res = await firstValueFrom(
+      this.httpService.get<AxiosResponse>(apiURL, {
+        params: {
+          symbol: coin === ICoinType.BITCOIN ? 'BTC' : 'ETH',
+        },
+        headers: {
+          'X-CMC_PRO_API_KEY': this.coinMarketAPI,
+          Accept: 'application/json',
+          'Accept-Encoding': 'deflate, gzip',
+        },
+      }),
+    ).catch((err) => {
+      Logger.log(`Coinmarket cap API error: ${err.message}`)
+    })
+    if (res) return res?.data
 
     if (coin === ICoinType.BITCOIN) {
-      console.log({ ETHMarketData })
       return ETHMarketData.data.quotes
     } else {
       return BTCMarketData.data.quotes
