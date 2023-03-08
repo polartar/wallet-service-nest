@@ -1,3 +1,4 @@
+import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
@@ -113,12 +114,25 @@ export class TransactionService {
       )
       const data = response.data
       //remember the fee is wei
+      const feeObj = {
+        high_fee: data.high_fee_per_kb || data.high_gas_price,
+        medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
+        low_fee: data.low_fee_per_kb || data.low_gas_price,
+      }
+      const unit = coin == ICoinType.BITCOIN ? 8 : 18
+      const convertedObj = {
+        high_fee: ethers.utils.formatUnits(feeObj.high_fee.toString(), unit),
+        medium_fee: ethers.utils.formatUnits(
+          feeObj.medium_fee.toString(),
+          unit,
+        ),
+        low_fee: ethers.utils.formatUnits(feeObj.low_fee.toString(), unit),
+      }
       return {
         success: true,
         data: {
-          high_fee_per_kb: data.high_fee_per_kb || data.high_gas_price,
-          medium_fee_per_kb: data.medium_fee_per_kb || data.medium_gas_price,
-          low_fee_per_kb: data.low_fee_per_kb || data.low_gas_price,
+          original: feeObj,
+          convert: convertedObj,
         },
       }
     } catch (err) {
