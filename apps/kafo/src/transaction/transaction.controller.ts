@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, UsePipes } from '@nestjs/common'
 import { TransactionService } from './transaction.service'
 import {
   ICoinType,
@@ -6,12 +6,14 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
+import { TransactionInputPipe } from './transaction.pipe'
 
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly service: TransactionService) {}
 
   @Post('generate')
+  @UsePipes(new TransactionInputPipe())
   generateTransaction(@Body() data: ITransactionInput) {
     return this.service.generate(data)
   }

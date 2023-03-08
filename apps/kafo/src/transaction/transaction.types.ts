@@ -1,7 +1,7 @@
 export interface ITransactionResponse {
   success: boolean
   errors?: []
-  data?: any
+  data?: unknown
 }
 export interface ITransactionInput {
   from: string
