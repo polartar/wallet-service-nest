@@ -113,7 +113,6 @@ export class TransactionService {
         this.httpService.get(`https://api.blockcypher.com/v1/${params}`),
       )
       const data = response.data
-      //remember the fee is wei
       const feeObj = {
         high_fee: data.high_fee_per_kb || data.high_gas_price,
         medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
