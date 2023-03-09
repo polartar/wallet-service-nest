@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   UsePipes,
 } from '@nestjs/common'
@@ -26,7 +27,7 @@ export class AccountController {
   }
 
   @Get(':id')
-  async getAccount(@Param('id') id: number) {
+  async getAccount(@Param('id', ParseIntPipe) id: number) {
     return await this.accountService.lookup({ id })
   }
 }

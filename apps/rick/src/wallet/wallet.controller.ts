@@ -9,11 +9,13 @@ import {
   forwardRef,
   NotFoundException,
   Query,
+  ParseIntPipe,
+  ParseEnumPipe,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { IWalletType } from './wallet.types'
+import { EPeriod, IWalletType } from './wallet.types'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 
 @Controller('wallet')
@@ -26,7 +28,10 @@ export class WalletController {
   ) {}
 
   @Get(':id')
-  async getHistory(@Param('id') id: number, @Query('period') period: string) {
+  async getHistory(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  ) {
     try {
       return await this.walletService.getUserWalletHistory({
         accountId: id,
@@ -40,8 +45,9 @@ export class WalletController {
   @Post(':xPub')
   async createPortfolio(
     @Param('xPub') xPub: string,
-    @Body('account_id') account_id: number,
-    @Body('wallet_type') walletType: IWalletType,
+    @Body('account_id', ParseIntPipe) account_id: number,
+    @Body('wallet_type', new ParseEnumPipe(IWalletType))
+    walletType: IWalletType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,
