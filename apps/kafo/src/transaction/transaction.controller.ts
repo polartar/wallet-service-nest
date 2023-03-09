@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UsePipes } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseEnumPipe,
+  Post,
+  UsePipes,
+} from '@nestjs/common'
 import { TransactionService } from './transaction.service'
 import {
   ICoinType,
@@ -30,7 +38,9 @@ export class TransactionController {
   }
 
   @Get('fee/:coin')
-  async getFee(@Param('coin') coin: ICoinType): Promise<IFeeResponse> {
+  async getFee(
+    @Param('coin', new ParseEnumPipe(ICoinType)) coin: ICoinType,
+  ): Promise<IFeeResponse> {
     return await this.service.getFee(coin)
   }
 }
