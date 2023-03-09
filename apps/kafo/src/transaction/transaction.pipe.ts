@@ -1,6 +1,10 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 // import Joi = require('joi')
-import { ICoinType, ITransactionInput } from './transaction.types'
+import {
+  ICoinType,
+  ITransactionInput,
+  ITransactionPush,
+} from './transaction.types'
 import { isAddress } from 'ethers/lib/utils'
 import * as Joi from 'joi'
 import { validate } from 'bitcoin-address-validation'
@@ -27,6 +31,36 @@ export class TransactionInputPipe implements PipeTransform {
   })
 
   transform(value: ITransactionInput) {
+    const { error } = this.schema.validate(value)
+    if (error) {
+      throw new BadRequestException(
+        `Validation failed: ${error.details[0].message}`,
+      )
+    }
+    return value
+  }
+}
+
+export class TransactionPushPipe implements PipeTransform {
+  private schema = Joi.object().keys({
+    transaction: Joi.object().custom((value, helper) => {
+      if (!value.tx) {
+        return helper.message({ custom: 'invalid transaction' })
+      }
+      if (!value.tosign) {
+        return helper.message({ custom: 'tosign is missing' })
+      } else if (!value.pubkeys) {
+        return helper.message({ custom: 'pubkeys is missing' })
+      } else if (!value.signatures) {
+        return helper.message({ custom: 'signatures is missing' })
+      }
+
+      return true
+    }),
+    coinType: Joi.string().valid(ICoinType.BITCOIN, ICoinType.ETHEREUM),
+  })
+
+  transform(value: ITransactionPush) {
     const { error } = this.schema.validate(value)
     if (error) {
       throw new BadRequestException(

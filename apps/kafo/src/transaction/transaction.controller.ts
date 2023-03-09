@@ -7,7 +7,7 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { TransactionInputPipe } from './transaction.pipe'
+import { TransactionInputPipe, TransactionPushPipe } from './transaction.pipe'
 
 @Controller('transaction')
 export class TransactionController {
@@ -22,6 +22,7 @@ export class TransactionController {
   }
 
   @Post('push')
+  @UsePipes(new TransactionPushPipe())
   pushTransaction(
     @Body() data: ITransactionPush,
   ): Promise<ITransactionResponse> {
