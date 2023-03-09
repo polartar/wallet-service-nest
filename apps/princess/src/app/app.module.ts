@@ -4,11 +4,13 @@ import { AnonModule } from '../gateways/anon.module'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { NewsModule } from '../news/news.module'
 
 @Module({
   imports: [
     AnonModule, //
     RickModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
