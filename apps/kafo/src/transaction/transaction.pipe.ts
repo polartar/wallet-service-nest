@@ -29,7 +29,6 @@ export class TransactionInputPipe implements PipeTransform {
   transform(value: ITransactionInput) {
     const { error } = this.schema.validate(value)
     if (error) {
-      console.log(error)
       throw new BadRequestException(
         `Validation failed: ${error.details[0].message}`,
       )

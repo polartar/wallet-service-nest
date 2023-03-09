@@ -78,8 +78,8 @@ export class TransactionService {
     } else {
       params =
         data.coinType === ICoinType.BITCOIN
-          ? 'btc/test3/txs/new'
-          : `beth/test/txs/new?token=${this.blockcypherToken}`
+          ? 'btc/test3/txs/send'
+          : `beth/test/txs/send?token=${this.blockcypherToken}`
     }
     try {
       const response = await firstValueFrom(
@@ -93,7 +93,6 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
-      console.log(err.response)
       return {
         success: false,
         errors: err.response.data.errors || [err.response.data.error],

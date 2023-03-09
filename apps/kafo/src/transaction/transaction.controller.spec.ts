@@ -5,7 +5,7 @@ import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { TransactionService } from './transaction.service'
-import { ICoinType, ITransactionInput } from './transaction.types'
+import { ICoinType, ITransaction, ITransactionInput } from './transaction.types'
 import * as bitcoin from 'bitcoinjs-lib'
 import * as secp from 'tiny-secp256k1'
 import * as ecfacory from 'ecpair'
@@ -34,7 +34,7 @@ describe('TransactionController', () => {
     return await controller.generateTransaction(transactionData)
   }
 
-  const signTransaction = (privKey: Buffer, transaction: any) => {
+  const signTransaction = (privKey: Buffer, transaction: ITransaction) => {
     const keys = ECPair.fromPrivateKey(privKey)
 
     const tmpTx = transaction

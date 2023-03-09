@@ -15,12 +15,16 @@ export class TransactionController {
 
   @Post('generate')
   @UsePipes(new TransactionInputPipe())
-  generateTransaction(@Body() data: ITransactionInput) {
+  generateTransaction(
+    @Body() data: ITransactionInput,
+  ): Promise<ITransactionResponse> {
     return this.service.generate(data)
   }
 
   @Post('push')
-  pushTransaction(@Body() data: ITransactionPush) {
+  pushTransaction(
+    @Body() data: ITransactionPush,
+  ): Promise<ITransactionResponse> {
     return this.service.push(data)
   }
 
