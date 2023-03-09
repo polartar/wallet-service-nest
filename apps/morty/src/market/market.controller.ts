@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, ParseEnumPipe, Query } from '@nestjs/common'
 import { MarketService } from './market.service'
 import { ICoinType, IDuration } from './market.type'
 
@@ -16,14 +16,15 @@ export class MarketController {
     return this.marketService.getMarketData(ICoinType.BITCOIN)
   }
   @Get('eth/historical')
-  getEthHistoricalData(@Query() query: { period: IDuration }) {
-    return this.marketService.getHistoricalData(
-      ICoinType.ETHEREUM,
-      query.period,
-    )
+  getEthHistoricalData(
+    @Query('period', new ParseEnumPipe(IDuration)) period: IDuration,
+  ) {
+    return this.marketService.getHistoricalData(ICoinType.ETHEREUM, period)
   }
   @Get('btc/historical')
-  getBtcHistoricalData(@Query() query: { period: IDuration }) {
-    return this.marketService.getHistoricalData(ICoinType.BITCOIN, query.period)
+  getBtcHistoricalData(
+    @Query('period', new ParseEnumPipe(IDuration)) period: IDuration,
+  ) {
+    return this.marketService.getHistoricalData(ICoinType.BITCOIN, period)
   }
 }
