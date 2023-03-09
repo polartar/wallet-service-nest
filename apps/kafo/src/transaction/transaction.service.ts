@@ -4,6 +4,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   ICoinType,
+  IFeeResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
@@ -92,6 +93,7 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
+      console.log(err.response)
       return {
         success: false,
         errors: err.response.data.errors || [err.response.data.error],
@@ -100,7 +102,7 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ICoinType): Promise<ITransactionResponse> {
+  async getFee(coin: ICoinType): Promise<IFeeResponse> {
     let params
     if (this.isProduction) {
       params = coin === ICoinType.BITCOIN ? 'btc/main' : `eth/main`
