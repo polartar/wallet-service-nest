@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common'
-import { ICoinType, IDuration } from './market.types'
+import { ICoinType } from './market.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
+import { EPeriod } from '@rana/core'
 
 @Injectable()
 export class MarketService {
   server: Server
   constructor(private readonly httpService: HttpService) {}
 
-  async getMarketData(coin: ICoinType, duration: IDuration) {
+  async getMarketData(coin: ICoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
-          `http://localhost:3333/api/market/${coin}/${duration}`,
+          `http://localhost:3333/api/market/${coin}/${period}`,
         ),
       )
       return res.data
@@ -22,11 +23,11 @@ export class MarketService {
       console.log(err)
     }
   }
-  async getHistoricalData(coin: ICoinType, duration: IDuration) {
+  async getHistoricalData(coin: ICoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
-          `http://localhost:3333/api/market/${coin}/historical?period=${duration}`,
+          `http://localhost:3333/api/market/${coin}/historical?period=${period}`,
         ),
       )
       return res.data

@@ -1,21 +1,24 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { ICoinType, IDuration, IResponse } from './market.type'
+import { ICoinType, IResponse } from './market.type'
 import { Injectable, Logger } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
+import { EPeriod } from '@rana/core'
 
 @Injectable()
 export class MarketService {
   private ethClient = null
   private btcClient
-  coinMarketAPI
+  coinMarketAPI: string
   private fidelityAccessToken: string
   private fidelityClientId: string
   private fidelityClientSecret: string
   private expiredAt: number
+  private retryInterval = 10 * 1000 // retry to connect socket time
+  princessAPIUrl: string
 
   constructor(
     private readonly httpService: HttpService,
@@ -29,6 +32,9 @@ export class MarketService {
     )
     this.fidelityClientSecret = this.configService.get<string>(
       EEnvironment.fidelityClientSecret,
+    )
+    this.princessAPIUrl = this.configService.get<string>(
+      EEnvironment.princessAPIUrl,
     )
 
     this.subscribeETHPrice()
@@ -68,17 +74,21 @@ export class MarketService {
 
     this.ethClient.on('error', () => {
       Logger.log('Eth client reconnecting!')
+
       this.ethClose()
-      setTimeout(() => this.ethConnect(), 10000)
+      //retry to connect after 10s
+      setTimeout(() => this.ethConnect(), this.retryInterval)
     })
   }
 
   private btcConnect() {
     this.btcClient = new WebSocket(`wss://ws.coincap.io/prices?assets=bitcoin`)
+
     this.btcClient.on('error', () => {
       Logger.log('Btc client reconnecting!')
       this.btcClose()
-      setTimeout(() => this.btcConnect(), 10000)
+      //retry to connect after 10s
+      setTimeout(() => this.btcConnect(), this.retryInterval)
     })
   }
 
@@ -89,8 +99,9 @@ export class MarketService {
 
     this.ethClient.on('message', (response) => {
       const res = JSON.parse(response)
+
       firstValueFrom(
-        this.httpService.post(`http://localhost:3000/market/ethereum`, res),
+        this.httpService.post(`${this.princessAPIUrl}/market/ethereum`, res),
       ).catch(() => {
         Logger.log('Princess market/ethereum api error')
       })
@@ -100,10 +111,11 @@ export class MarketService {
     if (!this.btcClient) {
       this.btcConnect()
     }
+
     this.btcClient.on('message', (response) => {
       const res = JSON.parse(response)
       firstValueFrom(
-        this.httpService.post(`http://localhost:3000/market/bitcoin`, res),
+        this.httpService.post(`${this.princessAPIUrl}/market/bitcoin`, res),
       ).catch(() => {
         Logger.log('Princess market/bitcoin api error')
       })
@@ -118,25 +130,10 @@ export class MarketService {
     this.btcClient.close()
   }
 
-  getDays(duration: IDuration) {
-    switch (duration) {
-      case IDuration.DAY:
-        return 1
-      case IDuration.WEEK:
-        return 7
-      case IDuration.MONTH:
-        return 30
-      case IDuration.MONTHS:
-        return 180
-      case IDuration.YEAR:
-        return 365
-    }
-    return 1
-  }
-
   async getMarketData(coin: ICoinType): Promise<IResponse> {
     const apiURL =
       'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(apiURL, {
@@ -150,6 +147,7 @@ export class MarketService {
           },
         }),
       )
+
       if (coin === ICoinType.BITCOIN) {
         return { success: true, data: res.data.data[0]['quote']['USD'] }
       } else {
@@ -163,19 +161,20 @@ export class MarketService {
     }
   }
 
-  getDurationTime(duration: IDuration): Date {
+  getPeriodTime(period: EPeriod): Date {
     const day = 3600 * 24 * 1000
     const now = Date.now()
     let newTimestamp
-    if (duration === IDuration.DAY) {
+
+    if (period === EPeriod.Day) {
       newTimestamp = now - day
-    } else if (duration === IDuration.WEEK) {
+    } else if (period === EPeriod.Week) {
       newTimestamp = now - day * 7
-    } else if (duration === IDuration.MONTH) {
+    } else if (period === EPeriod.Month) {
       newTimestamp = now - day * 30
-    } else if (duration === IDuration.MONTHS) {
+    } else if (period === EPeriod.Months) {
       newTimestamp = now - day * 180
-    } else if (duration === IDuration.YEAR) {
+    } else if (period === EPeriod.Year) {
       newTimestamp = now - day * 365
     } else {
       newTimestamp = now - day * 365 * 100
@@ -183,8 +182,8 @@ export class MarketService {
     return newTimestamp
   }
 
-  getInterval(duration: IDuration) {
-    if (duration === IDuration.DAY || duration === IDuration.MONTH) {
+  getInterval(period: EPeriod) {
+    if (period === EPeriod.Day || period === EPeriod.Month) {
       return '1HR'
     } else {
       return '1DAY'
@@ -193,23 +192,26 @@ export class MarketService {
 
   async getHistoricalData(
     coin: ICoinType,
-    duration: IDuration,
+    period: EPeriod,
   ): Promise<IResponse> {
-    const startDate = new Date(this.getDurationTime(duration))
-    const interval = this.getInterval(duration)
+    const startDate = new Date(this.getPeriodTime(period))
+    const interval = this.getInterval(period)
 
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${
       coin === ICoinType.BITCOIN ? 'btc' : 'eth'
     }/price?startTime=${startDate}&timeFrame=${interval}`
+
     try {
       if (new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
+
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(apiURL, {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
         }),
       )
+
       return {
         success: true,
         data: res.data,

@@ -3,4 +3,5 @@ export enum EEnvironment {
   isProduction = 'is_production',
   fidelityClientId = 'fidelity_client_id',
   fidelityClientSecret = 'fidelity_client_secret',
+  princessAPIUrl = 'princess_api_url',
 }
