@@ -33,9 +33,7 @@ export class TransactionInputPipe implements PipeTransform {
   transform(value: ITransactionInput) {
     const { error } = this.schema.validate(value)
     if (error) {
-      throw new BadRequestException(
-        `Validation failed: ${error.details[0].message}`,
-      )
+      throw new BadRequestException(`Validation failed: ${error.message}`)
     }
     return value
   }
@@ -63,9 +61,7 @@ export class TransactionPushPipe implements PipeTransform {
   transform(value: ITransactionPush) {
     const { error } = this.schema.validate(value)
     if (error) {
-      throw new BadRequestException(
-        `Validation failed: ${error.details[0].message}`,
-      )
+      throw new BadRequestException(`Validation failed: ${error.message}`)
     }
     return value
   }
