@@ -3,3 +3,8 @@ export interface INewsResponse {
   data?: unknown
   error?: string
 }
+
+export enum ESort {
+  ASC = 'asc',
+  DESC = 'desc',
+}

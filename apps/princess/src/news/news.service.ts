@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { INewsResponse } from './news.types'
+import { ESort, INewsResponse } from './news.types'
 
 @Injectable()
 export class NewsService {
@@ -71,6 +71,55 @@ export class NewsService {
       return {
         success: true,
         data: (res.data as { news: [] }).news,
+      }
+    } catch (err) {
+      Logger.error(err.message)
+      return {
+        success: false,
+        error: JSON.stringify(err.response.data),
+      }
+    }
+  }
+
+  async getNews(
+    pageNumber: number,
+    countPerPage: number,
+    sort: ESort,
+    startTime: Date,
+    endTime: Date,
+  ): Promise<INewsResponse> {
+    const skip = (pageNumber - 1) * countPerPage
+    let params = `?limit=${countPerPage}&skip=${skip}`
+    if (sort === ESort.DESC) {
+      params += '&sort=desc'
+    } else {
+      params += '&sort=asc'
+    }
+    if (startTime) {
+      params += `&startTime=${startTime}`
+    }
+    if (endTime) {
+      params += `&endTime=${endTime}`
+    }
+    console.log({ params })
+    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
+    try {
+      if (new Date().getTime() >= this.expiredAt) {
+        await this.getAuthToken()
+      }
+
+      const res: { data: unknown } = await firstValueFrom(
+        this.httpService.get<AxiosResponse>(apiURL, {
+          headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
+        }),
+      )
+      return {
+        success: true,
+        data: {
+          news: (res.data as { news: [] }).news,
+          total: (res.data as { total: number }).total,
+          currentPage: pageNumber,
+        },
       }
     } catch (err) {
       Logger.error(err.message)
