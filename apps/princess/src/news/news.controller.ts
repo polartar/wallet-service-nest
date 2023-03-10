@@ -1,6 +1,7 @@
-import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, ParseIntPipe, Query, UsePipes } from '@nestjs/common'
 import { NewsService } from './news.service'
 import { ESort } from './news.types'
+import { NewsValidationPipe } from './news.pipe'
 
 @Controller('news')
 export class NewsController {
@@ -10,7 +11,9 @@ export class NewsController {
   getTopNews(@Query('count', ParseIntPipe) count: number) {
     return this.newsService.getTopNews(count)
   }
+
   @Get()
+  @UsePipes(new NewsValidationPipe())
   getNews(
     @Query()
     query: {
@@ -21,12 +24,6 @@ export class NewsController {
       endTime: Date
     },
   ) {
-    return this.newsService.getNews(
-      query.pageNumber,
-      query.countPerPage,
-      query.sort,
-      query.startTime,
-      query.endTime,
-    )
+    return this.newsService.getNews(query)
   }
 }

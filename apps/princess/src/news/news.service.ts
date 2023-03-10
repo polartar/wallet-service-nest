@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { ESort, INewsResponse } from './news.types'
+import { ESort, INewsQuery, INewsResponse } from './news.types'
 
 @Injectable()
 export class NewsService {
@@ -12,6 +12,7 @@ export class NewsService {
   private fidelityClientId: string
   private fidelityClientSecret: string
   private expiredAt: number
+  defaultCountPerPage = 10
 
   constructor(
     private readonly httpService: HttpService,
@@ -81,27 +82,24 @@ export class NewsService {
     }
   }
 
-  async getNews(
-    pageNumber: number,
-    countPerPage: number,
-    sort: ESort,
-    startTime: Date,
-    endTime: Date,
-  ): Promise<INewsResponse> {
+  async getNews(query: INewsQuery): Promise<INewsResponse> {
+    const pageNumber = query.pageNumber || 1
+    const countPerPage = query.countPerPage || this.defaultCountPerPage
     const skip = (pageNumber - 1) * countPerPage
     let params = `?limit=${countPerPage}&skip=${skip}`
-    if (sort === ESort.DESC) {
+
+    if (query.sort === ESort.DESC) {
       params += '&sort=desc'
     } else {
       params += '&sort=asc'
     }
-    if (startTime) {
-      params += `&startTime=${startTime}`
+    if (query.startTime) {
+      params += `&startTime=${query.startTime}`
     }
-    if (endTime) {
-      params += `&endTime=${endTime}`
+    if (query.endTime) {
+      params += `&endTime=${query.endTime}`
     }
-    console.log({ params })
+
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
     try {
       if (new Date().getTime() >= this.expiredAt) {
