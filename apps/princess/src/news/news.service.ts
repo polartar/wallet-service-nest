@@ -24,8 +24,6 @@ export class NewsService {
     this.fidelityClientSecret = this.configService.get<string>(
       EEnvironment.fidelityClientSecret,
     )
-
-    this.getAuthToken()
   }
 
   // We may need to define global function?
@@ -60,7 +58,7 @@ export class NewsService {
   async getTopNews(count: number): Promise<INewsResponse> {
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/?sort=desc&limit=${count}`
     try {
-      if (new Date().getTime() >= this.expiredAt) {
+      if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
 
@@ -102,7 +100,7 @@ export class NewsService {
 
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
     try {
-      if (new Date().getTime() >= this.expiredAt) {
+      if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
 
@@ -117,6 +115,7 @@ export class NewsService {
           news: (res.data as { news: [] }).news,
           total: (res.data as { total: number }).total,
           currentPage: pageNumber,
+          countPerPage,
         },
       }
     } catch (err) {

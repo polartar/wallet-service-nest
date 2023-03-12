@@ -6,8 +6,8 @@ import { ESort, INewsQuery } from './news.types'
 export class NewsValidationPipe implements PipeTransform {
   private schema = Joi.object().keys({
     sort: Joi.string().valid(ESort.ASC, ESort.DESC),
-    pageNumber: Joi.number().integer(),
-    countPerPage: Joi.number().integer(),
+    pageNumber: Joi.number().integer().greater(0),
+    countPerPage: Joi.number().integer().greater(0),
     startTime: Joi.date(),
     endTime: Joi.date(),
   })
