@@ -39,7 +39,6 @@ export class MarketService {
 
     this.subscribeETHPrice()
     this.subscribeBTCPrice()
-    this.getAuthToken()
   }
 
   private async getAuthToken() {
@@ -202,7 +201,7 @@ export class MarketService {
     }/price?startTime=${startDate}&timeFrame=${interval}`
 
     try {
-      if (new Date().getTime() >= this.expiredAt) {
+      if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
 
