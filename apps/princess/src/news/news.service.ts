@@ -57,6 +57,7 @@ export class NewsService {
 
   async getTopNews(count: number): Promise<INewsResponse> {
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/?sort=desc&limit=${count}`
+
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
@@ -73,6 +74,7 @@ export class NewsService {
       }
     } catch (err) {
       Logger.error(err.message)
+
       return {
         success: false,
         error: JSON.stringify(err.response.data),
@@ -80,11 +82,9 @@ export class NewsService {
     }
   }
 
-  async getNews(query: INewsQuery): Promise<INewsResponse> {
-    const pageNumber = query.pageNumber || 1
-    const countPerPage = query.countPerPage || this.defaultCountPerPage
-    const skip = (pageNumber - 1) * countPerPage
-    let params = `?limit=${countPerPage}&skip=${skip}`
+  generateParams(query: INewsQuery): string {
+    const skip = (query.pageNumber - 1) * query.countPerPage
+    let params = `?limit=${query.countPerPage}&skip=${skip}`
 
     if (query.sort === ESort.DESC) {
       params += '&sort=desc'
@@ -97,13 +97,22 @@ export class NewsService {
     if (query.endTime) {
       params += `&endTime=${query.endTime}`
     }
+    return params
+  }
+
+  async getNews(query: INewsQuery): Promise<INewsResponse> {
+    const newQuery = query
+    newQuery.pageNumber = query.pageNumber || 1
+    newQuery.countPerPage = query.countPerPage || this.defaultCountPerPage
+
+    const params = this.generateParams(newQuery)
 
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
-
+      await this.getAuthToken()
       const res: { data: unknown } = await firstValueFrom(
         this.httpService.get<AxiosResponse>(apiURL, {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
@@ -114,12 +123,13 @@ export class NewsService {
         data: {
           news: (res.data as { news: [] }).news,
           total: (res.data as { total: number }).total,
-          currentPage: pageNumber,
-          countPerPage,
+          currentPage: newQuery.pageNumber,
+          countPerPage: newQuery.countPerPage,
         },
       }
     } catch (err) {
       Logger.error(err.message)
+
       return {
         success: false,
         error: JSON.stringify(err.response.data),
