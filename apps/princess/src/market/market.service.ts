@@ -36,10 +36,9 @@ export class MarketService {
     }
   }
   setEthPrice(price: string) {
-    console.log({ price })
-    // this.server.emit('ethereum_price', price)
+    this.server.emit('ethereum_price', price)
   }
   setBtcPrice(price: string) {
-    // this.server.emit('bitcoin_price', price)
+    this.server.emit('bitcoin_price', price)
   }
 }
