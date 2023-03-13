@@ -7,6 +7,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import { WalletEntity } from '../wallet/wallet.entity'
+import BlockchainSocket = require('blockchain.info/Socket')
 
 @Injectable()
 export class PortfolioService {
@@ -15,6 +16,7 @@ export class PortfolioService {
   provider: Ethers.providers.JsonRpcProvider
   ethcallProvider: Provider
   princessAPIUrl: string
+  btcSocket
 
   constructor(
     private configService: ConfigService,
@@ -22,6 +24,11 @@ export class PortfolioService {
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
+    this.btcSocket = new BlockchainSocket()
+    this.btcSocket.onTransaction((transaction) => {
+      // console.log({ transaction })
+      this.onBTCTransaction(transaction)
+    })
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     const isProd = this.configService.get<boolean>(EEnvironment.production)
@@ -35,6 +42,86 @@ export class PortfolioService {
 
     this.ethcallProvider = new Provider(this.provider)
     this.ethcallProvider.init()
+  }
+
+  async onBTCTransaction(transaction) {
+    console.log('input', transaction.inputs)
+    console.log('output', transaction)
+    const senderAddresses = transaction.inputs.map(
+      (input) => input.prev_out.addr,
+    )
+    const receiverAddresses = transaction.out.map((out) => out.addr)
+    const updatedRecords = []
+    const updatedWallets = []
+
+    try {
+      this.activeBtcWallets = await Promise.all(
+        this.activeBtcWallets.map(async (wallet) => {
+          const history = wallet.history || []
+          if (senderAddresses.includes(wallet.address)) {
+            // handle if there are two senders with same address
+            const index = transaction.inputs.findIndex(
+              (input) => input.prev_out.addr === wallet.address,
+            )
+            const senderInfo = transaction.inputs[index]
+            transaction.inputs.splice(index, 1)
+
+            const currBalance = history.length
+              ? Number(history[history.length - 1].balance)
+              : 0
+
+            const record = await this.walletService.addRecord({
+              wallet: wallet,
+              balance: (currBalance - senderInfo.value).toString(),
+              timestamp: this.walletService.getCurrentTimeBySeconds(),
+            })
+            history.push(record)
+            updatedRecords.push(record)
+
+            wallet.history = history
+          }
+          if (receiverAddresses.includes(wallet.address)) {
+            // handle if sender transfer btc to same address more than twice
+            const index = transaction.out.findIndex(
+              (out) => out.addr === wallet.address,
+            )
+            const receiverInfo = transaction.out[index]
+            transaction.out.splice(index, 1)
+            const currBalance = history.length
+              ? Number(history[history.length - 1].balance)
+              : 0
+
+            const record = await this.walletService.addRecord({
+              wallet: wallet,
+              balance: (currBalance + receiverInfo.value).toString(),
+              timestamp: this.walletService.getCurrentTimeBySeconds(),
+            })
+            history.push(record)
+            updatedRecords.push(record)
+
+            wallet.history = history
+          }
+
+          if (
+            senderAddresses.includes(wallet.address) ||
+            receiverAddresses.includes(wallet.address)
+          ) {
+            updatedWallets.push(wallet)
+          }
+          return wallet
+        }),
+      )
+
+      if (updatedRecords.length > 0) {
+        this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+          updatedRecords,
+        })
+
+        return this.walletService.updateWallets(updatedWallets)
+      }
+    } catch (err) {
+      Logger.error(err.message)
+    }
   }
 
   async initializeWallets() {
@@ -90,7 +177,7 @@ export class PortfolioService {
    * @param balances balances
    */
   async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
-    const updatedWallets = []
+    const updatedRecords = []
     try {
       this.activeEthWallets = await Promise.all(
         this.activeEthWallets.map(async (wallet) => {
@@ -111,18 +198,19 @@ export class PortfolioService {
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
-            updatedWallets.push(record)
+            updatedRecords.push(record)
           }
           wallet.history = history
+          wallets[balanceIndex].history = history
           return wallet
         }),
       )
-      if (updatedWallets.length > 0) {
+      if (updatedRecords.length > 0) {
         this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-          updatedWallets,
+          updatedRecords,
         })
 
-        return this.walletService.updateWallets(this.activeEthWallets)
+        return this.walletService.updateWallets(wallets)
       }
     } catch (err) {
       Logger.error(err.message)
