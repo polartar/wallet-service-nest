@@ -15,7 +15,7 @@ export class LoginValidationPipe implements PipeTransform {
   transform(value: IAuthData) {
     const { error } = this.schema.validate(value)
     if (error) {
-      throw new BadRequestException('Validation failed')
+      throw new BadRequestException('Validation failed: ' + error.message)
     }
     return value
   }
