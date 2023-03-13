@@ -100,19 +100,19 @@ export class WalletService {
         const fee = record.gasLimit.mul(record.gasPrice)
         const walletAddress = address.address.toLowerCase()
 
-        if (record.from.toLowerCase() === walletAddress) {
+        if (record.from?.toLowerCase() === walletAddress) {
           currentBalance = currentBalance.add(fee)
           currentBalance = currentBalance.add(record.value)
         }
         //consider if transferred itself
-        if (record.to.toLocaleLowerCase() === walletAddress) {
+        if (record.to?.toLowerCase() === walletAddress) {
           currentBalance = currentBalance.sub(record.value)
         }
 
         return this.addHistory({
           address,
-          from: record.from,
-          to: record.to,
+          from: record.from || '',
+          to: record.to || '',
           hash: record.hash,
           amount: record.value.toString(),
           balance: prevBalance.toString(),
@@ -132,6 +132,7 @@ export class WalletService {
 
   async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(data.xPub)
+
     if (wallet) {
       if (wallet.type === data.walletType) {
         if (
@@ -153,6 +154,7 @@ export class WalletService {
       prototype.address = data.xPub
       prototype.addresses = []
       prototype.path = 'path' // need to get the path from xpub
+
       if (data.walletType === IWalletType.METAMASK) {
         prototype.coinType = ICoinType.ETHEREUM
         prototype.path = IWalletPath.ETH
@@ -163,7 +165,7 @@ export class WalletService {
       const wallet = await this.walletRepository.save(prototype)
 
       if (data.walletType !== IWalletType.HOTWALLET) {
-        this.addNewAddress({
+        await this.addNewAddress({
           wallet,
           address: data.xPub,
           path:
@@ -172,10 +174,10 @@ export class WalletService {
               : IAddressPath.ETH,
         })
       } else {
-        this.addAddressesFromXPub(wallet, data.xPub)
+        await this.addAddressesFromXPub(wallet, data.xPub)
       }
 
-      return this.walletRepository.save(wallet)
+      return wallet
     }
   }
 
@@ -214,10 +216,11 @@ export class WalletService {
       address.history = allHistories
     } catch (err) {
       Logger.log(err.message)
+      console.error(err)
       throw new Error('Invalid API key or API limit error')
     }
 
-    return this.walletRepository.save(address)
+    return await this.addressRepository.save(address)
   }
 
   updateWallets(wallets: WalletEntity[]) {

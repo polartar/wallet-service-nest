@@ -4,6 +4,7 @@ import { AccountService } from './account.service'
 import { AccountEntity } from './account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { HistoryEntity } from '../wallet/history.entity'
+import { AddressEntity } from '../wallet/address.entity'
 
 describe('AccountService', () => {
   let service: AccountService
@@ -20,12 +21,14 @@ describe('AccountService', () => {
             AccountEntity, //
             WalletEntity,
             HistoryEntity,
+            AddressEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           AccountEntity, //
           WalletEntity,
           HistoryEntity,
+          AddressEntity,
         ]),
       ],
       providers: [AccountService],

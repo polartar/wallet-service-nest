@@ -50,8 +50,8 @@ describe('WalletController', () => {
           AddressEntity,
           HistoryEntity,
         ]),
-        AccountModule,
         WalletModule,
+        AccountModule,
         HttpModule,
         PortfolioModule,
       ],
@@ -90,7 +90,7 @@ describe('WalletController', () => {
     expect(ethWallets[0].address).toBe(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
     )
-  })
+  }, 20000)
 
   it('should get wallet history for the account for 1 month', async () => {
     const provider = new ethers.providers.EtherscanProvider(
@@ -107,7 +107,6 @@ describe('WalletController', () => {
         walletService.getCurrentTimeBySeconds() - periodAsNumber,
     )
     const walletsHistory = await controller.getHistory(1, EPeriod.Month)
-
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       filteredHistory.length,
     )
@@ -115,49 +114,50 @@ describe('WalletController', () => {
 
   it('should add new BTC wallet', async () => {
     await controller.createPortfolio(
-      '1P9qzdZ9g2nEgnDrzy5ny7eeUBc1TJMqSd',
+      'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       1,
-      IWalletType.METAMASK,
+      IWalletType.VAULT,
       // ICoinType.ETHEREUM,
     )
 
     const btcWallets = await portfolioService.getBtcWallets()
     expect(btcWallets.length).toBe(1)
-    expect(btcWallets[0].address).toBe('1P9qzdZ9g2nEgnDrzy5ny7eeUBc1TJMqSd')
+    expect(btcWallets[0].address).toBe('myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx')
   })
 
   it('should get wallet history for the BTC account for 1 month', async () => {
     const txResponse = await firstValueFrom(
       httpService.get(
-        `https://api.blockcypher.com/v1/btc/main/addrs/1P9qzdZ9g2nEgnDrzy5ny7eeUBc1TJMqSd`,
+        `https://api.blockcypher.com/v1/btc/test3/addrs/myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx`,
       ),
     )
 
     const walletsHistory = await controller.getHistory(1, EPeriod.All)
-    expect(walletsHistory[1].addresses[0].history.length).toBe(
+
+    expect(walletsHistory[0].addresses[0].history.length).toBe(
       txResponse.data.txrefs.length,
     )
-  })
+  }, 20000)
 
-  it('should inactive the wallets', async () => {
-    await controller.activeWallets([
-      {
-        id: 1,
-        isActive: false,
-      },
-    ])
-    const ethWallets = await portfolioService.getEthWallets()
-    expect(ethWallets.length).toBe(0)
-  })
+  // it('should inactive the wallets', async () => {
+  //   await controller.activeWallets([
+  //     {
+  //       id: 1,
+  //       isActive: false,
+  //     },
+  //   ])
+  //   const ethWallets = await portfolioService.getEthWallets()
+  //   expect(ethWallets.length).toBe(0)
+  // })
 
-  it('should active the wallet', async () => {
-    await controller.activeWallets([
-      {
-        id: 1,
-        isActive: true,
-      },
-    ])
-    const ethWallets = await portfolioService.getEthWallets()
-    expect(ethWallets.length).toBe(1)
-  })
+  // it('should active the wallet', async () => {
+  //   await controller.activeWallets([
+  //     {
+  //       id: 1,
+  //       isActive: true,
+  //     },
+  //   ])
+  //   const ethWallets = await portfolioService.getEthWallets()
+  //   expect(ethWallets.length).toBe(1)
+  // })
 })

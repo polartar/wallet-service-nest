@@ -136,6 +136,7 @@ export class PortfolioService {
   async initializeWallets() {
     let addresses = await this.walletService.getAllAddresses()
     addresses = addresses.filter((wallet) => wallet.isActive)
+
     this.activeEthAddresses = addresses.filter(
       (address) => address.wallet.coinType === ICoinType.ETHEREUM,
     )
