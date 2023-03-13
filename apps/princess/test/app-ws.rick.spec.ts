@@ -1,7 +1,5 @@
 import { MarketModule } from './../src/market/market.module'
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
-
-import { Environment } from '../../rick/src/environments/environment.dev'
+import { Environment } from '../src/environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
 import { RickGateway } from '../src/gateways/rick.gateway'
 import { PortfolioModule } from '../src/portfolio/portfolio.module'
@@ -17,7 +15,6 @@ import {
 import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
 import { MarketService } from '../src/market/market.service'
-import { WalletController } from '../../rick/src/wallet/wallet.controller'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
