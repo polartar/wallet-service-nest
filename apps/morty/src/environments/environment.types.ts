@@ -1,4 +1,4 @@
 export enum EEnvironment {
-  infuraAPIKey = 'infura_api_key',
+  coinMarketAPI = 'coin_market_api',
   production = 'production',
 }

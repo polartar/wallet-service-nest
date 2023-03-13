@@ -1,24 +1,42 @@
-import { ICoinType } from './price.type'
+import { EEnvironment } from './../environments/environment.types'
+import { HttpService } from '@nestjs/axios'
+import { ICoinType, IDuration } from './price.type'
 import { Injectable } from '@nestjs/common'
 import { Socket, io } from 'socket.io-client'
 import * as WebSocket from 'ws'
+import { Observable, catchError, firstValueFrom } from 'rxjs'
+import { AxiosError, AxiosResponse } from 'axios'
+import { ConfigService } from '@nestjs/config'
+import * as CoinMarketCap from 'coinmarketcap-api'
 
 @Injectable()
 export class PriceService {
-  COINCAP_SOCKET_URL = 'wss://ws.coincap.io/prices'
+  COINMARKETCAP_RUL =
+    'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?limit=2'
   private ethClient
   private btcClient
-  constructor() {
+  private coinMarketClient
+  constructor(
+    private readonly httpService: HttpService,
+    private configService: ConfigService,
+  ) {
+    const coinMarketAPI = this.configService.get<string>(
+      EEnvironment.coinMarketAPI,
+    )
+
+    this.coinMarketClient = new CoinMarketCap(coinMarketAPI)
+
     this.subscribeETHPrice()
     this.subscribeBTCPrice()
+    this.getMarketData()
   }
 
   private ethConnect() {
-    this.ethClient = new WebSocket(`${this.COINCAP_SOCKET_URL}?assets=ethereum`)
+    this.ethClient = new WebSocket(`wss://ws.coincap.io/prices?assets=ethereum`)
   }
 
   private btcConnect() {
-    this.btcClient = new WebSocket(`${this.COINCAP_SOCKET_URL}?assets=bitcoin`)
+    this.btcClient = new WebSocket(`wss://ws.coincap.io/prices?assets=bitcoin`)
   }
 
   subscribeETHPrice() {
@@ -30,12 +48,6 @@ export class PriceService {
       const ethPrice = JSON.parse(response)['ethereum']
       console.log('ETH price', ethPrice)
     })
-
-    // console.log('Eth Subscribing')
-    // this.ethClient.addEventListener('message', function (event) {
-    //   console.log({ event })
-    //   // parse & show the data
-    // })
   }
   subscribeBTCPrice() {
     if (!this.btcClient) {
@@ -55,5 +67,35 @@ export class PriceService {
     this.btcClient.close()
   }
 
-  getMarketData(coin: ICoinType) {}
+  getSnapshotDate(duration: IDuration) {
+    const snapshotDate = new Date()
+    switch (duration) {
+      case IDuration.DAY:
+        snapshotDate.setDate(snapshotDate.getDate() - 1)
+        break
+      case IDuration.MONTH:
+        snapshotDate.setDate(snapshotDate.getMonth() - 1)
+        break
+      case IDuration.MONTHS:
+        snapshotDate.setDate(snapshotDate.getMonth() - 6)
+        break
+      case IDuration.YEAR:
+        snapshotDate.setDate(snapshotDate.getFullYear() - 1)
+        break
+    }
+    return snapshotDate.toISOString()
+  }
+
+  getMarketData(duration?: IDuration) {
+    this.coinMarketClient
+      .getQuotes({
+        symbol: [
+          'BTC', //
+          'ETH',
+        ],
+        date: this.getSnapshotDate(duration),
+      })
+      .then(console.log)
+      .catch(console.error)
+  }
 }
