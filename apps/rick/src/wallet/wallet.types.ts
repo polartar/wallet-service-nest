@@ -1,3 +1,5 @@
+import { EPeriod } from '@rana/core'
+
 export enum ICoinType {
   ETHEREUM = 'eth',
   BITCOIN = 'btc',
@@ -7,15 +9,6 @@ export enum IWalletType {
   HOTWALLET = 'hotwallet',
   VAULT = 'vault',
   METAMASK = 'metamask',
-}
-
-export enum EPeriod {
-  Day = '1D',
-  Week = '1W',
-  Month = '1M',
-  Months = '6M',
-  Year = '1Y',
-  All = 'All',
 }
 
 export const SecondsIn: {

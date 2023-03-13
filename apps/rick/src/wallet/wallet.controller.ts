@@ -15,8 +15,9 @@ import {
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { EPeriod, IWalletType } from './wallet.types'
+import { IWalletType } from './wallet.types'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
+import { EPeriod } from '@rana/core'
 
 @Controller('wallet')
 export class WalletController {

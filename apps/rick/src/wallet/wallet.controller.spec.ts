@@ -18,6 +18,7 @@ import { IWalletType, SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
 import { HistoryEntity } from './history.entity'
 import { AddressEntity } from './address.entity'
+import { EPeriod } from '@rana/core'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -105,7 +106,7 @@ describe('WalletController', () => {
         item.timestamp >=
         walletService.getCurrentTimeBySeconds() - periodAsNumber,
     )
-    const walletsHistory = await controller.getHistory(1, '1M')
+    const walletsHistory = await controller.getHistory(1, EPeriod.Month)
 
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       filteredHistory.length,
@@ -132,7 +133,7 @@ describe('WalletController', () => {
       ),
     )
 
-    const walletsHistory = await controller.getHistory(1, 'All')
+    const walletsHistory = await controller.getHistory(1, EPeriod.All)
     expect(walletsHistory[1].addresses[0].history.length).toBe(
       txResponse.data.txrefs.length,
     )
