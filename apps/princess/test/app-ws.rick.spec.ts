@@ -1,3 +1,4 @@
+import { MarketModule } from './../src/market/market.module'
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 
 import { PortfolioController } from '../../rick/src/portfolio/portfolio.controller'
@@ -22,6 +23,7 @@ import {
 import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger } from '@nestjs/common'
+import { MarketService } from '../src/market/market.service'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
@@ -29,10 +31,12 @@ const runPrincessPortfolioModule = async () => {
       RickModule, //
       HttpModule,
       PortfolioModule,
+      MarketModule,
     ],
     providers: [
       RickGateway, //
       PortfolioService,
+      MarketService,
     ],
   }).compile()
 

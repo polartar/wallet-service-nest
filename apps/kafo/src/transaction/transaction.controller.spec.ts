@@ -39,7 +39,7 @@ describe('TransactionController', () => {
 
     const tmpTx = transaction
     tmpTx.pubkeys = []
-    tmpTx.signatures = tmpTx.tosign.map(function (tosign, n) {
+    tmpTx.signatures = tmpTx.tosign.map(function (tosign) {
       tmpTx.pubkeys.push(keys.publicKey.toString('hex'))
 
       return bitcoin.script.signature

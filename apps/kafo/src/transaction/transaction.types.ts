@@ -53,6 +53,7 @@ export interface ITx {
   vout_sz: number
   confirmations: 0
   inputs: []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   outputs: [any, any]
 }
 export interface ITransaction {
