@@ -110,6 +110,7 @@ export class TransactionService {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response: { data: any } = await firstValueFrom(
         this.httpService.get(`https://api.blockcypher.com/v1/${params}`),
       )
