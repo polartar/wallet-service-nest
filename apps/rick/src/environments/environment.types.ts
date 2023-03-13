@@ -1,4 +1,6 @@
 export enum EEnvironment {
   infuraAPIKey = 'infura_api_key',
-  production = 'production',
+  isProduction = 'is_production',
+  etherscanAPIKey = 'etherscan_api_key',
+  princessAPIUrl = 'princess_api_url',
 }

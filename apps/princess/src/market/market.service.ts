@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ICoinType } from './market.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
@@ -20,7 +20,7 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      console.log(err)
+      Logger.log(err)
     }
   }
   async getHistoricalData(coin: ICoinType, period: EPeriod) {
@@ -32,7 +32,7 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      console.log(err)
+      Logger.log(err)
     }
   }
   setEthPrice(price: string) {

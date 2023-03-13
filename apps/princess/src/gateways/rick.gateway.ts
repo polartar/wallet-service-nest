@@ -1,3 +1,4 @@
+import { IRickGetPortfolioHistory } from './rick.types'
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,9 +14,6 @@ import { PortfolioService } from '../portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
 import { MarketService } from '../market/market.service'
 
-type IRickSocketData = {
-  accountId: number
-}
 @WebSocketGateway() //, { namespace: 'rick', transports: ['websocket'] })
 export class RickGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -24,6 +22,7 @@ export class RickGateway
   server: Server
 
   PORTFOLIO_HISTORY_CHANNEL = 'portfolio_history'
+  ACCOUNT_INFO_CHANNEL = 'account_info'
 
   constructor(
     private readonly portfolioService: PortfolioService,
@@ -36,7 +35,6 @@ export class RickGateway
 
   handleDisconnect(client: Socket) {
     Logger.log(`Client disconnected: ${client.id}`)
-    // this.clients = this.clients.filter((c) => c.sock.id !== client.id)
     this.portfolioService.removeClient(client.id)
   }
 
@@ -48,20 +46,26 @@ export class RickGateway
   }
 
   @SubscribeMessage('get_portfolio_history')
-  async handleMessage(
+  async handlePortfolioHistory(
     @MessageBody()
-    data: IRickSocketData,
+    data: IRickGetPortfolioHistory,
     @ConnectedSocket() client: Socket,
   ) {
-    // this.portfolioService.addClient(data.accountId, client)
+    this.portfolioService.getWalletHistory(data).then((response) => {
+      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, response)
+    })
+  }
 
-    this.portfolioService
-      .getWalletHistory(data.accountId)
-      .subscribe((response) => {
-        client.emit(
-          this.PORTFOLIO_HISTORY_CHANNEL,
-          JSON.stringify(response.data),
-        )
-      })
+  @SubscribeMessage('get_account')
+  async handleGetAccount(
+    @MessageBody()
+    data: {
+      accountId: number
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.portfolioService.getAccount(data.accountId).subscribe((response) => {
+      client.emit(this.ACCOUNT_INFO_CHANNEL, JSON.stringify(response.data))
+    })
   }
 }

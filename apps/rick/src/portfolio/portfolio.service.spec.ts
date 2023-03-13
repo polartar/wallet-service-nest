@@ -1,13 +1,15 @@
-import { WalletModule } from './../wallet/wallet.module'
-import { AccountModule } from './../account/account.module'
+import { WalletModule } from '../wallet/wallet.module'
+import { AccountModule } from '../account/account.module'
 import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { PortfolioService } from './portfolio.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AccountEntity } from '../account/account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
-import { Environment } from './../environments/environment.dev'
+import { Environment } from '../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
+import { HistoryEntity } from '../wallet/history.entity'
+import { AddressEntity } from '../wallet/address.entity'
 
 describe('PortfolioService', () => {
   let service: PortfolioService
@@ -25,11 +27,15 @@ describe('PortfolioService', () => {
           entities: [
             AccountEntity, //
             WalletEntity,
+            AddressEntity,
+            HistoryEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           AccountEntity, //
           WalletEntity,
+          AddressEntity,
+          HistoryEntity,
         ]),
         AccountModule,
         WalletModule,

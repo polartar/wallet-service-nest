@@ -1,159 +1,233 @@
-import { IBalanceHistory, IWallet, IWalletType } from './../wallet/wallet.types'
-import { Injectable } from '@nestjs/common'
+import { AddressEntity } from './../wallet/address.entity'
+import { ICoinType } from './../wallet/wallet.types'
+import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
-import { Provider } from 'ethers-multicall'
+import { BigNumber } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
-import { AccountService } from '../account/account.service'
 import { HttpService } from '@nestjs/axios'
-import { Logger } from '@nestjs/common'
+import BlockchainSocket = require('blockchain.info/Socket')
 
 @Injectable()
 export class PortfolioService {
-  activeEthWallets: IWallet[]
-  activeBtcWallets: IWallet[]
+  activeEthAddresses: AddressEntity[]
+  activeBtcAddresses: AddressEntity[]
   provider: Ethers.providers.JsonRpcProvider
-  ethcallProvider: Provider
-  intervalBlocks = 1
+  princessAPIUrl: string
+  btcSocket
 
   constructor(
     private configService: ConfigService,
     private readonly walletService: WalletService,
-    private readonly accountService: AccountService,
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
+    // const isProduction = this.configService.get<boolean>(
+    //   EEnvironment.isProduction,
+    // )
+    this.btcSocket = new BlockchainSocket()
+    // : new BlockchainSocket({ network: 3 }) // Testnet has error now
+
+    this.btcSocket.onTransaction((transaction) => {
+      this.onBTCTransaction(transaction)
+    })
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
-    const isProd = this.configService.get<boolean>(EEnvironment.production)
+    const isProd = this.configService.get<boolean>(EEnvironment.isProduction)
+    this.princessAPIUrl = this.configService.get<string>(
+      EEnvironment.princessAPIUrl,
+    )
     this.provider = new Ethers.providers.InfuraProvider(
       isProd ? 'mainnet' : 'goerli',
       infura_key,
     )
 
-    this.ethcallProvider = new Provider(this.provider)
-    this.ethcallProvider.init()
+    this.runEthereumService()
+  }
+
+  async onBTCTransaction(transaction) {
+    const senderAddresses = transaction.inputs.map(
+      (input) => input.prev_out.addr,
+    )
+    const receiverAddresses = transaction.out.map((out) => out.addr)
+    const updatedRecords = []
+    const updatedWallets = []
+
+    try {
+      this.activeBtcAddresses = await Promise.all(
+        this.activeBtcAddresses.map(async (address) => {
+          const history = address.history || []
+          if (senderAddresses.includes(address.address)) {
+            // handle if there are two senders with same address
+            const inputs = transaction.inputs
+            const index = inputs.findIndex(
+              (input) => input.prev_out.addr === address.address,
+            )
+            const senderInfo = inputs[index]
+
+            inputs.splice(index, 1)
+
+            const currBalance = history.length
+              ? Number(history[history.length - 1].balance)
+              : 0
+            const record = await this.walletService.addHistory({
+              address: address,
+              from: '',
+              to: senderInfo.prev_out.addr,
+              hash: transaction.hash,
+              amount: senderInfo.prev_out.value.toString(),
+              balance: (currBalance - senderInfo.prev_out.value).toString(),
+              timestamp: this.walletService.getCurrentTimeBySeconds(),
+            })
+            history.push(record)
+            updatedRecords.push(record)
+
+            address.history = history
+          }
+          if (receiverAddresses.includes(address.address)) {
+            // handle if sender transfer btc to same address more than twice
+            const index = transaction.out.findIndex(
+              (out) => out.addr === address.address,
+            )
+            const receiverInfo = transaction.out[index]
+            transaction.out.splice(index, 1)
+            const currBalance = history.length
+              ? Number(history[history.length - 1].balance)
+              : 0
+
+            const record = await this.walletService.addHistory({
+              address,
+              from: receiverInfo.addr,
+              to: '',
+              amount: receiverInfo.value,
+              hash: transaction.hash,
+              balance: (currBalance + receiverInfo.value).toString(),
+              timestamp: this.walletService.getCurrentTimeBySeconds(),
+            })
+            history.push(record)
+            updatedRecords.push(record)
+
+            address.history = history
+          }
+
+          if (
+            senderAddresses.includes(address.address) ||
+            receiverAddresses.includes(address.address)
+          ) {
+            updatedWallets.push(address)
+          }
+          return address
+        }),
+      )
+
+      if (updatedRecords.length > 0) {
+        this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+          updatedRecords,
+        })
+
+        return this.walletService.updateWallets(updatedWallets)
+      }
+    } catch (err) {
+      Logger.error(err.message)
+    }
   }
 
   async initializeWallets() {
-    let wallets = await this.walletService.getAllWallets()
-    wallets = wallets.filter((wallet) => wallet.isActive)
-    this.activeEthWallets = wallets.filter(
-      (wallet) => wallet.type === IWalletType.ETHEREUM,
+    let addresses = await this.walletService.getAllAddresses()
+    addresses = addresses.filter((wallet) => wallet.isActive)
+
+    this.activeEthAddresses = addresses.filter(
+      (address) => address.wallet.coinType === ICoinType.ETHEREUM,
     )
-    this.activeBtcWallets = wallets.filter(
-      (wallet) => wallet.type === IWalletType.BITCOIN,
+    this.activeBtcAddresses = addresses.filter(
+      (address) => address.wallet.coinType === ICoinType.BITCOIN,
     )
   }
 
-  async getEthWallets(): Promise<IWallet[]> {
-    return this.activeEthWallets
+  async getEthWallets(): Promise<AddressEntity[]> {
+    return this.activeEthAddresses
   }
 
-  async getBtcWallets(): Promise<IWallet[]> {
-    return this.activeBtcWallets
+  async getBtcWallets(): Promise<AddressEntity[]> {
+    return this.activeBtcAddresses
   }
 
-  async getEthBalances(
-    wallets: IWallet[],
-  ): Promise<{ wallets: IWallet[]; balances: string[] }> {
-    const calls = wallets.map((wallet) => {
-      return this.ethcallProvider.getEthBalance(wallet.address)
-    })
-
-    const balances = await this.ethcallProvider.all(calls)
-
-    return {
-      wallets,
-      balances,
-    }
-  }
-
-  /**
-   * Only update the changed balances in wallet database
-   * @param wallets wallets
-   * @param balances balances
-   */
-  updateWalletHistory(wallets: IWallet[], balances: string[]) {
-    const updatedWallets = []
-    this.activeEthWallets = this.activeEthWallets.map((wallet) => {
-      const balanceIndex = wallets.findIndex(
-        (newWallet) => newWallet.id === wallet.id,
-      )
-      const newBalance = balances[balanceIndex].toString()
-      // check if the balance is changed
-      let balanceHistory: IBalanceHistory[]
+  runEthereumService() {
+    this.provider.on('block', async (blockNumber) => {
+      let block
       try {
-        balanceHistory = JSON.parse(wallet.balanceHistory)
+        block = await this.provider.getBlock(blockNumber)
       } catch (err) {
-        Logger.error(err)
+        Logger.error(err.message)
       }
-      if (!balanceHistory) {
-        balanceHistory = []
-      }
-
-      if (
-        balanceIndex !== -1 &&
-        (balanceHistory.length === 0 ||
-          balanceHistory[balanceHistory.length - 1].balance !== newBalance)
-      ) {
-        balanceHistory.push({
-          balance: newBalance,
-          date: new Date(),
-        })
-        updatedWallets.push({
-          ...wallet,
-          balanceHistory: JSON.stringify(balanceHistory),
-        })
-        return {
-          ...wallet,
-          balanceHistory: JSON.stringify(balanceHistory),
-        }
-      }
-      return wallet
-    })
-    if (updatedWallets.length > 0) {
-      this.httpService.post(`http://localhost:3333/api/portfolio/updated`, {
-        updatedWallets,
-      })
-
-      this.walletService.updateWalletsHistory(updatedWallets)
-    }
-  }
-
-  runService() {
-    let blockCount = 0
-    this.provider.on('block', async () => {
-      Logger.log('Run the Portfolio service')
-      if (blockCount % this.intervalBlocks === 0) {
-        const { wallets, balances } = await this.getEthBalances(
-          this.activeEthWallets,
+      if (block && block.transactions) {
+        const promises = block.transactions.map((txHash) =>
+          this.provider.getTransaction(txHash),
         )
-        this.updateWalletHistory(wallets, balances)
-        blockCount = 0
-      }
-      blockCount++
-    })
-  }
 
-  async addNewWallet(
-    account_id: number,
-    newAddress: string,
-    type: IWalletType,
-  ): Promise<IWallet> {
-    const account = await this.accountService.lookup({
-      id: account_id,
+        const currentAddresses: string[] = this.activeEthAddresses.map(
+          (address) => address.address.toLowerCase(),
+        )
+        Promise.allSettled(promises).then(async (results) => {
+          const updatedAddresses = []
+          await Promise.all(
+            results.map(async (tx) => {
+              if (
+                tx.status === 'fulfilled' &&
+                tx.value.value.toString() !== '0'
+              ) {
+                let amount = BigNumber.from(0)
+                if (
+                  tx.value.from &&
+                  currentAddresses.includes(tx.value.from.toLowerCase())
+                ) {
+                  const fee = BigNumber.from(tx.value.gasPrice).mul(
+                    BigNumber.from(tx.value.gasLimit),
+                  )
+                  amount = amount.sub(BigNumber.from(tx.value.value)).sub(fee)
+                }
+                if (
+                  tx.value.to &&
+                  currentAddresses.includes(tx.value.to.toLowerCase())
+                ) {
+                  amount = amount.add(BigNumber.from(tx.value.value))
+                }
+                if (!amount.isZero()) {
+                  const updatedAddress = this.activeEthAddresses.find(
+                    (address) => address.address === tx.value.from,
+                  )
+                  const history = updatedAddress.history
+                  const record = await this.walletService.addHistory({
+                    address: updatedAddress,
+                    from: tx.value.from,
+                    to: tx.value.to,
+                    amount: tx.value.value.toString(),
+                    hash: tx.value.hash,
+                    balance: history.length
+                      ? BigNumber.from(history[history.length - 1].balance)
+                          .add(amount)
+                          .toString()
+                      : amount.toString(),
+                    timestamp: this.walletService.getCurrentTimeBySeconds(),
+                  })
+                  history.push(record)
+                  updatedAddress.history = history
+                  updatedAddresses.push(updatedAddress)
+                }
+              }
+            }),
+          )
+
+          if (updatedAddresses.length > 0) {
+            this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+              updatedAddresses,
+            })
+
+            return this.walletService.updateWallets(updatedAddresses)
+          }
+        })
+      }
     })
-    if (!account) {
-      throw new Error('Invalid account')
-    }
-    const res = await this.walletService.addNewWallet({
-      account,
-      address: newAddress,
-      type,
-    })
-    await this.initializeWallets()
-    return res
   }
 }

@@ -5,8 +5,8 @@ export enum IWalletType {
   BITCOIN = 'btc',
 }
 
-interface IAccount {
-  id: number
+export interface IAccount {
+  id?: number
   email: string
   name: string
 }
@@ -22,7 +22,7 @@ export interface IWallet {
 
 export interface IBalanceHistory {
   balance: string
-  date: Date
+  date: number
 }
 
 export interface IUpdatedHistory {

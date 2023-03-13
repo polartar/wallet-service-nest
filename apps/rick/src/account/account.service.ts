@@ -15,7 +15,11 @@ export class AccountService {
     private readonly accountRepository: Repository<AccountEntity>,
   ) {}
 
-  create(createAccount: CreateAccountDto): Promise<AccountEntity> {
+  async create(createAccount: CreateAccountDto): Promise<AccountEntity> {
+    const existingAccount = await this.lookup({ email: createAccount.email })
+    if (existingAccount) {
+      throw new Error('Email already exists')
+    }
     return this.accountRepository.save(createAccount)
   }
 

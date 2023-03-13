@@ -3,6 +3,6 @@ import { IWalletType } from '../wallet.types'
 
 export class AddWalletDto {
   account: AccountEntity
-  address: string
-  type: IWalletType
+  xPub: string
+  walletType: IWalletType
 }

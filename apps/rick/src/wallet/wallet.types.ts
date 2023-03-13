@@ -1,17 +1,50 @@
-export enum IWalletType {
+import { EPeriod } from '@rana/core'
+
+export enum ICoinType {
   ETHEREUM = 'eth',
   BITCOIN = 'btc',
 }
 
-export interface IWallet {
-  id?: number
-  address: string
-  type: IWalletType
-  balanceHistory: string
-  isActive?: boolean
+export enum IWalletType {
+  HOTWALLET = 'hotwallet',
+  VAULT = 'vault',
+  METAMASK = 'metamask',
 }
 
-export interface IBalanceHistory {
-  balance: string
-  date: Date
+export const SecondsIn: {
+  [key in EPeriod]: number | null
+} = {
+  [EPeriod.Day]: 3600 * 24,
+  [EPeriod.Week]: 3600 * 24 * 7,
+  [EPeriod.Month]: 3600 * 24 * 30,
+  [EPeriod.Months]: 3600 * 24 * 30,
+  [EPeriod.Year]: 3600 * 24 * 365,
+  [EPeriod.All]: null,
+}
+
+export enum IAddressPath {
+  BTC = '/0/1',
+  ETH = '/0/5',
+}
+
+export enum IWalletPath {
+  BTC = 'm/44/0/0',
+  ETH = 'm/44/60/0',
+}
+
+export interface IBTCTransactionResponse {
+  balance: number
+  txrefs: IBTCTransaction[]
+}
+
+export interface IBTCTransaction {
+  tx_hash: string
+  block_height: number
+  tx_input_n: number
+  tx_output_n: number
+  value: number
+  spent?: boolean
+  ref_balance: number
+  confirmations: number
+  confirmed: string
 }
