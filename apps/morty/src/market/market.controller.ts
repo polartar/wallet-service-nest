@@ -7,7 +7,7 @@ export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
   @Get(':duration')
-  getMarketData(@Param('duration') duration: IDuration) {
+  getMarketDat(@Param('duration') duration: IDuration) {
     return this.marketService.getMarketData(duration)
   }
 }

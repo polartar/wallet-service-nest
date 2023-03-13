@@ -32,7 +32,9 @@ export class MarketService {
 
   private ethConnect() {
     try {
-      this.ethClient = new WebSocket(`ws://127.0.0.1:10000`)
+      this.ethClient = new WebSocket(
+        `wss://ws.coincap.io/prices?assets=ethereum`,
+      )
     } catch (err) {
       console.log(err)
     }
@@ -47,27 +49,22 @@ export class MarketService {
       this.ethConnect()
     }
 
-    this.ethClient.on('message', function (response) {
-      console.log({ response })
-      // const ethPrice = JSON.parse(response)['ethereum']
-      // Logger.log('ETH price', ethPrice)
+    this.ethClient.on('message', (response) => {
+      const ethPrice = JSON.parse(response)['ethereum']
+      this.httpService.post(`http://localhost:3000/market/ethereum`, ethPrice)
     })
 
     this.ethClient.on('close', () => {
-      Logger.log('closed')
       this.ethIntervalInstance = setInterval(() => this.ethConnect(), 1000)
-    })
-    this.ethClient.on('error', function (e) {
-      Logger.log('error', e)
     })
   }
   subscribeBTCPrice() {
     if (!this.btcClient) {
       this.btcConnect()
     }
-    this.btcClient.on('message', function (response) {
+    this.btcClient.on('message', (response) => {
       const btcPrice = JSON.parse(response)['bitcoin']
-      Logger.log('BTC price', btcPrice)
+      this.httpService.post(`http://localhost:3000/market/bitcoin`, btcPrice)
     })
   }
 
