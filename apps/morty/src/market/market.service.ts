@@ -2,22 +2,20 @@ import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import { ICoinType, IDuration } from './market.type'
 import { Injectable, Logger } from '@nestjs/common'
-// import { Socket, io } from 'socket.io-client'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
-import * as CoinMarketCap from 'coinmarketcap-api'
-import { catchError, firstValueFrom } from 'rxjs'
-import { AxiosError, AxiosResponse } from 'axios'
+import { firstValueFrom } from 'rxjs'
+import { AxiosResponse } from 'axios'
 import { BTCMarketData, ETHMarketData } from './MarketData'
 @Injectable()
 export class MarketService {
-  COINMARKETCAP_RUL =
-    'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?limit=2'
   private ethClient = null
   private btcClient
-  private coinMarketClient
-  ethIntervalInstance
   coinMarketAPI
+  private fidelityAccessToken: string
+  private fidelityClientId: string
+  private fidelityClientSecret: string
+
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
@@ -25,10 +23,42 @@ export class MarketService {
     this.coinMarketAPI = this.configService.get<string>(
       EEnvironment.coinMarketAPI,
     )
+    this.fidelityClientId = this.configService.get<string>(
+      EEnvironment.fidelityClientId,
+    )
+    this.fidelityClientSecret = this.configService.get<string>(
+      EEnvironment.fidelityClientSecret,
+    )
 
-    this.coinMarketClient = new CoinMarketCap(this.coinMarketAPI)
     this.subscribeETHPrice()
     this.subscribeBTCPrice()
+    this.getAuthToken()
+  }
+
+  private async getAuthToken() {
+    const params = new URLSearchParams()
+    params.append('client_id', this.fidelityClientId)
+    params.append('client_secret', this.fidelityClientSecret)
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `https://api-live.fidelity.com/oauth/client_credential/accesstoken?grant_type=client_credentials`,
+          params,
+          config,
+        ),
+      )
+
+      this.fidelityAccessToken = response.data.access_token
+    } catch (err) {
+      Logger.error(err.message)
+    }
   }
 
   private ethConnect() {
@@ -103,10 +133,6 @@ export class MarketService {
   }
 
   async getMarketData(coin: ICoinType) {
-    // const startDate = new Date(this.getDurationTime(duration))
-    // const interval = this.getInterval(this.getDurationTime(duration))
-
-    // // const apiURL = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?&vs_currency=USD&days=${days}`
     const apiURL =
       'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
     const res = await firstValueFrom(
@@ -164,12 +190,15 @@ export class MarketService {
   }
 
   async getHistoricalData(coin: ICoinType, duration: IDuration) {
-    // const startDate = new Date(this.getDurationTime(duration))
-    // const interval = this.getInterval(this.getDurationTime(duration))
-    // const apiURL = `SherkLock URL`
-    // const res = await firstValueFrom(
-    //   this.httpService.get<AxiosResponse>(apiURL),
-    // )
+    const startDate = new Date(this.getDurationTime(duration))
+    const interval = this.getInterval(this.getDurationTime(duration))
+    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/btc/price`
+    const res = await firstValueFrom(
+      this.httpService.get<AxiosResponse>(apiURL, {
+        headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
+      }),
+    )
+    console.log(res)
     return [
       {
         exchange: 'Summary',
