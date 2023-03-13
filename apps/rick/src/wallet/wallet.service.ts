@@ -6,7 +6,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ICoinType, IWalletType, SecondsIn } from './wallet.types'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
@@ -91,7 +91,6 @@ export class WalletService {
     let currentBalance = balance
     const allHistories = await Promise.all(
       history.reverse().map((record) => {
-        console.log({ record })
         const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
         const walletAddress = address.address.toLowerCase()

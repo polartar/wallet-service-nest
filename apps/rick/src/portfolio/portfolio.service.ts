@@ -3,7 +3,6 @@ import { ICoinType } from './../wallet/wallet.types'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
-import { Provider } from 'ethers-multicall'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
@@ -15,7 +14,6 @@ export class PortfolioService {
   activeEthAddresses: AddressEntity[]
   activeBtcAddresses: AddressEntity[]
   provider: Ethers.providers.JsonRpcProvider
-  ethcallProvider: Provider
   princessAPIUrl: string
   btcSocket
 
@@ -39,15 +37,9 @@ export class PortfolioService {
       isProd ? 'mainnet' : 'goerli',
       infura_key,
     )
-
-    this.ethcallProvider = new Provider(this.provider)
-    this.ethcallProvider.init()
   }
 
   async onBTCTransaction(transaction) {
-    console.log(transaction)
-    console.log(transaction.inputs)
-    console.log(transaction.out)
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
@@ -153,80 +145,6 @@ export class PortfolioService {
     return this.activeBtcAddresses
   }
 
-  // async getEthBalances(
-  //   wallets: WalletEntity[],
-  // ): Promise<{ wallets: WalletEntity[]; balances: string[] }> {
-  //   if (wallets.length === 0) {
-  //     return {
-  //       wallets: [],
-  //       balances: [],
-  //     }
-  //   }
-  //   const calls = wallets.map((wallet) => {
-  //     return this.ethcallProvider.getEthBalance(wallet.address)
-  //   })
-  //   try {
-  //     const balances = await this.ethcallProvider.all(calls)
-
-  //     return {
-  //       wallets,
-  //       balances,
-  //     }
-  //   } catch (err) {
-  //     Logger.log(err.message)
-  //     return {
-  //       wallets: [],
-  //       balances: [],
-  //     }
-  //   }
-  // }
-
-  // /**
-  //  * Only update the changed balances in wallet database
-  //  * @param wallets wallets
-  //  * @param balances balances
-  //  */
-  // async updateWalletHistory(wallets: WalletEntity[], balances: string[]) {
-  //   const updatedRecords = []
-  //   try {
-  //     this.activeEthAddresses = await Promise.all(
-  //       this.activeEthAddresses.map(async (wallet) => {
-  //         const balanceIndex = wallets.findIndex(
-  //           (newWallet) => newWallet.id === wallet.id,
-  //         )
-  //         const newBalance = balances[balanceIndex].toString()
-  //         const history = wallet.history || []
-  //         // check if the balance is changed
-  //         if (
-  //           balanceIndex !== -1 &&
-  //           (history.length === 0 ||
-  //             history[history.length - 1].balance !== newBalance)
-  //         ) {
-  //           const record = await this.walletService.addRecord({
-  //             wallet: wallet,
-  //             balance: newBalance,
-  //             timestamp: this.walletService.getCurrentTimeBySeconds(),
-  //           })
-  //           history.push(record)
-  //           updatedRecords.push(record)
-  //         }
-  //         wallet.history = history
-  //         wallets[balanceIndex].history = history
-  //         return wallet
-  //       }),
-  //     )
-  //     if (updatedRecords.length > 0) {
-  //       this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-  //         updatedRecords,
-  //       })
-
-  //       return this.walletService.updateWallets(wallets)
-  //     }
-  //   } catch (err) {
-  //     Logger.error(err.message)
-  //   }
-  // }
-
   runService() {
     this.provider.on('block', async (blockNumber) => {
       let block
@@ -300,15 +218,6 @@ export class PortfolioService {
 
             return this.walletService.updateWallets(updatedAddresses)
           }
-          // need to update this logic
-          // const { wallets, balances } = await this.getEthBalances(
-          //   this.activeEthAddresses.filter((wallet) =>
-          //     updatedAddresses.includes(wallet.address),
-          //   ),
-          // )
-          // if (wallets.length !== 0) {
-          //   this.updateWalletHistory(wallets, balances)
-          // }
         })
       }
     })
