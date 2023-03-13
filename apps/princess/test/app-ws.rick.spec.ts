@@ -1,8 +1,6 @@
 import { MarketModule } from './../src/market/market.module'
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 
-import { PortfolioController } from '../../rick/src/portfolio/portfolio.controller'
-
 import { WalletModule } from '../../rick/src/wallet/wallet.module'
 import { AccountModule } from '../../rick/src/account/account.module'
 import { WalletEntity } from '../../rick/src/wallet/wallet.entity'
@@ -24,6 +22,8 @@ import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger } from '@nestjs/common'
 import { MarketService } from '../src/market/market.service'
+import { WalletController } from '../../rick/src/wallet/wallet.controller'
+import { IPortfolioDuration } from '../src/gateways/rick.types'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
@@ -70,7 +70,7 @@ const runPortfolioModule = async () => {
       WalletModule,
       AccountModule,
     ],
-    controllers: [PortfolioController],
+    controllers: [WalletController],
     providers: [PortfolioService],
   }).compile()
 
@@ -92,8 +92,8 @@ describe('RickGateway', () => {
     princessPortfoloApp.useLogger(new Logger())
     await princessPortfoloApp.listen(3335)
 
-    portfoloApp = await runPortfolioModule()
-    await portfoloApp.listen(3333)
+    // portfoloApp = await runPortfolioModule()
+    // await portfoloApp.listen(3333)
     // Connect the client
     socket = io('http://localhost:3335/')
   })
@@ -109,7 +109,7 @@ describe('RickGateway', () => {
       })
     })
 
-    it('Get wallet history', async () => {
+    it('Get all wallet history', async () => {
       const accountId = 1
       const channelId = `portfolio_history`
       const data = await new Promise((resolve) => {
@@ -119,6 +119,23 @@ describe('RickGateway', () => {
           resolve(JSON.parse(data))
         })
         socket.emit('get_portfolio_history', { accountId })
+      })
+      expect(data).toBeDefined()
+    })
+
+    it('Get wallet history for 1D', async () => {
+      const accountId = 1
+      const channelId = `portfolio_history`
+      const data = await new Promise((resolve) => {
+        socket.on(channelId, (data) => {
+          Logger.log('1D history received', data)
+
+          resolve(JSON.parse(data))
+        })
+        socket.emit('get_portfolio_history', {
+          accountId,
+          period: IPortfolioDuration.DAY,
+        })
       })
       expect(data).toBeDefined()
     })

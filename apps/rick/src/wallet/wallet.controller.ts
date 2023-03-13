@@ -38,7 +38,6 @@ export class WalletController {
     @Param('address') address: string,
     @Body('account_id') account_id: number,
   ) {
-    console.log(address, account_id)
     const account = await this.accountService.lookup({
       id: account_id,
     })
