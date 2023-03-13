@@ -23,11 +23,11 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger } from '@nestjs/common'
 import { MarketService } from '../src/market/market.service'
 import { WalletController } from '../../rick/src/wallet/wallet.controller'
-import { IPortfolioDuration } from '../src/gateways/rick.types'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
     imports: [
+      ConfigModule.forRoot({ load: [Environment] }),
       RickModule, //
       HttpModule,
       PortfolioModule,
@@ -116,7 +116,7 @@ describe('RickGateway', () => {
         socket.on(channelId, (data) => {
           Logger.log('history received', data)
 
-          resolve(JSON.parse(data))
+          resolve(data)
         })
         socket.emit('get_portfolio_history', { accountId })
       })
@@ -130,11 +130,11 @@ describe('RickGateway', () => {
         socket.on(channelId, (data) => {
           Logger.log('1D history received', data)
 
-          resolve(JSON.parse(data))
+          resolve(data)
         })
         socket.emit('get_portfolio_history', {
           accountId,
-          period: IPortfolioDuration.DAY,
+          period: '1D',
         })
       })
       expect(data).toBeDefined()

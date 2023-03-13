@@ -126,7 +126,6 @@ describe('WalletController', () => {
     )
 
     const walletsHistory = await controller.getHistory(1, 'All')
-    console.log({ walletsHistory })
     expect(walletsHistory[1].history.length).toBe(txResponse.data.txrefs.length)
   })
 
