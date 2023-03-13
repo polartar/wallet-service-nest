@@ -4,24 +4,25 @@ import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import {
-  IBalanceHistory,
-  ISockets,
-  IUpdatedHistory,
-  IWallet,
-} from './portfolio.types'
+import { IAccount, ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
-import { max } from 'class-validator'
+import { EEnvironment } from '../environments/environment.types'
+import { ConfigService } from '@nestjs/config'
+import { IWalletType } from './portfolio.types'
 
 @Injectable()
 export class PortfolioService {
   clients: ISockets
   PORTFOLIO_UPDATE_CHANNEL = 'portfolio_update'
-  RICK_API_URL = 'http://localhost:3333'
+  rickApiUrl
 
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
     this.clients = {}
+    this.rickApiUrl = this.configService.get<string>(EEnvironment.rickApiUrl)
   }
 
   async getWalletHistory(data: IRickGetPortfolioHistory) {
@@ -29,7 +30,7 @@ export class PortfolioService {
       data.periods.map((period) =>
         firstValueFrom(
           this.httpService.get(
-            `${this.RICK_API_URL}/wallet/${data.accountId}?period=${period}`,
+            `${this.rickApiUrl}/wallet/${data.accountId}?period=${period}`,
           ),
         ),
       ),
@@ -107,7 +108,7 @@ export class PortfolioService {
 
   getAccount(accountId: number): Observable<AxiosResponse> {
     return this.httpService
-      .get<AxiosResponse>(`${this.RICK_API_URL}/account/${accountId}`)
+      .get<AxiosResponse>(`${this.rickApiUrl}/account/${accountId}`)
       .pipe(
         catchError((error: AxiosError) => {
           throw 'An error happened!' + error.message
@@ -115,25 +116,30 @@ export class PortfolioService {
       )
   }
 
-  // createAccount(data: IAccount): Observable<AxiosResponse> {
-  //   return this.httpService
-  //     .post<AxiosResponse>(`${this.RICK_API_URL}/account`, { ...data })
-  //     .pipe(
-  //       catchError((error: AxiosError) => {
-  //         throw 'An error happened!' + error.message
-  //       }),
-  //     )
-  // }
+  createAccount(data: IAccount): Observable<AxiosResponse> {
+    return this.httpService
+      .post<AxiosResponse>(`${this.rickApiUrl}/account`, { ...data })
+      .pipe(
+        catchError((error: AxiosError) => {
+          throw 'An error happened!' + error.message
+        }),
+      )
+  }
 
-  // addWallet(address: string, accountId: number): Observable<AxiosResponse> {
-  //   return this.httpService
-  //     .post<AxiosResponse>(`${this.RICK_API_URL}/wallet/${address}`, {
-  //       account_id: accountId,
-  //     })
-  //     .pipe(
-  //       catchError((error: AxiosError) => {
-  //         throw 'An error happened!' + error.message
-  //       }),
-  //     )
-  // }
+  addWallet(
+    address: string,
+    accountId: number,
+    type: IWalletType,
+  ): Observable<AxiosResponse> {
+    return this.httpService
+      .post<AxiosResponse>(`${this.rickApiUrl}/wallet/${address}`, {
+        account_id: accountId,
+        type,
+      })
+      .pipe(
+        catchError((error: AxiosError) => {
+          throw 'An error happened!' + error.message
+        }),
+      )
+  }
 }
