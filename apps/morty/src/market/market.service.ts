@@ -182,7 +182,11 @@ export class MarketService {
   }
 
   getInterval(period: EPeriod) {
-    if (period === EPeriod.Day || period === EPeriod.Month) {
+    if (
+      period === EPeriod.Day ||
+      period === EPeriod.Week ||
+      period === EPeriod.Month
+    ) {
       return '1HR'
     } else {
       return '1DAY'
