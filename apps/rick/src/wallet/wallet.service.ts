@@ -53,6 +53,11 @@ export class WalletService {
 
   async getAllAddresses(): Promise<AddressEntity[]> {
     return await this.addressRepository.find({
+      order: {
+        history: {
+          timestamp: 'DESC',
+        },
+      },
       relations: {
         wallet: true,
         history: true,
