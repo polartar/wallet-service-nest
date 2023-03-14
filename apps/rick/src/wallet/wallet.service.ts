@@ -221,7 +221,6 @@ export class WalletService {
       address.history = allHistories
     } catch (err) {
       Logger.log(err.message)
-      console.error(err)
       throw new Error('Invalid API key or API limit error')
     }
 
