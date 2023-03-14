@@ -185,7 +185,7 @@ export class PortfolioService {
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
                     BigNumber.from(tx.value.gasLimit),
                   )
-                  amount = amount.sub(BigNumber.from(tx.value.value)).sub(fee)
+                  amount = BigNumber.from(tx.value.value).add(fee)
                 }
                 if (
                   tx.value.to &&
