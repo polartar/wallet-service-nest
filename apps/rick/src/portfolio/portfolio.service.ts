@@ -157,6 +157,7 @@ export class PortfolioService {
       } catch (err) {
         Logger.error(err.message)
       }
+
       if (block && block.transactions) {
         const promises = block.transactions.map((txHash) =>
           this.provider.getTransaction(txHash),
@@ -165,6 +166,7 @@ export class PortfolioService {
         const currentAddresses: string[] = this.activeEthAddresses.map(
           (address) => address.address.toLowerCase(),
         )
+
         Promise.allSettled(promises).then(async (results) => {
           const updatedAddresses = []
           await Promise.all(
