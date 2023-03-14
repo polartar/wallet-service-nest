@@ -53,6 +53,11 @@ export class WalletService {
 
   async getAllAddresses(): Promise<AddressEntity[]> {
     return await this.addressRepository.find({
+      order: {
+        history: {
+          timestamp: 'DESC',
+        },
+      },
       relations: {
         wallet: true,
         history: true,
@@ -216,7 +221,6 @@ export class WalletService {
       address.history = allHistories
     } catch (err) {
       Logger.log(err.message)
-      console.error(err)
       throw new Error('Invalid API key or API limit error')
     }
 

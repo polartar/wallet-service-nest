@@ -113,9 +113,10 @@ describe('WalletController', () => {
   })
 
   it('should add new BTC wallet', async () => {
+    await accountService.create({ email: 'test1@gmail.com', name: 'test1' })
     await controller.createPortfolio(
       'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-      1,
+      2,
       IWalletType.VAULT,
       // ICoinType.ETHEREUM,
     )
@@ -125,14 +126,14 @@ describe('WalletController', () => {
     expect(btcWallets[0].address).toBe('myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx')
   })
 
-  it('should get wallet history for the BTC account for 1 month', async () => {
+  it('should get wallet history for the BTC account', async () => {
     const txResponse = await firstValueFrom(
       httpService.get(
         `https://api.blockcypher.com/v1/btc/test3/addrs/myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx`,
       ),
     )
 
-    const walletsHistory = await controller.getHistory(1, EPeriod.All)
+    const walletsHistory = await controller.getHistory(2, EPeriod.All)
 
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       txResponse.data.txrefs.length,

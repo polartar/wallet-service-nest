@@ -68,9 +68,7 @@ export class PortfolioService {
 
             inputs.splice(index, 1)
 
-            const currBalance = history.length
-              ? Number(history[history.length - 1].balance)
-              : 0
+            const currBalance = history.length ? Number(history[0].balance) : 0
             const record = await this.walletService.addHistory({
               address: address,
               from: '',
@@ -92,9 +90,7 @@ export class PortfolioService {
             )
             const receiverInfo = transaction.out[index]
             transaction.out.splice(index, 1)
-            const currBalance = history.length
-              ? Number(history[history.length - 1].balance)
-              : 0
+            const currBalance = history.length ? Number(history[0].balance) : 0
 
             const record = await this.walletService.addHistory({
               address,
@@ -161,6 +157,7 @@ export class PortfolioService {
       } catch (err) {
         Logger.error(err.message)
       }
+
       if (block && block.transactions) {
         const promises = block.transactions.map((txHash) =>
           this.provider.getTransaction(txHash),
@@ -169,15 +166,15 @@ export class PortfolioService {
         const currentAddresses: string[] = this.activeEthAddresses.map(
           (address) => address.address.toLowerCase(),
         )
+
         Promise.allSettled(promises).then(async (results) => {
           const updatedAddresses = []
           await Promise.all(
             results.map(async (tx) => {
-              if (
-                tx.status === 'fulfilled' &&
-                tx.value.value.toString() !== '0'
-              ) {
+              if (tx.status === 'fulfilled') {
                 let amount = BigNumber.from(0)
+                let updatedAddress: AddressEntity
+
                 if (
                   tx.value.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
@@ -185,18 +182,25 @@ export class PortfolioService {
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
                     BigNumber.from(tx.value.gasLimit),
                   )
-                  amount = amount.sub(BigNumber.from(tx.value.value)).sub(fee)
+                  amount = BigNumber.from(tx.value.value).add(fee)
+                  updatedAddress = this.activeEthAddresses.find(
+                    (address) =>
+                      address.address.toLowerCase() ===
+                      tx.value.from.toLowerCase(),
+                  )
                 }
                 if (
                   tx.value.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
                 ) {
-                  amount = amount.add(BigNumber.from(tx.value.value))
+                  amount = amount.sub(BigNumber.from(tx.value.value))
+                  updatedAddress = this.activeEthAddresses.find(
+                    (address) =>
+                      address.address.toLowerCase() ===
+                      tx.value.to.toLowerCase(),
+                  )
                 }
                 if (!amount.isZero()) {
-                  const updatedAddress = this.activeEthAddresses.find(
-                    (address) => address.address === tx.value.from,
-                  )
                   const history = updatedAddress.history
                   const record = await this.walletService.addHistory({
                     address: updatedAddress,
@@ -205,10 +209,10 @@ export class PortfolioService {
                     amount: tx.value.value.toString(),
                     hash: tx.value.hash,
                     balance: history.length
-                      ? BigNumber.from(history[history.length - 1].balance)
-                          .add(amount)
+                      ? BigNumber.from(history[0].balance)
+                          .sub(amount)
                           .toString()
-                      : amount.toString(),
+                      : BigNumber.from(tx.value.value).toString(),
                     timestamp: this.walletService.getCurrentTimeBySeconds(),
                   })
                   history.push(record)
