@@ -23,9 +23,6 @@ export class PortfolioService {
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
-    // const isProduction = this.configService.get<boolean>(
-    //   EEnvironment.isProduction,
-    // )
     this.btcSocket = new BlockchainSocket()
     // : new BlockchainSocket({ network: 3 }) // Testnet has error now
 
