@@ -1,4 +1,3 @@
-import { AddressEntity } from './../wallet/address.entity'
 import { PortfolioModule } from './../portfolio/portfolio.module'
 import { Module } from '@nestjs/common'
 
@@ -11,7 +10,6 @@ import { Environment } from '../environments/environment.dev'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { AccountEntity } from '../account/account.entity'
-import { HistoryEntity } from '../wallet/history.entity'
 import { HttpModule } from '@nestjs/axios'
 
 @Module({
