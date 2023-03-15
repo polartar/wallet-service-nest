@@ -11,23 +11,7 @@ import { HttpModule } from '@nestjs/axios'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [Environment] }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5431,
-      username: 'myusername',
-      password: 'mypassword',
-      database: 'rick',
-      entities: [
-        AccountEntity, //
-        WalletEntity,
-      ],
-      // TODO: Maybe disable in production?
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
-    AccountModule,
+    AccountModule, //
     HttpModule,
     forwardRef(() => WalletModule),
   ],

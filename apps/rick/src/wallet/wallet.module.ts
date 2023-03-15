@@ -14,7 +14,6 @@ import { AddressEntity } from './address.entity'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [Environment] }),
     TypeOrmModule.forFeature([
       WalletEntity, //
       AccountEntity,

@@ -10,6 +10,7 @@ import { Environment } from '../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
 import { HistoryEntity } from '../wallet/history.entity'
 import { AddressEntity } from '../wallet/address.entity'
+import { AppModule } from '../app/app.module'
 
 describe('PortfolioService', () => {
   let service: PortfolioService
@@ -37,6 +38,7 @@ describe('PortfolioService', () => {
           AddressEntity,
           HistoryEntity,
         ]),
+        AppModule,
         AccountModule,
         WalletModule,
         HttpModule,
