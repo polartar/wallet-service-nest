@@ -11,8 +11,6 @@ export class NftService {
       EEnvironment.alchemyAPIKey,
     )
     const isProd = this.configService.get<boolean>(EEnvironment.isProduction)
-    console.log(alchemyAPIKey)
-    console.log('SDDSDS', process.env.ALCHEMY_API_KEY)
     const settings = {
       apiKey: alchemyAPIKey,
       network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
@@ -23,7 +21,11 @@ export class NftService {
 
   async getNFTAssets(address: string): Promise<INFTAssetResponse> {
     try {
-      const response = await this.alchemyInstance.nft.getNftsForOwner(address)
+      const response = await this.alchemyInstance.nft.getNftsForOwner(address, {
+        pageKey:
+          'MHg2NWYyZDE0MzliMGQzN2QyMTZmOGUxMTk0NWEzZWUwMmQ1MWI0YjJmOjB4ZWI6ZmFsc2U=',
+      })
+
       return {
         success: true,
         data: response.ownedNfts,

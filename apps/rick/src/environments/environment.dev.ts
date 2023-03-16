@@ -10,6 +10,6 @@ export const Environment = () => {
       process.env.PRINCESS_API_URL || 'http://localhost3000',
     [EEnvironment.alchemyAPIKey]: process.env.ALCHEMY_API_KEY, // Please remember that the mainnet key and testnet key are different in Alchemy
   }
-  console.log({ env })
+
   return env
 }
