@@ -7,7 +7,7 @@ export interface INFTAssetResponse {
   data?: {
     total: number
     pageNumber: number
-    isNextPage: boolean
+    hasNextPage: boolean
     countPerPage: number
     nfts: INFTInfo[]
   }

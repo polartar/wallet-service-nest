@@ -6,8 +6,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { INFTAssetResponse, INTAssetInput } from './nft.types'
 @Injectable()
 export class NftService {
-  alchemyInstance
-  isProd
+  isProd: boolean
   constructor(private configService: ConfigService) {
     const moralisAPIKey = this.configService.get<string>(
       EEnvironment.moralisAPIKey,
@@ -50,7 +49,7 @@ export class NftService {
           total: obj.total,
           pageNumber: obj.page,
           countPerPage: obj.page_size,
-          isNextPage: response.hasNext(),
+          hasNextPage: response.hasNext(),
           nfts: obj.result,
         },
       }
