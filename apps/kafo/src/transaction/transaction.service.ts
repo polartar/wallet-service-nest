@@ -163,34 +163,23 @@ export class TransactionService {
   }
 
   async generateNFTRawTransaction(tx: INFTTransactionInput) {
-    // const nftContract = new Contract(
-    //   tx.contractAddress,
-    //   tx.tokenType === ENFTTypes.ERC1155 ? ERC1155ABI : ERC721ABI,
-    //   this.provider,
-    // )
-    // const params =
-    //   tx.tokenType === ENFTTypes.ERC721
-    //     ? [tx.from, tx.to, tx.tokenId]
-    //     : [tx.from, tx.to, tx.tokenId, tx.amount, '']
-
-    // const action = 'safeTransferFrom'
-    // const data = await nftContract.populateTransaction[action](...params)
     const iface = new ethers.utils.Interface(
       tx.type === ENFTTypes.ERC1155 ? this.ERC1155ABI : this.ERC721ABI,
     )
-    const data = ENFTTypes.ERC1155
-      ? iface.encodeFunctionData('safeTransferFrom', [
-          tx.from,
-          tx.to,
-          tx.tokenId,
-          tx.amount,
-          '0x',
-        ])
-      : iface.encodeFunctionData('safeTransferFrom', [
-          tx.from,
-          tx.to,
-          tx.tokenId,
-        ])
+    const data =
+      tx.type === ENFTTypes.ERC1155
+        ? iface.encodeFunctionData('safeTransferFrom', [
+            tx.from,
+            tx.to,
+            tx.tokenId,
+            tx.amount,
+            '0x',
+          ])
+        : iface.encodeFunctionData('safeTransferFrom', [
+            tx.from,
+            tx.to,
+            tx.tokenId,
+          ])
 
     const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
     const unsignedTx = {
@@ -198,19 +187,14 @@ export class TransactionService {
       gasPrice: await this.provider.getGasPrice(),
       gasLimit: '0x55F0',
       chainId: this.isProduction ? 1 : 5,
-      from: tx.from,
       to: tx.to,
       value: 0,
       data: data, // my encoded ABI for the transfer method
-      // v: '0x1',
-      // r: '0x',
-      // s: '0x',
+      v: '0x1',
+      r: '0x',
+      s: '0x',
     }
-
     const serializedTx = serializeTransaction(unsignedTx)
-    // serializeTransaction()
-    console.log(serializedTx)
-    console.log(parseTransaction(serializedTx))
     return serializedTx
   }
 }

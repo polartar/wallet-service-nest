@@ -173,7 +173,7 @@ export class PortfolioService {
                 let updatedAddress: AddressEntity
 
                 if (
-                  tx.value.from &&
+                  tx.value?.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
                 ) {
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
