@@ -62,3 +62,17 @@ export interface ITransaction {
   pubkeys?: string[]
   signatures?: string[]
 }
+
+export interface INFTTransactionInput {
+  from: string
+  to: string
+  contractAddress: string
+  tokenId: number
+  amount?: number
+  type: ENFTTypes
+}
+
+export enum ENFTTypes {
+  ERC721 = 'ERC721',
+  ERC1155 = 'ERC1155',
+}

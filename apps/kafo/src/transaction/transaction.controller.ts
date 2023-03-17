@@ -11,6 +11,7 @@ import { TransactionService } from './transaction.service'
 import {
   ICoinType,
   IFeeResponse,
+  INFTTransactionInput,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
@@ -42,5 +43,13 @@ export class TransactionController {
     @Param('coin', new ParseEnumPipe(ICoinType)) coin: ICoinType,
   ): Promise<IFeeResponse> {
     return await this.service.getFee(coin)
+  }
+
+  @Post('nft/raw-transaction')
+  // @UsePipes(new TransactionInputPipe())
+  generateNFTRawTransaction(
+    @Body() data: INFTTransactionInput,
+  ): Promise<string> {
+    return this.service.generateNFTRawTransaction(data)
   }
 }

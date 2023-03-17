@@ -3,19 +3,30 @@ import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
+  ENFTTypes,
   ICoinType,
   IFeeResponse,
+  INFTTransactionInput,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
+import { parseTransaction, serializeTransaction } from 'ethers/lib/utils'
 
 @Injectable()
 export class TransactionService {
   blockcypherToken: string
   isProduction: boolean
+  provider: ethers.providers.JsonRpcProvider
+  ERC721ABI = [
+    'function safeTransferFrom(address to, address from, uint256 tokenId)',
+  ]
+  ERC1155ABI = [
+    'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
+  ]
+
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
@@ -25,6 +36,13 @@ export class TransactionService {
     )
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
+    )
+
+    const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
+
+    this.provider = new ethers.providers.InfuraProvider(
+      this.isProduction ? 'mainnet' : 'goerli',
+      infura_key,
     )
   }
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
@@ -142,5 +160,57 @@ export class TransactionService {
         success: false,
       }
     }
+  }
+
+  async generateNFTRawTransaction(tx: INFTTransactionInput) {
+    // const nftContract = new Contract(
+    //   tx.contractAddress,
+    //   tx.tokenType === ENFTTypes.ERC1155 ? ERC1155ABI : ERC721ABI,
+    //   this.provider,
+    // )
+    // const params =
+    //   tx.tokenType === ENFTTypes.ERC721
+    //     ? [tx.from, tx.to, tx.tokenId]
+    //     : [tx.from, tx.to, tx.tokenId, tx.amount, '']
+
+    // const action = 'safeTransferFrom'
+    // const data = await nftContract.populateTransaction[action](...params)
+    const iface = new ethers.utils.Interface(
+      tx.type === ENFTTypes.ERC1155 ? this.ERC1155ABI : this.ERC721ABI,
+    )
+    const data = ENFTTypes.ERC1155
+      ? iface.encodeFunctionData('safeTransferFrom', [
+          tx.from,
+          tx.to,
+          tx.tokenId,
+          tx.amount,
+          '0x',
+        ])
+      : iface.encodeFunctionData('safeTransferFrom', [
+          tx.from,
+          tx.to,
+          tx.tokenId,
+        ])
+
+    const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
+    const unsignedTx = {
+      nonce: txCount,
+      gasPrice: await this.provider.getGasPrice(),
+      gasLimit: '0x55F0',
+      chainId: this.isProduction ? 1 : 5,
+      from: tx.from,
+      to: tx.to,
+      value: 0,
+      data: data, // my encoded ABI for the transfer method
+      // v: '0x1',
+      // r: '0x',
+      // s: '0x',
+    }
+
+    const serializedTx = serializeTransaction(unsignedTx)
+    // serializeTransaction()
+    console.log(serializedTx)
+    console.log(parseTransaction(serializedTx))
+    return serializedTx
   }
 }

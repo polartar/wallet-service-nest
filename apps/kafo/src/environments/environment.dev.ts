@@ -11,6 +11,7 @@ export const Environment = () => {
   } = {
     [EEnvironment.blockcypherToken]: process.env.BLOCKCYPHER_TOKEN,
     [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
+    [EEnvironment.infuraAPIKey]: process.env.INFURA_API_KEY,
   }
   return env
 }
