@@ -7,13 +7,18 @@ import {
   ICoinType,
   IFeeResponse,
   INFTTransactionInput,
+  INFTTransactionResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { parseTransaction, serializeTransaction } from 'ethers/lib/utils'
+import {
+  hexlify,
+  parseTransaction,
+  serializeTransaction,
+} from 'ethers/lib/utils'
 
 @Injectable()
 export class TransactionService {
@@ -162,7 +167,9 @@ export class TransactionService {
     }
   }
 
-  async generateNFTRawTransaction(tx: INFTTransactionInput) {
+  async generateNFTRawTransaction(
+    tx: INFTTransactionInput,
+  ): Promise<INFTTransactionResponse> {
     const iface = new ethers.utils.Interface(
       tx.type === ENFTTypes.ERC1155 ? this.ERC1155ABI : this.ERC721ABI,
     )
@@ -180,21 +187,46 @@ export class TransactionService {
             tx.to,
             tx.tokenId,
           ])
+    try {
+      const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
 
-    const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-    const unsignedTx = {
-      nonce: txCount,
-      gasPrice: await this.provider.getGasPrice(),
-      gasLimit: '0x55F0',
-      chainId: this.isProduction ? 1 : 5,
-      to: tx.to,
-      value: 0,
-      data: data, // my encoded ABI for the transfer method
-      v: '0x1',
-      r: '0x',
-      s: '0x',
+      const unsignedTx = {
+        nonce: txCount,
+        gasPrice: hexlify(await this.provider.getGasPrice()),
+        gasLimit: '0x55F0',
+        chainId: this.isProduction ? 1 : 5,
+        to: tx.contractAddress,
+        value: 0,
+        data: data, // my encoded ABI for the transfer method
+      }
+
+      const serializedTx = serializeTransaction(unsignedTx)
+
+      return {
+        success: true,
+        data: serializedTx,
+      }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      }
     }
-    const serializedTx = serializeTransaction(unsignedTx)
-    return serializedTx
+  }
+
+  async sendNFTTransaction(signedHash: string) {
+    try {
+      const response = await this.provider.sendTransaction(signedHash)
+      console.log({ response })
+      return {
+        success: true,
+      }
+    } catch (err) {
+      console.log(err)
+      return {
+        success: false,
+        error: err.message,
+      }
+    }
   }
 }

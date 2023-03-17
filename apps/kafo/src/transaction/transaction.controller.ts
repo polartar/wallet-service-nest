@@ -12,6 +12,7 @@ import {
   ICoinType,
   IFeeResponse,
   INFTTransactionInput,
+  INFTTransactionResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
@@ -49,7 +50,15 @@ export class TransactionController {
   // @UsePipes(new TransactionInputPipe())
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
-  ): Promise<string> {
+  ): Promise<INFTTransactionResponse> {
     return this.service.generateNFTRawTransaction(data)
+  }
+
+  @Post('nft/send-transaction')
+  // @UsePipes(new TransactionInputPipe())
+  sendNFTTransaction(
+    @Body() signedHash: string,
+  ): Promise<INFTTransactionResponse> {
+    return this.service.sendNFTTransaction(signedHash)
   }
 }
