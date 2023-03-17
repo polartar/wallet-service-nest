@@ -8,7 +8,7 @@ export const Environment = () => {
     [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
     [EEnvironment.princessAPIUrl]:
       process.env.PRINCESS_API_URL || 'http://localhost3000',
-    [EEnvironment.alchemyAPIKey]: process.env.ALCHEMY_API_KEY, // Please remember that the mainnet key and testnet key are different in Alchemy
+    [EEnvironment.moralisAPIKey]: process.env.MORALIS_API_KEY,
   }
 
   return env

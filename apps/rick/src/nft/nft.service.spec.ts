@@ -24,10 +24,10 @@ describe('NftService', () => {
   })
 
   it('should get NFT assets', async () => {
-    const assets = await service.getNFTAssets(
-      '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-    )
+    const assets = await service.getNFTAssets({
+      address: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+    })
     expect(assets.success).toBeTruthy()
-    expect(assets.data.length).toBe(100)
+    expect(assets.data.nfts.length).toBe(100)
   })
 })

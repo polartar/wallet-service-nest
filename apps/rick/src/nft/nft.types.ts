@@ -1,25 +1,26 @@
+export interface INTAssetInput {
+  address: string
+  page?: number
+}
 export interface INFTAssetResponse {
   success: boolean
-  data?: INFTInfo[]
+  data?: {
+    total: number
+    pageNumber: number
+    isNextPage: boolean
+    countPerPage: number
+    nfts: INFTInfo[]
+  }
   error?: string
 }
 
 interface INFTInfo {
-  contract: {
-    address: string
-    name: string
-    symbol: string
-    totalSupply: string
-    tokenType: string
-    openSea: {
-      lastIngestedAt: Date
-    }
-    contractDeployer: string
-    deployedBlockNumber: number
-  }
-  tokenId: number
-  tokenType: string
-  title: string
-  description: string
-  balance: number
+  token_address: string
+  token_id: string
+  contract_type: string
+  owner_of: string
+  block_number: string
+  block_number_minted: string
+  token_uri?: string
+  metadata?: string
 }
