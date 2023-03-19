@@ -17,7 +17,12 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { TransactionInputPipe, TransactionPushPipe } from './transaction.pipe'
+import {
+  NFTTransactionRawPipe,
+  NFTTransactionSendPipe,
+  TransactionInputPipe,
+  TransactionPushPipe,
+} from './transaction.pipe'
 
 @Controller('transaction')
 export class TransactionController {
@@ -47,7 +52,7 @@ export class TransactionController {
   }
 
   @Post('nft/raw-transaction')
-  // @UsePipes(new TransactionInputPipe())
+  @UsePipes(new NFTTransactionRawPipe())
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
   ): Promise<INFTTransactionResponse> {
@@ -55,7 +60,7 @@ export class TransactionController {
   }
 
   @Post('nft/send-transaction')
-  // @UsePipes(new TransactionInputPipe())
+  @UsePipes(new NFTTransactionSendPipe())
   sendNFTTransaction(
     @Body() signedHash: string,
   ): Promise<INFTTransactionResponse> {
