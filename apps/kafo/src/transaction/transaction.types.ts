@@ -80,5 +80,5 @@ export enum ENFTTypes {
 export interface INFTTransactionResponse {
   success: boolean
   error?: string
-  data?: string
+  data?: string | object
 }

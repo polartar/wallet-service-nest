@@ -138,7 +138,7 @@ describe('TransactionController', () => {
     const provider = new ethers.providers.InfuraProvider('goerli', infura_key)
     const signer = new ethers.Wallet(nftOwnerKey, provider)
 
-    const unsignedTx = parseTransaction(unsignedTxResponse.data)
+    const unsignedTx = parseTransaction(unsignedTxResponse.data as string)
     const { type, r, v, s, ...newTx } = unsignedTx
 
     const signedTx = await signer.signTransaction(newTx)

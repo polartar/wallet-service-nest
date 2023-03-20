@@ -217,9 +217,10 @@ export class TransactionService {
   async sendNFTTransaction(signedHash: string) {
     try {
       const response = await this.provider.sendTransaction(signedHash)
-      console.log({ response })
+
       return {
         success: true,
+        data: response,
       }
     } catch (err) {
       console.log(err)
