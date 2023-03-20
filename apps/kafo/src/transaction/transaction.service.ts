@@ -14,11 +14,7 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import {
-  hexlify,
-  parseTransaction,
-  serializeTransaction,
-} from 'ethers/lib/utils'
+import { hexlify, serializeTransaction } from 'ethers/lib/utils'
 
 @Injectable()
 export class TransactionService {
@@ -224,7 +220,6 @@ export class TransactionService {
         data: response,
       }
     } catch (err) {
-      console.log(err)
       return {
         success: false,
         error: err.message,

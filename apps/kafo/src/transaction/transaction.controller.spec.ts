@@ -82,33 +82,33 @@ describe('TransactionController', () => {
     expect(controller).toBeDefined()
   })
 
-  // it('should publish the transaction', async () => {
-  //   const newTx = await getRawTransaction()
+  it('should publish the transaction', async () => {
+    const newTx = await getRawTransaction()
 
-  //   const tmpTx = signTransaction(privKey, newTx.data)
+    const tmpTx = signTransaction(privKey, newTx.data)
 
-  //   const finalTx = await controller.pushTransaction({
-  //     coinType: ICoinType.BITCOIN,
-  //     transaction: tmpTx,
-  //   })
-  //   expect(finalTx.success).toBeTruthy()
-  //   expect(finalTx.data.tx.outputs[0].value).toBe(1)
-  // })
+    const finalTx = await controller.pushTransaction({
+      coinType: ICoinType.BITCOIN,
+      transaction: tmpTx,
+    })
+    expect(finalTx.success).toBeTruthy()
+    expect(finalTx.data.tx.outputs[0].value).toBe(1)
+  })
 
-  // it('should not publish the transaction with invalid signature', async () => {
-  //   const newTx = await getRawTransaction()
+  it('should not publish the transaction with invalid signature', async () => {
+    const newTx = await getRawTransaction()
 
-  //   // invalid private key
-  //   const tmpTx = signTransaction(invalidPrivKey, newTx.data)
+    // invalid private key
+    const tmpTx = signTransaction(invalidPrivKey, newTx.data)
 
-  //   const finalTx = await controller.pushTransaction({
-  //     coinType: ICoinType.BITCOIN,
-  //     transaction: tmpTx,
-  //   })
+    const finalTx = await controller.pushTransaction({
+      coinType: ICoinType.BITCOIN,
+      transaction: tmpTx,
+    })
 
-  //   expect(finalTx.success).toBeFalsy()
-  //   expect(finalTx.errors.length).toBeGreaterThan(0)
-  // })
+    expect(finalTx.success).toBeFalsy()
+    expect(finalTx.errors.length).toBeGreaterThan(0)
+  })
 
   it('should generate the raw nft transfer transaction', async () => {
     const tx = {
@@ -139,6 +139,7 @@ describe('TransactionController', () => {
     const signer = new ethers.Wallet(nftOwnerKey, provider)
 
     const unsignedTx = parseTransaction(unsignedTxResponse.data as string)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { type, r, v, s, ...newTx } = unsignedTx
 
     const signedTx = await signer.signTransaction(newTx)
