@@ -193,7 +193,8 @@ export class TransactionService {
       const unsignedTx = {
         nonce: txCount,
         gasPrice: hexlify(await this.provider.getGasPrice()),
-        gasLimit: '0x55F0',
+        gasLimit: '0x156AB',
+        // gasLimit: '0x55F0',
         chainId: this.isProduction ? 1 : 5,
         to: tx.contractAddress,
         value: 0,
