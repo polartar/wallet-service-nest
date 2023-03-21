@@ -3,6 +3,7 @@ import { NewsService } from './news.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from './../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
+import { AppModule } from '../app/app.module'
 
 describe('NewsService', () => {
   let service: NewsService
@@ -12,6 +13,7 @@ describe('NewsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
+        AppModule,
         HttpModule,
       ],
       providers: [NewsService],
@@ -27,7 +29,7 @@ describe('NewsService', () => {
   it('should get top 5 news', async () => {
     const news = await service.getTopNews(5)
     expect((news as { data: [] }).data.length).toBe(5)
-  })
+  }, 10000)
 
   it('should get 5 news with pagination', async () => {
     const response = (await service.getNews({
@@ -40,5 +42,5 @@ describe('NewsService', () => {
 
     expect(response.data.news.length).toBe(5)
     expect(response.data.currentPage).toBe(1)
-  })
+  }, 10000)
 })

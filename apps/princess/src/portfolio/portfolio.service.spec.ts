@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { PortfolioService } from './portfolio.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
+import { AppModule } from '../app/app.module'
 
 describe('PortfolioService', () => {
   let service: PortfolioService
@@ -11,6 +12,7 @@ describe('PortfolioService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
+        AppModule,
         HttpModule,
       ],
       providers: [PortfolioService],

@@ -4,6 +4,7 @@ import { PortfolioService } from './portfolio.service'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
+import { AppModule } from '../app/app.module'
 
 describe('PortfolioController', () => {
   let controller: PortfolioController
@@ -12,6 +13,7 @@ describe('PortfolioController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
+        AppModule,
         HttpModule,
       ],
       controllers: [PortfolioController],
