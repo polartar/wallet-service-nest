@@ -1,5 +1,5 @@
 import { AddressEntity } from './../wallet/address.entity'
-import { Injectable, Logger } from '@nestjs/common'
+import { HttpException, Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -8,6 +8,7 @@ import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
 import { ICoinType } from '@rana/core'
+import { catchError, firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class PortfolioService {
@@ -118,8 +119,12 @@ export class PortfolioService {
       )
 
       if (updatedAddresses.length > 0) {
-        this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-          updatedAddresses,
+        firstValueFrom(
+          this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+            updatedAddresses,
+          }),
+        ).catch(() => {
+          Logger.log('Princess portfolio/updated api error')
         })
 
         return this.walletService.updateWallets(updatedAddresses)
@@ -224,8 +229,15 @@ export class PortfolioService {
           )
 
           if (updatedAddresses.length > 0) {
-            this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-              updatedAddresses,
+            firstValueFrom(
+              this.httpService.post(
+                `${this.princessAPIUrl}/portfolio/updated`,
+                {
+                  updatedAddresses,
+                },
+              ),
+            ).catch(() => {
+              Logger.log('Princess portfolio/updated api error')
             })
 
             return this.walletService.updateWallets(updatedAddresses)

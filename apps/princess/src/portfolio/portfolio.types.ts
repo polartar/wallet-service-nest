@@ -53,3 +53,16 @@ export interface IUpdatedHistory {
 export interface ISockets {
   [accountId: number]: Socket
 }
+
+export interface IWalletHistoryResponse {
+  success: boolean
+  data?: {
+    period: string
+    wallets: IWallet[]
+  }[]
+  error?: string
+}
+
+export interface IUpdatedAddressesInput {
+  updatedAddresses: IAddress[]
+}

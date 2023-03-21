@@ -4,7 +4,12 @@ import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { IAddress, ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
+import {
+  IAddress,
+  ISockets,
+  IUpdatedHistory,
+  IWalletHistoryResponse,
+} from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
@@ -24,7 +29,9 @@ export class PortfolioService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
-  async getWalletHistory(data: IRickGetPortfolioHistory) {
+  async getWalletHistory(
+    data: IRickGetPortfolioHistory,
+  ): Promise<IWalletHistoryResponse> {
     if (!data.periods) data.periods = ['All']
     let res
     try {
@@ -39,17 +46,18 @@ export class PortfolioService {
       )
     } catch (err) {
       Logger.error(err.message)
+      return {
+        success: false,
+        error: err.message,
+      }
     }
 
     if (!res)
       return {
-        status: false,
+        success: false,
       }
 
-    if (res[0].data.length === 0) {
-      return []
-    }
-    return data.periods.map((period, index) => {
+    const result = data.periods.map((period, index) => {
       const wallets = res[index].data.map((wallet) => {
         const addresses = wallet.addresses.map((address) => {
           const history = address.history
@@ -103,6 +111,10 @@ export class PortfolioService {
         wallets,
       }
     })
+    return {
+      success: true,
+      data: result,
+    }
   }
 
   addClient(accountId: number, client: Socket) {
@@ -120,7 +132,6 @@ export class PortfolioService {
   }
 
   sendUpdatedHistory(accountId: string, updatedAddresses: IAddress[]) {
-    console.log('Update history', history)
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.PORTFOLIO_UPDATE_CHANNEL,
@@ -129,7 +140,7 @@ export class PortfolioService {
     }
   }
 
-  updateWallets(addresses: IAddress[]) {
+  updatedAddresses(addresses: IAddress[]) {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {

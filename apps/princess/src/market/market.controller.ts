@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
 import { MarketService } from './market.service'
-import { ICoinType } from './market.types'
-import { EPeriod } from '@rana/core'
+import { EPeriod, ICoinType } from '@rana/core'
 
 @Controller('market')
 export class MarketController {
