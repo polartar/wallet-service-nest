@@ -1,12 +1,12 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { ICoinType, IResponse } from './market.type'
+import { IResponse } from './market.type'
 import { Injectable, Logger } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { EPeriod } from '@rana/core'
+import { EPeriod, ICoinType } from '@rana/core'
 
 @Injectable()
 export class MarketService {
@@ -200,9 +200,7 @@ export class MarketService {
     const startDate = new Date(this.getPeriodTime(period))
     const interval = this.getInterval(period)
 
-    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${
-      coin === ICoinType.BITCOIN ? 'btc' : 'eth'
-    }/price?startTime=${startDate}&timeFrame=${interval}`
+    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${coin}/price?startTime=${startDate}&timeFrame=${interval}`
 
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {

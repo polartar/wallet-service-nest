@@ -4,7 +4,7 @@ import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
+import { IAddress, ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
@@ -119,25 +119,28 @@ export class PortfolioService {
     })
   }
 
-  sendUpdatedHistory(accountId: string, history: IWallet[]) {
+  sendUpdatedHistory(accountId: string, updatedAddresses: IAddress[]) {
+    console.log('Update history', history)
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.PORTFOLIO_UPDATE_CHANNEL,
-        JSON.stringify(history),
+        JSON.stringify(updatedAddresses),
       )
     }
   }
 
-  updateWallets(wallets: IWallet[]) {
+  updateWallets(addresses: IAddress[]) {
     const history: IUpdatedHistory = {}
 
-    wallets.map((wallet) => {
-      const accountId = wallet.account.id
-      if (history[accountId]) {
-        history[accountId].push(wallet)
-      } else {
-        history[accountId] = [wallet]
-      }
+    addresses.map((address) => {
+      const accounts = address.wallet.accounts
+      accounts.forEach((account) => {
+        if (history[account.id]) {
+          history[account.id].push(address)
+        } else {
+          history[account.id] = [address]
+        }
+      })
     })
 
     Object.keys(history).map((accountId) => {

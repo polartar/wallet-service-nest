@@ -1,13 +1,10 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 // import Joi = require('joi')
-import {
-  ICoinType,
-  ITransactionInput,
-  ITransactionPush,
-} from './transaction.types'
+import { ITransactionInput, ITransactionPush } from './transaction.types'
 import { isAddress } from 'ethers/lib/utils'
 import * as Joi from 'joi'
 import { validate } from 'bitcoin-address-validation'
+import { ICoinType } from '@rana/core'
 
 @Injectable()
 export class TransactionInputPipe implements PipeTransform {

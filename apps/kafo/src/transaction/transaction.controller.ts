@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common'
 import { TransactionService } from './transaction.service'
 import {
-  ICoinType,
   IFeeResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
 import { TransactionInputPipe, TransactionPushPipe } from './transaction.pipe'
+import { ICoinType } from '@rana/core'
 
 @Controller('transaction')
 export class TransactionController {

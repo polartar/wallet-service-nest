@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
-  ICoinType,
   IFeeResponse,
   ITransactionInput,
   ITransactionPush,
@@ -11,6 +10,7 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
+import { ICoinType } from '@rana/core'
 
 @Injectable()
 export class TransactionService {

@@ -1,16 +1,5 @@
 import { EPeriod } from '@rana/core'
 
-export enum ICoinType {
-  ETHEREUM = 'eth',
-  BITCOIN = 'btc',
-}
-
-export enum IWalletType {
-  HOTWALLET = 'hotwallet',
-  VAULT = 'vault',
-  METAMASK = 'metamask',
-}
-
 export const SecondsIn: {
   [key in EPeriod]: number | null
 } = {

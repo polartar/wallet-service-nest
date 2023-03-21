@@ -1,5 +1,4 @@
 import { AddressEntity } from './../wallet/address.entity'
-import { ICoinType } from './../wallet/wallet.types'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
@@ -8,6 +7,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
+import { ICoinType } from '@rana/core'
 
 @Injectable()
 export class PortfolioService {
@@ -51,8 +51,8 @@ export class PortfolioService {
       (input) => input.prev_out.addr,
     )
     const receiverAddresses = transaction.out.map((out) => out.addr)
-    const updatedRecords = []
-    const updatedWallets = []
+    // const updatedRecords = []
+    const updatedAddresses = []
 
     try {
       this.activeBtcAddresses = await Promise.all(
@@ -79,7 +79,7 @@ export class PortfolioService {
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
-            updatedRecords.push(record)
+            // updatedRecords.push(record)
 
             address.history = history
           }
@@ -102,7 +102,7 @@ export class PortfolioService {
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             history.push(record)
-            updatedRecords.push(record)
+            // updatedRecords.push(record)
 
             address.history = history
           }
@@ -111,18 +111,18 @@ export class PortfolioService {
             senderAddresses.includes(address.address) ||
             receiverAddresses.includes(address.address)
           ) {
-            updatedWallets.push(address)
+            updatedAddresses.push(address)
           }
           return address
         }),
       )
 
-      if (updatedRecords.length > 0) {
+      if (updatedAddresses.length > 0) {
         this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-          updatedRecords,
+          updatedAddresses,
         })
 
-        return this.walletService.updateWallets(updatedWallets)
+        return this.walletService.updateWallets(updatedAddresses)
       }
     } catch (err) {
       Logger.error(err.message)

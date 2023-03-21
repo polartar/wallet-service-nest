@@ -14,11 +14,11 @@ import { WalletService } from './wallet.service'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { ethers } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
-import { IWalletType, SecondsIn } from './wallet.types'
+import { SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
 import { HistoryEntity } from './history.entity'
 import { AddressEntity } from './address.entity'
-import { EPeriod } from '@rana/core'
+import { EPeriod, IWalletType } from '@rana/core'
 
 describe('WalletController', () => {
   let controller: WalletController

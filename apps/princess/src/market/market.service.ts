@@ -1,11 +1,10 @@
 import { ConfigService } from '@nestjs/config'
 import { Injectable, Logger } from '@nestjs/common'
-import { ICoinType } from './market.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
-import { EPeriod } from '@rana/core'
+import { EPeriod, ICoinType } from '@rana/core'
 import { EEnvironment } from '../environments/environment.types'
 
 @Injectable()

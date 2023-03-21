@@ -9,9 +9,7 @@ import {
   IAddressPath,
   IBTCTransaction,
   IBTCTransactionResponse,
-  ICoinType,
   IWalletPath,
-  IWalletType,
   SecondsIn,
 } from './wallet.types'
 import { ethers } from 'ethers'
@@ -23,6 +21,7 @@ import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
+import { ICoinType, IWalletType } from '@rana/core'
 
 @Injectable()
 export class WalletService {
@@ -59,7 +58,9 @@ export class WalletService {
         },
       },
       relations: {
-        wallet: true,
+        wallet: {
+          accounts: true,
+        },
         history: true,
       },
     })
