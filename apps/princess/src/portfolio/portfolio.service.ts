@@ -5,8 +5,8 @@ import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
-  IAddress,
   ISockets,
+  IUpdatedAddress,
   IUpdatedHistory,
   IWalletHistoryResponse,
 } from './portfolio.types'
@@ -131,7 +131,7 @@ export class PortfolioService {
     })
   }
 
-  sendUpdatedHistory(accountId: string, updatedAddresses: IAddress[]) {
+  sendUpdatedHistory(accountId: string, updatedAddresses: IUpdatedAddress[]) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.PORTFOLIO_UPDATE_CHANNEL,
@@ -140,19 +140,19 @@ export class PortfolioService {
     }
   }
 
-  updatedAddresses(addresses: IAddress[]) {
+  updatedAddresses(addresses: IUpdatedAddress[]) {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {
-      const accounts = address.wallet.accounts
-      accounts.forEach((account) => {
-        if (history[account.id]) {
-          history[account.id].push(address)
+      address.accountIds.forEach((accountId) => {
+        if (history[accountId]) {
+          history[accountId].push(address)
         } else {
-          history[account.id] = [address]
+          history[accountId] = [address]
         }
       })
     })
+    console.log(history[1])
 
     Object.keys(history).map((accountId) => {
       this.sendUpdatedHistory(accountId, history[accountId])

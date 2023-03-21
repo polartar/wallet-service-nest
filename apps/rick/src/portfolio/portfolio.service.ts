@@ -1,5 +1,5 @@
 import { AddressEntity } from './../wallet/address.entity'
-import { HttpException, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -8,7 +8,7 @@ import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
 import { ICoinType } from '@rana/core'
-import { catchError, firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class PortfolioService {
@@ -52,13 +52,14 @@ export class PortfolioService {
       (input) => input.prev_out.addr,
     )
     const receiverAddresses = transaction.out.map((out) => out.addr)
-    // const updatedRecords = []
+    const postUpdatedAddresses = []
     const updatedAddresses = []
 
     try {
       this.activeBtcAddresses = await Promise.all(
         this.activeBtcAddresses.map(async (address) => {
           const history = address.history || []
+          const newHistories = []
           if (senderAddresses.includes(address.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
@@ -70,8 +71,7 @@ export class PortfolioService {
             inputs.splice(index, 1)
 
             const currBalance = history.length ? Number(history[0].balance) : 0
-            const record = await this.walletService.addHistory({
-              address: address,
+            newHistories.push({
               from: '',
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
@@ -79,8 +79,11 @@ export class PortfolioService {
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
+            const record = await this.walletService.addHistory({
+              address: address,
+              ...newHistories[0],
+            })
             history.push(record)
-            // updatedRecords.push(record)
 
             address.history = history
           }
@@ -93,8 +96,7 @@ export class PortfolioService {
             transaction.out.splice(index, 1)
             const currBalance = history.length ? Number(history[0].balance) : 0
 
-            const record = await this.walletService.addHistory({
-              address,
+            newHistories.push({
               from: receiverInfo.addr,
               to: '',
               amount: receiverInfo.value,
@@ -102,8 +104,15 @@ export class PortfolioService {
               balance: (currBalance + receiverInfo.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
+
+            const newHistory =
+              newHistories.length === 1 ? newHistories[0] : newHistories[1]
+            const record = await this.walletService.addHistory({
+              address,
+              ...newHistory,
+            })
+
             history.push(record)
-            // updatedRecords.push(record)
 
             address.history = history
           }
@@ -113,6 +122,22 @@ export class PortfolioService {
             receiverAddresses.includes(address.address)
           ) {
             updatedAddresses.push(address)
+            postUpdatedAddresses.push({
+              addressId: address.id,
+              walletId: address.wallet.id,
+              accountIds: address.wallet.accounts.map((account) => account.id),
+              newHistory: newHistories[0],
+            })
+            if (newHistories.length === 2) {
+              postUpdatedAddresses.push({
+                addressId: address.id,
+                walletId: address.wallet.id,
+                accountIds: address.wallet.accounts.map(
+                  (account) => account.id,
+                ),
+                newHistory: newHistories[1],
+              })
+            }
           }
           return address
         }),
@@ -121,7 +146,7 @@ export class PortfolioService {
       if (updatedAddresses.length > 0) {
         firstValueFrom(
           this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-            updatedAddresses,
+            updatedAddresses: postUpdatedAddresses,
           }),
         ).catch(() => {
           Logger.log('Princess portfolio/updated api error')
@@ -174,6 +199,7 @@ export class PortfolioService {
 
         Promise.allSettled(promises).then(async (results) => {
           const updatedAddresses = []
+          const postUpdatedAddresses = []
           await Promise.all(
             results.map(async (tx) => {
               if (tx.status === 'fulfilled') {
@@ -207,8 +233,7 @@ export class PortfolioService {
                 }
                 if (!amount.isZero()) {
                   const history = updatedAddress.history
-                  const record = await this.walletService.addHistory({
-                    address: updatedAddress,
+                  const newHistory = {
                     from: tx.value.from,
                     to: tx.value.to,
                     amount: tx.value.value.toString(),
@@ -219,21 +244,34 @@ export class PortfolioService {
                           .toString()
                       : BigNumber.from(tx.value.value).toString(),
                     timestamp: this.walletService.getCurrentTimeBySeconds(),
+                  }
+                  const record = await this.walletService.addHistory({
+                    address: updatedAddress,
+                    ...newHistory,
                   })
                   history.push(record)
                   updatedAddress.history = history
                   updatedAddresses.push(updatedAddress)
+
+                  postUpdatedAddresses.push({
+                    addressId: updatedAddress.id,
+                    walletId: updatedAddress.wallet.id,
+                    accountIds: updatedAddress.wallet.accounts.map(
+                      (account) => account.id,
+                    ),
+                    newHistory: newHistory,
+                  })
                 }
               }
             }),
           )
 
-          if (updatedAddresses.length > 0) {
+          if (postUpdatedAddresses.length > 0) {
             firstValueFrom(
               this.httpService.post(
                 `${this.princessAPIUrl}/portfolio/updated`,
                 {
-                  updatedAddresses,
+                  updatedAddresses: postUpdatedAddresses,
                 },
               ),
             ).catch(() => {

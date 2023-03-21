@@ -1,5 +1,5 @@
 import { PortfolioService } from './portfolio.service'
-import { IUpdatedAddressesInput } from './portfolio.types'
+import { IAddress, IUpdatedAddressesInput } from './portfolio.types'
 import { Body, Controller, Post } from '@nestjs/common'
 
 @Controller('portfolio')
