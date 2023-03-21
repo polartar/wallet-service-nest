@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseEnumPipe,
+  Post,
+  Query,
+} from '@nestjs/common'
 import { MarketService } from './market.service'
 import { EPeriod, ICoinType } from '@rana/core'
 
@@ -17,24 +25,23 @@ export class MarketController {
     return true
   }
 
-  @Get('/eth/:period')
-  async getEthMarketData(@Param('period') period: EPeriod) {
-    return this.marketService.getMarketData(ICoinType.ETHEREUM, period)
-  }
-  @Get('/btc/:period')
-  async getBtMarketData(@Param('period') period: EPeriod) {
-    return this.marketService.getMarketData(ICoinType.BITCOIN, period)
+  @Get(':coin')
+  async getEthMarketData(
+    @Param('coin', new ParseEnumPipe(ICoinType)) coin: ICoinType,
+  ) {
+    return this.marketService.getMarketData(coin)
   }
 
-  @Get('eth/historical')
-  getEthHistoricalData(@Query() query: { period: EPeriod }) {
-    return this.marketService.getHistoricalData(
-      ICoinType.ETHEREUM,
-      query.period,
-    )
+  @Get('eth/history')
+  getEthHistoricalData(
+    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  ) {
+    return this.marketService.getHistoricalData(ICoinType.ETHEREUM, period)
   }
-  @Get('btc/historical')
-  getBtcHistoricalData(@Query() query: { period: EPeriod }) {
-    return this.marketService.getHistoricalData(ICoinType.BITCOIN, query.period)
+  @Get('btc/history')
+  getBtcHistoricalData(
+    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  ) {
+    return this.marketService.getHistoricalData(ICoinType.BITCOIN, period)
   }
 }

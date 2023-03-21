@@ -18,11 +18,11 @@ export class MarketService {
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
   }
 
-  async getMarketData(coin: ICoinType, period: EPeriod) {
+  async getMarketData(coin: ICoinType) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
-          `${this.mortyApiUrl}/api/market/${coin}/${period}`,
+          `${this.mortyApiUrl}/api/market/${coin}`,
         ),
       )
       return res.data
@@ -43,9 +43,13 @@ export class MarketService {
     }
   }
   setEthPrice(price: string) {
-    this.server.emit('ethereum_price', price)
+    if (this.server) {
+      this.server.emit('ethereum_price', price)
+    }
   }
   setBtcPrice(price: string) {
-    this.server.emit('bitcoin_price', price)
+    if (this.server) {
+      this.server.emit('bitcoin_price', price)
+    }
   }
 }
