@@ -16,14 +16,14 @@ export class MarketController {
     return this.marketService.getMarketData(ICoinType.BITCOIN)
   }
 
-  @Get('eth/historical')
+  @Get('eth/history')
   getEthHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     return this.marketService.getHistoricalData(ICoinType.ETHEREUM, period)
   }
 
-  @Get('btc/historical')
+  @Get('btc/history')
   getBtcHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {

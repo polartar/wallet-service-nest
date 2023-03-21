@@ -34,7 +34,7 @@ export class MarketService {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
-          `${this.mortyApiUrl}/api/market/${coin}/historical?period=${period}`,
+          `${this.mortyApiUrl}/api/market/${coin}/history?period=${period}`,
         ),
       )
       return res.data
