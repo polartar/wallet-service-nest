@@ -152,7 +152,6 @@ export class PortfolioService {
         }
       })
     })
-    console.log(history[1])
 
     Object.keys(history).map((accountId) => {
       this.sendUpdatedHistory(accountId, history[accountId])
