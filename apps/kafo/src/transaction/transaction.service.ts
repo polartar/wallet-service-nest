@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ICoinType } from '@rana/core'
 import { hexlify, serializeTransaction } from 'ethers/lib/utils'
+import { Alchemy, Network } from 'alchemy-sdk'
 
 @Injectable()
 export class TransactionService {
@@ -27,6 +28,7 @@ export class TransactionService {
   ERC1155ABI = [
     'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
   ]
+  alchemyInstance
 
   constructor(
     private readonly httpService: HttpService,
@@ -39,12 +41,27 @@ export class TransactionService {
       EEnvironment.isProduction,
     )
 
-    const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
+    const infuraKey = this.configService.get<string>(EEnvironment.infuraAPIKey)
 
     this.provider = new ethers.providers.InfuraProvider(
       this.isProduction ? 'mainnet' : 'goerli',
-      infura_key,
+      infuraKey,
     )
+
+    const alchemyKey = this.configService.get<string>(
+      EEnvironment.alchemyAPIKey,
+    )
+    this.alchemyConfigure(alchemyKey)
+  }
+  alchemyConfigure(alchemyKey: string) {
+    const settings = {
+      apiKey: alchemyKey,
+      network: this.isProduction ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+    }
+
+    this.alchemyInstance = new Alchemy(settings)
+
+    this.subscribeNFTTransferEvents()
   }
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
     const newTx = {
@@ -225,5 +242,35 @@ export class TransactionService {
         error: err.message,
       }
     }
+  }
+
+  subscribeNFTTransferEvents() {
+    const transferFilter = {
+      topics: [
+        [
+          ethers.utils.id('Transfer(address,address,uint256)'),
+          ethers.utils.id(
+            'TransferSingle(address,address,address,uint256,uint256)',
+          ),
+          ethers.utils.id(
+            'TransferBatch(address,address,address,uint256[],uint256[])',
+          ),
+        ],
+      ],
+    }
+    const transferABI = [
+      'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
+      'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
+      'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
+    ]
+    const transferIface = new ethers.utils.Interface(transferABI)
+
+    this.alchemyInstance.ws.on(transferFilter, async (log) => {
+      try {
+        const { args } = transferIface.parseLog(log)
+      } catch (err) {
+        console.log('ERC20 transfer')
+      }
+    })
   }
 }
