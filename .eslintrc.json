@@ -28,7 +28,11 @@
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nrwl/nx/typescript"],
       "rules": {
-        "array-element-newline": ["error", "always"]
+        "array-element-newline": ["error", {
+          "ArrayExpression": "consistent",
+          "ArrayPattern": { "minItems": 3 }
+        }
+      ]
       }
     },
     {

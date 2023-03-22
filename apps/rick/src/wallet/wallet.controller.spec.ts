@@ -1,3 +1,4 @@
+import { AppModule } from '../app/app.module'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { WalletModule } from './wallet.module'
 import { Test, TestingModule } from '@nestjs/testing'
@@ -50,10 +51,11 @@ describe('WalletController', () => {
           AddressEntity,
           HistoryEntity,
         ]),
+        AppModule,
+        PortfolioModule,
         WalletModule,
         AccountModule,
         HttpModule,
-        PortfolioModule,
       ],
       controllers: [WalletController],
       providers: [WalletService],

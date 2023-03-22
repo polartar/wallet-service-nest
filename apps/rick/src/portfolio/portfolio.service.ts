@@ -24,9 +24,6 @@ export class PortfolioService {
     private readonly httpService: HttpService,
   ) {
     this.initializeWallets()
-    // const isProduction = this.configService.get<boolean>(
-    //   EEnvironment.isProduction,
-    // )
     this.btcSocket = new BlockchainSocket()
     // : new BlockchainSocket({ network: 3 }) // Testnet has error now
 
@@ -207,7 +204,7 @@ export class PortfolioService {
                 let updatedAddress: AddressEntity
 
                 if (
-                  tx.value.from &&
+                  tx.value?.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
                 ) {
                   const fee = BigNumber.from(tx.value.gasPrice).mul(

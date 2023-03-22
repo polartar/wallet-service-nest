@@ -1,0 +1,26 @@
+export interface INTAssetInput {
+  address: string
+  page?: number
+}
+export interface INFTAssetResponse {
+  success: boolean
+  data?: {
+    total: number
+    pageNumber: number
+    hasNextPage: boolean
+    countPerPage: number
+    nfts: INFTInfo[]
+  }
+  error?: string
+}
+
+interface INFTInfo {
+  token_address: string
+  token_id: string
+  contract_type: string
+  owner_of: string
+  block_number: string
+  block_number_minted: string
+  token_uri?: string
+  metadata?: string
+}
