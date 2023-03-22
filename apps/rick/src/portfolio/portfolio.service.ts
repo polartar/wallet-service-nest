@@ -202,11 +202,12 @@ export class PortfolioService {
               if (tx.status === 'fulfilled') {
                 let amount = BigNumber.from(0)
                 let updatedAddress: AddressEntity
-
+                let isTx = false
                 if (
                   tx.value?.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
                 ) {
+                  isTx = true
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
                     BigNumber.from(tx.value.gasLimit),
                   )
@@ -221,6 +222,7 @@ export class PortfolioService {
                   tx.value.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
                 ) {
+                  isTx = true
                   amount = amount.sub(BigNumber.from(tx.value.value))
                   updatedAddress = this.activeEthAddresses.find(
                     (address) =>
@@ -228,7 +230,7 @@ export class PortfolioService {
                       tx.value.to.toLowerCase(),
                   )
                 }
-                if (!amount.isZero()) {
+                if (isTx) {
                   const history = updatedAddress.history
                   const newHistory = {
                     from: tx.value.from,
