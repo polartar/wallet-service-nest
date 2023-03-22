@@ -12,6 +12,7 @@ import { WalletEntity } from '../wallet/wallet.entity'
 import { HistoryEntity } from '../wallet/history.entity'
 import { AccountModule } from '../account/account.module'
 import { AddressEntity } from '../wallet/address.entity'
+import { AppModule } from './app.module'
 
 describe('AppController', () => {
   let app: TestingModule
@@ -39,6 +40,7 @@ describe('AppController', () => {
           AddressEntity,
           HistoryEntity,
         ]),
+        AppModule,
         AccountModule,
         WalletModule,
         HttpModule,
