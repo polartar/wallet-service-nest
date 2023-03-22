@@ -8,9 +8,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { ICoinType, IWalletType } from './wallet.types'
 import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
+import { ICoinType, IWalletType } from '@rana/core'
 
 @Entity()
 export class WalletEntity {

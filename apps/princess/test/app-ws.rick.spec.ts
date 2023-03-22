@@ -1,3 +1,4 @@
+import { AppModule } from '../src/app/app.module'
 import { MarketModule } from './../src/market/market.module'
 import { Environment } from '../src/environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
@@ -20,6 +21,7 @@ const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ load: [Environment] }),
+      AppModule,
       RickModule, //
       HttpModule,
       PortfolioModule,

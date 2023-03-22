@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common'
 import { TransactionService } from './transaction.service'
 import {
-  ICoinType,
   IFeeResponse,
   INFTTransactionInput,
   INFTTransactionResponse,
@@ -17,6 +16,7 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
+import { ICoinType } from '@rana/core'
 import {
   NFTTransactionRawPipe,
   NFTTransactionSendPipe,

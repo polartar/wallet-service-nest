@@ -6,12 +6,8 @@ import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { TransactionService } from './transaction.service'
-import {
-  ENFTTypes,
-  ICoinType,
-  ITransaction,
-  ITransactionInput,
-} from './transaction.types'
+import { ICoinType } from '@rana/core'
+import { ENFTTypes, ITransaction, ITransactionInput } from './transaction.types'
 import * as bitcoin from 'bitcoinjs-lib'
 import * as secp from 'tiny-secp256k1'
 import * as ecfacory from 'ecpair'

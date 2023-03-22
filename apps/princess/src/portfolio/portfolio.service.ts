@@ -4,7 +4,12 @@ import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
-import { ISockets, IUpdatedHistory, IWallet } from './portfolio.types'
+import {
+  ISockets,
+  IUpdatedAddress,
+  IUpdatedHistory,
+  IWalletHistoryResponse,
+} from './portfolio.types'
 import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
@@ -24,7 +29,9 @@ export class PortfolioService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
-  async getWalletHistory(data: IRickGetPortfolioHistory) {
+  async getWalletHistory(
+    data: IRickGetPortfolioHistory,
+  ): Promise<IWalletHistoryResponse> {
     if (!data.periods) data.periods = ['All']
     let res
     try {
@@ -39,17 +46,18 @@ export class PortfolioService {
       )
     } catch (err) {
       Logger.error(err.message)
+      return {
+        success: false,
+        error: err.message,
+      }
     }
 
     if (!res)
       return {
-        status: false,
+        success: false,
       }
 
-    if (res[0].data.length === 0) {
-      return []
-    }
-    return data.periods.map((period, index) => {
+    const result = data.periods.map((period, index) => {
       const wallets = res[index].data.map((wallet) => {
         const addresses = wallet.addresses.map((address) => {
           const history = address.history
@@ -103,6 +111,10 @@ export class PortfolioService {
         wallets,
       }
     })
+    return {
+      success: true,
+      data: result,
+    }
   }
 
   addClient(accountId: number, client: Socket) {
@@ -119,25 +131,26 @@ export class PortfolioService {
     })
   }
 
-  sendUpdatedHistory(accountId: string, history: IWallet[]) {
+  sendUpdatedHistory(accountId: string, updatedAddresses: IUpdatedAddress[]) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.PORTFOLIO_UPDATE_CHANNEL,
-        JSON.stringify(history),
+        JSON.stringify(updatedAddresses),
       )
     }
   }
 
-  updateWallets(wallets: IWallet[]) {
+  updatedAddresses(addresses: IUpdatedAddress[]) {
     const history: IUpdatedHistory = {}
 
-    wallets.map((wallet) => {
-      const accountId = wallet.account.id
-      if (history[accountId]) {
-        history[accountId].push(wallet)
-      } else {
-        history[accountId] = [wallet]
-      }
+    addresses.map((address) => {
+      address.accountIds.forEach((accountId) => {
+        if (history[accountId]) {
+          history[accountId].push(address)
+        } else {
+          history[accountId] = [address]
+        }
+      })
     })
 
     Object.keys(history).map((accountId) => {

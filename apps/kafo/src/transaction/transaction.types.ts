@@ -1,3 +1,5 @@
+import { ICoinType } from '@rana/core'
+
 export interface ITransactionResponse {
   success: boolean
   errors?: []
@@ -26,10 +28,6 @@ export interface ITransactionInput {
   coinType: ICoinType
 }
 
-export enum ICoinType {
-  BITCOIN = 'btc',
-  ETHEREUM = 'eth',
-}
 export interface ITransactionPush {
   transaction: ITransaction
   coinType: ICoinType

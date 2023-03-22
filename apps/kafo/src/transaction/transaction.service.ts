@@ -4,7 +4,6 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import {
   ENFTTypes,
-  ICoinType,
   IFeeResponse,
   INFTTransactionInput,
   INFTTransactionResponse,
@@ -14,6 +13,7 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
+import { ICoinType } from '@rana/core'
 import { hexlify, serializeTransaction } from 'ethers/lib/utils'
 
 @Injectable()
