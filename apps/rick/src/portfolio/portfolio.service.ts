@@ -9,6 +9,8 @@ import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
 import { ICoinType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
+import { Alchemy, Network } from 'alchemy-sdk'
+import { ethers } from 'ethers'
 
 @Injectable()
 export class PortfolioService {
@@ -17,6 +19,7 @@ export class PortfolioService {
   provider: Ethers.providers.JsonRpcProvider
   princessAPIUrl: string
   btcSocket
+  alchemyInstance
 
   constructor(
     private configService: ConfigService,
@@ -42,6 +45,21 @@ export class PortfolioService {
     )
 
     this.runEthereumService()
+    const alchemyKey = this.configService.get<string>(
+      EEnvironment.alchemyAPIKey,
+    )
+    this.alchemyConfigure(isProd, alchemyKey)
+  }
+
+  alchemyConfigure(isProd: boolean, alchemyKey: string) {
+    const settings = {
+      apiKey: alchemyKey,
+      network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+    }
+
+    this.alchemyInstance = new Alchemy(settings)
+
+    this.subscribeNFTTransferEvents()
   }
 
   async onBTCTransaction(transaction) {
@@ -280,6 +298,45 @@ export class PortfolioService {
             return this.walletService.updateWallets(updatedAddresses)
           }
         })
+      }
+    })
+  }
+
+  subscribeNFTTransferEvents() {
+    const transferFilter = {
+      topics: [
+        [
+          ethers.utils.id('Transfer(address,address,uint256)'),
+          ethers.utils.id(
+            'TransferSingle(address,address,address,uint256,uint256)',
+          ),
+          ethers.utils.id(
+            'TransferBatch(address,address,address,uint256[],uint256[])',
+          ),
+        ],
+      ],
+    }
+    const transferABI = [
+      'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
+      'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
+      'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
+    ]
+    const transferIface = new ethers.utils.Interface(transferABI)
+
+    this.alchemyInstance.ws.on(transferFilter, async (log) => {
+      try {
+        const currentAddresses: string[] = this.activeEthAddresses.map(
+          (address) => address.address.toLowerCase(),
+        )
+        const { args } = transferIface.parseLog(log)
+        if (
+          currentAddresses.includes(args.from.toLowerCase()) ||
+          currentAddresses.includes(args.to.toLowerCase())
+        ) {
+          // princess api
+        }
+      } catch (err) {
+        console.log('ERC20 transfer')
       }
     })
   }

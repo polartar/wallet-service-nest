@@ -9,6 +9,7 @@ export const Environment = () => {
     [EEnvironment.princessAPIUrl]:
       process.env.PRINCESS_API_URL || 'http://localhost3000',
     [EEnvironment.moralisAPIKey]: process.env.MORALIS_API_KEY,
+    [EEnvironment.alchemyAPIKey]: process.env.ALCHEMY_API_KEY,
   }
 
   return env
