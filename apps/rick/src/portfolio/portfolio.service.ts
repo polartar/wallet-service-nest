@@ -8,7 +8,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { Alchemy, Network } from 'alchemy-sdk'
 import { ethers } from 'ethers'
@@ -181,10 +181,10 @@ export class PortfolioService {
     addresses = addresses.filter((wallet) => wallet.isActive)
 
     this.activeEthAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ICoinType.ETHEREUM,
+      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
     )
     this.activeBtcAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ICoinType.BITCOIN,
+      (address) => address.wallet.coinType === ECoinType.BITCOIN,
     )
   }
 

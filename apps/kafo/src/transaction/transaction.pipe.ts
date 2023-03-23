@@ -8,7 +8,7 @@ import {
 import { isAddress } from 'ethers/lib/utils'
 import * as Joi from 'joi'
 import { validate } from 'bitcoin-address-validation'
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 
 @Injectable()
 export class TransactionInputPipe implements PipeTransform {
@@ -28,7 +28,7 @@ export class TransactionInputPipe implements PipeTransform {
       }
     }),
     amount: Joi.number().integer().options({ convert: false }).required(),
-    coinType: Joi.string().valid(ICoinType.BITCOIN, ICoinType.ETHEREUM),
+    coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
   })
 
   transform(value: ITransactionInput) {
@@ -56,7 +56,7 @@ export class TransactionPushPipe implements PipeTransform {
 
       return true
     }),
-    coinType: Joi.string().valid(ICoinType.BITCOIN, ICoinType.ETHEREUM),
+    coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
   })
 
   transform(value: ITransactionPush) {

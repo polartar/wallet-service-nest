@@ -21,7 +21,7 @@ import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
-import { ICoinType, IWalletType } from '@rana/core'
+import { ECoinType, EWalletType } from '@rana/core'
 
 @Injectable()
 export class WalletService {
@@ -161,16 +161,16 @@ export class WalletService {
       prototype.addresses = []
       prototype.path = 'path' // need to get the path from xpub
 
-      if (data.walletType === IWalletType.METAMASK) {
-        prototype.coinType = ICoinType.ETHEREUM
+      if (data.walletType === EWalletType.METAMASK) {
+        prototype.coinType = ECoinType.ETHEREUM
         prototype.path = IWalletPath.ETH
-      } else if (data.walletType === IWalletType.VAULT) {
-        prototype.coinType = ICoinType.BITCOIN
+      } else if (data.walletType === EWalletType.VAULT) {
+        prototype.coinType = ECoinType.BITCOIN
         prototype.path = IWalletPath.BTC
       }
       const wallet = await this.walletRepository.save(prototype)
 
-      if (data.walletType !== IWalletType.HOTWALLET) {
+      if (data.walletType !== EWalletType.HOTWALLET) {
         await this.addNewAddress({
           wallet,
           address: data.xPub,
@@ -201,7 +201,7 @@ export class WalletService {
 
     let allHistories
     try {
-      if (data.wallet.coinType === ICoinType.ETHEREUM) {
+      if (data.wallet.coinType === ECoinType.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
         allHistories = await this.generateEthHistories(trxHistory, address)
       } else {

@@ -1,4 +1,4 @@
-import { EPortfolioType, ICoinType, IWalletType } from '@rana/core'
+import { EPortfolioType, ECoinType, EWalletType } from '@rana/core'
 import { Socket } from 'socket.io'
 
 export interface IAccount {
@@ -9,9 +9,9 @@ export interface IAccount {
 
 export interface IWallet {
   id: number
-  coinType: ICoinType
+  coinType: ECoinType
   xPub: string
-  type: IWalletType
+  type: EWalletType
   address: string
   accounts: IAccount[]
   addresses: IAddress[]

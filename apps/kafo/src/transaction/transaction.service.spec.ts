@@ -4,7 +4,7 @@ import { ITransactionInput } from './transaction.types'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from './../environments/environment.dev'
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 
 describe('TransactionService', () => {
   let service: TransactionService
@@ -30,7 +30,7 @@ describe('TransactionService', () => {
       from: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       amount: 1,
-      coinType: ICoinType.BITCOIN,
+      coinType: ECoinType.BITCOIN,
     }
 
     const response = await service.generate(transactionData)
