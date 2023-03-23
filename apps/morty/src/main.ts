@@ -20,9 +20,10 @@ async function bootstrap() {
   const globalPrefix = 'api'
   app.setGlobalPrefix(globalPrefix)
   const port = process.env.PORT || 3333
-  await app.listen(port)
+  const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
+  await app.listen(port, listen_host)
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+    `🚀 Application is running on: http://${listen_host}:${port}/${globalPrefix}`,
   )
 }
 

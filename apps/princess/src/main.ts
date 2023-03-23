@@ -31,7 +31,8 @@ async function bootstrap() {
       always: true,
     }),
   )
-  await app.listen(port)
+  const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
+  await app.listen(port, listen_host)
   Logger.log(`🚀 Application is running on: ${await app.getUrl()}/`)
 }
 
