@@ -166,7 +166,7 @@ export class PortfolioService {
             data: postUpdatedAddresses,
           }),
         ).catch(() => {
-          Logger.log('Princess portfolio/updated api error')
+          Logger.error('Princess portfolio/updated api error')
         })
 
         return this.walletService.updateWallets(updatedAddresses)
@@ -295,7 +295,7 @@ export class PortfolioService {
                 },
               ),
             ).catch(() => {
-              Logger.log('Princess portfolio/updated api error')
+              Logger.error('Princess portfolio/updated api error')
             })
 
             return this.walletService.updateWallets(updatedAddresses)
@@ -323,7 +323,7 @@ export class PortfolioService {
         ],
       }),
     ).catch(() => {
-      Logger.log('Princess portfolio/updated api error')
+      Logger.error('Princess portfolio/updated api error')
     })
   }
 
@@ -365,7 +365,7 @@ export class PortfolioService {
           this.notifyNFTUpdate(toAddress)
         }
       } catch (err) {
-        console.log('ERC20 transfer')
+        Logger.error('ERC20 transfer')
       }
     })
   }
