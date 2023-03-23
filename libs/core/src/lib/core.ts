@@ -26,3 +26,8 @@ export enum IWalletType {
   VAULT = 'vault',
   METAMASK = 'metamask',
 }
+
+export enum EPortfolioType {
+  NFT = 'nft',
+  TRANSACTION = 'transaction',
+}

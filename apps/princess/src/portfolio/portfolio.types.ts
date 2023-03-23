@@ -1,4 +1,4 @@
-import { ICoinType, IWalletType } from '@rana/core'
+import { EPortfolioType, ICoinType, IWalletType } from '@rana/core'
 import { Socket } from 'socket.io'
 
 export interface IAccount {
@@ -67,7 +67,7 @@ export interface IUpdatedAddress {
   addressId: number
   walletId: number
   accountIds: number[]
-  newHistory: {
+  newHistory?: {
     from: string
     to: string
     amount: string
@@ -76,6 +76,7 @@ export interface IUpdatedAddress {
     timestamp: number
   }
 }
-export interface IUpdatedAddressesInput {
-  updatedAddresses: IUpdatedAddress[]
-}
+// export interface IUpdatedAddressesInput {
+//   type: EPortfolioType
+//   data: IUpdatedAddress[]
+// }

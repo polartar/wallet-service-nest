@@ -1,3 +1,4 @@
+import { EPortfolioType } from '@rana/core'
 import { AddressEntity } from './../wallet/address.entity'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
@@ -161,7 +162,8 @@ export class PortfolioService {
       if (updatedAddresses.length > 0) {
         firstValueFrom(
           this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-            updatedAddresses: postUpdatedAddresses,
+            type: EPortfolioType.TRANSACTION,
+            data: postUpdatedAddresses,
           }),
         ).catch(() => {
           Logger.log('Princess portfolio/updated api error')
@@ -288,7 +290,8 @@ export class PortfolioService {
               this.httpService.post(
                 `${this.princessAPIUrl}/portfolio/updated`,
                 {
-                  updatedAddresses: postUpdatedAddresses,
+                  type: EPortfolioType.TRANSACTION,
+                  data: postUpdatedAddresses,
                 },
               ),
             ).catch(() => {
@@ -299,6 +302,28 @@ export class PortfolioService {
           }
         })
       }
+    })
+  }
+
+  notifyNFTUpdate(sourceAddress: string) {
+    const addressEntity = this.activeEthAddresses.find(
+      (address) => address.address.toLowerCase() === sourceAddress,
+    )
+    firstValueFrom(
+      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+        type: EPortfolioType.NFT,
+        data: [
+          {
+            addressId: addressEntity.id,
+            walletId: addressEntity.wallet.id,
+            accountIds: addressEntity.wallet.accounts.map(
+              (account) => account.id,
+            ),
+          },
+        ],
+      }),
+    ).catch(() => {
+      Logger.log('Princess portfolio/updated api error')
     })
   }
 
@@ -329,11 +354,15 @@ export class PortfolioService {
           (address) => address.address.toLowerCase(),
         )
         const { args } = transferIface.parseLog(log)
-        if (
-          currentAddresses.includes(args.from.toLowerCase()) ||
-          currentAddresses.includes(args.to.toLowerCase())
-        ) {
-          // princess api
+        const fromAddress = args.from.toLowerCase()
+        const toAddress = args.to.toLowerCase()
+
+        if (currentAddresses.includes(fromAddress)) {
+          this.notifyNFTUpdate(fromAddress)
+        }
+
+        if (currentAddresses.includes(toAddress)) {
+          this.notifyNFTUpdate(toAddress)
         }
       } catch (err) {
         console.log('ERC20 transfer')

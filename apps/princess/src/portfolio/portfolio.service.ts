@@ -14,11 +14,13 @@ import { Socket } from 'socket.io'
 import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
 import { ConfigService } from '@nestjs/config'
+import { EPortfolioType } from '@rana/core'
 
 @Injectable()
 export class PortfolioService {
   clients: ISockets
-  PORTFOLIO_UPDATE_CHANNEL = 'portfolio_update'
+  TRANSACTION_CREATION_CHANNEL = 'transaction_created'
+  NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
 
   constructor(
@@ -131,16 +133,28 @@ export class PortfolioService {
     })
   }
 
-  sendUpdatedHistory(accountId: string, updatedAddresses: IUpdatedAddress[]) {
+  notifyTransactionCreation(
+    accountId: string,
+    updatedAddresses: IUpdatedAddress[],
+  ) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
-        this.PORTFOLIO_UPDATE_CHANNEL,
+        this.TRANSACTION_CREATION_CHANNEL,
         JSON.stringify(updatedAddresses),
       )
     }
   }
 
-  updatedAddresses(addresses: IUpdatedAddress[]) {
+  notifyNFTUpdate(accountId: string, updatedAddresses: IUpdatedAddress[]) {
+    if (this.clients[accountId]) {
+      this.clients[accountId].emit(
+        this.NFT_UPDATE_CHANNEL,
+        JSON.stringify(updatedAddresses),
+      )
+    }
+  }
+
+  handleUpdatedAddresses(type: EPortfolioType, addresses: IUpdatedAddress[]) {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {
@@ -153,9 +167,15 @@ export class PortfolioService {
       })
     })
 
-    Object.keys(history).map((accountId) => {
-      this.sendUpdatedHistory(accountId, history[accountId])
-    })
+    if (type === EPortfolioType.TRANSACTION) {
+      Object.keys(history).map((accountId) => {
+        this.notifyTransactionCreation(accountId, history[accountId])
+      })
+    } else {
+      Object.keys(history).map((accountId) => {
+        this.notifyNFTUpdate(accountId, history[accountId])
+      })
+    }
   }
 
   getAccount(accountId: number): Observable<AxiosResponse> {
