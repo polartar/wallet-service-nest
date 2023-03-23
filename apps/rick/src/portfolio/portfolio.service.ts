@@ -331,12 +331,12 @@ export class PortfolioService {
     const transferFilter = {
       topics: [
         [
-          ethers.utils.id('Transfer(address,address,uint256)'),
+          ethers.utils.id('Transfer(address,address,uint256)'), // ERC721 transfer
           ethers.utils.id(
-            'TransferSingle(address,address,address,uint256,uint256)',
+            'TransferSingle(address,address,address,uint256,uint256)', // ERC1155 transfer
           ),
           ethers.utils.id(
-            'TransferBatch(address,address,address,uint256[],uint256[])',
+            'TransferBatch(address,address,address,uint256[],uint256[])', // ERC1155 batch transfer
           ),
         ],
       ],
@@ -348,6 +348,7 @@ export class PortfolioService {
     ]
     const transferIface = new ethers.utils.Interface(transferABI)
 
+    // listen NFT transfer events
     this.alchemyInstance.ws.on(transferFilter, async (log) => {
       try {
         const currentAddresses: string[] = this.activeEthAddresses.map(
