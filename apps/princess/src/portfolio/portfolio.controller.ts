@@ -7,6 +7,7 @@ import { Body, Controller, ParseEnumPipe, Post } from '@nestjs/common'
 export class PortfolioController {
   constructor(private readonly portfolioService: PortfolioService) {}
 
+  // need to add the restriction so that is should be called by only rick
   @Post('updated')
   async updatedAddresses(
     @Body('type', new ParseEnumPipe(EPortfolioType)) type: EPortfolioType,

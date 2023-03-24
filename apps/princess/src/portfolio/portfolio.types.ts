@@ -1,4 +1,4 @@
-import { EPortfolioType, ECoinType, EWalletType } from '@rana/core'
+import { ECoinType, EWalletType } from '@rana/core'
 import { Socket } from 'socket.io'
 
 export interface IAccount {
