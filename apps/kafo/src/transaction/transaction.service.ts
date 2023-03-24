@@ -13,7 +13,7 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 import { hexlify, serializeTransaction } from 'ethers/lib/utils'
 
 @Injectable()
@@ -59,12 +59,12 @@ export class TransactionService {
     let params = ''
     if (this.isProduction) {
       params =
-        data.coinType === ICoinType.BITCOIN
+        data.coinType === ECoinType.BITCOIN
           ? 'btc/main/txs/new'
           : `eth/main/txs/new?token=${this.blockcypherToken}`
     } else {
       params =
-        data.coinType === ICoinType.BITCOIN
+        data.coinType === ECoinType.BITCOIN
           ? 'btc/test3/txs/new'
           : `beth/test/txs/new?token=${this.blockcypherToken}`
     }
@@ -91,12 +91,12 @@ export class TransactionService {
     let params
     if (this.isProduction) {
       params =
-        data.coinType === ICoinType.BITCOIN
+        data.coinType === ECoinType.BITCOIN
           ? 'btc/main/txs/send'
           : `eth/main/txs/send?token=${this.blockcypherToken}`
     } else {
       params =
-        data.coinType === ICoinType.BITCOIN
+        data.coinType === ECoinType.BITCOIN
           ? 'btc/test3/txs/send'
           : `beth/test/txs/send?token=${this.blockcypherToken}`
     }
@@ -120,12 +120,12 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ICoinType): Promise<IFeeResponse> {
+  async getFee(coin: ECoinType): Promise<IFeeResponse> {
     let params
     if (this.isProduction) {
-      params = coin === ICoinType.BITCOIN ? 'btc/main' : `eth/main`
+      params = coin === ECoinType.BITCOIN ? 'btc/main' : `eth/main`
     } else {
-      params = coin === ICoinType.BITCOIN ? 'btc/test3' : `beth/test`
+      params = coin === ECoinType.BITCOIN ? 'btc/test3' : `beth/test`
     }
 
     try {
@@ -139,7 +139,7 @@ export class TransactionService {
         medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
         low_fee: data.low_fee_per_kb || data.low_gas_price,
       }
-      const unit = coin == ICoinType.BITCOIN ? 8 : 18
+      const unit = coin == ECoinType.BITCOIN ? 8 : 18
       const convertedObj = {
         high_fee: ethers.utils.formatUnits(feeObj.high_fee.toString(), unit),
         medium_fee: ethers.utils.formatUnits(

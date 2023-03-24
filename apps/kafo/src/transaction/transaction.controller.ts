@@ -16,7 +16,7 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 import {
   NFTTransactionRawPipe,
   NFTTransactionSendPipe,
@@ -46,7 +46,7 @@ export class TransactionController {
 
   @Get('fee/:coin')
   async getFee(
-    @Param('coin', new ParseEnumPipe(ICoinType)) coin: ICoinType,
+    @Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType,
   ): Promise<IFeeResponse> {
     return await this.service.getFee(coin)
   }

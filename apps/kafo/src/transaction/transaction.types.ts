@@ -1,4 +1,4 @@
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 
 export interface ITransactionResponse {
   success: boolean
@@ -25,12 +25,12 @@ export interface ITransactionInput {
   from: string
   to: string
   amount: number
-  coinType: ICoinType
+  coinType: ECoinType
 }
 
 export interface ITransactionPush {
   transaction: ITransaction
-  coinType: ICoinType
+  coinType: ECoinType
 }
 
 export interface ITx {

@@ -16,13 +16,18 @@ export enum EPeriod {
   All = 'All',
 }
 
-export enum ICoinType {
+export enum ECoinType {
   ETHEREUM = 'eth',
   BITCOIN = 'btc',
 }
 
-export enum IWalletType {
+export enum EWalletType {
   HOTWALLET = 'hotwallet',
   VAULT = 'vault',
   METAMASK = 'metamask',
+}
+
+export enum EPortfolioType {
+  NFT = 'nft',
+  TRANSACTION = 'transaction',
 }

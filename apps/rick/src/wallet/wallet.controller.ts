@@ -16,7 +16,7 @@ import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
-import { EPeriod, IWalletType } from '@rana/core'
+import { EPeriod, EWalletType } from '@rana/core'
 
 @Controller('wallet')
 export class WalletController {
@@ -46,8 +46,8 @@ export class WalletController {
   async createPortfolio(
     @Param('xPub') xPub: string,
     @Body('account_id', ParseIntPipe) account_id: number,
-    @Body('wallet_type', new ParseEnumPipe(IWalletType))
-    walletType: IWalletType,
+    @Body('wallet_type', new ParseEnumPipe(EWalletType))
+    walletType: EWalletType,
   ) {
     const account = await this.accountService.lookup({
       id: account_id,

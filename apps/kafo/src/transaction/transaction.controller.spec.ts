@@ -6,7 +6,7 @@ import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { TransactionService } from './transaction.service'
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 import { ENFTTypes, ITransaction, ITransactionInput } from './transaction.types'
 import * as bitcoin from 'bitcoinjs-lib'
 import * as secp from 'tiny-secp256k1'
@@ -39,7 +39,7 @@ describe('TransactionController', () => {
       from: address,
       to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       amount: 1,
-      coinType: ICoinType.BITCOIN,
+      coinType: ECoinType.BITCOIN,
     }
     return await controller.generateTransaction(transactionData)
   }
@@ -84,7 +84,7 @@ describe('TransactionController', () => {
     const tmpTx = signTransaction(privKey, newTx.data)
 
     const finalTx = await controller.pushTransaction({
-      coinType: ICoinType.BITCOIN,
+      coinType: ECoinType.BITCOIN,
       transaction: tmpTx,
     })
     expect(finalTx.success).toBeTruthy()
@@ -98,7 +98,7 @@ describe('TransactionController', () => {
     const tmpTx = signTransaction(invalidPrivKey, newTx.data)
 
     const finalTx = await controller.pushTransaction({
-      coinType: ICoinType.BITCOIN,
+      coinType: ECoinType.BITCOIN,
       transaction: tmpTx,
     })
 

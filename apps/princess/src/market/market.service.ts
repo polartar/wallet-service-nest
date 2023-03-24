@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
-import { EPeriod, ICoinType } from '@rana/core'
+import { EPeriod, ECoinType } from '@rana/core'
 import { EEnvironment } from '../environments/environment.types'
 
 @Injectable()
@@ -18,7 +18,7 @@ export class MarketService {
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
   }
 
-  async getMarketData(coin: ICoinType) {
+  async getMarketData(coin: ECoinType) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
@@ -30,7 +30,7 @@ export class MarketService {
       Logger.log(err)
     }
   }
-  async getHistoricalData(coin: ICoinType, period: EPeriod) {
+  async getHistoricalData(coin: ECoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(

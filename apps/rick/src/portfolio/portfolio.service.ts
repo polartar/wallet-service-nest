@@ -1,3 +1,4 @@
+import { EPortfolioType } from '@rana/core'
 import { AddressEntity } from './../wallet/address.entity'
 import { Injectable, Logger } from '@nestjs/common'
 import * as Ethers from 'ethers'
@@ -7,8 +8,10 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
-import { ICoinType } from '@rana/core'
+import { ECoinType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
+import { Alchemy, Network } from 'alchemy-sdk'
+import { ethers } from 'ethers'
 
 @Injectable()
 export class PortfolioService {
@@ -17,6 +20,7 @@ export class PortfolioService {
   provider: Ethers.providers.JsonRpcProvider
   princessAPIUrl: string
   btcSocket
+  alchemyInstance
 
   constructor(
     private configService: ConfigService,
@@ -42,6 +46,21 @@ export class PortfolioService {
     )
 
     this.runEthereumService()
+    const alchemyKey = this.configService.get<string>(
+      EEnvironment.alchemyAPIKey,
+    )
+    this.alchemyConfigure(isProd, alchemyKey)
+  }
+
+  alchemyConfigure(isProd: boolean, alchemyKey: string) {
+    const settings = {
+      apiKey: alchemyKey,
+      network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+    }
+
+    this.alchemyInstance = new Alchemy(settings)
+
+    this.subscribeNFTTransferEvents()
   }
 
   async onBTCTransaction(transaction) {
@@ -143,10 +162,11 @@ export class PortfolioService {
       if (updatedAddresses.length > 0) {
         firstValueFrom(
           this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-            updatedAddresses: postUpdatedAddresses,
+            type: EPortfolioType.TRANSACTION,
+            data: postUpdatedAddresses,
           }),
         ).catch(() => {
-          Logger.log('Princess portfolio/updated api error')
+          Logger.error('Princess portfolio/updated api error')
         })
 
         return this.walletService.updateWallets(updatedAddresses)
@@ -161,10 +181,10 @@ export class PortfolioService {
     addresses = addresses.filter((wallet) => wallet.isActive)
 
     this.activeEthAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ICoinType.ETHEREUM,
+      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
     )
     this.activeBtcAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ICoinType.BITCOIN,
+      (address) => address.wallet.coinType === ECoinType.BITCOIN,
     )
   }
 
@@ -202,11 +222,12 @@ export class PortfolioService {
               if (tx.status === 'fulfilled') {
                 let amount = BigNumber.from(0)
                 let updatedAddress: AddressEntity
-
+                let isTx = false
                 if (
                   tx.value?.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
                 ) {
+                  isTx = true
                   const fee = BigNumber.from(tx.value.gasPrice).mul(
                     BigNumber.from(tx.value.gasLimit),
                   )
@@ -221,6 +242,7 @@ export class PortfolioService {
                   tx.value.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
                 ) {
+                  isTx = true
                   amount = amount.sub(BigNumber.from(tx.value.value))
                   updatedAddress = this.activeEthAddresses.find(
                     (address) =>
@@ -228,7 +250,7 @@ export class PortfolioService {
                       tx.value.to.toLowerCase(),
                   )
                 }
-                if (!amount.isZero()) {
+                if (isTx) {
                   const history = updatedAddress.history
                   const newHistory = {
                     from: tx.value.from,
@@ -268,16 +290,83 @@ export class PortfolioService {
               this.httpService.post(
                 `${this.princessAPIUrl}/portfolio/updated`,
                 {
-                  updatedAddresses: postUpdatedAddresses,
+                  type: EPortfolioType.TRANSACTION,
+                  data: postUpdatedAddresses,
                 },
               ),
             ).catch(() => {
-              Logger.log('Princess portfolio/updated api error')
+              Logger.error('Princess portfolio/updated api error')
             })
 
             return this.walletService.updateWallets(updatedAddresses)
           }
         })
+      }
+    })
+  }
+
+  notifyNFTUpdate(sourceAddress: string) {
+    const addressEntity = this.activeEthAddresses.find(
+      (address) => address.address.toLowerCase() === sourceAddress,
+    )
+    firstValueFrom(
+      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+        type: EPortfolioType.NFT,
+        data: [
+          {
+            addressId: addressEntity.id,
+            walletId: addressEntity.wallet.id,
+            accountIds: addressEntity.wallet.accounts.map(
+              (account) => account.id,
+            ),
+          },
+        ],
+      }),
+    ).catch(() => {
+      Logger.error('Princess portfolio/updated api error')
+    })
+  }
+
+  subscribeNFTTransferEvents() {
+    const transferFilter = {
+      topics: [
+        [
+          ethers.utils.id('Transfer(address,address,uint256)'), // ERC721 transfer
+          ethers.utils.id(
+            'TransferSingle(address,address,address,uint256,uint256)', // ERC1155 transfer
+          ),
+          ethers.utils.id(
+            'TransferBatch(address,address,address,uint256[],uint256[])', // ERC1155 batch transfer
+          ),
+        ],
+      ],
+    }
+    const transferABI = [
+      'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
+      'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
+      'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
+    ]
+    const transferIface = new ethers.utils.Interface(transferABI)
+
+    // listen NFT transfer events
+    this.alchemyInstance.ws.on(transferFilter, async (log) => {
+      try {
+        const currentAddresses: string[] = this.activeEthAddresses.map(
+          (address) => address.address.toLowerCase(),
+        )
+        const { args } = transferIface.parseLog(log)
+        const fromAddress = args.from.toLowerCase()
+        const toAddress = args.to.toLowerCase()
+
+        if (currentAddresses.includes(fromAddress)) {
+          this.notifyNFTUpdate(fromAddress)
+        }
+
+        if (currentAddresses.includes(toAddress)) {
+          this.notifyNFTUpdate(toAddress)
+        }
+      } catch (err) {
+        Logger.error('ERC20 transfer')
       }
     })
   }

@@ -6,7 +6,7 @@ import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { EPeriod, ICoinType } from '@rana/core'
+import { EPeriod, ECoinType } from '@rana/core'
 
 @Injectable()
 export class MarketService {
@@ -129,7 +129,7 @@ export class MarketService {
     this.btcClient.close()
   }
 
-  async getMarketData(coin: ICoinType): Promise<IResponse> {
+  async getMarketData(coin: ECoinType): Promise<IResponse> {
     const apiURL =
       'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
 
@@ -147,7 +147,7 @@ export class MarketService {
         }),
       )
 
-      if (coin === ICoinType.BITCOIN) {
+      if (coin === ECoinType.BITCOIN) {
         return { success: true, data: res.data.data[0]['quote']['USD'] }
       } else {
         return { success: true, data: res.data.data[1]['quote']['USD'] }
@@ -194,7 +194,7 @@ export class MarketService {
   }
 
   async getHistoricalData(
-    coin: ICoinType,
+    coin: ECoinType,
     period: EPeriod,
   ): Promise<IResponse> {
     const startDate = new Date(this.getPeriodTime(period))

@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
-import { ICoinType, IWalletType } from '@rana/core'
+import { ECoinType, EWalletType } from '@rana/core'
 
 @Entity()
 export class WalletEntity {
@@ -18,13 +18,13 @@ export class WalletEntity {
   id: number
 
   @Column('text')
-  coinType: ICoinType
+  coinType: ECoinType
 
   @Column('text')
   xPub: string
 
   @Column('text')
-  type: IWalletType
+  type: EWalletType
 
   @Column()
   address: string

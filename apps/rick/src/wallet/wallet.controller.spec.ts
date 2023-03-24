@@ -19,7 +19,7 @@ import { SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
 import { HistoryEntity } from './history.entity'
 import { AddressEntity } from './address.entity'
-import { EPeriod, IWalletType } from '@rana/core'
+import { EPeriod, EWalletType } from '@rana/core'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -83,8 +83,8 @@ describe('WalletController', () => {
     await controller.createPortfolio(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
-      IWalletType.METAMASK,
-      // ICoinType.ETHEREUM,
+      EWalletType.METAMASK,
+      // ECoinType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
@@ -119,8 +119,8 @@ describe('WalletController', () => {
     await controller.createPortfolio(
       'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       2,
-      IWalletType.VAULT,
-      // ICoinType.ETHEREUM,
+      EWalletType.VAULT,
+      // ECoinType.ETHEREUM,
     )
 
     const btcWallets = await portfolioService.getBtcWallets()
