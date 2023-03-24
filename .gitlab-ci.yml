@@ -63,7 +63,7 @@ build:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$APP_prod:$CI_COMMIT_REF_SLUG
+    IMAGE_TAG: "${CI_REGISTRY_IMAGE}/${APP}_prod:${CI_COMMIT_REF_SLUG}"
   rules:
     - changes:
         - apps/$APP/*
