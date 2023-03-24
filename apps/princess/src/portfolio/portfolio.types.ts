@@ -76,7 +76,3 @@ export interface IUpdatedAddress {
     timestamp: number
   }
 }
-// export interface IUpdatedAddressesInput {
-//   type: EPortfolioType
-//   data: IUpdatedAddress[]
-// }
