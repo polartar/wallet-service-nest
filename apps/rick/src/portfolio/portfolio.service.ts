@@ -368,7 +368,7 @@ export class PortfolioService {
           this.notifyNFTUpdate(fromAddress)
         }
 
-        if (currentAddresses.includes(toAddress)) {
+        if (currentAddresses.includes(toAddress) && fromAddress !== toAddress) {
           this.notifyNFTUpdate(toAddress)
         }
       } catch (err) {
