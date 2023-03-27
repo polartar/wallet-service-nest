@@ -27,6 +27,7 @@ import { ECoinType, EWalletType } from '@rana/core'
 export class WalletService {
   provider: ethers.providers.EtherscanProvider
   isProduction: boolean
+
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
@@ -44,6 +45,7 @@ export class WalletService {
       this.isProduction ? 'mainnet' : 'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
+    this.confirmWalletBalances()
   }
 
   getCurrentTimeBySeconds() {
@@ -285,8 +287,9 @@ export class WalletService {
     })
   }
 
-  async confirmBTCBalance(address: AddressEntity): Promise<AddressEntity> {
+  async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
     const trxHistory = await this.provider.getHistory(address.address)
+
     if (trxHistory.length > address.history.length) {
       address.history = await this.generateEthHistories(
         trxHistory.slice(address.history.length, trxHistory.length),
@@ -297,12 +300,15 @@ export class WalletService {
       return null
     }
   }
-  async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
+  async confirmBTCBalance(address: AddressEntity): Promise<AddressEntity> {
     const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
       this.httpService.get(
-        `https://api.blockcypher.com/v1/btc/main/addrs/${address.address}`,
+        `https://api.blockcypher.com/v1/btc/${
+          this.isProduction ? 'main' : 'test3'
+        }/addrs/${address.address}`,
       ),
     )
+
     const trxHistory = txResponse.data.txrefs
     if (trxHistory.length > address.history.length) {
       address.history = await this.generateBTCHistories(
@@ -327,7 +333,6 @@ export class WalletService {
         }
       }),
     )
-
-    this.walletRepository.save(updatedAddresses.filter((address) => !address))
+    this.walletRepository.save(updatedAddresses.filter((address) => !!address))
   }
 }
