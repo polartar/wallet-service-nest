@@ -10,7 +10,7 @@ import { TotpService } from './totp.service'
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.FLUFFY_DB_HOST || 'localhost',
-      port: process.env.FLUFFY_DB_PORT || 5432,
+      port: parseInt(process.env.FLUFFY_DB_PORT) || 5432,
       username: process.env.FLUFFY_DB_USERNAME || 'user',
       password: process.env.FLUFFY_DB_PASSWORD || 'password',
       database: process.env.FLUFFY_DB_NAME || 'pairs',

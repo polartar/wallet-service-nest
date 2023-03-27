@@ -18,7 +18,7 @@ import { HttpModule } from '@nestjs/axios'
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.RICK_DB_HOST || 'localhost',
-      port: process.env.RICK_DB_PORT || 5431,
+      port: parseInt(process.env.RICK_DB_PORT) || 5431,
       username: process.env.RICK_DB_USERNAME || 'myusername',
       password: process.env.RICK_DB_PASSWORD || 'mypassword',
       database: process.env.RICK_DB_NAME || 'rick',
