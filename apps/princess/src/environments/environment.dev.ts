@@ -10,6 +10,8 @@ export const Environment = () => {
       process.env.RICK_API_URL || 'http://localhost:3333',
     [EEnvironment.mortyAPIUrl]:
       process.env.MORTY_API_URL || 'http://localhost:3333',
+    [EEnvironment.gandalfAPIUrl]:
+      process.env.GANDALF_API_URL || 'http://localhost:3333',
   }
   return env
 }
