@@ -12,12 +12,11 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     ConfigModule.forRoot({ load: [Environment] }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5431,
-      username: 'myusername',
-      password: 'mypassword',
-      database: 'gandalf',
-
+      host: process.env.GANDALF_DB_HOST || 'localhost',
+      port: process.env.GANDALF_DB_PORT || 5431,
+      username: process.env.GANDALF_DB_USERNAME || 'myusername',
+      password: process.env.GANDALF_DB_PASSWORD || 'mypassword',
+      database: process.env.GANDALF_DB_NAME || 'gandalf',
       // TODO: Maybe disable in production?
       autoLoadEntities: true,
       synchronize: true,

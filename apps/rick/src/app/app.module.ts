@@ -17,11 +17,11 @@ import { HttpModule } from '@nestjs/axios'
     ConfigModule.forRoot({ isGlobal: true, load: [Environment] }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5431,
-      username: 'myusername',
-      password: 'mypassword',
-      database: 'rick',
+      host: process.env.RICK_DB_HOST || 'localhost',
+      port: process.env.RICK_DB_PORT || 5431,
+      username: process.env.RICK_DB_USERNAME || 'myusername',
+      password: process.env.RICK_DB_PASSWORD || 'mypassword',
+      database: process.env.RICK_DB_NAME || 'rick',
       entities: [
         AccountEntity, //
         WalletEntity,
