@@ -9,6 +9,7 @@ RUN yarn install
 RUN yarn nx run-many --target=build
 
 FROM node:18-alpine AS prod_node_modules
+RUN apk add --update python3 make g++
 ADD . /app
 WORKDIR /app
 RUN yarn install --production
