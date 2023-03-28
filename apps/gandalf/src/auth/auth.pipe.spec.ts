@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common'
 import { LoginValidationPipe } from './auth.pipe'
-import { EAuth, IAuthData } from './auth.types'
+import { IAuthData } from './auth.types'
+import { EAuth } from '@rana/core'
 
 describe('Auth Pipe', () => {
   const pipe = new LoginValidationPipe()

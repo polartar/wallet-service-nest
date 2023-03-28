@@ -1,7 +1,4 @@
-export enum EAuth {
-  Google = 'google',
-  Apple = 'apple',
-}
+import { EAuth } from '@rana/core'
 
 export type IAuthData = {
   idToken: string

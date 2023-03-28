@@ -31,3 +31,7 @@ export enum EPortfolioType {
   NFT = 'nft',
   TRANSACTION = 'transaction',
 }
+export enum EAuth {
+  Google = 'google',
+  Apple = 'apple',
+}

@@ -1,9 +1,10 @@
 import { ConfigService } from '@nestjs/config'
 import { Injectable } from '@nestjs/common'
-import { IAuthData, EAuth, IAuthResponse } from './auth.types'
+import { IAuthData, IAuthResponse } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
+import { EAuth } from '@rana/core'
 
 @Injectable()
 export class AuthService {
