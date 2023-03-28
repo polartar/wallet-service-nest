@@ -15,7 +15,7 @@ export class PairingService {
 
   create(createPairingDto: CreatePairingDto): Promise<PairingEntity> {
     const pair = new PairingEntity()
-    pair.userID = createPairingDto.userID
+    pair.userId = createPairingDto.userId
 
     return this.pairingRepository.save(pair)
   }

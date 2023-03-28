@@ -8,10 +8,10 @@ export class PairingEntity {
   id: number
 
   @PrimaryGeneratedColumn('uuid')
-  deviceID: string
+  deviceId: string
 
   @Column()
-  userID: string
+  userId: string
 
   @Column()
   secret: string

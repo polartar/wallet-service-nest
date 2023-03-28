@@ -8,36 +8,36 @@ import { PairingService } from '../pairing/pairing.service'
 export class TotpService {
   constructor(private readonly pairingService: PairingService) {}
 
-  private async pairDevice(userID: string) {
+  private async pairDevice(userId: string) {
     return this.pairingService.create({
-      userID: userID,
+      userId: userId,
     })
   }
 
-  async generate(userID: string, deviceID?: string) {
+  async generate(userId: string, deviceId?: string) {
     let pairing
-    if (deviceID) {
+    if (deviceId) {
       pairing = await this.pairingService.lookup({
-        userID,
-        deviceID,
+        userId,
+        deviceId,
       })
     }
-    console.log(userID, deviceID)
+
     if (!pairing) {
-      pairing = await this.pairDevice(userID)
+      pairing = await this.pairDevice(userId)
     }
 
     return {
-      userID: pairing.userID,
+      userId: pairing.userId,
       totp: pairing.secret,
-      deviceID: pairing.deviceID,
+      deviceId: pairing.deviceId,
     }
   }
 
-  async verify(userID: string, deviceID: string, token: string) {
+  async verify(userId: string, deviceId: string, token: string) {
     const pairingEntity = await this.pairingService.lookup({
-      userID,
-      deviceID,
+      userId,
+      deviceId,
     })
 
     // First, is there a pairing?

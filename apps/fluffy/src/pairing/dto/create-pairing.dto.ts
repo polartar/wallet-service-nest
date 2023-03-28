@@ -1,3 +1,3 @@
 export class CreatePairingDto {
-  userID: string
+  userId: string
 }
