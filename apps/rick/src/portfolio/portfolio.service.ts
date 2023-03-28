@@ -372,7 +372,7 @@ export class PortfolioService {
           this.notifyNFTUpdate(toAddress)
         }
       } catch (err) {
-        Logger.log('ERC20 transfer')
+        /* continue regardless of error */
       }
     })
   }
