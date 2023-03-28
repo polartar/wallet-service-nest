@@ -8,9 +8,10 @@ import { PairingService } from '../pairing/pairing.service'
 export class TotpService {
   constructor(private readonly pairingService: PairingService) {}
 
-  private async pairDevice(userId: string) {
+  private async pairDevice(userId: string, deviceId?: string) {
     return this.pairingService.create({
-      userId: userId,
+      userId,
+      deviceId,
     })
   }
 
@@ -24,7 +25,7 @@ export class TotpService {
     }
 
     if (!pairing) {
-      pairing = await this.pairDevice(userId)
+      pairing = await this.pairDevice(userId, deviceId)
     }
 
     return {

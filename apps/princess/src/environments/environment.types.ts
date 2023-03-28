@@ -5,4 +5,5 @@ export enum EEnvironment {
   rickAPIUrl = 'rick_api_url',
   mortyAPIUrl = 'morty_api_url',
   gandalfAPIUrl = 'gandalf_api_url',
+  fluffyAPIUrl = 'fluffy_api_url',
 }

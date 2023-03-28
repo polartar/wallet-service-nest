@@ -9,6 +9,7 @@ import { MarketModule } from '../market/market.module'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
+import { OnboardingModule } from '../onboarding/onboarding.module'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PortfolioModule } from '../portfolio/portfolio.module'
     NewsModule,
     MarketModule,
     PortfolioModule,
+    OnboardingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
