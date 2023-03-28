@@ -71,6 +71,8 @@ build:
       when: on_success
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
 
 push princess to registry:
   extends: .push_to_registry
