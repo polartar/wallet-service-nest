@@ -10,7 +10,7 @@ import { TotpService } from './totp.service'
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
+      port: 5433,
       username: 'user',
       password: 'password',
       database: 'pairs',

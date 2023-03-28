@@ -1,3 +1,4 @@
+import { PairingEntity } from './../pairing/pairing.entity'
 import { Injectable } from '@nestjs/common'
 import { authenticator } from 'otplib'
 
@@ -13,8 +14,18 @@ export class TotpService {
     })
   }
 
-  async generate(userID: string) {
-    const pairing = await this.pairDevice(userID)
+  async generate(userID: string, deviceID?: string) {
+    let pairing
+    if (deviceID) {
+      pairing = await this.pairingService.lookup({
+        userID,
+        deviceID,
+      })
+    }
+    console.log(userID, deviceID)
+    if (!pairing) {
+      pairing = await this.pairDevice(userID)
+    }
 
     return {
       userID: pairing.userID,
