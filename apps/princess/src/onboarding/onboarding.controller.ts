@@ -17,14 +17,15 @@ export class OnboardingController {
 
   @Post('device')
   async registerDevice(@Body(ValidationPipe) data: RegisterDeviceDto) {
-    return this.onboardingService.registerDevice(data.device_id)
+    const accountId = 'testAccount' // we should repalce later
+    return this.onboardingService.registerDevice(accountId, data.device_id)
   }
 
   @Post('login')
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: IOnboardingSignIn) {
     try {
-      this.onboardingService.signIn(data.type, data.token)
+      this.onboardingService.signIn(data.type, data.token, data.deviceId)
     } catch (e) {
       throw new BadRequestException(e?.message)
     }

@@ -17,6 +17,7 @@ export class TotpService {
 
   async generate(userId: string, deviceId?: string) {
     let pairing
+    let isNew = false
     if (deviceId) {
       pairing = await this.pairingService.lookup({
         userId,
@@ -26,9 +27,11 @@ export class TotpService {
 
     if (!pairing) {
       pairing = await this.pairDevice(userId, deviceId)
+      isNew = true
     }
 
     return {
+      isNew,
       userId: pairing.userId,
       totp: pairing.secret,
       deviceId: pairing.deviceId,

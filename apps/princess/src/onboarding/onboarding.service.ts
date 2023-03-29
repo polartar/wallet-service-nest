@@ -4,7 +4,11 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { IOnboardingSigninResponse } from './onboarding.types'
+import {
+  EOnboardingType,
+  IOnboardingDeviceResponse,
+  IOnboardingSigningResponse,
+} from './onboarding.types'
 
 @Injectable()
 export class OnboardingService {
@@ -20,20 +24,48 @@ export class OnboardingService {
     )
   }
 
-  async signIn(type: EAuth, token: string) {
+  async signIn(
+    type: EAuth,
+    token: string,
+    deviceId: string,
+  ): Promise<IOnboardingSigningResponse> {
     try {
-      firstValueFrom(
+      const user = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
           type,
         }),
       )
+
+      const pair = await this.registerDevice(user.data.account.id, deviceId)
+      const onboardingType = user.data.isNew
+        ? EOnboardingType.NEW_EMAIL
+        : pair.data.isNew
+        ? EOnboardingType.NEW_DEVICE
+        : EOnboardingType.EXISTING_ACCOUNT
+
+      return {
+        success: true,
+        data: {
+          type: onboardingType,
+          id: user.data.account.id,
+          account:
+            onboardingType !== EOnboardingType.NEW_EMAIL
+              ? user.data.account
+              : {},
+        },
+      }
     } catch (err) {
-      console.error('Error')
+      return {
+        success: false,
+        error: err.message,
+      }
     }
   }
-  async registerDevice(deviceId: string): Promise<IOnboardingSigninResponse> {
-    const accountId = 'testAccount' // we should repalce later
+  async registerDevice(
+    accountId: string,
+    deviceId: string,
+  ): Promise<IOnboardingDeviceResponse> {
     try {
       const response = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
@@ -46,6 +78,7 @@ export class OnboardingService {
         data: {
           otp: response.data.totp,
           id: response.data.userId,
+          isNew: response.data.isNew,
         },
       }
     } catch (err) {

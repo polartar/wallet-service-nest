@@ -25,10 +25,16 @@ export class AuthController {
       const account = await this.accountService.lookup({ email })
 
       if (account) {
-        return account.id
+        return {
+          isNew: false,
+          account,
+        }
       } else {
         const createdAccount = await this.accountService.create({ name, email })
-        return createdAccount.id
+        return {
+          isNew: true,
+          account: createdAccount,
+        }
       }
     } catch (e) {
       throw new BadRequestException(e?.message)
