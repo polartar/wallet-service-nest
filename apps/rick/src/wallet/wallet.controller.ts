@@ -69,12 +69,10 @@ export class WalletController {
   }
 
   @Post('activate')
-  async activeWallets(@Body() data: IWalletActiveData[]) {
+  async activeWallets(@Body() data: IWalletActiveData) {
     try {
-      // need to get the account id from the logged in user in the future
-      const accountId = 1
-      const walletsActive = data.map((wallet) => ({ ...wallet, accountId }))
-      const res = await this.walletService.updateWalletsActive(walletsActive)
+      // need to validate the wallet id and authorized account later
+      const res = await this.walletService.updateWalletsActive(data)
 
       await this.portfolioService.initializeWallets()
       return res
