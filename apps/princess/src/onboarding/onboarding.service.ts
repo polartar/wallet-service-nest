@@ -111,11 +111,17 @@ export class OnboardingService {
     otp?: string,
   ): Promise<IDeviceRegisterResponse> {
     try {
-      const response = await this._registerDevice(accountId, deviceId, otp)
+      await this._registerDevice(accountId, deviceId, otp)
+
+      const accountResponse = await firstValueFrom(
+        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
+      )
       // how to get account object?
       return {
         success: true,
-        // data: {},
+        data: {
+          account: accountResponse.data,
+        },
       }
     } catch (err) {
       return {

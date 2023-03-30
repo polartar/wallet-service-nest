@@ -3,6 +3,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  InternalServerErrorException,
+  Param,
   Post,
   UsePipes,
 } from '@nestjs/common'
@@ -38,6 +41,15 @@ export class AuthController {
       }
     } catch (e) {
       throw new BadRequestException(e?.message)
+    }
+  }
+
+  @Get('/:account_id')
+  async getAccount(@Param('account_id') accountId: number) {
+    try {
+      return this.accountService.getAccount(accountId)
+    } catch (e) {
+      throw new InternalServerErrorException(e?.message)
     }
   }
 }
