@@ -3,7 +3,7 @@ import { EAuth } from '@rana/core'
 export interface IOnboardingSignIn {
   type: EAuth
   token: string
-  deviceId: string
+  device_id: string
 }
 
 export interface IOnboardingSigningResponse {

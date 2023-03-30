@@ -23,7 +23,7 @@ export class OnboardingController {
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: IOnboardingSignIn) {
     try {
-      this.onboardingService.signIn(data.type, data.token, data.deviceId)
+      this.onboardingService.signIn(data.type, data.token, data.device_id)
     } catch (e) {
       throw new BadRequestException(e?.message)
     }
@@ -31,7 +31,7 @@ export class OnboardingController {
 
   @Post('device/:device_id/register')
   async registerDevice(
-    @Param('deviceId') deviceId: string,
+    @Param('device_id') deviceId: string,
     @Body('account_id') accountId: string,
     @Body('otp') otp: string,
   ) {

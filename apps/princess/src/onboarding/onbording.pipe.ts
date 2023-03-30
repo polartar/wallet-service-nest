@@ -11,7 +11,7 @@ export class SignInValidationPipe implements PipeTransform {
       /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/,
     ),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
-    deviceId: Joi.string().required(),
+    device_id: Joi.string().required(),
   })
 
   transform(value: IOnboardingSignIn) {
