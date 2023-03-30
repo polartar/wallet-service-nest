@@ -5,17 +5,17 @@ export interface IOnboardingSignIn {
   token: string
   device_id: string
 }
-
+export interface IAccount {
+  id: string
+  email: string
+  name: string
+}
 export interface IOnboardingSigningResponse {
   success: boolean
   data?: {
     type: EOnboardingType
     account_id: string
-    account: {
-      id: string
-      email: string
-      name: string
-    }
+    account: IAccount
   }
   error?: string
 }
@@ -32,11 +32,7 @@ export interface IDeviceCreateResponse {
 export interface IDeviceRegisterResponse {
   success: boolean
   data?: {
-    account: {
-      id: string
-      email: string
-      name: string
-    }
+    account: IAccount
   }
   error?: string
 }

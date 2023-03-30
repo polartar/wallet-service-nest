@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Param,
   Post,
   UsePipes,
@@ -36,5 +37,10 @@ export class OnboardingController {
     @Body('otp') otp: string,
   ) {
     return this.onboardingService.registerDevice(deviceId, accountId, otp)
+  }
+
+  @Get('account/hash/:account_id')
+  async getAccount(@Param('account_id') accountId: string) {
+    return this.onboardingService.getAccountHash(accountId)
   }
 }

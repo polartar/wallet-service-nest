@@ -1,11 +1,16 @@
 import { HttpService } from '@nestjs/axios'
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common'
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import {
   EOnboardingType,
+  IAccount,
   IDeviceCreateResponse,
   IDeviceRegisterResponse,
   IOnboardingSigningResponse,
@@ -108,19 +113,17 @@ export class OnboardingService {
   async registerDevice(
     accountId: string,
     deviceId: string,
-    otp?: string,
+    otp: string,
   ): Promise<IDeviceRegisterResponse> {
     try {
       await this._registerDevice(accountId, deviceId, otp)
 
-      const accountResponse = await firstValueFrom(
-        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
-      )
+      const account = await this.getAccount(accountId)
       // how to get account object?
       return {
         success: true,
         data: {
-          account: accountResponse.data,
+          account: account,
         },
       }
     } catch (err) {
@@ -129,5 +132,23 @@ export class OnboardingService {
         error: err.message,
       }
     }
+  }
+
+  async getAccount(accountId: string): Promise<IAccount> {
+    try {
+      const accountResponse = await firstValueFrom(
+        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
+      )
+      return accountResponse.data
+    } catch (err) {
+      throw new BadGatewayException(err.message)
+    }
+  }
+
+  async getAccountHash(accountId: string): Promise<string> {
+    const account = await this.getAccount(accountId)
+    console.log({ account })
+    console.log(JSON.stringify(account))
+    return JSON.stringify(account)
   }
 }
