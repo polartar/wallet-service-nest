@@ -15,7 +15,7 @@ import {
   IDeviceRegisterResponse,
   IOnboardingSigningResponse,
 } from './onboarding.types'
-
+import * as hash from 'object-hash'
 @Injectable()
 export class OnboardingService {
   gandalfApiUrl: string
@@ -147,8 +147,6 @@ export class OnboardingService {
 
   async getAccountHash(accountId: string): Promise<string> {
     const account = await this.getAccount(accountId)
-    console.log({ account })
-    console.log(JSON.stringify(account))
-    return JSON.stringify(account)
+    return hash(account)
   }
 }
