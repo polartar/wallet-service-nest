@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fluffy-db-sfs
+spec:
+  selector:
+    matchLabels:
+      app: fluffy-db # has to match .spec.template.metadata.labels
+  serviceName: "fluffy-db-service"
+  replicas: 1 # Don't change this to > 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: fluffy-db # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: postgres
+        image: postgres:15.2-alpine
+        env:
+        - name: POSTGRES_USER
+          value: user
+        - name: POSTGRES_DB
+          value: pairs
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_PASSWORD
+          value: password
+        ports:
+        - containerPort: 5432
+          name: postgres-port
+        volumeMounts:
+        - name: fluffy-dbdata
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 50m
+            memory: 128Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: fluffy-dbdata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard-rwo"
+      resources:
+        requests:
+          storage: 1Gi
