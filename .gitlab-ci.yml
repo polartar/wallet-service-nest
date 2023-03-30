@@ -4,6 +4,7 @@ stages:
   - lint
   - test
   - build
+  - deploy
 
 .distributed:
   interruptible: true
@@ -108,3 +109,26 @@ push rick to registry:
   extends: .push_to_registry
   variables:
     APP: rick
+
+deploy to k8s cluster:
+  stage: deploy
+  when: on_success
+  image:
+    name: bitnami/kubectl:latest
+  script:
+    - kubectl config use-context ngrave/rana/app/be:gke-agent
+    - kubectl set image deployment/anton-deployment registry.gitlab.com/ngrave/rana/app/be/anton_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/fluffy-deployment registry.gitlab.com/ngrave/rana/app/be/fluffy_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/gandalf-deployment registry.gitlab.com/ngrave/rana/app/be/gandalf_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/kafo-deployment registry.gitlab.com/ngrave/rana/app/be/kafo_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/morty-deployment registry.gitlab.com/ngrave/rana/app/be/morty_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/princess-deployment registry.gitlab.com/ngrave/rana/app/be/princess_prod:$CI_COMMIT_REF_SLUG
+    - kubectl set image deployment/rick-deployment registry.gitlab.com/ngrave/rana/app/be/rick_prod:$CI_COMMIT_REF_SLUG
+  environment:
+    name: testnet gke cluster
+    url: http://34.120.165.191
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "main"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
