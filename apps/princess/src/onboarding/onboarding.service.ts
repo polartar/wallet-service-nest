@@ -1,12 +1,13 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import {
   EOnboardingType,
-  IOnboardingDeviceResponse,
+  IDeviceCreateResponse,
+  IDeviceRegisterResponse,
   IOnboardingSigningResponse,
 } from './onboarding.types'
 
@@ -24,6 +25,28 @@ export class OnboardingService {
     )
   }
 
+  async createDevice(hardwareId: string): Promise<IDeviceCreateResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.fluffyApiUrl}/device`, {
+          hardware_id: hardwareId,
+        }),
+      )
+      return {
+        success: true,
+        data: {
+          otp: response.data.opt,
+          device_id: response.data.device_id,
+        },
+      }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      }
+    }
+  }
+
   async signIn(
     type: EAuth,
     token: string,
@@ -37,10 +60,10 @@ export class OnboardingService {
         }),
       )
 
-      const pair = await this.registerDevice(user.data.account.id, deviceId)
-      const onboardingType = user.data.isNew
+      const pair = await this._registerDevice(user.data.account.id, deviceId)
+      const onboardingType = user.data.is_new
         ? EOnboardingType.NEW_EMAIL
-        : pair.data.isNew
+        : pair.is_new
         ? EOnboardingType.NEW_DEVICE
         : EOnboardingType.EXISTING_ACCOUNT
 
@@ -48,7 +71,7 @@ export class OnboardingService {
         success: true,
         data: {
           type: onboardingType,
-          id: user.data.account.id,
+          account_id: user.data.account.id,
           account:
             onboardingType !== EOnboardingType.NEW_EMAIL
               ? user.data.account
@@ -62,24 +85,37 @@ export class OnboardingService {
       }
     }
   }
-  async registerDevice(
+
+  async _registerDevice(
     accountId: string,
     deviceId: string,
-  ): Promise<IOnboardingDeviceResponse> {
+    otp?: string,
+  ): Promise<{ is_new: boolean }> {
     try {
       const response = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-          accountId,
-          deviceId,
+          user_id: accountId,
+          device_id: deviceId,
+          otp,
         }),
       )
+      return response.data
+    } catch (err) {
+      throw new BadRequestException(err?.message)
+    }
+  }
+
+  async registerDevice(
+    accountId: string,
+    deviceId: string,
+    otp?: string,
+  ): Promise<IDeviceRegisterResponse> {
+    try {
+      const response = await this._registerDevice(accountId, deviceId, otp)
+      // how to get account object?
       return {
         success: true,
-        data: {
-          otp: response.data.totp,
-          id: response.data.userId,
-          isNew: response.data.isNew,
-        },
+        // data: {},
       }
     } catch (err) {
       return {

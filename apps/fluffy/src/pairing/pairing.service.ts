@@ -5,27 +5,50 @@ import { Repository } from 'typeorm'
 import { CreatePairingDto } from './dto/create-pairing.dto'
 import { FindPairingDto } from './dto/find-pairing.dto'
 import { PairingEntity } from './pairing.entity'
+import { DeviceEntity } from './device.entity'
 
 @Injectable()
 export class PairingService {
   constructor(
     @InjectRepository(PairingEntity)
     private readonly pairingRepository: Repository<PairingEntity>,
+    @InjectRepository(DeviceEntity)
+    private readonly deviceRepository: Repository<DeviceEntity>,
   ) {}
 
   create(createPairingDto: CreatePairingDto): Promise<PairingEntity> {
     const pair = new PairingEntity()
     pair.userId = createPairingDto.userId
-    if (createPairingDto.deviceId) {
-      pair.deviceId = createPairingDto.deviceId
-    }
+    pair.deviceId = createPairingDto.deviceId
 
     return this.pairingRepository.save(pair)
+  }
+
+  async createDevice(hardwareId: string): Promise<DeviceEntity> {
+    let device = await this.lookupHardwareId(hardwareId)
+    if (device) {
+      return device
+    }
+    device = new DeviceEntity()
+    device.hardwareId = hardwareId
+
+    return this.deviceRepository.save(device)
   }
 
   lookup(findPairingDto: FindPairingDto): Promise<PairingEntity> {
     return this.pairingRepository.findOne({
       where: findPairingDto,
+    })
+  }
+  async lookupHardwareId(hardwareId: string): Promise<DeviceEntity> {
+    return await this.deviceRepository.findOne({
+      where: { hardwareId },
+    })
+  }
+
+  async lookupDeviceId(deviceId: string): Promise<DeviceEntity> {
+    return await this.deviceRepository.findOne({
+      where: { deviceId },
     })
   }
 }

@@ -1,4 +1,4 @@
 export interface IPairGenerate {
-  accountId: string
-  deviceId?: string
+  user_id: string
+  device_id: string
 }

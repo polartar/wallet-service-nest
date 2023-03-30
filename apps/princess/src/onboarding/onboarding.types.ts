@@ -10,7 +10,7 @@ export interface IOnboardingSigningResponse {
   success: boolean
   data?: {
     type: EOnboardingType
-    id: string
+    account_id: string
     account: {
       id: string
       email: string
@@ -20,12 +20,23 @@ export interface IOnboardingSigningResponse {
   error?: string
 }
 
-export interface IOnboardingDeviceResponse {
+export interface IDeviceCreateResponse {
   success: boolean
   data?: {
     otp: string
-    id: string
-    isNew: boolean
+    device_id: string
+  }
+  error?: string
+}
+
+export interface IDeviceRegisterResponse {
+  success: boolean
+  data?: {
+    account: {
+      id: string
+      email: string
+      name: string
+    }
   }
   error?: string
 }

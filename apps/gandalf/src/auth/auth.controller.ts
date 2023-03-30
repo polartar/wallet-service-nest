@@ -26,13 +26,13 @@ export class AuthController {
 
       if (account) {
         return {
-          isNew: false,
+          is_new: false,
           account,
         }
       } else {
         const createdAccount = await this.accountService.create({ name, email })
         return {
-          isNew: true,
+          is_new: true,
           account: createdAccount,
         }
       }

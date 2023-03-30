@@ -4,21 +4,19 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Param,
   Post,
   UsePipes,
-  ValidationPipe,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onbording.pipe'
-import { RegisterDeviceDto } from './dto/RegisterDeviceDto'
 
 @Controller('onboarding')
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
   @Post('device')
-  async registerDevice(@Body(ValidationPipe) data: RegisterDeviceDto) {
-    const accountId = 'testAccount' // we should repalce later
-    return this.onboardingService.registerDevice(accountId, data.device_id)
+  async createDevice(@Body('hardware_ud') hardwareId: string) {
+    return this.onboardingService.createDevice(hardwareId)
   }
 
   @Post('login')
@@ -29,5 +27,14 @@ export class OnboardingController {
     } catch (e) {
       throw new BadRequestException(e?.message)
     }
+  }
+
+  @Post('device/:device_id/register')
+  async registerDevice(
+    @Param('deviceId') deviceId: string,
+    @Body('account_id') accountId: string,
+    @Body('otp') otp: string,
+  ) {
+    return this.onboardingService.registerDevice(deviceId, accountId, otp)
   }
 }
