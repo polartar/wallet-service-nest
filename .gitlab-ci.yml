@@ -86,13 +86,13 @@ build:
     BUILD_TARGET: "${APP}_prod"
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/${BUILD_TARGET}:${CI_COMMIT_REF_SLUG}"
   rules:
-    - changes:
-        - "apps/$APP/*"
-      when: on_success
     - if: '$CI_COMMIT_BRANCH != "main"'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - changes:
+        - "apps/$APP/*"
+      when: on_success
 
 push princess to registry:
   extends: .push_to_registry
