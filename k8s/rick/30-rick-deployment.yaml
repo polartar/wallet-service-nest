@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rick-deployment
+  labels:
+    app: rick
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rick
+  template:
+    metadata:
+      labels:
+        app: rick
+    spec:
+      containers:
+      - name: rick-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/rick_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+          - name: INFURA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: INFURA_API_KEY
+          - name: ETHERSCAN_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: ETHERSCAN_API_KEY
+          - name: ALCHEMY_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: ALCHEMY_API_KEY
+          - name: MORALIS_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: MORALIS_API_KEY
+          - name: NODE_ENV
+            value: ""
+          - name: PRINCESS_API_URL
+            value: "http://princess.default.svc.cluster.local"
+          - name: RICK_DB_HOST
+            value: "rick-db-service.default.svc.cluster.local"
+          - name: RICK_DB_PORT
+            value: "5432"
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafo-deployment
+  labels:
+    app: kafo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafo
+  template:
+    metadata:
+      labels:
+        app: kafo
+    spec:
+      containers:
+      - name: kafo-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/kafo_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: BLOCKCYPHER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: kafo-env-secrets
+                key: BLOCKCYPHER_TOKEN
+          - name: INFURA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: INFURA_API_KEY
+          - name: NODE_ENV
+            value: ""
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
