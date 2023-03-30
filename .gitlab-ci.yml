@@ -44,6 +44,26 @@ lint:
 test:
   stage: test
   extends: .distributed
+  services:
+    - postgres:15.2-alpine
+  variables:
+    PG_HOST: postgres
+    PG_PORT: 5432
+    POSTGRES_DB: testdb
+    POSTGRES_USER: pguser
+    POSTGRES_PASSWORD: pgpassword
+    GANDALF_DB_USERNAME: $POSTGRES_USER
+    RICK_DB_USERNAME: $POSTGRES_USER
+    FLUFFY_DB_USERNAME: $POSTGRES_USER
+    GANDALF_DB_PASSWORD: $POSTGRES_PASSWORD
+    RICK_DB_PASSWORD: $POSTGRES_PASSWORD
+    FLUFFY_DB_PASSWORD: $POSTGRES_PASSWORD
+    GANDALF_DB_HOST: $PG_HOST
+    RICK_DB_HOST: $PG_HOST
+    FLUFFY_DB_HOST: $PG_HOST
+    GANDALF_DB_PORT: $PG_PORT
+    RICK_DB_PORT: $PG_PORT
+    FLUFFY_DB_PORT: $PG_PORT
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
@@ -66,13 +86,13 @@ build:
     BUILD_TARGET: "${APP}_prod"
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/${BUILD_TARGET}:${CI_COMMIT_REF_SLUG}"
   rules:
-    - changes:
-        - "apps/$APP/*"
-      when: on_success
     - if: '$CI_COMMIT_BRANCH != "main"'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - changes:
+        - "apps/$APP/*"
+      when: on_success
 
 push princess to registry:
   extends: .push_to_registry
