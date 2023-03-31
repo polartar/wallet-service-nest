@@ -99,6 +99,7 @@ deploy to k8s cluster:
   needs: ["push to registry"]
   image:
     name: bitnami/kubectl:latest
+    entrypoint: [""]
   script:
     - kubectl config use-context ngrave/rana/app/be:gke-agent
     - "kubectl set image deployment/anton-deployment ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
