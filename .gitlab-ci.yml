@@ -96,6 +96,7 @@ push to registry:
 deploy to k8s cluster:
   stage: deploy
   when: on_success
+  needs: ["push to registry"]
   image:
     name: bitnami/kubectl:latest
   script:
