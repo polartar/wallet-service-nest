@@ -17,7 +17,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   )
-  const port = process.env.PORT || 3333
+  const port = process.env.PORT || 3332
   const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
   await app.listen(port, listen_host)
   Logger.log(`🚀 Application is running on: http://${listen_host}:${port}/`)

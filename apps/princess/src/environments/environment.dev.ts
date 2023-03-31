@@ -11,7 +11,7 @@ export const Environment = () => {
     [EEnvironment.mortyAPIUrl]:
       process.env.MORTY_API_URL || 'http://localhost:3333',
     [EEnvironment.gandalfAPIUrl]:
-      process.env.GANDALF_API_URL || 'http://localhost:3333',
+      process.env.GANDALF_API_URL || 'http://localhost:3332',
     [EEnvironment.fluffyAPIUrl]:
       process.env.FLUFFY_API_URL || 'http://localhost:3333',
   }

@@ -24,7 +24,9 @@ export class OnboardingService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.gandalfApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.gandalfApiUrl = this.configService.get<string>(
+      EEnvironment.gandalfAPIUrl,
+    )
     this.fluffyApiUrl = this.configService.get<string>(
       EEnvironment.fluffyAPIUrl,
     )
@@ -64,6 +66,7 @@ export class OnboardingService {
           type,
         }),
       )
+      console.log({ user })
 
       const pair = await this._registerDevice(user.data.account.id, deviceId)
       const onboardingType = user.data.is_new
@@ -86,7 +89,7 @@ export class OnboardingService {
     } catch (err) {
       return {
         success: false,
-        error: err.message,
+        error: err.response.data.message,
       }
     }
   }
@@ -106,7 +109,7 @@ export class OnboardingService {
       )
       return response.data
     } catch (err) {
-      throw new BadRequestException(err?.message)
+      throw new BadRequestException(err?.response.data.message)
     }
   }
 
@@ -119,7 +122,7 @@ export class OnboardingService {
       await this._registerDevice(accountId, deviceId, otp)
 
       const account = await this.getAccount(accountId)
-      // how to get account object?
+
       return {
         success: true,
         data: {
@@ -136,6 +139,7 @@ export class OnboardingService {
 
   async getAccount(accountId: number): Promise<IAccount> {
     try {
+      console.log('>>>>>>>', this.gandalfApiUrl)
       const accountResponse = await firstValueFrom(
         this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
       )
