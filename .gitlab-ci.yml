@@ -74,61 +74,24 @@ build:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
 
-.push_to_registry:
+push to registry:
   image: docker:20.10.16
   stage: build
   services:
     - docker:20.10.16-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $IMAGE_TAG . --target=$BUILD_TARGET
-    - docker push $IMAGE_TAG
-  variables:
-    BUILD_TARGET: "${APP}_prod"
-    IMAGE_TAG: "${CI_REGISTRY_IMAGE}/${BUILD_TARGET}:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} . --target=anton_prod && docker push ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} . --target=princess_prod && docker push ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} . --target=fluffy_prod && docker push ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} . --target=gandalf_prod && docker push ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} . --target=kafo_prod && docker push ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} . --target=morty_prod && docker push ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} . --target=rick_prod && docker push ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main"'
-      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
-    - changes:
-        - "apps/$APP/*"
-      when: on_success
-
-push princess to registry:
-  extends: .push_to_registry
-  variables:
-    APP: princess
-
-push anton to registry:
-  extends: .push_to_registry
-  variables:
-    APP: anton
-
-push fluffy to registry:
-  extends: .push_to_registry
-  variables:
-    APP: fluffy
-
-push gandalf to registry:
-  extends: .push_to_registry
-  variables:
-    APP: gandalf
-
-push kafo to registry:
-  extends: .push_to_registry
-  variables:
-    APP: kafo
-
-push morty to registry:
-  extends: .push_to_registry
-  variables:
-    APP: morty
-
-push rick to registry:
-  extends: .push_to_registry
-  variables:
-    APP: rick
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 deploy to k8s cluster:
   stage: deploy
