@@ -101,13 +101,13 @@ deploy to k8s cluster:
     name: bitnami/kubectl:latest
   script:
     - kubectl config use-context ngrave/rana/app/be:gke-agent
-    - kubectl set image deployment/anton-deployment registry.gitlab.com/ngrave/rana/app/be/anton_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/fluffy-deployment registry.gitlab.com/ngrave/rana/app/be/fluffy_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/gandalf-deployment registry.gitlab.com/ngrave/rana/app/be/gandalf_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/kafo-deployment registry.gitlab.com/ngrave/rana/app/be/kafo_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/morty-deployment registry.gitlab.com/ngrave/rana/app/be/morty_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/princess-deployment registry.gitlab.com/ngrave/rana/app/be/princess_prod:$CI_COMMIT_REF_SLUG
-    - kubectl set image deployment/rick-deployment registry.gitlab.com/ngrave/rana/app/be/rick_prod:$CI_COMMIT_REF_SLUG
+    - "kubectl set image deployment/anton-deployment ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/fluffy-deployment ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/gandalf-deployment ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/kafo-deployment ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/morty-deployment ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/princess-deployment ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/rick-deployment ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   environment:
     name: testnet gke cluster
     url: http://34.120.165.191
