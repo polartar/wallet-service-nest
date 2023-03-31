@@ -111,7 +111,6 @@ deploy to k8s cluster:
     name: testnet gke cluster
     url: http://34.120.165.191
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main"'
-      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
