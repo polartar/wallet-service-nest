@@ -110,6 +110,8 @@ deploy to k8s cluster:
   environment:
     name: testnet gke cluster
     url: http://34.120.165.191
+    kubernetes:
+      namespace: default
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
