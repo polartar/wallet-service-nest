@@ -92,7 +92,7 @@ export class OnboardingService {
   }
 
   async _registerDevice(
-    accountId: string,
+    accountId: number,
     deviceId: string,
     otp?: string,
   ): Promise<{ is_new: boolean }> {
@@ -111,8 +111,8 @@ export class OnboardingService {
   }
 
   async registerDevice(
-    accountId: string,
     deviceId: string,
+    accountId: number,
     otp: string,
   ): Promise<IDeviceRegisterResponse> {
     try {
@@ -134,7 +134,7 @@ export class OnboardingService {
     }
   }
 
-  async getAccount(accountId: string): Promise<IAccount> {
+  async getAccount(accountId: number): Promise<IAccount> {
     try {
       const accountResponse = await firstValueFrom(
         this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
@@ -145,8 +145,23 @@ export class OnboardingService {
     }
   }
 
-  async getAccountHash(accountId: string): Promise<string> {
+  async getAccountHash(accountId: number): Promise<number> {
     const account = await this.getAccount(accountId)
     return hash(account)
+  }
+
+  async syncAccount(
+    type: string,
+    iHash: string,
+    accountId: number,
+  ): Promise<{ type: string; has_same_hash: boolean; data?: IAccount }> {
+    const account = await this.getAccount(accountId)
+    const oHash = hash(account)
+
+    return {
+      type,
+      has_same_hash: iHash === oHash,
+      data: iHash === oHash ? undefined : account,
+    }
   }
 }

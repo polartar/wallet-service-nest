@@ -33,14 +33,14 @@ export class OnboardingController {
   @Post('device/:device_id/register')
   async registerDevice(
     @Param('device_id') deviceId: string,
-    @Body('account_id') accountId: string,
+    @Body('account_id') accountId: number,
     @Body('otp') otp: string,
   ) {
     return this.onboardingService.registerDevice(deviceId, accountId, otp)
   }
 
   @Get('account/hash/:account_id')
-  async getAccount(@Param('account_id') accountId: string) {
+  async getAccount(@Param('account_id') accountId: number) {
     return this.onboardingService.getAccountHash(accountId)
   }
 }
