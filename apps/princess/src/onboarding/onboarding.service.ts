@@ -66,7 +66,6 @@ export class OnboardingService {
           type,
         }),
       )
-      console.log({ user })
 
       const pair = await this._registerDevice(user.data.account.id, deviceId)
       const onboardingType = user.data.is_new
@@ -139,7 +138,6 @@ export class OnboardingService {
 
   async getAccount(accountId: number): Promise<IAccount> {
     try {
-      console.log('>>>>>>>', this.gandalfApiUrl)
       const accountResponse = await firstValueFrom(
         this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
       )
