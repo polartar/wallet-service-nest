@@ -35,7 +35,7 @@ export class TotpService {
       }
 
       if (!pairing) {
-        this.pairingService.createDevice(deviceId) // need to discuss the parameter
+        await this.pairingService.createDevice(deviceId) // need to discuss the parameter
         pairing = await this.pairDevice(userId, deviceId)
         isNew = true
       }
