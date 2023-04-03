@@ -29,7 +29,6 @@ export class PortfolioService {
   ) {
     this.initializeWallets()
     this.btcSocket = new BlockchainSocket()
-    // : new BlockchainSocket({ network: 3 }) // Testnet has error now
 
     this.btcSocket.onTransaction((transaction) => {
       this.onBTCTransaction(transaction)
@@ -75,7 +74,7 @@ export class PortfolioService {
       this.activeBtcAddresses = await Promise.all(
         this.activeBtcAddresses.map(async (address) => {
           const history = address.history || []
-          const newHistories = []
+          const newHistoryData = []
           if (senderAddresses.includes(address.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
@@ -87,7 +86,7 @@ export class PortfolioService {
             inputs.splice(index, 1)
 
             const currBalance = history.length ? Number(history[0].balance) : 0
-            newHistories.push({
+            newHistoryData.push({
               from: '',
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
@@ -95,11 +94,11 @@ export class PortfolioService {
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
-            const record = await this.walletService.addHistory({
+            const newHistory = await this.walletService.addHistory({
               address: address,
-              ...newHistories[0],
+              ...newHistoryData[0],
             })
-            history.push(record)
+            history.push(newHistory)
 
             address.history = history
           }
@@ -112,7 +111,7 @@ export class PortfolioService {
             transaction.out.splice(index, 1)
             const currBalance = history.length ? Number(history[0].balance) : 0
 
-            newHistories.push({
+            newHistoryData.push({
               from: receiverInfo.addr,
               to: '',
               amount: receiverInfo.value,
@@ -121,14 +120,16 @@ export class PortfolioService {
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
 
-            const newHistory =
-              newHistories.length === 1 ? newHistories[0] : newHistories[1]
-            const record = await this.walletService.addHistory({
+            const historyData =
+              newHistoryData.length === 1
+                ? newHistoryData[0]
+                : newHistoryData[1]
+            const newHistory = await this.walletService.addHistory({
               address,
-              ...newHistory,
+              ...historyData,
             })
 
-            history.push(record)
+            history.push(newHistory)
 
             address.history = history
           }
@@ -142,16 +143,16 @@ export class PortfolioService {
               addressId: address.id,
               walletId: address.wallet.id,
               accountIds: address.wallet.accounts.map((account) => account.id),
-              newHistory: newHistories[0],
+              newHistory: newHistoryData[0],
             })
-            if (newHistories.length === 2) {
+            if (newHistoryData.length === 2) {
               postUpdatedAddresses.push({
                 addressId: address.id,
                 walletId: address.wallet.id,
                 accountIds: address.wallet.accounts.map(
                   (account) => account.id,
                 ),
-                newHistory: newHistories[1],
+                newHistory: newHistoryData[1],
               })
             }
           }
@@ -217,12 +218,14 @@ export class PortfolioService {
         Promise.allSettled(promises).then(async (results) => {
           const updatedAddresses = []
           const postUpdatedAddresses = []
+
           await Promise.all(
             results.map(async (tx) => {
               if (tx.status === 'fulfilled') {
                 let amount = BigNumber.from(0)
                 let updatedAddress: AddressEntity
                 let isTx = false
+
                 if (
                   tx.value?.from &&
                   currentAddresses.includes(tx.value.from.toLowerCase())
@@ -238,6 +241,7 @@ export class PortfolioService {
                       tx.value.from.toLowerCase(),
                   )
                 }
+
                 if (
                   tx.value.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
@@ -252,7 +256,7 @@ export class PortfolioService {
                 }
                 if (isTx) {
                   const history = updatedAddress.history
-                  const newHistory = {
+                  const newHistoryData = {
                     from: tx.value.from,
                     to: tx.value.to,
                     amount: tx.value.value.toString(),
@@ -264,11 +268,13 @@ export class PortfolioService {
                       : BigNumber.from(tx.value.value).toString(),
                     timestamp: this.walletService.getCurrentTimeBySeconds(),
                   }
-                  const record = await this.walletService.addHistory({
+
+                  const newHistory = await this.walletService.addHistory({
                     address: updatedAddress,
-                    ...newHistory,
+                    ...newHistoryData,
                   })
-                  history.push(record)
+
+                  history.push(newHistory)
                   updatedAddress.history = history
                   updatedAddresses.push(updatedAddress)
 
@@ -278,7 +284,7 @@ export class PortfolioService {
                     accountIds: updatedAddress.wallet.accounts.map(
                       (account) => account.id,
                     ),
-                    newHistory: newHistory,
+                    newHistory: newHistoryData,
                   })
                 }
               }
@@ -362,11 +368,11 @@ export class PortfolioService {
           this.notifyNFTUpdate(fromAddress)
         }
 
-        if (currentAddresses.includes(toAddress)) {
+        if (currentAddresses.includes(toAddress) && fromAddress !== toAddress) {
           this.notifyNFTUpdate(toAddress)
         }
       } catch (err) {
-        Logger.error('ERC20 transfer')
+        /* continue regardless of error */
       }
     })
   }

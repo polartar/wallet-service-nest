@@ -4,6 +4,7 @@ stages:
   - lint
   - test
   - build
+  - deploy
 
 .distributed:
   interruptible: true
@@ -44,6 +45,26 @@ lint:
 test:
   stage: test
   extends: .distributed
+  services:
+    - postgres:15.2-alpine
+  variables:
+    PG_HOST: postgres
+    PG_PORT: 5432
+    POSTGRES_DB: testdb
+    POSTGRES_USER: pguser
+    POSTGRES_PASSWORD: pgpassword
+    GANDALF_DB_USERNAME: $POSTGRES_USER
+    RICK_DB_USERNAME: $POSTGRES_USER
+    FLUFFY_DB_USERNAME: $POSTGRES_USER
+    GANDALF_DB_PASSWORD: $POSTGRES_PASSWORD
+    RICK_DB_PASSWORD: $POSTGRES_PASSWORD
+    FLUFFY_DB_PASSWORD: $POSTGRES_PASSWORD
+    GANDALF_DB_HOST: $PG_HOST
+    RICK_DB_HOST: $PG_HOST
+    FLUFFY_DB_HOST: $PG_HOST
+    GANDALF_DB_PORT: $PG_PORT
+    RICK_DB_PORT: $PG_PORT
+    FLUFFY_DB_PORT: $PG_PORT
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
@@ -53,56 +74,47 @@ build:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
 
-.push_to_registry:
+push to registry:
   image: docker:20.10.16
   stage: build
   services:
     - docker:20.10.16-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $IMAGE_TAG . --target=$BUILD_TARGET
-    - docker push $IMAGE_TAG
-  variables:
-    BUILD_TARGET: "${APP}_prod"
-    IMAGE_TAG: "${CI_REGISTRY_IMAGE}/${BUILD_TARGET}:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} . --target=anton_prod && docker push ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} . --target=princess_prod && docker push ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} . --target=fluffy_prod && docker push ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} . --target=gandalf_prod && docker push ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} . --target=kafo_prod && docker push ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} . --target=morty_prod && docker push ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build -t ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} . --target=rick_prod && docker push ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   rules:
-    - changes:
-        - apps/$APP/*
-      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
     - if: '$CI_COMMIT_BRANCH == "main"'
-      when: on_success
 
-push princess to registry:
-  extends: .push_to_registry
-  variables:
-    APP: princess
-
-push anton to registry:
-  extends: .push_to_registry
-  variables:
-    APP: anton
-
-push fluffy to registry:
-  extends: .push_to_registry
-  variables:
-    APP: fluffy
-
-push gandalf to registry:
-  extends: .push_to_registry
-  variables:
-    APP: gandalf
-
-push kafo to registry:
-  extends: .push_to_registry
-  variables:
-    APP: kafo
-
-push morty to registry:
-  extends: .push_to_registry
-  variables:
-    APP: morty
-
-push rick to registry:
-  extends: .push_to_registry
-  variables:
-    APP: rick
+deploy to k8s cluster:
+  stage: deploy
+  when: on_success
+  needs: ["push to registry"]
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  script:
+    - kubectl config use-context ngrave/rana/app/be:gke-agent
+    - "kubectl set image deployment/anton-deployment anton-prod=${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/fluffy-deployment fluffy-prod=${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/gandalf-deployment gandalf-prod=${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/kafo-deployment kafo-prod=${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+  environment:
+    name: testnet gke cluster
+    url: http://34.120.165.191
+    kubernetes:
+      namespace: default
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'

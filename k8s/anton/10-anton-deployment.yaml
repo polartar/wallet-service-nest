@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anton-deployment
+  labels:
+    app: anton
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anton
+  template:
+    metadata:
+      labels:
+        app: anton
+    spec:
+      containers:
+      - name: anton-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/anton_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        resources:
+          limits:
+            cpu: "50m"
+            memory: "128Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
