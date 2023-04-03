@@ -102,13 +102,13 @@ deploy to k8s cluster:
     entrypoint: [""]
   script:
     - kubectl config use-context ngrave/rana/app/be:gke-agent
-    - "kubectl set image deployment/anton-deployment ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/fluffy-deployment ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/gandalf-deployment ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/kafo-deployment ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/morty-deployment ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/princess-deployment ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/rick-deployment ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/anton-deployment anton-prod=${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/fluffy-deployment fluffy-prod=${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/gandalf-deployment gandalf-prod=${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/kafo-deployment kafo-prod=${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   environment:
     name: testnet gke cluster
     url: http://34.120.165.191
