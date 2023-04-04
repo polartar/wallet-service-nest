@@ -65,6 +65,9 @@ test:
     GANDALF_DB_PORT: $PG_PORT
     RICK_DB_PORT: $PG_PORT
     FLUFFY_DB_PORT: $PG_PORT
+    RICK_DB_NAME: $POSTGRES_DB
+    FLUFFY_DB_NAME: $POSTGRES_DB
+    GANDALF_DB_NAME: $POSTGRES_DB
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
