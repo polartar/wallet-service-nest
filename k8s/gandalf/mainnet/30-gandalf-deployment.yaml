@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gandalf-deployment
+  labels:
+    app: gandalf
+  namespace: mainnet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gandalf
+  template:
+    metadata:
+      labels:
+        app: gandalf
+    spec:
+      containers:
+      - name: gandalf-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/gandalf_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: GOOGLE_CLIENT_ID
+            value: ""
+          - name: APPLE_CLIENT_ID
+            value: ""
+          - name: GANDALF_DB_HOST
+            value: "gandalf-db-service.mainnet.svc.cluster.local"
+          - name: GANDALF_DB_PORT
+            value: "5432"
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
