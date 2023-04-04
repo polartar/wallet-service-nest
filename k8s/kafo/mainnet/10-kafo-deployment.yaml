@@ -4,7 +4,7 @@ metadata:
   name: kafo-deployment
   labels:
     app: kafo
-    namespace: mainnet
+  namespace: mainnet
 spec:
   replicas: 1
   selector:
