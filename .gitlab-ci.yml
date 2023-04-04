@@ -96,7 +96,7 @@ push to registry:
       when: never
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-deploy to k8s cluster:
+deploy to testnet k8s cluster:
   stage: deploy
   when: on_success
   needs: ["push to registry"]
