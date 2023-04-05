@@ -27,7 +27,11 @@ export class AccountsController {
       )
       return response
     } catch (err) {
-      throw new BadRequestException(err.response.data.message)
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        throw new BadRequestException('Rick server connection error')
+      }
     }
   }
 }
