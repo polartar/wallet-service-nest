@@ -11,6 +11,8 @@ import {
   Query,
   ParseIntPipe,
   ParseEnumPipe,
+  BadRequestException,
+  BadGatewayException,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
@@ -53,7 +55,7 @@ export class WalletController {
       id: account_id,
     })
     if (!account) {
-      throw new Error('Invalid account')
+      throw new BadRequestException('Invalid account id')
     }
     try {
       const res = await this.walletService.addNewWallet({
@@ -64,7 +66,7 @@ export class WalletController {
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
-      throw new InternalServerErrorException(e?.message)
+      throw new BadRequestException(e.message)
     }
   }
 
