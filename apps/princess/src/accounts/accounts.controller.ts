@@ -7,9 +7,10 @@ import {
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiBody } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 @Controller('accounts')
+@ApiTags('accounts')
 export class AccountsController {
   constructor(private readonly accountService: AccountsService) {}
 

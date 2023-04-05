@@ -1,6 +1,6 @@
 export interface INewsResponse {
   success: boolean
-  data?: unknown
+  data?: any
   error?: string
 }
 

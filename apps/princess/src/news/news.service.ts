@@ -13,6 +13,7 @@ export class NewsService {
   private fidelityClientSecret: string
   private expiredAt: number
   defaultCountPerPage = 10
+  defaultTopCount = 3
 
   constructor(
     private readonly httpService: HttpService,
@@ -56,29 +57,17 @@ export class NewsService {
   }
 
   async getTopNews(count: number): Promise<INewsResponse> {
-    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/?sort=desc&limit=${count}`
-
-    try {
-      if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
-        await this.getAuthToken()
-      }
-
-      const res: { data: unknown } = await firstValueFrom(
-        this.httpService.get<AxiosResponse>(apiURL, {
-          headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
-        }),
-      )
+    const news = await this.getNews({
+      sort: ESort.DESC,
+      countPerPage: count || this.defaultTopCount,
+    })
+    if (news.success) {
       return {
         success: true,
-        data: (res.data as { news: [] }).news,
+        data: news.data.news,
       }
-    } catch (err) {
-      Logger.error(err.message)
-
-      return {
-        success: false,
-        error: JSON.stringify(err.response.data),
-      }
+    } else {
+      return news
     }
   }
 

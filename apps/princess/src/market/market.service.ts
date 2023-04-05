@@ -1,5 +1,9 @@
 import { ConfigService } from '@nestjs/config'
-import { Injectable, Logger } from '@nestjs/common'
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
@@ -27,7 +31,7 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      Logger.log(err)
+      throw new InternalServerErrorException('Morty API call error')
     }
   }
   async getHistoricalData(coin: ECoinType, period: EPeriod) {
@@ -39,7 +43,7 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      Logger.log(err)
+      throw new InternalServerErrorException('Morty API call error')
     }
   }
   setEthPrice(price: string) {
