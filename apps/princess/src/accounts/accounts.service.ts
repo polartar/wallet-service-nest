@@ -1,9 +1,5 @@
 import { HttpService } from '@nestjs/axios'
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EWalletType } from '@rana/core'

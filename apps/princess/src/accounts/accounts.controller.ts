@@ -5,8 +5,9 @@ import {
   Param,
   Post,
 } from '@nestjs/common'
-import { IWalletCreation } from './accounts.types'
 import { AccountsService } from './accounts.service'
+import { CreateWalletDto } from './dto/CreateWalletDto'
+import { ApiBody } from '@nestjs/swagger'
 
 @Controller('accounts')
 export class AccountsController {
@@ -16,7 +17,7 @@ export class AccountsController {
   @Post(':id/wallet')
   async createWallet(
     @Param('id') accountId: string,
-    @Body() data: IWalletCreation,
+    @Body() data: CreateWalletDto,
   ) {
     try {
       const response = await this.accountService.createWallet(
