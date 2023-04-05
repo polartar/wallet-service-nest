@@ -114,7 +114,7 @@ deploy to testnet k8s cluster:
     - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   environment:
     name: testnet gke cluster
-    url: http://34.120.165.191
+    url: http://35.240.5.170
     kubernetes:
       namespace: default
   rules:
@@ -140,6 +140,7 @@ deploy to mainnet k8s cluster:
     - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   environment:
     name: mainnet gke cluster
+    url: http://35.240.5.170
     kubernetes:
       namespace: mainnet
   rules:
