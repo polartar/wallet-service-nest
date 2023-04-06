@@ -56,7 +56,7 @@ export class NewsService {
     }
   }
 
-  async getTopNews(count: number): Promise<INewsResponse> {
+  async getLatestNews(count: number): Promise<INewsResponse> {
     const news = await this.getNews({
       sort: ESort.DESC,
       countPerPage: count || this.defaultTopCount,
