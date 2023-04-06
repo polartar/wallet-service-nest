@@ -82,7 +82,7 @@ export class TransactionService {
     } catch (err) {
       return {
         success: false,
-        errors: err.response.data.errors || [err.response.data.error],
+        error: err.response.data.errors[0].error || [err.response.data.error],
         data: err.response.data,
       }
     }
@@ -114,7 +114,7 @@ export class TransactionService {
     } catch (err) {
       return {
         success: false,
-        errors: err.response.data.errors || [err.response.data.error],
+        error: err.response.data.errors[0].error || [err.response.data.error],
         data: err.response.data,
       }
     }

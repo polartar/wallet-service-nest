@@ -11,6 +11,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { ECoinType } from '@rana/core'
 import { TransactionService } from './transaction.service'
 import { GenerateTransactionDto } from './dto/GenerateTransactionDto'
+import { ITransaction } from './transaction.types'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -23,15 +24,15 @@ export class TransactionController {
   })
   @ApiParam({ name: 'coin', enum: ECoinType })
   async getFee(@Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType) {
-    const response = await this.transactionService.getFee(coin)
+    return await this.transactionService.getFee(coin)
 
-    if (response.success) {
-      return response.data
-    } else {
-      return new InternalServerErrorException(
-        'Something went wrong in Kafo API',
-      )
-    }
+    // if (response.success) {
+    //   return response.data
+    // } else {
+    //   return new InternalServerErrorException(
+    //     'Something went wrong in Kafo API',
+    //   )
+    // }
   }
 
   @Post()
@@ -39,10 +40,21 @@ export class TransactionController {
     summary: 'Generate transaction object',
   })
   async generateTransaction(@Body() data: GenerateTransactionDto) {
-    const response = await this.transactionService.generateTransaction(
+    return await this.transactionService.generateTransaction(
       data.from,
       data.to,
       data.amount,
+      data.coin_type,
+    )
+  }
+
+  @Post('publish')
+  @ApiOperation({
+    summary: 'Publish the signed transaction',
+  })
+  async publishTransaction(@Body() data: ITransaction) {
+    const response = await this.transactionService.publishTransaction(
+      data.transaction,
       data.coin_type,
     )
 
