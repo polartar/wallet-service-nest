@@ -1,9 +1,5 @@
 import { ConfigService } from '@nestjs/config'
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'

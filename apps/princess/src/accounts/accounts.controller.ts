@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Body,
   Controller,
@@ -31,11 +32,10 @@ export class AccountsController {
       )
       return response
     } catch (err) {
-      if (err.response) {
-        throw new BadRequestException(err.response.data.message)
-      } else {
-        throw new BadRequestException('Rick server connection error')
-      }
+      const message = err.response
+        ? err.response.data.message
+        : 'Rick server connection error'
+      throw new BadGatewayException(message)
     }
   }
 }
