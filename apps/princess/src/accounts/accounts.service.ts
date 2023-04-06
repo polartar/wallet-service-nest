@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
+import { UpdateWalletDto } from './dto/UpdateWalletDto'
 
 @Injectable()
 export class AccountsService {
@@ -21,6 +22,21 @@ export class AccountsService {
       this.httpService.post(`${this.rickApiUrl}/wallet/${xPub}`, {
         account_id: accountId,
         wallet_type: walletType,
+      }),
+    )
+    return response.data
+  }
+
+  async updateWallet(
+    accountId: string,
+    walletId: string,
+    data: UpdateWalletDto,
+  ) {
+    const response = await firstValueFrom(
+      this.httpService.post(`${this.rickApiUrl}/wallet/activate`, {
+        account_id: accountId, // depending on the authorization flow between princess and rick
+        id: walletId,
+        is_active: data.is_active,
       }),
     )
     return response.data

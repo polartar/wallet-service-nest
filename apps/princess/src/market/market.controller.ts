@@ -15,6 +15,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 @ApiTags('market')
 export class MarketController {
   constructor(private readonly marketService: MarketService) {}
+
   @ApiOperation({ summary: "This api can't be called directly" })
   @Post('ethereum')
   async setEthPrice(@Body() data: { ethereum: string }) {

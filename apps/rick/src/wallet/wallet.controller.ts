@@ -12,7 +12,6 @@ import {
   ParseIntPipe,
   ParseEnumPipe,
   BadRequestException,
-  BadGatewayException,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'

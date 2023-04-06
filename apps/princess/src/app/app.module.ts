@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { AccountsModule } from '../accounts/accounts.module'
+import { TransactionModule } from '../transaction/transaction.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AccountsModule } from '../accounts/accounts.module'
     MarketModule,
     PortfolioModule,
     AccountsModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

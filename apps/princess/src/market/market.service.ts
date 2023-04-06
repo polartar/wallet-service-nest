@@ -30,6 +30,7 @@ export class MarketService {
       throw new InternalServerErrorException('Morty API call error')
     }
   }
+
   async getHistoricalData(coin: ECoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
@@ -42,11 +43,13 @@ export class MarketService {
       throw new InternalServerErrorException('Morty API call error')
     }
   }
+
   setEthPrice(price: string) {
     if (this.server) {
       this.server.emit('ethereum_price', price)
     }
   }
+
   setBtcPrice(price: string) {
     if (this.server) {
       this.server.emit('bitcoin_price', price)
