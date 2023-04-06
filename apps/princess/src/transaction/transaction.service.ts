@@ -10,7 +10,7 @@ import { ECoinType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, IResponse } from './transaction.types'
+import { EAPIMethod, ENFTTypes, IResponse } from './transaction.types'
 
 @Injectable()
 export class TransactionService {
@@ -77,9 +77,27 @@ export class TransactionService {
     transaction: unknown,
     coinType: ECoinType,
   ): Promise<IResponse> {
-    return this.apiCall(EAPIMethod.POST, 'transaction/generate', {
+    return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       transaction,
       coinType,
+    })
+  }
+
+  async generateNFTTransaction(
+    from: string,
+    to: string,
+    contractAddress: string,
+    tokenId: number,
+    type: ENFTTypes,
+    amount?: number,
+  ): Promise<IResponse> {
+    return this.apiCall(EAPIMethod.POST, `transaction/nft/raw-transaction`, {
+      from,
+      to,
+      contractAddress,
+      tokenId,
+      type,
+      amount,
     })
   }
 }

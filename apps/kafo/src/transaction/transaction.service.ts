@@ -87,7 +87,7 @@ export class TransactionService {
       }
     }
   }
-  async push(data: ITransactionPush): Promise<ITransactionResponse> {
+  async publish(data: ITransactionPush): Promise<ITransactionResponse> {
     let params
     if (this.isProduction) {
       params =
@@ -185,7 +185,6 @@ export class TransactionService {
           ])
     try {
       const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-
       const unsignedTx = {
         nonce: txCount,
         gasPrice: hexlify(await this.provider.getGasPrice()),
