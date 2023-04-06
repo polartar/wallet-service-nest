@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -16,6 +16,9 @@ export class AccountsController {
 
   // we should validate the xPub
   @Post(':id/wallet')
+  @ApiOperation({
+    summary: 'Add the wallet to the account',
+  })
   async createWallet(
     @Param('id') accountId: string,
     @Body() data: CreateWalletDto,
