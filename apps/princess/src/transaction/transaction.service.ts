@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios'
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common'
@@ -31,6 +32,33 @@ export class TransactionService {
       )
       return res.data as IResponse
     } catch (err) {
+      throw new BadGatewayException('Kafo API call error')
+    }
+  }
+
+  async generateTransaction(
+    from: string,
+    to: string,
+    amount: number,
+    coinType: ECoinType,
+  ): Promise<IResponse> {
+    try {
+      const res = await firstValueFrom(
+        this.httpService.post<AxiosResponse>(
+          `${this.kafoAPIUrl}/transaction/generate`,
+          {
+            from,
+            to,
+            amount,
+            coinType,
+          },
+        ),
+      )
+      return res.data as IResponse
+    } catch (err) {
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      }
       throw new BadGatewayException('Kafo API call error')
     }
   }
