@@ -38,6 +38,7 @@ export class TransactionService {
       if ((res.data as IResponse).success) {
         return res.data
       } else {
+        console.log(res.data)
         throw new InternalServerErrorException((res.data as IResponse).error)
       }
     } catch (err) {
@@ -98,6 +99,12 @@ export class TransactionService {
       tokenId,
       type,
       amount,
+    })
+  }
+
+  async publishNFTTransaction(signedHash: string): Promise<IResponse> {
+    return this.apiCall(EAPIMethod.POST, `transaction/nft/send-transaction`, {
+      signedHash,
     })
   }
 }

@@ -6,12 +6,19 @@ import {
   ParseEnumPipe,
   Post,
 } from '@nestjs/common'
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger'
 import { ECoinType } from '@rana/core'
 import { TransactionService } from './transaction.service'
 import { GenerateTransactionDto } from './dto/GenerateTransactionDto'
 import { ITransaction } from './transaction.types'
 import { GenerateNFTTransactionDto } from './dto/GenerateNFTTransactionDto'
+import { PublishNFTTransactionDto } from './dto/PublishNFTTransactionDto'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -64,5 +71,13 @@ export class TransactionController {
       data.type,
       data.amount,
     )
+  }
+
+  @Post('nft/publish')
+  @ApiOperation({
+    summary: 'Publish the transaction',
+  })
+  async publishNFTTransaction(@Body() data: PublishNFTTransactionDto) {
+    return this.transactionService.publishNFTTransaction(data.signed_hash)
   }
 }

@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import {
   ENFTTypes,
   IFeeResponse,
@@ -203,10 +203,7 @@ export class TransactionService {
         data: serializedTx,
       }
     } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new BadRequestException(err.message)
     }
   }
 
@@ -219,10 +216,7 @@ export class TransactionService {
         data: response,
       }
     } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new BadRequestException(err.message)
     }
   }
 }
