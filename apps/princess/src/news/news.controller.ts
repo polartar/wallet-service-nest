@@ -9,11 +9,11 @@ import { NewsPagination } from './dto/NewsPagination.dto'
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
-  @Get('latest')
-  @ApiOperation({ summary: 'Get the latest news' })
+  @Get('top')
+  @ApiOperation({ summary: 'Get the top news' })
   @ApiQuery({
     name: 'count',
-    description: 'current page number',
+    description: 'count of top news',
   })
   getLatestNews(@Query('count', ParseIntPipe) count?: number) {
     return this.newsService.getLatestNews(count)
