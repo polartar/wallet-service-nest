@@ -83,7 +83,7 @@ describe('TransactionController', () => {
 
     const tmpTx = signTransaction(privKey, newTx.data)
 
-    const finalTx = await controller.pushTransaction({
+    const finalTx = await controller.publishTransaction({
       coinType: ECoinType.BITCOIN,
       transaction: tmpTx,
     })
@@ -97,13 +97,13 @@ describe('TransactionController', () => {
     // invalid private key
     const tmpTx = signTransaction(invalidPrivKey, newTx.data)
 
-    const finalTx = await controller.pushTransaction({
+    const finalTx = await controller.publishTransaction({
       coinType: ECoinType.BITCOIN,
       transaction: tmpTx,
     })
 
     expect(finalTx.success).toBeFalsy()
-    expect(finalTx.errors.length).toBeGreaterThan(0)
+    expect(finalTx.error).toBeDefined()
   })
 
   it('should generate the raw nft transfer transaction', async () => {
@@ -139,7 +139,6 @@ describe('TransactionController', () => {
     const { type, r, v, s, ...newTx } = unsignedTx
 
     const signedTx = await signer.signTransaction(newTx)
-
     const response = await controller.sendNFTTransaction(signedTx)
     expect(response.success).toBeTruthy()
   }, 20000)

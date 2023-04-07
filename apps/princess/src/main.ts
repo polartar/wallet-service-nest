@@ -9,6 +9,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { AppModule } from './app/app.module'
 
@@ -31,6 +32,15 @@ async function bootstrap() {
       always: true,
     }),
   )
+
+  const config = new DocumentBuilder()
+    .setTitle('Princess API')
+    .setDescription('The Princess API description')
+    .setVersion('1.0')
+    .build()
+  const document = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('api', app, document)
+
   const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
   await app.listen(port, listen_host)
   Logger.log(`🚀 Application is running on: ${await app.getUrl()}/`)

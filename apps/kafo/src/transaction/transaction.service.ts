@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import {
   ENFTTypes,
   IFeeResponse,
@@ -82,12 +82,12 @@ export class TransactionService {
     } catch (err) {
       return {
         success: false,
-        errors: err.response.data.errors || [err.response.data.error],
+        error: err.response.data.errors[0].error || [err.response.data.error],
         data: err.response.data,
       }
     }
   }
-  async push(data: ITransactionPush): Promise<ITransactionResponse> {
+  async publish(data: ITransactionPush): Promise<ITransactionResponse> {
     let params
     if (this.isProduction) {
       params =
@@ -114,7 +114,7 @@ export class TransactionService {
     } catch (err) {
       return {
         success: false,
-        errors: err.response.data.errors || [err.response.data.error],
+        error: err.response.data.errors[0].error || [err.response.data.error],
         data: err.response.data,
       }
     }
@@ -185,7 +185,6 @@ export class TransactionService {
           ])
     try {
       const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-
       const unsignedTx = {
         nonce: txCount,
         gasPrice: hexlify(await this.provider.getGasPrice()),
@@ -204,10 +203,7 @@ export class TransactionService {
         data: serializedTx,
       }
     } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new BadRequestException(err.message)
     }
   }
 
@@ -220,10 +216,7 @@ export class TransactionService {
         data: response,
       }
     } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new BadRequestException(err.message)
     }
   }
 }

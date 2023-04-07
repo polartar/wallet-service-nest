@@ -2,12 +2,12 @@ import { ECoinType } from '@rana/core'
 
 export interface ITransactionResponse {
   success: boolean
-  errors?: []
+  error?: string
   data?: ITransaction
 }
 export interface IFeeResponse {
   success: boolean
-  errors?: []
+  error?: string
   data?: {
     original: {
       high_fee: number

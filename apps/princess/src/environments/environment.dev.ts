@@ -10,6 +10,8 @@ export const Environment = () => {
       process.env.RICK_API_URL || 'http://localhost:3333',
     [EEnvironment.mortyAPIUrl]:
       process.env.MORTY_API_URL || 'http://localhost:3333',
+    [EEnvironment.kafoAPIUrl]:
+      process.env.KAFO_API_URL || 'http://localhost:3333',
   }
   return env
 }

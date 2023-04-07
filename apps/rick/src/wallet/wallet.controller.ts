@@ -11,6 +11,7 @@ import {
   Query,
   ParseIntPipe,
   ParseEnumPipe,
+  BadRequestException,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { AccountService } from '../account/account.service'
@@ -53,7 +54,7 @@ export class WalletController {
       id: account_id,
     })
     if (!account) {
-      throw new Error('Invalid account')
+      throw new BadRequestException('Invalid account id')
     }
     try {
       const res = await this.walletService.addNewWallet({
@@ -64,12 +65,12 @@ export class WalletController {
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
-      throw new InternalServerErrorException(e?.message)
+      throw new BadRequestException(e.message)
     }
   }
 
   @Post('activate')
-  async activeWallets(@Body() data: IWalletActiveData) {
+  async activeWallet(@Body() data: IWalletActiveData) {
     try {
       // need to validate the wallet id and authorized account later
       const res = await this.walletService.updateWalletsActive(data)

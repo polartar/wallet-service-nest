@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
@@ -27,9 +27,10 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      Logger.log(err)
+      throw new InternalServerErrorException('Morty API call error')
     }
   }
+
   async getHistoricalData(coin: ECoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
@@ -39,14 +40,16 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
-      Logger.log(err)
+      throw new InternalServerErrorException('Morty API call error')
     }
   }
+
   setEthPrice(price: string) {
     if (this.server) {
       this.server.emit('ethereum_price', price)
     }
   }
+
   setBtcPrice(price: string) {
     if (this.server) {
       this.server.emit('bitcoin_price', price)
