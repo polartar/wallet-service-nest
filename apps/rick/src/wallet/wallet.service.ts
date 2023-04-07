@@ -1,12 +1,7 @@
 import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { MoreThanOrEqual, Repository } from 'typeorm'
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -261,8 +256,7 @@ export class WalletService {
       this.confirmWalletBalances(addresses)
     }
     wallet.isActive = data.isActive
-
-    return this.walletRepository.save(wallet)
+    return await this.walletRepository.save(wallet)
   }
 
   addHistory(data: AddHistoryDto) {

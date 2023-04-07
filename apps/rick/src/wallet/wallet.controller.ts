@@ -70,7 +70,7 @@ export class WalletController {
   }
 
   @Post('activate')
-  async activeWallets(@Body() data: IWalletActiveData) {
+  async activeWallet(@Body() data: IWalletActiveData) {
     try {
       // need to validate the wallet id and authorized account later
       const res = await this.walletService.updateWalletsActive(data)

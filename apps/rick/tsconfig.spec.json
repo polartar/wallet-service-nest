@@ -9,6 +9,8 @@
     "jest.config.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
-    "src/**/*.d.ts"
-, "src/nft/nft.service.spec.ts", "src/nft/nft.service.spec.ts"  ]
+    "src/**/*.d.ts",
+    "src/nft/nft.service.spec.ts",
+    "src/wallet/wallet.controller.spec.ts"
+  ]
 }

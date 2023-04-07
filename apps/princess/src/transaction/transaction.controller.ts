@@ -6,13 +6,7 @@ import {
   ParseEnumPipe,
   Post,
 } from '@nestjs/common'
-import {
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiProperty,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { ECoinType } from '@rana/core'
 import { TransactionService } from './transaction.service'
 import { GenerateTransactionDto } from './dto/GenerateTransactionDto'
