@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EWalletType } from '@rana/core'
+import { EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 
@@ -38,6 +38,15 @@ export class AccountsService {
         id: walletId,
         is_active: data.is_active,
       }),
+    )
+    return response.data
+  }
+
+  async getPortfolio(accountId: number, period?: EPeriod) {
+    const response = await firstValueFrom(
+      this.httpService.get(
+        `${this.rickApiUrl}/wallet/${accountId}?period=${period}`,
+      ),
     )
     return response.data
   }

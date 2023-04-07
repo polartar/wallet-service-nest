@@ -2,13 +2,17 @@ import {
   BadGatewayException,
   Body,
   Controller,
+  Get,
+  InternalServerErrorException,
   Param,
   Post,
+  Query,
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
+import { EPeriod } from '@rana/core'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -60,6 +64,40 @@ export class AccountsController {
         ? err.response.data.message
         : 'Rick server connection error'
       throw new BadGatewayException(message)
+    }
+  }
+
+  @Get(':accountId/portfolio')
+  @ApiOperation({
+    summary:
+      'Timeseries data, where date is timestamp (number), and the value of that date.',
+  })
+  @ApiQuery({
+    name: 'period',
+    enum: [
+      EPeriod.All,
+      EPeriod.Day,
+      EPeriod.Week,
+      EPeriod.Month,
+      EPeriod.Months,
+      EPeriod.Year,
+    ],
+    required: false,
+  })
+  async getPortfolio(
+    @Param('accountId') accountId: number,
+    @Query('period') period: EPeriod,
+  ) {
+    try {
+      const response = await this.accountService.getPortfolio(accountId, period)
+      return response
+    } catch (err) {
+      if (err.response) {
+        throw new InternalServerErrorException(
+          'Something went wrong in Rick API',
+        )
+      }
+      throw new BadGatewayException('Rick server connection error')
     }
   }
 }
