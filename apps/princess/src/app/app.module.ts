@@ -10,6 +10,8 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { OnboardingModule } from '../onboarding/onboarding.module'
+import { AccountsModule } from '../accounts/accounts.module'
+import { TransactionModule } from '../transaction/transaction.module'
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { OnboardingModule } from '../onboarding/onboarding.module'
     MarketModule,
     PortfolioModule,
     OnboardingModule,
+    AccountsModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

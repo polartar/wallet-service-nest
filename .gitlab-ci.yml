@@ -65,6 +65,9 @@ test:
     GANDALF_DB_PORT: $PG_PORT
     RICK_DB_PORT: $PG_PORT
     FLUFFY_DB_PORT: $PG_PORT
+    RICK_DB_NAME: $POSTGRES_DB
+    FLUFFY_DB_NAME: $POSTGRES_DB
+    GANDALF_DB_NAME: $POSTGRES_DB
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
@@ -93,7 +96,7 @@ push to registry:
       when: never
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-deploy to k8s cluster:
+deploy to testnet k8s cluster:
   stage: deploy
   when: on_success
   needs: ["push to registry"]
@@ -111,9 +114,35 @@ deploy to k8s cluster:
     - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   environment:
     name: testnet gke cluster
-    url: http://34.120.165.191
+    url: http://35.240.5.170
     kubernetes:
       namespace: default
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy to mainnet k8s cluster:
+  stage: deploy
+  when: on_success
+  needs: ["push to registry"]
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  script:
+    - kubectl config use-context ngrave/rana/app/be:gke-agent && kubectl config set-context --current --namespace=mainnet
+    - "kubectl set image deployment/anton-deployment anton-prod=${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/fluffy-deployment fluffy-prod=${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/gandalf-deployment gandalf-prod=${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/kafo-deployment kafo-prod=${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+  environment:
+    name: mainnet gke cluster
+    url: http://35.240.5.170
+    kubernetes:
+      namespace: mainnet
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never

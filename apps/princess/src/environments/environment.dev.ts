@@ -14,6 +14,8 @@ export const Environment = () => {
       process.env.GANDALF_API_URL || 'http://localhost:3332',
     [EEnvironment.fluffyAPIUrl]:
       process.env.FLUFFY_API_URL || 'http://localhost:3333',
+    [EEnvironment.kafoAPIUrl]:
+      process.env.KAFO_API_URL || 'http://localhost:3333',
   }
   return env
 }

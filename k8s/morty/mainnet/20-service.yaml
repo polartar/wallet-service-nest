@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: morty
+  namespace: mainnet
+spec:
+  selector:
+    app: morty
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3333

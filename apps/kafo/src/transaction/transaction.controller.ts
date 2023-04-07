@@ -36,12 +36,12 @@ export class TransactionController {
     return this.service.generate(data)
   }
 
-  @Post('push')
+  @Post('publish')
   @UsePipes(new TransactionPushPipe())
-  pushTransaction(
+  publishTransaction(
     @Body() data: ITransactionPush,
   ): Promise<ITransactionResponse> {
-    return this.service.push(data)
+    return this.service.publish(data)
   }
 
   @Get('fee/:coin')

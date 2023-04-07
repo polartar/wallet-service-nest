@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: princess-mainnet
+  namespace: mainnet
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-by-header: "X-NETWORK"
+    nginx.ingress.kubernetes.io/canary-by-header-value: "mainnet"
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: princess
+      port:
+        number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: princess-testnet
+  namespace: default
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: princess
+      port:
+        number: 80

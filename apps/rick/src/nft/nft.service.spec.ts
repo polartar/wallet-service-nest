@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NftService } from './nft.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
-import { AppModule } from '../app/app.module'
 
 describe('NftService', () => {
   let service: NftService
@@ -11,7 +10,6 @@ describe('NftService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
-        AppModule,
       ],
       providers: [NftService],
     }).compile()

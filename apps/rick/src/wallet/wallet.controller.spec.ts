@@ -60,13 +60,12 @@ describe('WalletController', () => {
       controllers: [WalletController],
       providers: [WalletService],
     }).compile()
-
+    httpService = module.get<HttpService>(HttpService)
+    configService = module.get<ConfigService>(ConfigService)
     controller = module.get<WalletController>(WalletController)
     accountService = module.get<AccountService>(AccountService)
     portfolioService = module.get<PortfolioService>(PortfolioService)
-    configService = module.get<ConfigService>(ConfigService)
     walletService = module.get<WalletService>(WalletService)
-    httpService = module.get<HttpService>(HttpService)
   })
 
   it('should be defined', () => {
@@ -142,25 +141,23 @@ describe('WalletController', () => {
     )
   }, 20000)
 
-  // it('should inactive the wallets', async () => {
-  //   await controller.activeWallets([
-  //     {
-  //       id: 1,
-  //       isActive: false,
-  //     },
-  //   ])
-  //   const ethWallets = await portfolioService.getEthWallets()
-  //   expect(ethWallets.length).toBe(0)
-  // })
+  it('should inactive the wallets', async () => {
+    let ethWallets = await portfolioService.getEthWallets()
+    expect(ethWallets.length).toBe(1)
+    await controller.activeWallet({
+      id: 1,
+      isActive: false,
+    })
+    ethWallets = await portfolioService.getEthWallets()
+    expect(ethWallets.length).toBe(0)
+  })
 
-  // it('should active the wallet', async () => {
-  //   await controller.activeWallets([
-  //     {
-  //       id: 1,
-  //       isActive: true,
-  //     },
-  //   ])
-  //   const ethWallets = await portfolioService.getEthWallets()
-  //   expect(ethWallets.length).toBe(1)
-  // })
+  it('should active the wallet', async () => {
+    await controller.activeWallet({
+      id: 1,
+      isActive: true,
+    })
+    const ethWallets = await portfolioService.getEthWallets()
+    expect(ethWallets.length).toBe(1)
+  })
 })
