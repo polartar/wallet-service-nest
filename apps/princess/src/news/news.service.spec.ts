@@ -27,7 +27,7 @@ describe('NewsService', () => {
   })
 
   it('should get top 5 news', async () => {
-    const news = await service.getTopNews(5)
+    const news = await service.getLatestNews(5)
     expect((news as { data: [] }).data.length).toBe(5)
   }, 10000)
 
