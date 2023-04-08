@@ -28,16 +28,13 @@ export class WalletController {
     private readonly portfolioService: PortfolioService,
   ) {}
 
-  @Get(':id')
+  @Get(':accountId')
   async getHistory(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('accountId', ParseIntPipe) accountId: number,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
-      return await this.walletService.getUserWalletHistory({
-        accountId: id,
-        period,
-      })
+      return await this.walletService.getUserHistory(accountId, period)
     } catch (e) {
       throw new InternalServerErrorException(e?.message)
     }
@@ -79,6 +76,23 @@ export class WalletController {
       return res
     } catch (e) {
       throw new NotFoundException(e?.message)
+    }
+  }
+
+  @Get(':accountId/wallet/:walletId')
+  async getWalletHistory(
+    @Param('accountId', ParseIntPipe) accountId: number,
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  ) {
+    try {
+      return await this.walletService.getUserWalletHistory(
+        accountId,
+        walletId,
+        period,
+      )
+    } catch (e) {
+      throw new InternalServerErrorException(e?.message)
     }
   }
 }
