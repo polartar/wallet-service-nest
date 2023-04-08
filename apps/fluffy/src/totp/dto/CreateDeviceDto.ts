@@ -1,9 +1,9 @@
-export interface IPair {
+export class CreateDeviceDto {
   userId: string
   deviceId: string
-  otp: string
   serverProposedShard: string
   ownProposedShard: string
   passCodeKey: string
   recoveryKey: string
+  otp?: string
 }

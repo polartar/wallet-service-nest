@@ -12,6 +12,11 @@ export class SignInValidationPipe implements PipeTransform {
     ),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
     device_id: Joi.string().required(),
+    otp: Joi.string().required(),
+    server_proposed_shard: Joi.string().required(),
+    own_proposed_shard: Joi.string().required(),
+    passcode_key: Joi.string().required(),
+    recovery_key: Joi.string().required(),
   })
 
   transform(value: IOnboardingSignIn) {

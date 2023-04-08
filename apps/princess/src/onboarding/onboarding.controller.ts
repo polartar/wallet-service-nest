@@ -30,7 +30,16 @@ export class OnboardingController {
   @Post('login')
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: IOnboardingSignIn) {
-    return this.onboardingService.signIn(data.type, data.token, data.device_id)
+    return this.onboardingService.signIn(
+      data.type,
+      data.access_token,
+      data.device_id,
+      data.otp,
+      data.server_proposed_shard,
+      data.own_proposed_shard,
+      data.passcode_key,
+      data.recovery_key,
+    )
   }
 
   @Post('device/:device_id/register')
@@ -51,5 +60,10 @@ export class OnboardingController {
       throw new BadRequestException('account_id required')
     }
     return this.onboardingService.getAccountHash(accountId)
+  }
+
+  @Get('version')
+  async getVersion() {
+    return '1.0'
   }
 }

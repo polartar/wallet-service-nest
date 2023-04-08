@@ -16,20 +16,23 @@ export class PairingService {
     private readonly deviceRepository: Repository<DeviceEntity>,
   ) {}
 
-  create(createPairingDto: CreatePairingDto): Promise<PairingEntity> {
-    const pair = new PairingEntity()
-    pair.userId = createPairingDto.userId
-    pair.deviceId = createPairingDto.deviceId
+  // create(createPairingDto: CreatePairingDto): Promise<PairingEntity> {
+  //   // const pair = new PairingEntity()
+  //   // pair.userId = createPairingDto.userId
+  //   // pair.deviceId = createPairingDto.deviceId
 
-    return this.pairingRepository.save(pair)
-  }
+  //   // return this.pairingRepository.save(pair)
+  // }
+
+  // async pair(createPairingDto: CreatePairingDto): Promise<DeviceEntity> {
+  //   const device =await this.lookup({userId:createPairingDto.userId, deviceId: createPairingDto.deviceId})
+  //   device.
+
+  //   return this.deviceRepository.save(device)
+  // }
 
   async createDevice(hardwareId: string): Promise<DeviceEntity> {
-    let device = await this.lookupHardwareId(hardwareId)
-    if (device) {
-      return device
-    }
-    device = new DeviceEntity()
+    const device = new DeviceEntity()
     device.hardwareId = hardwareId
 
     return this.deviceRepository.save(device)

@@ -1,42 +1,69 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { authenticator } from 'otplib'
 
-import { PairingService } from '../pairing/pairing.service'
+// import { PairingService } from '../pairing/pairing.service'
+import { InjectRepository } from '@nestjs/typeorm'
+import { DeviceEntity } from './device.entity'
+import { Repository } from 'typeorm'
+import { FindPairingDto } from './dto/FindPairingDto'
+import { CreateDeviceDto } from './dto/CreateDeviceDto'
 
 @Injectable()
 export class TotpService {
-  constructor(private readonly pairingService: PairingService) {}
-
-  private async pairDevice(userId: string, deviceId?: string) {
-    return this.pairingService.create({
-      userId,
-      deviceId,
-    })
-  }
+  constructor(
+    // private readonly pairingService: PairingService,
+    @InjectRepository(DeviceEntity)
+    private readonly deviceRepository: Repository<DeviceEntity>,
+  ) {}
 
   async createDevice(hardwareId: string) {
-    const device = await this.pairingService.createDevice(hardwareId)
+    const device = new DeviceEntity()
+    device.hardwareId = hardwareId
 
+    await this.deviceRepository.save(device)
     return {
       otp: device.secret,
-      device_id: device.deviceId,
+      deviceId: device.deviceId,
     }
   }
 
-  async generate(userId: string, deviceId: string) {
-    let pairing
+  lookup(findPairingDto: FindPairingDto): Promise<DeviceEntity> {
+    return this.deviceRepository.findOne({
+      where: findPairingDto,
+    })
+  }
+
+  async pair(createDeviceDto: CreateDeviceDto) {
+    let device: DeviceEntity
     let isNew = false
     try {
-      if (deviceId) {
-        pairing = await this.pairingService.lookup({
-          userId,
-          deviceId,
-        })
+      device = await this.lookup({
+        userId: createDeviceDto.userId,
+        deviceId: createDeviceDto.deviceId,
+      })
+      if (
+        !(await this.verify(
+          createDeviceDto.userId,
+          createDeviceDto.deviceId,
+          createDeviceDto.otp,
+        ))
+      ) {
+        throw new BadRequestException('Invalid token')
       }
 
-      if (!pairing) {
-        await this.pairingService.createDevice(deviceId) // need to discuss the parameter
-        pairing = await this.pairDevice(userId, deviceId)
+      if (device) {
+        device.serverProposedShard = createDeviceDto.serverProposedShard
+        device.ownProposedShard = createDeviceDto.ownProposedShard
+        device.passCodeKey = createDeviceDto.passCodeKey
+        device.recoveryKey = createDeviceDto.recoveryKey
+      } else {
+        delete createDeviceDto.otp
+        device = this.deviceRepository.create(createDeviceDto)
+
         isNew = true
       }
 
@@ -49,26 +76,8 @@ export class TotpService {
   }
 
   async verify(userId: string, deviceId: string, token: string) {
-    const pairingEntity = await this.pairingService.lookup({
-      userId,
-      deviceId,
-    })
+    const deviceEntity = await this.lookup({ userId, deviceId })
 
-    // First, is there a pairing?
-    if (pairingEntity === null) {
-      return [
-        false, //
-        'Not a paired device',
-      ]
-    }
-    const deviceEntity = await this.pairingService.lookupDeviceId(
-      pairingEntity.deviceId,
-    )
-
-    // Now, do the final check of TOTP
-    return [
-      'Validation', //
-      authenticator.check(token, deviceEntity.secret),
-    ]
+    return authenticator.check(token, deviceEntity.secret)
   }
 }

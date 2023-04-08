@@ -58,19 +58,35 @@ export class OnboardingService {
     type: EAuth,
     token: string,
     deviceId: string,
+    otp: string,
+    serverProposedShard: string,
+    ownProposedShard: string,
+    passCodeKey: string,
+    recoveryKey: string,
   ): Promise<IOnboardingSigningResponse> {
     try {
-      const user = await firstValueFrom(
+      const { data: user } = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
           type,
         }),
       )
 
-      const pair = await this._registerDevice(user.data.account.id, deviceId)
+      // const pair = await this._registerDevice(user.data.account.id, deviceId)
+      const { data: device } = await firstValueFrom(
+        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
+          userId: user.account.id,
+          deviceId,
+          otp,
+          serverProposedShard,
+          ownProposedShard,
+          passCodeKey,
+          recoveryKey,
+        }),
+      )
       const onboardingType = user.data.is_new
         ? EOnboardingType.NEW_EMAIL
-        : pair.is_new
+        : device.isNew
         ? EOnboardingType.NEW_DEVICE
         : EOnboardingType.EXISTING_ACCOUNT
 
@@ -78,11 +94,9 @@ export class OnboardingService {
         success: true,
         data: {
           type: onboardingType,
-          account_id: user.data.account.id,
+          account_id: user.account.id,
           account:
-            onboardingType !== EOnboardingType.NEW_EMAIL
-              ? user.data.account
-              : {},
+            onboardingType !== EOnboardingType.NEW_EMAIL ? user.account : {},
         },
       }
     } catch (err) {

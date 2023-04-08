@@ -2,8 +2,13 @@ import { EAuth } from '@rana/core'
 
 export interface IOnboardingSignIn {
   type: EAuth
-  token: string
+  access_token: string
   device_id: string
+  otp: string
+  server_proposed_shard: string
+  own_proposed_shard: string
+  passcode_key: string
+  recovery_key: string
 }
 export interface IAccount {
   id: string
