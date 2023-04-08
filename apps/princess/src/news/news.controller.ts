@@ -1,15 +1,7 @@
-import { ECoinType } from '@rana/core'
-import {
-  Controller,
-  Get,
-  ParseEnumPipe,
-  ParseIntPipe,
-  Query,
-  UsePipes,
-} from '@nestjs/common'
+import { Controller, Get, Query, UsePipes } from '@nestjs/common'
 import { NewsService } from './news.service'
 import { NewsValidationPipe } from './news.pipe'
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { NewsPaginationDto } from './dto/NewsPagination.dto'
 import { NewsTopDto } from './dto/NewsTopDto'
 
