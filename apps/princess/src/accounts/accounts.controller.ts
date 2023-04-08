@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { EPeriod } from '@rana/core'
+import { GetPortfolioDto } from './dto/GetPortfolioDto'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -72,24 +72,42 @@ export class AccountsController {
     summary:
       'Timeseries data, where date is timestamp (number), and the value of that date.',
   })
-  @ApiQuery({
-    name: 'period',
-    enum: [
-      EPeriod.All,
-      EPeriod.Day,
-      EPeriod.Week,
-      EPeriod.Month,
-      EPeriod.Months,
-      EPeriod.Year,
-    ],
-    required: false,
-  })
   async getPortfolio(
     @Param('accountId') accountId: number,
-    @Query('period') period: EPeriod,
+    @Query() query: GetPortfolioDto,
   ) {
     try {
-      const response = await this.accountService.getPortfolio(accountId, period)
+      const response = await this.accountService.getPortfolio(
+        accountId,
+        query.period,
+      )
+      return response
+    } catch (err) {
+      if (err.response) {
+        throw new InternalServerErrorException(
+          'Something went wrong in Rick API',
+        )
+      }
+      throw new BadGatewayException('Rick server connection error')
+    }
+  }
+
+  @Get(':accountId/wallets/:walletId/portfolio')
+  @ApiOperation({
+    summary:
+      'Timeseries data, where date is timestamp (number), and the value of that date.',
+  })
+  async getWalletPortfolio(
+    @Param('accountId') accountId: number,
+    @Param('walletId') walletId: number,
+    @Query() query: GetPortfolioDto,
+  ) {
+    try {
+      const response = await this.accountService.getWalletPortfolio(
+        accountId,
+        walletId,
+        query.period,
+      )
       return response
     } catch (err) {
       if (err.response) {

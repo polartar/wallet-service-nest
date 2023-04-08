@@ -1,10 +1,16 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable } from '@nestjs/common'
+import {
+  BadGatewayException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
+import { EAPIMethod } from './accounts.typs'
+import { AxiosResponse } from 'axios'
 
 @Injectable()
 export class AccountsService {
@@ -17,14 +23,30 @@ export class AccountsService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
+  async apiCall(method: EAPIMethod, path: string, body?: unknown) {
+    try {
+      const url = `${this.rickApiUrl}/${path}`
+      const res = await firstValueFrom(
+        method === EAPIMethod.POST
+          ? this.httpService.post<AxiosResponse>(url, body)
+          : this.httpService.get<AxiosResponse>(url),
+      )
+      return res.data
+    } catch (err) {
+      if (err.response) {
+        throw new InternalServerErrorException(
+          'Something went wrong in Rick API',
+        )
+      }
+      throw new BadGatewayException('Rick server connection error')
+    }
+  }
+
   async createWallet(accountId: string, walletType: EWalletType, xPub: string) {
-    const response = await firstValueFrom(
-      this.httpService.post(`${this.rickApiUrl}/wallet/${xPub}`, {
-        account_id: accountId,
-        wallet_type: walletType,
-      }),
-    )
-    return response.data
+    return this.apiCall(EAPIMethod.POST, `wallet/${xPub}`, {
+      account_id: accountId,
+      wallet_type: walletType,
+    })
   }
 
   async updateWallet(
@@ -32,22 +54,21 @@ export class AccountsService {
     walletId: string,
     data: UpdateWalletDto,
   ) {
-    const response = await firstValueFrom(
-      this.httpService.post(`${this.rickApiUrl}/wallet/activate`, {
-        account_id: accountId, // depending on the authorization flow between princess and rick
-        id: walletId,
-        is_active: data.is_active,
-      }),
-    )
-    return response.data
+    return this.apiCall(EAPIMethod.POST, `wallet/activate`, {
+      account_id: accountId, // depending on the authorization flow between princess and rick
+      id: walletId,
+      is_active: data.is_active,
+    })
   }
 
   async getPortfolio(accountId: number, period?: EPeriod) {
-    const response = await firstValueFrom(
-      this.httpService.get(
-        `${this.rickApiUrl}/wallet/${accountId}?period=${period}`,
-      ),
+    return this.apiCall(EAPIMethod.GET, `wallet/${accountId}?period=${period}`)
+  }
+
+  async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
+    return this.apiCall(
+      EAPIMethod.GET,
+      `wallet/${accountId}/wallet/${walletId}?period=${period}`,
     )
-    return response.data
   }
 }
