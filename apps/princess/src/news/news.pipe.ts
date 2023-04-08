@@ -1,6 +1,7 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 import { ESort, INewsQuery } from './news.types'
+import { ECoinType } from '@rana/core'
 
 @Injectable()
 export class NewsValidationPipe implements PipeTransform {
@@ -10,6 +11,7 @@ export class NewsValidationPipe implements PipeTransform {
     countPerPage: Joi.number().integer().greater(0),
     startTime: Joi.date(),
     endTime: Joi.date(),
+    symbol: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
   })
 
   transform(value: INewsQuery) {

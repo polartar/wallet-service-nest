@@ -11,9 +11,11 @@ import {
   UsePipes,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
-import { RegisterDeviceDto } from './dto/registerdevice.dto'
+import { RegisterDeviceDto } from './dto/RegisterDevice.dto'
+import { ApiTags } from '@nestjs/swagger'
 
 @Controller('onboarding')
+@ApiTags('onboarding')
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 

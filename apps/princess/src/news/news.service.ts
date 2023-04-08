@@ -5,6 +5,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { ESort, INewsQuery, INewsResponse } from './news.types'
+import { ECoinType } from '@rana/core'
 
 @Injectable()
 export class NewsService {
@@ -56,10 +57,14 @@ export class NewsService {
     }
   }
 
-  async getLatestNews(count: number): Promise<INewsResponse> {
+  async getLatestNews(
+    count?: number,
+    symbol?: ECoinType,
+  ): Promise<INewsResponse> {
     const news = await this.getNews({
       sort: ESort.DESC,
       countPerPage: count || this.defaultTopCount,
+      symbol,
     })
     if (news.success) {
       return {
@@ -86,6 +91,11 @@ export class NewsService {
     if (query.endTime) {
       params += `&endTime=${query.endTime}`
     }
+    if (query.symbol) {
+      params += `&symbols=${query.symbol}`
+    } else {
+      params += `&symbols=${ECoinType.BITCOIN},${ECoinType.ETHEREUM}`
+    }
     return params
   }
 
@@ -95,7 +105,7 @@ export class NewsService {
     newQuery.countPerPage = query.countPerPage || this.defaultCountPerPage
 
     const params = this.generateParams(newQuery)
-
+    console.log({ params })
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {

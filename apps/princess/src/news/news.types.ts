@@ -1,3 +1,5 @@
+import { ECoinType } from '@rana/core'
+
 export interface INewsResponse {
   success: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,4 +18,5 @@ export interface INewsQuery {
   pageNumber?: number
   startTime?: Date
   endTime?: Date
+  symbol?: ECoinType
 }
