@@ -1,6 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { TotpService } from './totp.service'
-import { IPair } from './totp.types'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
 
 @Controller()
@@ -13,12 +12,12 @@ export class TotpController {
   }
 
   @Post('device')
-  crete(@Body('hardware_id') hardwareId: string) {
+  crete(@Body('hardwareId') hardwareId: string) {
     return this.service.createDevice(hardwareId)
   }
 
-  // @Post('verify')
-  // verify(@Body() { accountID, deviceID, token }: { [key: string]: string }) {
-  //   return this.service.verify(accountID, deviceID, token)
-  // }
+  @Post('verify')
+  verify(@Body() { accountID, deviceID, token }: { [key: string]: string }) {
+    return this.service.verify(accountID, deviceID, token)
+  }
 }

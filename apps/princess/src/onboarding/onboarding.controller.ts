@@ -1,5 +1,4 @@
 import { OnboardingService } from './onboarding.service'
-import { IOnboardingSignIn } from './onboarding.types'
 import {
   BadRequestException,
   Body,
@@ -12,7 +11,9 @@ import {
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { RegisterDeviceDto } from './dto/RegisterDevice.dto'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { SyncUserDto } from './dto/SyncUserDto'
+import { SignInDto } from './dto/SigninDto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
@@ -29,7 +30,7 @@ export class OnboardingController {
 
   @Post('login')
   @UsePipes(new SignInValidationPipe())
-  async login(@Body() data: IOnboardingSignIn) {
+  async login(@Body() data: SignInDto) {
     return this.onboardingService.signIn(
       data.type,
       data.access_token,
@@ -50,7 +51,7 @@ export class OnboardingController {
     return this.onboardingService.registerDevice(
       deviceId,
       data.account_id,
-      data.opt,
+      data.otp,
     )
   }
 
@@ -65,5 +66,18 @@ export class OnboardingController {
   @Get('version')
   async getVersion() {
     return '1.0'
+  }
+
+  @Post('sync')
+  @ApiOperation({
+    summary: 'Sync user',
+  })
+  async syncUser(@Body() data: SyncUserDto) {
+    return this.onboardingService.syncUser(
+      data.account_id,
+      data.device_id,
+      data.account_hash,
+      data.otp,
+    )
   }
 }

@@ -36,13 +36,13 @@ export class OnboardingService {
     try {
       const response = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`, {
-          hardware_id: hardwareId,
+          hardwareId,
         }),
       )
       return {
         success: true,
         data: {
-          otp: response.data.opt,
+          otp: response.data.otp,
           device_id: response.data.device_id,
         },
       }
@@ -178,6 +178,37 @@ export class OnboardingService {
       type,
       has_same_hash: iHash === oHash,
       data: iHash === oHash ? undefined : account,
+    }
+  }
+
+  async syncUser(
+    accountId: number,
+    deviceId: string,
+    accountHash: string,
+    otp: string,
+  ): Promise<{ isSync: boolean; account?: IAccount }> {
+    let verifyResponse
+    try {
+      verifyResponse = await firstValueFrom(
+        this.httpService.post(`${this.fluffyApiUrl}/verify`, {
+          accountId,
+          deviceId,
+          token: otp,
+        }),
+      )
+    } catch (err) {
+      throw new BadGatewayException('Fluffy API call')
+    }
+    if (!verifyResponse.data) {
+      throw new BadRequestException('Invalid otp')
+    }
+    const account = await this.getAccount(accountId)
+    const oHash = hash(account)
+
+    const isSync = accountHash === oHash
+    return {
+      isSync,
+      account: isSync ? undefined : account,
     }
   }
 }

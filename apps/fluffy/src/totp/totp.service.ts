@@ -77,7 +77,10 @@ export class TotpService {
 
   async verify(userId: string, deviceId: string, token: string) {
     const deviceEntity = await this.lookup({ userId, deviceId })
-
-    return authenticator.check(token, deviceEntity.secret)
+    if (deviceEntity) {
+      return authenticator.check(token, deviceEntity.secret)
+    } else {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
   }
 }
