@@ -28,6 +28,9 @@ export class DeviceEntity {
   @Column({ nullable: true })
   recoveryKey: string
 
+  @Column({ default: false })
+  isCloud: boolean
+
   async _getRandomKey(len: number) {
     return new Promise<string>((resolve) =>
       randomBytes(len, (_error, buffer) => {

@@ -93,4 +93,14 @@ export class TotpService {
       throw new BadRequestException('Not found matched userId and deviceId')
     }
   }
+
+  async updateIsCloud(deviceId: string, userId: number, isCloud: boolean) {
+    const deviceEntity = await this.lookup({ userId, deviceId })
+    if (deviceEntity) {
+      deviceEntity.isCloud = isCloud
+      return await this.deviceRepository.save(deviceEntity)
+    } else {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+  }
 }

@@ -7,3 +7,8 @@ export interface IPair {
   passCodeKey: string
   recoveryKey: string
 }
+
+export interface IDeviceUpdate {
+  passCodeKey?: string
+  isCloud?: boolean
+}

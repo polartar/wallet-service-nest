@@ -1,6 +1,7 @@
 import { Body, Controller, Param, Post, Put } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
+import { IDeviceUpdate } from './totp.types'
 
 @Controller()
 export class TotpController {
@@ -20,8 +21,12 @@ export class TotpController {
   updatePassCode(
     @Param('deviceId') deviceId: string,
     @Param('accountId') accountId: number,
-    @Body('passCodeKey') passCodeKey: string,
+    @Body() data: IDeviceUpdate,
   ) {
-    return this.service.updatePassCode(deviceId, accountId, passCodeKey)
+    if (data.isCloud) {
+      return this.service.updateIsCloud(deviceId, accountId, data.isCloud)
+    } else {
+      return this.service.updatePassCode(deviceId, accountId, data.passCodeKey)
+    }
   }
 }

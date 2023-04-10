@@ -79,22 +79,32 @@ export class AccountsService {
     )
   }
 
-  async updatePassCode(
-    accountId: number,
-    deviceId: string,
-    passCodeKey: string,
-  ) {
+  async fluffyAPICall(path, body) {
     try {
-      const url = `${this.fluffyApiUrl}/${deviceId}/accounts/${accountId}`
+      const url = `${this.fluffyApiUrl}/${path}`
       const res = await firstValueFrom(
-        this.httpService.post<AxiosResponse>(url, { passCodeKey }),
+        this.httpService.put<AxiosResponse>(url, body),
       )
       return res.data
     } catch (err) {
       if (err.response) {
         throw new InternalServerErrorException(err.response.data.message)
       }
-      throw new BadGatewayException('Rick server connection error')
+      throw new BadGatewayException('Fluffy server connection error')
     }
+  }
+
+  async updatePassCode(
+    accountId: number,
+    deviceId: string,
+    passCodeKey: string,
+  ) {
+    const path = `${deviceId}/accounts/${accountId}`
+    return this.fluffyAPICall(path, { passCodeKey })
+  }
+
+  async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
+    const path = `${deviceId}/accounts/${accountId}`
+    return this.fluffyAPICall(path, { isCloud })
   }
 }

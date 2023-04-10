@@ -15,6 +15,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto } from './dto/GetPortfolioDto'
 import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
+import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -90,6 +91,36 @@ export class AccountsController {
       accountId,
       data.device_id,
       data.passcode_key,
+    )
+  }
+
+  @Put(':accountId/switchToiCloudShard')
+  @ApiOperation({
+    summary: 'Switch to Cloud',
+  })
+  async switchToCloud(
+    @Param('accountId') accountId: number,
+    @Body() data: SwitchToCloudShardDto,
+  ) {
+    return await this.accountService.updateIsCloud(
+      accountId,
+      data.device_id,
+      true,
+    )
+  }
+
+  @Put(':accountId/switchToAccountShard')
+  @ApiOperation({
+    summary: 'Switch to Cloud',
+  })
+  async switchToAccount(
+    @Param('accountId') accountId: number,
+    @Body() data: SwitchToCloudShardDto,
+  ) {
+    return await this.accountService.updateIsCloud(
+      accountId,
+      data.device_id,
+      false,
     )
   }
 }
