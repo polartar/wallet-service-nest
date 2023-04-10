@@ -1,14 +1,4 @@
-import {
-  BadGatewayException,
-  Body,
-  Controller,
-  Get,
-  InternalServerErrorException,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'

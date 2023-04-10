@@ -105,7 +105,7 @@ export class NewsService {
     newQuery.countPerPage = query.countPerPage || this.defaultCountPerPage
 
     const params = this.generateParams(newQuery)
-    console.log({ params })
+
     const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {

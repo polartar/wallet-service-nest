@@ -2,7 +2,7 @@ import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 
 import { EAuth } from '@rana/core'
-import { IOnboardingSignIn } from './onboarding.types'
+import { SignInDto } from './dto/SigninDto'
 
 @Injectable()
 export class SignInValidationPipe implements PipeTransform {
@@ -19,7 +19,7 @@ export class SignInValidationPipe implements PipeTransform {
     recovery_key: Joi.string().required(),
   })
 
-  transform(value: IOnboardingSignIn) {
+  transform(value: SignInDto) {
     const { error } = this.schema.validate(value)
     if (error) {
       throw new BadRequestException('Validation failed: ' + error.message)
