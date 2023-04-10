@@ -1,5 +1,5 @@
 export class CreateDeviceDto {
-  userId: string
+  userId: number
   deviceId: string
   serverProposedShard: string
   ownProposedShard: string

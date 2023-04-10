@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Param, Post, Put } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
 
@@ -16,8 +16,12 @@ export class TotpController {
     return this.service.createDevice(hardwareId)
   }
 
-  @Post('verify')
-  verify(@Body() { accountID, deviceID, token }: { [key: string]: string }) {
-    return this.service.verify(accountID, deviceID, token)
+  @Put(':deviceId/account/:accountId')
+  updatePassCode(
+    @Param('deviceId') deviceId: string,
+    @Param('accountId') accountId: number,
+    @Body('passCodeKey') passCodeKey: string,
+  ) {
+    return this.service.updatePassCode(deviceId, accountId, passCodeKey)
   }
 }

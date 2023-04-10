@@ -1,4 +1,4 @@
 export class FindPairingDto {
-  userId: string
+  userId: number
   deviceId: string
 }

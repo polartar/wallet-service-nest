@@ -75,10 +75,20 @@ export class TotpService {
     }
   }
 
-  async verify(userId: string, deviceId: string, token: string) {
+  async verify(userId: number, deviceId: string, token: string) {
     const deviceEntity = await this.lookup({ userId, deviceId })
     if (deviceEntity) {
       return authenticator.check(token, deviceEntity.secret)
+    } else {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+  }
+
+  async updatePassCode(deviceId: string, userId: number, passCodeKey: string) {
+    const deviceEntity = await this.lookup({ userId, deviceId })
+    if (deviceEntity) {
+      deviceEntity.passCodeKey = passCodeKey
+      return await this.deviceRepository.save(deviceEntity)
     } else {
       throw new BadRequestException('Not found matched userId and deviceId')
     }

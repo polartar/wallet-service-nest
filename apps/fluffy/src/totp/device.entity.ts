@@ -5,7 +5,7 @@ import { encode } from 'hi-base32'
 @Entity()
 export class DeviceEntity {
   @Column({ nullable: true })
-  userId: string
+  userId: number
 
   @PrimaryGeneratedColumn('uuid')
   deviceId: string

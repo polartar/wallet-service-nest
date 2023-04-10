@@ -15,15 +15,19 @@ import { AxiosResponse } from 'axios'
 @Injectable()
 export class AccountsService {
   rickApiUrl: string
+  fluffyApiUrl: string
 
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.fluffyApiUrl = this.configService.get<string>(
+      EEnvironment.fluffyAPIUrl,
+    )
   }
 
-  async apiCall(method: EAPIMethod, path: string, body?: unknown) {
+  async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
     try {
       const url = `${this.rickApiUrl}/${path}`
       const res = await firstValueFrom(
@@ -43,7 +47,7 @@ export class AccountsService {
   }
 
   async createWallet(accountId: string, walletType: EWalletType, xPub: string) {
-    return this.apiCall(EAPIMethod.POST, `wallet/${xPub}`, {
+    return this.rickAPICall(EAPIMethod.POST, `wallet/${xPub}`, {
       account_id: accountId,
       wallet_type: walletType,
     })
@@ -54,7 +58,7 @@ export class AccountsService {
     walletId: string,
     data: UpdateWalletDto,
   ) {
-    return this.apiCall(EAPIMethod.POST, `wallet/activate`, {
+    return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
       account_id: accountId, // depending on the authorization flow between princess and rick
       id: walletId,
       is_active: data.is_active,
@@ -62,13 +66,35 @@ export class AccountsService {
   }
 
   async getPortfolio(accountId: number, period?: EPeriod) {
-    return this.apiCall(EAPIMethod.GET, `wallet/${accountId}?period=${period}`)
+    return this.rickAPICall(
+      EAPIMethod.GET,
+      `wallet/${accountId}?period=${period}`,
+    )
   }
 
   async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
-    return this.apiCall(
+    return this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}/wallet/${walletId}?period=${period}`,
     )
+  }
+
+  async updatePassCode(
+    accountId: number,
+    deviceId: string,
+    passCodeKey: string,
+  ) {
+    try {
+      const url = `${this.fluffyApiUrl}/${deviceId}/accounts/${accountId}`
+      const res = await firstValueFrom(
+        this.httpService.post<AxiosResponse>(url, { passCodeKey }),
+      )
+      return res.data
+    } catch (err) {
+      if (err.response) {
+        throw new InternalServerErrorException(err.response.data.message)
+      }
+      throw new BadGatewayException('Rick server connection error')
+    }
   }
 }

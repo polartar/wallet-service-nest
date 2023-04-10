@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
@@ -13,6 +14,7 @@ import { CreateWalletDto } from './dto/CreateWalletDto'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto } from './dto/GetPortfolioDto'
+import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -28,19 +30,11 @@ export class AccountsController {
     @Param('accountId') accountId: string,
     @Body() data: CreateWalletDto,
   ) {
-    try {
-      const response = await this.accountService.createWallet(
-        accountId,
-        data.wallet_type,
-        data.x_pub,
-      )
-      return response
-    } catch (err) {
-      const message = err.response
-        ? err.response.data.message
-        : 'Rick server connection error'
-      throw new BadGatewayException(message)
-    }
+    return await this.accountService.createWallet(
+      accountId,
+      data.wallet_type,
+      data.x_pub,
+    )
   }
 
   @Post(':accountId/wallets/:walletId')
@@ -52,19 +46,7 @@ export class AccountsController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    try {
-      const response = await this.accountService.updateWallet(
-        accountId,
-        walletId,
-        data,
-      )
-      return response
-    } catch (err) {
-      const message = err.response
-        ? err.response.data.message
-        : 'Rick server connection error'
-      throw new BadGatewayException(message)
-    }
+    return await this.accountService.updateWallet(accountId, walletId, data)
   }
 
   @Get(':accountId/portfolio')
@@ -76,20 +58,7 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Query() query: GetPortfolioDto,
   ) {
-    try {
-      const response = await this.accountService.getPortfolio(
-        accountId,
-        query.period,
-      )
-      return response
-    } catch (err) {
-      if (err.response) {
-        throw new InternalServerErrorException(
-          'Something went wrong in Rick API',
-        )
-      }
-      throw new BadGatewayException('Rick server connection error')
-    }
+    return await this.accountService.getPortfolio(accountId, query.period)
   }
 
   @Get(':accountId/wallets/:walletId/portfolio')
@@ -102,20 +71,25 @@ export class AccountsController {
     @Param('walletId') walletId: number,
     @Query() query: GetPortfolioDto,
   ) {
-    try {
-      const response = await this.accountService.getWalletPortfolio(
-        accountId,
-        walletId,
-        query.period,
-      )
-      return response
-    } catch (err) {
-      if (err.response) {
-        throw new InternalServerErrorException(
-          'Something went wrong in Rick API',
-        )
-      }
-      throw new BadGatewayException('Rick server connection error')
-    }
+    return await this.accountService.getWalletPortfolio(
+      accountId,
+      walletId,
+      query.period,
+    )
+  }
+
+  @Put(':accountId')
+  @ApiOperation({
+    summary: 'Update pass code key',
+  })
+  async updatePassCode(
+    @Param('accountId') accountId: number,
+    @Body() data: UpdatePassCodeDto,
+  ) {
+    return await this.accountService.updatePassCode(
+      accountId,
+      data.device_id,
+      data.passcode_key,
+    )
   }
 }
