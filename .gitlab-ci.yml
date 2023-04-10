@@ -112,6 +112,7 @@ deploy to testnet k8s cluster:
     - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
     - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
     - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+    - kubectl rollout restart deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
   environment:
     name: testnet gke cluster
     url: http://35.240.5.170
@@ -138,6 +139,7 @@ deploy to mainnet k8s cluster:
     - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
     - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
     - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+    - kubectl rollout restart deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
   environment:
     name: mainnet gke cluster
     url: http://35.240.5.170
