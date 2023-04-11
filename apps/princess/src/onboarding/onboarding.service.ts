@@ -97,7 +97,7 @@ export class OnboardingService {
       type: user.data.is_new ? 'new email' : 'existing email',
       account_id: user.account.id,
       account: user.data.is_new ? user.account : {},
-      access_token: '',
+      access_token: [type, user.account.id, token].join('-'),
       server_shard: serverProposedShard,
       passcode_key: passCodeKey,
       recovery_key: recoveryKey,
