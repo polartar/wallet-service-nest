@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsUUID } from 'class-validator'
 
 export class SignInDto {
   @ApiProperty({
@@ -15,6 +15,7 @@ export class SignInDto {
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()
+  @IsUUID(4)
   device_id: string
 
   @ApiProperty({ description: 'one time password' })

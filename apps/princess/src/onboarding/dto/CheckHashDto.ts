@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber } from 'class-validator'
+import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator'
 
 export class CheckHashDto {
   @ApiProperty({ description: 'account id' })
@@ -9,6 +9,7 @@ export class CheckHashDto {
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()
+  @IsUUID(4)
   device_id: string
 
   @ApiProperty({ description: 'hash that represents account object' })
