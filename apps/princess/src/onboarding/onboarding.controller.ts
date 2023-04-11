@@ -4,13 +4,10 @@ import {
   Body,
   Controller,
   Get,
-  Param,
-  ParseUUIDPipe,
   Post,
   UsePipes,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
-import { RegisterDeviceDto } from './dto/RegisterDevice.dto'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
 import { SignInDto } from './dto/SigninDto'
