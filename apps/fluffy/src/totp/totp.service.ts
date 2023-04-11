@@ -34,7 +34,6 @@ export class TotpService {
 
   async pair(createDeviceDto: CreateDeviceDto) {
     const device = await this.lookup({
-      userId: createDeviceDto.userId,
       deviceId: createDeviceDto.deviceId,
     })
     if (!device) {
@@ -44,8 +43,8 @@ export class TotpService {
     if (!authenticator.check(createDeviceDto.otp, device.secret)) {
       throw new BadRequestException('Invalid token')
     }
-    console.log({ device })
 
+    device.userId = createDeviceDto.userId
     device.serverProposedShard = createDeviceDto.serverProposedShard
     device.ownProposedShard = createDeviceDto.ownProposedShard
     device.passCodeKey = createDeviceDto.passCodeKey
@@ -73,5 +72,17 @@ export class TotpService {
     } else {
       throw new BadRequestException('Not found matched userId and deviceId')
     }
+  }
+
+  async verify(deviceId: string, userId: number, otp: string) {
+    const device = await this.lookup({
+      deviceId,
+      userId,
+    })
+    if (!device) {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+
+    return authenticator.check(otp, device.secret)
   }
 }

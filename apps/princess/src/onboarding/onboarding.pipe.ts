@@ -7,7 +7,7 @@ import { SignInDto } from './dto/SigninDto'
 @Injectable()
 export class SignInValidationPipe implements PipeTransform {
   private schema = Joi.object().keys({
-    token: Joi.string().regex(
+    id_token: Joi.string().regex(
       /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/,
     ),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),

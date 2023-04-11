@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
-import { IsNotEmpty, IsNumber } from 'class-validator'
+import { IsNotEmpty } from 'class-validator'
 
 export class SignInDto {
   @ApiProperty({
@@ -11,8 +11,7 @@ export class SignInDto {
 
   @ApiProperty({ description: 'token of Google or Apple login' })
   @IsNotEmpty()
-  @IsNumber()
-  access_token: string
+  id_token: string
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()

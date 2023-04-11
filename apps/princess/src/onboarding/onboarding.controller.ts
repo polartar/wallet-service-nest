@@ -20,7 +20,7 @@ export class OnboardingController {
   async login(@Body() data: SignInDto) {
     return this.onboardingService.signIn(
       data.type,
-      data.access_token,
+      data.id_token,
       data.device_id,
       data.otp,
       data.server_proposed_shard,

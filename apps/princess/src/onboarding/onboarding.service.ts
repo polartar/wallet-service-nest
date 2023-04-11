@@ -37,7 +37,7 @@ export class OnboardingService {
       )
       return {
         otp: response.data.otp,
-        device_id: response.data.device_id,
+        device_id: response.data.deviceId,
       }
     } catch (err) {
       throw new BadRequestException(err.message)
@@ -55,6 +55,7 @@ export class OnboardingService {
     recoveryKey: string,
   ): Promise<IOnboardingSigningResponse> {
     let userResponse
+
     try {
       userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
@@ -150,6 +151,9 @@ export class OnboardingService {
         }),
       )
     } catch (err) {
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      }
       throw new BadGatewayException('Fluffy API call')
     }
     if (!verifyResponse.data) {

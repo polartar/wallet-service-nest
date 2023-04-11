@@ -2,6 +2,7 @@ import { Body, Controller, Param, Post, Put } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
 import { IDeviceUpdate } from './totp.types'
+import { VerifyDto } from './dto/VerifyDto.ts'
 
 @Controller()
 export class TotpController {
@@ -28,5 +29,10 @@ export class TotpController {
     } else {
       return this.service.updatePassCode(deviceId, accountId, data.passCodeKey)
     }
+  }
+
+  @Post('verify')
+  verify(@Body() data: VerifyDto) {
+    return this.service.verify(data.deviceId, data.userId, data.otp)
   }
 }
