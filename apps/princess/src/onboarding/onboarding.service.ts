@@ -9,10 +9,8 @@ import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import {
-  EOnboardingType,
   IAccount,
   IDeviceCreateResponse,
-  IDeviceRegisterResponse,
   IOnboardingSigningResponse,
 } from './onboarding.types'
 import * as hash from 'object-hash'
@@ -40,17 +38,11 @@ export class OnboardingService {
         }),
       )
       return {
-        success: true,
-        data: {
-          otp: response.data.otp,
-          device_id: response.data.device_id,
-        },
+        otp: response.data.otp,
+        device_id: response.data.device_id,
       }
     } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new BadRequestException(err.message)
     }
   }
 
@@ -64,16 +56,25 @@ export class OnboardingService {
     passCodeKey: string,
     recoveryKey: string,
   ): Promise<IOnboardingSigningResponse> {
+    let userResponse
     try {
-      const { data: user } = await firstValueFrom(
+      userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
           type,
         }),
       )
+    } catch (err) {
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Gandalf API call error')
+      }
+    }
 
-      // const pair = await this._registerDevice(user.data.account.id, deviceId)
-      const { data: device } = await firstValueFrom(
+    const user = userResponse.data
+    try {
+      await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
           userId: user.account.id,
           deviceId,
@@ -84,69 +85,22 @@ export class OnboardingService {
           recoveryKey,
         }),
       )
-      const onboardingType = user.data.is_new
-        ? EOnboardingType.NEW_EMAIL
-        : device.isNew
-        ? EOnboardingType.NEW_DEVICE
-        : EOnboardingType.EXISTING_ACCOUNT
-
-      return {
-        success: true,
-        data: {
-          type: onboardingType,
-          account_id: user.account.id,
-          account:
-            onboardingType !== EOnboardingType.NEW_EMAIL ? user.account : {},
-        },
-      }
     } catch (err) {
-      return {
-        success: false,
-        error: err.response.data.message,
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Fluffy API call error')
       }
     }
-  }
 
-  async _registerDevice(
-    accountId: number,
-    deviceId: string,
-    otp?: string,
-  ): Promise<{ is_new: boolean }> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-          user_id: accountId,
-          device_id: deviceId,
-          otp,
-        }),
-      )
-      return response.data
-    } catch (err) {
-      throw new BadRequestException(err?.response.data.message)
-    }
-  }
-
-  async registerDevice(
-    deviceId: string,
-    accountId: number,
-    otp: string,
-  ): Promise<IDeviceRegisterResponse> {
-    try {
-      await this._registerDevice(accountId, deviceId, otp)
-
-      const account = await this.getAccount(accountId)
-
-      return {
-        success: true,
-        data: {
-          account: account,
-        },
-      }
-    } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      }
+    return {
+      type: user.data.is_new ? 'new email' : 'existing email',
+      account_id: user.account.id,
+      account: user.data.is_new ? user.account : {},
+      access_token: '',
+      server_shard: serverProposedShard,
+      passcode_key: passCodeKey,
+      recovery_key: recoveryKey,
     }
   }
 
@@ -159,11 +113,6 @@ export class OnboardingService {
     } catch (err) {
       throw new BadGatewayException(err.message)
     }
-  }
-
-  async getAccountHash(accountId: number): Promise<number> {
-    const account = await this.getAccount(accountId)
-    return hash(account)
   }
 
   async syncAccount(

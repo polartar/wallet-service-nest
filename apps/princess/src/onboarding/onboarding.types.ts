@@ -4,34 +4,20 @@ export interface IAccount {
   name: string
 }
 export interface IOnboardingSigningResponse {
-  success: boolean
-  data?: {
-    type: EOnboardingType
-    account_id: string
-    account: IAccount
-  }
-  error?: string
+  type: string
+  account_id: string
+  account: IAccount
+  access_token: string
+  server_shard: string
+  passcode_key: string
+  recovery_key: string
 }
 
 export interface IDeviceCreateResponse {
-  success: boolean
-  data?: {
-    otp: string
-    device_id: string
-  }
-  error?: string
+  otp: string
+  device_id: string
 }
 
 export interface IDeviceRegisterResponse {
-  success: boolean
-  data?: {
-    account: IAccount
-  }
-  error?: string
-}
-
-export enum EOnboardingType {
-  NEW_EMAIL = 'new_email',
-  NEW_DEVICE = 'new_device',
-  EXISTING_ACCOUNT = 'existing_account',
+  account: IAccount
 }

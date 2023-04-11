@@ -38,10 +38,10 @@ export class TotpService {
   }
 
   async pair(createDeviceDto: CreateDeviceDto) {
-    let device: DeviceEntity
-    let isNew = false
+    // let device: DeviceEntity
+    // let isNew = false
     try {
-      device = await this.lookup({
+      const device = await this.lookup({
         userId: createDeviceDto.userId,
         deviceId: createDeviceDto.deviceId,
       })
@@ -55,21 +55,20 @@ export class TotpService {
         throw new BadRequestException('Invalid token')
       }
 
-      if (device) {
-        device.serverProposedShard = createDeviceDto.serverProposedShard
-        device.ownProposedShard = createDeviceDto.ownProposedShard
-        device.passCodeKey = createDeviceDto.passCodeKey
-        device.recoveryKey = createDeviceDto.recoveryKey
-      } else {
-        delete createDeviceDto.otp
-        device = this.deviceRepository.create(createDeviceDto)
+      // if (device) {
+      device.serverProposedShard = createDeviceDto.serverProposedShard
+      device.ownProposedShard = createDeviceDto.ownProposedShard
+      device.passCodeKey = createDeviceDto.passCodeKey
+      device.recoveryKey = createDeviceDto.recoveryKey
+      this.deviceRepository.save(device)
+      // } else {
+      // delete createDeviceDto.otp
+      // const device = this.deviceRepository.create(createDeviceDto)
 
-        isNew = true
-      }
+      // isNew = true
+      // }
 
-      return {
-        is_new: isNew,
-      }
+      return device
     } catch (err) {
       throw InternalServerErrorException
     }

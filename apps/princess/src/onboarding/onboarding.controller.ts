@@ -40,26 +40,6 @@ export class OnboardingController {
     )
   }
 
-  // @Post('device/:device_id/register')
-  // async registerDevice(
-  //   @Param('device_id', ParseUUIDPipe) deviceId: string,
-  //   @Body() data: RegisterDeviceDto,
-  // ) {
-  //   return this.onboardingService.registerDevice(
-  //     deviceId,
-  //     data.account_id,
-  //     data.otp,
-  //   )
-  // }
-
-  // @Get('account/hash/:account_id')
-  // async getAccount(@Param('account_id') accountId: number) {
-  //   if (!accountId) {
-  //     throw new BadRequestException('account_id required')
-  //   }
-  //   return this.onboardingService.getAccountHash(accountId)
-  // }
-
   @Get('version')
   async getVersion() {
     return '1.0'
