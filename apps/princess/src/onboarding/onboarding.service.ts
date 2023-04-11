@@ -3,6 +3,7 @@ import {
   BadGatewayException,
   BadRequestException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -65,7 +66,7 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
-        throw new BadRequestException(err.response.data.message)
+        throw new UnauthorizedException(err.response.data.message)
       } else {
         throw new BadGatewayException('Gandalf API call error')
       }
