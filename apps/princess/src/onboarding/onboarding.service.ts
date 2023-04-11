@@ -115,6 +115,11 @@ export class OnboardingService {
     }
   }
 
+  async getAccountHash(accountId: number): Promise<number> {
+    const account = await this.getAccount(accountId)
+    return hash(account)
+  }
+
   async syncAccount(
     type: string,
     iHash: string,

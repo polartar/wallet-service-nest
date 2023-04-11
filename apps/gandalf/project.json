@@ -32,11 +32,9 @@
     "db": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker run --name gandalf -e POSTGRES_PASSWORD=mypassword -e POSTGRES_USER=myusername -e POSTGRES_DB=gandalf -p 5431:5432 -d postgres"
+        "command": "docker run --name gandalf -e POSTGRES_PASSWORD=mypassword -e POSTGRES_USER=myusername -e POSTGRES_DB=gandalf -p 5434:5432 -d postgres"
       },
-      "dependsOn": [
-        "db:stop"
-      ]
+      "dependsOn": ["db:stop"]
     },
     "db:stop": {
       "executor": "nx:run-commands",
@@ -49,9 +47,7 @@
       "options": {
         "buildTarget": "gandalf:build"
       },
-       "dependsOn": [
-        "db"
-      ],
+      "dependsOn": ["db"],
       "configurations": {
         "production": {
           "buildTarget": "gandalf:build:production"
