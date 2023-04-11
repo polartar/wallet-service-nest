@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { authenticator } from 'otplib'
 
 // import { PairingService } from '../pairing/pairing.service'
@@ -20,9 +16,8 @@ export class TotpService {
     private readonly deviceRepository: Repository<DeviceEntity>,
   ) {}
 
-  async createDevice(hardwareId: string) {
+  async createDevice() {
     const device = new DeviceEntity()
-    device.hardwareId = hardwareId
 
     await this.deviceRepository.save(device)
     return {

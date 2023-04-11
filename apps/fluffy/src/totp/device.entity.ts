@@ -11,9 +11,6 @@ export class DeviceEntity {
   deviceId: string
 
   @Column()
-  hardwareId: string
-
-  @Column()
   secret: string
 
   @Column({ nullable: true })

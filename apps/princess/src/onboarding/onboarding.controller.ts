@@ -1,12 +1,5 @@
 import { OnboardingService } from './onboarding.service'
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-  UsePipes,
-} from '@nestjs/common'
+import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
@@ -18,11 +11,8 @@ export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
   @Post('device')
-  async createDevice(@Body('hardware_id') hardwareId: string) {
-    if (!hardwareId) {
-      throw new BadRequestException('hardware_id required')
-    }
-    return this.onboardingService.createDevice(hardwareId)
+  async createDevice() {
+    return this.onboardingService.createDevice()
   }
 
   @Post('login')

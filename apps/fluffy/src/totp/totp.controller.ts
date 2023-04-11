@@ -13,8 +13,8 @@ export class TotpController {
   }
 
   @Post('device')
-  crete(@Body('hardwareId') hardwareId: string) {
-    return this.service.createDevice(hardwareId)
+  crete() {
+    return this.service.createDevice()
   }
 
   @Put(':deviceId/account/:accountId')

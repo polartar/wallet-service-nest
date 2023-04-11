@@ -30,12 +30,10 @@ export class OnboardingService {
     )
   }
 
-  async createDevice(hardwareId: string): Promise<IDeviceCreateResponse> {
+  async createDevice(): Promise<IDeviceCreateResponse> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/device`, {
-          hardwareId,
-        }),
+        this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
       return {
         otp: response.data.otp,
