@@ -38,49 +38,26 @@ export class TotpService {
   }
 
   async pair(createDeviceDto: CreateDeviceDto) {
-    // let device: DeviceEntity
-    // let isNew = false
-    try {
-      const device = await this.lookup({
-        userId: createDeviceDto.userId,
-        deviceId: createDeviceDto.deviceId,
-      })
-      if (
-        !(await this.verify(
-          createDeviceDto.userId,
-          createDeviceDto.deviceId,
-          createDeviceDto.otp,
-        ))
-      ) {
-        throw new BadRequestException('Invalid token')
-      }
-
-      // if (device) {
-      device.serverProposedShard = createDeviceDto.serverProposedShard
-      device.ownProposedShard = createDeviceDto.ownProposedShard
-      device.passCodeKey = createDeviceDto.passCodeKey
-      device.recoveryKey = createDeviceDto.recoveryKey
-      this.deviceRepository.save(device)
-      // } else {
-      // delete createDeviceDto.otp
-      // const device = this.deviceRepository.create(createDeviceDto)
-
-      // isNew = true
-      // }
-
-      return device
-    } catch (err) {
-      throw InternalServerErrorException
-    }
-  }
-
-  async verify(userId: number, deviceId: string, token: string) {
-    const deviceEntity = await this.lookup({ userId, deviceId })
-    if (deviceEntity) {
-      return authenticator.check(token, deviceEntity.secret)
-    } else {
+    const device = await this.lookup({
+      userId: createDeviceDto.userId,
+      deviceId: createDeviceDto.deviceId,
+    })
+    if (!device) {
       throw new BadRequestException('Not found matched userId and deviceId')
     }
+
+    if (!authenticator.check(createDeviceDto.otp, device.secret)) {
+      throw new BadRequestException('Invalid token')
+    }
+    console.log({ device })
+
+    device.serverProposedShard = createDeviceDto.serverProposedShard
+    device.ownProposedShard = createDeviceDto.ownProposedShard
+    device.passCodeKey = createDeviceDto.passCodeKey
+    device.recoveryKey = createDeviceDto.recoveryKey
+    this.deviceRepository.save(device)
+
+    return device
   }
 
   async updatePassCode(deviceId: string, userId: number, passCodeKey: string) {

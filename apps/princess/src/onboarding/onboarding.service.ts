@@ -73,6 +73,7 @@ export class OnboardingService {
     }
 
     const user = userResponse.data
+    console.log({ user })
     try {
       await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
