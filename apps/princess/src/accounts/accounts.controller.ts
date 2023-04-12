@@ -13,6 +13,7 @@ import { CreateWalletDto } from './dto/CreateWalletDto'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { EPeriod } from '@rana/core'
+import { CreateAccountDto } from './dto/CreateAccountDto'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -98,6 +99,25 @@ export class AccountsController {
         )
       }
       throw new BadGatewayException('Rick server connection error')
+    }
+  }
+
+  @Post('')
+  @ApiOperation({
+    summary: 'Create account(testing purpose)',
+  })
+  async createAccount(@Body() data: CreateAccountDto) {
+    try {
+      const response = await this.accountService.createAccount(
+        data.email,
+        data.name,
+      )
+      return response
+    } catch (err) {
+      const message = err.response
+        ? err.response.data.message
+        : 'Rick server connection error'
+      throw new BadGatewayException(message)
     }
   }
 }
