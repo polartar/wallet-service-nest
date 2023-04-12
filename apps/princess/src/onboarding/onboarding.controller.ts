@@ -4,17 +4,20 @@ import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
 import { SignInDto } from './dto/SigninDto'
+import { Public } from '../auth/decorators/public.decorator'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
+  @Public()
   @Post('device')
   async createDevice() {
     return this.onboardingService.createDevice()
   }
 
+  @Public()
   @Post('login')
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
@@ -30,6 +33,7 @@ export class OnboardingController {
     )
   }
 
+  @Public()
   @Get('version')
   async getVersion() {
     return '1.0'
