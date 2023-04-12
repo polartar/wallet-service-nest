@@ -53,7 +53,7 @@ export class AccountsService {
 
   async createAccount(email: string, name: string) {
     const response = await firstValueFrom(
-      this.httpService.post(`${this.rickApiUrl}/account}`, { email, name }),
+      this.httpService.post(`${this.rickApiUrl}/account`, { email, name }),
     )
     return response.data
   }
