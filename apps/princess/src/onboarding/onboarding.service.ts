@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import {
   BadGatewayException,
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -15,6 +16,10 @@ import {
   IOnboardingSigningResponse,
 } from './onboarding.types'
 import * as hash from 'object-hash'
+import { JwtService } from '@nestjs/jwt'
+import { REQUEST } from '@nestjs/core'
+import { AccountsService } from '../accounts/accounts.service'
+
 @Injectable()
 export class OnboardingService {
   gandalfApiUrl: string
@@ -22,6 +27,9 @@ export class OnboardingService {
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
+    private accountService: AccountsService,
+    private jwtService: JwtService,
+    @Inject(REQUEST) private readonly request: Request,
   ) {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
@@ -73,7 +81,7 @@ export class OnboardingService {
     }
 
     const user = userResponse.data
-    console.log({ user })
+
     try {
       await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
@@ -93,31 +101,22 @@ export class OnboardingService {
         throw new BadGatewayException('Fluffy API call error')
       }
     }
+    const payload = { type: type, accountId: user.account.id, idToken: token }
+    const accessToken = await this.jwtService.signAsync(payload)
 
     return {
       type: user.data.is_new ? 'new email' : 'existing email',
       account_id: user.account.id,
       account: user.data.is_new ? user.account : {},
-      access_token: [type, user.account.id, token].join('-'),
+      access_token: accessToken,
       server_shard: serverProposedShard,
       passcode_key: passCodeKey,
       recovery_key: recoveryKey,
     }
   }
 
-  async getAccount(accountId: number): Promise<IAccount> {
-    try {
-      const accountResponse = await firstValueFrom(
-        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
-      )
-      return accountResponse.data
-    } catch (err) {
-      throw new BadGatewayException(err.message)
-    }
-  }
-
   async getAccountHash(accountId: number): Promise<number> {
-    const account = await this.getAccount(accountId)
+    const account = await this.accountService.getAccount(accountId)
     return hash(account)
   }
 
@@ -126,7 +125,7 @@ export class OnboardingService {
     iHash: string,
     accountId: number,
   ): Promise<{ type: string; has_same_hash: boolean; data?: IAccount }> {
-    const account = await this.getAccount(accountId)
+    const account = await this.accountService.getAccount(accountId)
     const oHash = hash(account)
 
     return {
@@ -136,12 +135,26 @@ export class OnboardingService {
     }
   }
 
+  async validateAccountId(accountId: number) {
+    if (accountId === this.getAccountIdFromRequest()) {
+      return true
+    } else {
+      throw new BadRequestException('Account Id  not matched')
+    }
+  }
+
+  getAccountIdFromRequest(): number {
+    return Number((this.request as any).accountId)
+  }
+
   async syncUser(
     accountId: number,
     deviceId: string,
     accountHash: string,
     otp: string,
   ): Promise<{ isSync: boolean; account?: IAccount }> {
+    this.validateAccountId(accountId)
+
     let verifyResponse
     try {
       verifyResponse = await firstValueFrom(
@@ -160,7 +173,7 @@ export class OnboardingService {
     if (!verifyResponse.data) {
       throw new BadRequestException('Invalid otp')
     }
-    const account = await this.getAccount(accountId)
+    const account = await this.accountService.getAccount(accountId)
     const oHash = hash(account)
 
     const isSync = accountHash === oHash

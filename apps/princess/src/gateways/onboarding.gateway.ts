@@ -23,16 +23,16 @@ export class OnboardingGateway {
     })
   }
 
-  @SubscribeMessage('sync')
-  async handleSync(
-    @MessageBody()
-    data: ISyncInput,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.onboardingService
-      .syncAccount(data.type, data.hash, data.account_id)
-      .then((response) => {
-        client.emit('bootstrap_client', response)
-      })
-  }
+  // @SubscribeMessage('sync')
+  // async handleSync(
+  //   @MessageBody()
+  //   data: ISyncInput,
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   this.onboardingService
+  //     .syncAccount(data.type, data.hash, data.account_id)
+  //     .then((response) => {
+  //       client.emit('bootstrap_client', response)
+  //     })
+  // }
 }

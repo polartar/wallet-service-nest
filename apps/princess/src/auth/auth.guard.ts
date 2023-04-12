@@ -7,18 +7,17 @@ import {
 import { Observable } from 'rxjs'
 import { IS_PUBLIC_KEY } from './decorators/public.decorator'
 import { Reflector } from '@nestjs/core'
-import { OnboardingService } from '../onboarding/onboarding.service'
+// import { OnboardingService } from '../onboarding/onboarding.service'
+import { JwtService } from '@nestjs/jwt'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private onboardingService: OnboardingService,
+    private jwtService: JwtService, // private onboardingService: OnboardingService,
   ) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -33,9 +32,11 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException()
     }
     try {
-      // const [type, accountId, idToken] = token.split('-')
-      // const account = this.onboardingService.getAccount(accountId)
-      // request['user'] = 'payload'
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      })
+      request['userId'] = payload.userId
+      // request['accountId'] = 'payload.userId'
     } catch {
       throw new UnauthorizedException()
     }

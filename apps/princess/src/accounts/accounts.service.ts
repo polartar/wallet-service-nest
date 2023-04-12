@@ -16,12 +16,16 @@ import { AxiosResponse } from 'axios'
 export class AccountsService {
   rickApiUrl: string
   fluffyApiUrl: string
+  gandalfApiUrl: string
 
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.gandalfApiUrl = this.configService.get<string>(
+      EEnvironment.gandalfAPIUrl,
+    )
     this.fluffyApiUrl = this.configService.get<string>(
       EEnvironment.fluffyAPIUrl,
     )
@@ -106,5 +110,16 @@ export class AccountsService {
   async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
     const path = `${deviceId}/accounts/${accountId}`
     return this.fluffyAPICall(path, { isCloud })
+  }
+
+  async getAccount(accountId: number) {
+    try {
+      const accountResponse = await firstValueFrom(
+        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
+      )
+      return accountResponse.data
+    } catch (err) {
+      throw new BadGatewayException(err.message)
+    }
   }
 }

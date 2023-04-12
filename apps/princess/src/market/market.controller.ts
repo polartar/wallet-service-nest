@@ -9,13 +9,7 @@ import {
 } from '@nestjs/common'
 import { MarketService } from './market.service'
 import { EPeriod, ECoinType } from '@rana/core'
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 
 @Controller('market')
 @ApiTags('market')
