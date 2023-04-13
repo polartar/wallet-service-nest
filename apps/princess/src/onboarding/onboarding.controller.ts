@@ -52,16 +52,16 @@ export class OnboardingController {
     )
   }
 
-  @Post('check_hash')
-  @ApiOperation({
-    summary: 'Check Account hash',
-  })
-  async checkHash(@Body() data: SyncUserDto) {
-    return this.onboardingService.syncUser(
-      data.account_id,
-      data.device_id,
-      data.account_hash,
-      data.otp,
-    )
-  }
+  // @Post('check_hash')
+  // @ApiOperation({
+  //   summary: 'Check Account hash',
+  // })
+  // async checkHash(@Body() data: SyncUserDto) {
+  //   return this.onboardingService.syncUser(
+  //     data.account_id,
+  //     data.device_id,
+  //     data.account_hash,
+  //     data.otp,
+  //   )
+  // }
 }
