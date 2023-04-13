@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
+import {
+  BadGatewayException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
@@ -6,6 +15,8 @@ import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto } from './dto/GetPortfolioDto'
 import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
+import { EPeriod } from '@rana/core'
+import { CreateAccountDto } from './dto/CreateAccountDto'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -112,5 +123,24 @@ export class AccountsController {
       data.device_id,
       false,
     )
+  }
+
+  @Post('')
+  @ApiOperation({
+    summary: 'Create account(testing purpose)',
+  })
+  async createAccount(@Body() data: CreateAccountDto) {
+    try {
+      const response = await this.accountService.createAccount(
+        data.email,
+        data.name,
+      )
+      return response
+    } catch (err) {
+      const message = err.response
+        ? err.response.data.message
+        : 'Rick server connection error'
+      throw new BadGatewayException(message)
+    }
   }
 }
