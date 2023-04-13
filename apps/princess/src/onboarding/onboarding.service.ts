@@ -24,6 +24,8 @@ import { AccountsService } from '../accounts/accounts.service'
 export class OnboardingService {
   gandalfApiUrl: string
   fluffyApiUrl: string
+  rickApiUrl: string
+
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
@@ -37,6 +39,7 @@ export class OnboardingService {
     this.fluffyApiUrl = this.configService.get<string>(
       EEnvironment.fluffyAPIUrl,
     )
+    this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
   async createDevice(): Promise<IDeviceCreateResponse> {
@@ -81,6 +84,20 @@ export class OnboardingService {
     }
 
     const user = userResponse.data
+    try {
+      await firstValueFrom(
+        this.httpService.post(`${this.rickApiUrl}/account`, {
+          email: user.account.email,
+          name: user.account.name,
+        }),
+      )
+    } catch (err) {
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Rick API call error')
+      }
+    }
 
     try {
       await firstValueFrom(
