@@ -26,6 +26,7 @@ export class OnboardingService {
   gandalfApiUrl: string
   fluffyApiUrl: string
   rickApiUrl: string
+  version: string
 
   constructor(
     private configService: ConfigService,
@@ -41,6 +42,7 @@ export class OnboardingService {
       EEnvironment.fluffyAPIUrl,
     )
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.version = this.configService.get<string>(EEnvironment.version)
   }
 
   async createDevice(): Promise<IDeviceCreateResponse> {
@@ -199,5 +201,9 @@ export class OnboardingService {
       isSync,
       account: isSync ? undefined : account,
     }
+  }
+
+  getVersion(): string {
+    return this.version
   }
 }

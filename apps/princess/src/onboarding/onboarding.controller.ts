@@ -36,7 +36,7 @@ export class OnboardingController {
   @Public()
   @Get('version')
   async getVersion() {
-    return '1.0'
+    return this.onboardingService.getVersion()
   }
 
   @Post('sync')

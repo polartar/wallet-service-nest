@@ -7,4 +7,5 @@ export enum EEnvironment {
   gandalfAPIUrl = 'gandalf_api_url',
   fluffyAPIUrl = 'fluffy_api_url',
   kafoAPIUrl = 'kafo_api_url',
+  version = 'version',
 }
