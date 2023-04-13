@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -93,7 +94,7 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
-        throw new BadRequestException(err.response.data.message)
+        throw new InternalServerErrorException(err.response.data.message)
       } else {
         throw new BadGatewayException('Rick API call error')
       }
