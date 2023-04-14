@@ -29,7 +29,7 @@ export class AccountsController {
     summary: 'Add the wallet to the account',
   })
   async createWallet(
-    @Param('accountId') accountId: string,
+    @Param('accountId') accountId: number,
     @Body() data: CreateWalletDto,
   ) {
     return await this.accountService.createWallet(
@@ -44,7 +44,7 @@ export class AccountsController {
     summary: 'Update the wallet object',
   })
   async updateWallet(
-    @Param('accountId') accountId: string,
+    @Param('accountId') accountId: number,
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {

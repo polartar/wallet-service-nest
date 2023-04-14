@@ -155,7 +155,7 @@ export class OnboardingService {
     }
   }
 
-  async validateAccountId(accountId: number) {
+  validateAccountId(accountId: number) {
     if (accountId === this.getAccountIdFromRequest()) {
       return true
     } else {
