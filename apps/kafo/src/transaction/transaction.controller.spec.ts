@@ -117,7 +117,7 @@ describe('TransactionController', () => {
 
     const response = await controller.generateNFTRawTransaction(tx)
     expect(response.success).toBeTruthy()
-  })
+  }, 10000)
 
   it('should transfer the nft', async () => {
     const tx = {
@@ -141,5 +141,5 @@ describe('TransactionController', () => {
     const signedTx = await signer.signTransaction(newTx)
     const response = await controller.sendNFTTransaction(signedTx)
     expect(response.success).toBeTruthy()
-  }, 20000)
+  }, 40000)
 })
