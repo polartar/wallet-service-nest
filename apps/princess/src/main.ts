@@ -12,6 +12,7 @@ import {
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { AppModule } from './app/app.module'
+import * as Sentry from '@sentry/node'
 
 async function bootstrap() {
   /* TODO: Switch to fastify by defauly
@@ -42,6 +43,12 @@ async function bootstrap() {
     .build()
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, document)
+
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: parseInt(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0.5,
+    environment: process.env.SENTRY_ENVIRONMENT || 'dev',
+  })
 
   const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
   await app.listen(port, listen_host)

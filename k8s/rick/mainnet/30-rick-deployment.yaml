@@ -20,7 +20,7 @@ spec:
         image: registry.gitlab.com/ngrave/rana/app/be/rick_prod:main
         imagePullPolicy: Always
         ports:
-        - containerPort: 3000
+        - containerPort: 3333
         env:
           - name: INFURA_API_KEY
             valueFrom:
