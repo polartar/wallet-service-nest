@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { PairingEntity } from './../pairing/pairing.entity'
 import { TotpService } from './totp.service'
 import { DeviceEntity } from './device.entity'
 
@@ -17,7 +16,6 @@ describe('TotpService', () => {
           synchronize: true,
           entities: [
             DeviceEntity, //
-            PairingEntity,
           ],
         }),
         TypeOrmModule.forFeature([DeviceEntity]),
@@ -33,8 +31,7 @@ describe('TotpService', () => {
   })
 
   it('should create device from hardware id', async () => {
-    const hardwareId = 'test hardware id'
-    const device = await service.createDevice(hardwareId)
+    const device = await service.createDevice()
     expect(device.deviceId).not.toBeNull()
     expect(device.otp).not.toBeNull()
   })
