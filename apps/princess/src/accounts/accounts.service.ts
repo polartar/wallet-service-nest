@@ -1,8 +1,6 @@
 import { HttpService } from '@nestjs/axios'
 import {
   BadGatewayException,
-  BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common'
@@ -13,7 +11,6 @@ import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { EAPIMethod } from './accounts.typs'
 import { AxiosResponse } from 'axios'
-import { REQUEST } from '@nestjs/core'
 
 @Injectable()
 export class AccountsService {
@@ -23,8 +20,7 @@ export class AccountsService {
 
   constructor(
     private configService: ConfigService,
-    private readonly httpService: HttpService,
-    @Inject(REQUEST) private readonly request: Request,
+    private readonly httpService: HttpService, // @Inject(REQUEST) private readonly request: Request,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
@@ -33,18 +29,6 @@ export class AccountsService {
     this.fluffyApiUrl = this.configService.get<string>(
       EEnvironment.fluffyAPIUrl,
     )
-  }
-
-  getAccountIdFromRequest(): number {
-    return Number((this.request as any).accountId)
-  }
-
-  validateAccountId(accountId: number) {
-    if (accountId === this.getAccountIdFromRequest()) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
   }
 
   async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
@@ -67,8 +51,6 @@ export class AccountsService {
   }
 
   async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
-    this.validateAccountId(accountId)
-
     return this.rickAPICall(EAPIMethod.POST, `wallet/${xPub}`, {
       account_id: accountId,
       wallet_type: walletType,
@@ -88,8 +70,6 @@ export class AccountsService {
   }
 
   async getPortfolio(accountId: number, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
     return this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}?period=${period}`,
@@ -97,8 +77,6 @@ export class AccountsService {
   }
 
   async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
     return this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}/wallet/${walletId}?period=${period}`,
@@ -125,22 +103,16 @@ export class AccountsService {
     deviceId: string,
     passCodeKey: string,
   ) {
-    this.validateAccountId(accountId)
-
     const path = `${deviceId}/accounts/${accountId}`
     return this.fluffyAPICall(path, { passCodeKey })
   }
 
   async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
-    this.validateAccountId(accountId)
-
     const path = `${deviceId}/accounts/${accountId}`
     return this.fluffyAPICall(path, { isCloud })
   }
 
   async getAccount(accountId: number) {
-    this.validateAccountId(accountId)
-
     try {
       const accountResponse = await firstValueFrom(
         this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),

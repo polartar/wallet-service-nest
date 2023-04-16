@@ -2,7 +2,6 @@ import { HttpService } from '@nestjs/axios'
 import {
   BadGatewayException,
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -18,7 +17,6 @@ import {
 } from './onboarding.types'
 import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
-import { REQUEST } from '@nestjs/core'
 import { AccountsService } from '../accounts/accounts.service'
 
 @Injectable()
@@ -33,7 +31,6 @@ export class OnboardingService {
     private readonly httpService: HttpService,
     private accountService: AccountsService,
     private jwtService: JwtService,
-    @Inject(REQUEST) private readonly request: Request,
   ) {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
@@ -155,26 +152,12 @@ export class OnboardingService {
     }
   }
 
-  validateAccountId(accountId: number) {
-    if (accountId === this.getAccountIdFromRequest()) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
-  }
-
-  getAccountIdFromRequest(): number {
-    return Number((this.request as any).accountId)
-  }
-
   async syncUser(
     accountId: number,
     deviceId: string,
     accountHash: string,
     otp: string,
   ): Promise<{ isSync: boolean; account?: IAccount }> {
-    this.validateAccountId(accountId)
-
     let verifyResponse
     try {
       verifyResponse = await firstValueFrom(

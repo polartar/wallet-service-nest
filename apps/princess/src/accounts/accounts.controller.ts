@@ -1,8 +1,10 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Put,
@@ -15,13 +17,29 @@ import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto } from './dto/GetPortfolioDto'
 import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
-import { EPeriod } from '@rana/core'
 import { CreateAccountDto } from './dto/CreateAccountDto'
+import { REQUEST } from '@nestjs/core'
+import { Request } from 'express'
 
 @Controller('accounts')
 @ApiTags('accounts')
 export class AccountsController {
-  constructor(private readonly accountService: AccountsService) {}
+  constructor(
+    @Inject(REQUEST) private readonly request: Request,
+    private readonly accountService: AccountsService,
+  ) {}
+
+  getAccountIdFromRequest(): number {
+    return Number((this.request as any).accountId)
+  }
+
+  validateAccountId(accountId: number) {
+    if (accountId === this.getAccountIdFromRequest()) {
+      return true
+    } else {
+      throw new BadRequestException('Account Id  not matched')
+    }
+  }
 
   // we should validate the xPub
   @Post(':accountId/wallet')
@@ -32,6 +50,8 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: CreateWalletDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.createWallet(
       accountId,
       data.wallet_type,
@@ -48,6 +68,8 @@ export class AccountsController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.updateWallet(accountId, walletId, data)
   }
 
@@ -60,6 +82,8 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Query() query: GetPortfolioDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.getPortfolio(accountId, query.period)
   }
 
@@ -73,6 +97,8 @@ export class AccountsController {
     @Param('walletId') walletId: number,
     @Query() query: GetPortfolioDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.getWalletPortfolio(
       accountId,
       walletId,
@@ -88,6 +114,8 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: UpdatePassCodeDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.updatePassCode(
       accountId,
       data.device_id,
@@ -103,6 +131,8 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: SwitchToCloudShardDto,
   ) {
+    this.validateAccountId(accountId)
+
     return await this.accountService.updateIsCloud(
       accountId,
       data.device_id,
@@ -118,6 +148,7 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: SwitchToCloudShardDto,
   ) {
+    this.validateAccountId(accountId)
     return await this.accountService.updateIsCloud(
       accountId,
       data.device_id,

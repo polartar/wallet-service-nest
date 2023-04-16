@@ -1,15 +1,36 @@
 import { OnboardingService } from './onboarding.service'
-import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  UsePipes,
+} from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
-import { SignInDto } from './dto/SigninDto'
+import { SignInDto } from './dto/SignInDto'
 import { Public } from '../auth/decorators/public.decorator'
+import { REQUEST } from '@nestjs/core'
+import { Request } from 'express'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
 export class OnboardingController {
-  constructor(private readonly onboardingService: OnboardingService) {}
+  constructor(
+    @Inject(REQUEST) private readonly request: Request,
+    private readonly onboardingService: OnboardingService,
+  ) {}
+
+  validateAccountId(accountId: number) {
+    if (accountId === Number((this.request as any).accountId)) {
+      return true
+    } else {
+      throw new BadRequestException('Account Id  not matched')
+    }
+  }
 
   @Public()
   @Post('device')
@@ -44,6 +65,8 @@ export class OnboardingController {
     summary: 'Sync user',
   })
   async syncUser(@Body() data: SyncUserDto) {
+    this.validateAccountId(data.account_id)
+
     return this.onboardingService.syncUser(
       data.account_id,
       data.device_id,
