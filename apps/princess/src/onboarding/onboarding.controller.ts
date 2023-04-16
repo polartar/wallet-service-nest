@@ -15,7 +15,7 @@ import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
 import { IRequest } from '../accounts/accounts.typs'
-import { SignInDto } from './dto/SignInDto'
+import { SignInDto } from './dto/SigninDto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
