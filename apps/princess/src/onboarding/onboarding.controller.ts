@@ -11,11 +11,11 @@ import {
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
-import { SignInDto } from './dto/SignInDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
 import { IRequest } from '../accounts/accounts.typs'
+import { SignInDto } from './dto/SignInDto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
