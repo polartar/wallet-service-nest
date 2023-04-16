@@ -4,7 +4,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
-import { Observable } from 'rxjs'
 import { IS_PUBLIC_KEY } from './decorators/public.decorator'
 import { Reflector } from '@nestjs/core'
 // import { OnboardingService } from '../onboarding/onboarding.service'
@@ -36,7 +35,6 @@ export class AuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       })
       request['userId'] = payload.userId
-      // request['accountId'] = 'payload.userId'
     } catch {
       throw new UnauthorizedException()
     }
@@ -45,6 +43,7 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (request.headers as any).authorization?.split(' ') ?? []
     return type === 'Bearer' ? token : undefined
   }

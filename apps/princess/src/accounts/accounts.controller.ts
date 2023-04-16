@@ -20,6 +20,7 @@ import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
 import { CreateAccountDto } from './dto/CreateAccountDto'
 import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
+import { IRequest } from './accounts.typs'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -30,7 +31,7 @@ export class AccountsController {
   ) {}
 
   getAccountIdFromRequest(): number {
-    return Number((this.request as any).accountId)
+    return Number((this.request as IRequest).accountId)
   }
 
   validateAccountId(accountId: number) {

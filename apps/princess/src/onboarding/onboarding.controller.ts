@@ -15,6 +15,7 @@ import { SignInDto } from './dto/SignInDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
+import { IRequest } from '../accounts/accounts.typs'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
@@ -25,7 +26,7 @@ export class OnboardingController {
   ) {}
 
   validateAccountId(accountId: number) {
-    if (accountId === Number((this.request as any).accountId)) {
+    if (accountId === Number((this.request as IRequest).accountId)) {
       return true
     } else {
       throw new BadRequestException('Account Id  not matched')

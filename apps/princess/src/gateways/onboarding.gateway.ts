@@ -6,7 +6,6 @@ import {
 } from '@nestjs/websockets'
 import { OnboardingService } from '../onboarding/onboarding.service'
 import { Socket } from 'socket.io'
-import { ISyncInput } from './onboarding.types'
 
 @WebSocketGateway()
 export class OnboardingGateway {
