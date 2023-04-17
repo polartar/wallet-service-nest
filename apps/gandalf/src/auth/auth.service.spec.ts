@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthService } from './auth.service'
 
-import { EAuth } from './auth.types'
 import { Environment } from './../environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
+import { EAuth } from '@rana/core'
 
 describe('AuthService', () => {
   let service: AuthService

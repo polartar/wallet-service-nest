@@ -1,24 +1,46 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
+  Inject,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { EPeriod } from '@rana/core'
+import { GetPortfolioDto } from './dto/GetPortfolioDto'
+import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
+import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
 import { CreateAccountDto } from './dto/CreateAccountDto'
+import { REQUEST } from '@nestjs/core'
+import { Request } from 'express'
+import { IRequest } from './accounts.typs'
 
 @Controller('accounts')
 @ApiTags('accounts')
 export class AccountsController {
-  constructor(private readonly accountService: AccountsService) {}
+  constructor(
+    @Inject(REQUEST) private readonly request: Request,
+    private readonly accountService: AccountsService,
+  ) {}
+
+  getAccountIdFromRequest(): number {
+    return Number((this.request as IRequest).accountId)
+  }
+
+  validateAccountId(accountId: number) {
+    if (accountId === this.getAccountIdFromRequest()) {
+      return true
+    } else {
+      throw new BadRequestException('Account Id  not matched')
+    }
+  }
 
   // we should validate the xPub
   @Post(':accountId/wallet')
@@ -26,22 +48,16 @@ export class AccountsController {
     summary: 'Add the wallet to the account',
   })
   async createWallet(
-    @Param('accountId') accountId: string,
+    @Param('accountId') accountId: number,
     @Body() data: CreateWalletDto,
   ) {
-    try {
-      const response = await this.accountService.createWallet(
-        accountId,
-        data.wallet_type,
-        data.x_pub,
-      )
-      return response
-    } catch (err) {
-      const message = err.response
-        ? err.response.data.message
-        : 'Rick server connection error'
-      throw new BadGatewayException(message)
-    }
+    this.validateAccountId(accountId)
+
+    return await this.accountService.createWallet(
+      accountId,
+      data.wallet_type,
+      data.x_pub,
+    )
   }
 
   @Post(':accountId/wallets/:walletId')
@@ -49,23 +65,13 @@ export class AccountsController {
     summary: 'Update the wallet object',
   })
   async updateWallet(
-    @Param('accountId') accountId: string,
+    @Param('accountId') accountId: number,
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    try {
-      const response = await this.accountService.updateWallet(
-        accountId,
-        walletId,
-        data,
-      )
-      return response
-    } catch (err) {
-      const message = err.response
-        ? err.response.data.message
-        : 'Rick server connection error'
-      throw new BadGatewayException(message)
-    }
+    this.validateAccountId(accountId)
+
+    return await this.accountService.updateWallet(accountId, walletId, data)
   }
 
   @Get(':accountId/portfolio')
@@ -73,33 +79,82 @@ export class AccountsController {
     summary:
       'Timeseries data, where date is timestamp (number), and the value of that date.',
   })
-  @ApiQuery({
-    name: 'period',
-    enum: [
-      EPeriod.All,
-      EPeriod.Day,
-      EPeriod.Week,
-      EPeriod.Month,
-      EPeriod.Months,
-      EPeriod.Year,
-    ],
-    required: false,
-  })
   async getPortfolio(
     @Param('accountId') accountId: number,
-    @Query('period') period: EPeriod,
+    @Query() query: GetPortfolioDto,
   ) {
-    try {
-      const response = await this.accountService.getPortfolio(accountId, period)
-      return response
-    } catch (err) {
-      if (err.response) {
-        throw new InternalServerErrorException(
-          'Something went wrong in Rick API',
-        )
-      }
-      throw new BadGatewayException('Rick server connection error')
-    }
+    this.validateAccountId(accountId)
+
+    return await this.accountService.getPortfolio(accountId, query.period)
+  }
+
+  @Get(':accountId/wallets/:walletId/portfolio')
+  @ApiOperation({
+    summary:
+      'Timeseries data, where date is timestamp (number), and the value of that date.',
+  })
+  async getWalletPortfolio(
+    @Param('accountId') accountId: number,
+    @Param('walletId') walletId: number,
+    @Query() query: GetPortfolioDto,
+  ) {
+    this.validateAccountId(accountId)
+
+    return await this.accountService.getWalletPortfolio(
+      accountId,
+      walletId,
+      query.period,
+    )
+  }
+
+  @Put(':accountId')
+  @ApiOperation({
+    summary: 'Update pass code key',
+  })
+  async updatePassCode(
+    @Param('accountId') accountId: number,
+    @Body() data: UpdatePassCodeDto,
+  ) {
+    this.validateAccountId(accountId)
+
+    return await this.accountService.updatePassCode(
+      accountId,
+      data.device_id,
+      data.passcode_key,
+    )
+  }
+
+  @Put(':accountId/switchToiCloudShard')
+  @ApiOperation({
+    summary: 'Switch to Cloud',
+  })
+  async switchToCloud(
+    @Param('accountId') accountId: number,
+    @Body() data: SwitchToCloudShardDto,
+  ) {
+    this.validateAccountId(accountId)
+
+    return await this.accountService.updateIsCloud(
+      accountId,
+      data.device_id,
+      true,
+    )
+  }
+
+  @Put(':accountId/switchToAccountShard')
+  @ApiOperation({
+    summary: 'Switch to Cloud',
+  })
+  async switchToAccount(
+    @Param('accountId') accountId: number,
+    @Body() data: SwitchToCloudShardDto,
+  ) {
+    this.validateAccountId(accountId)
+    return await this.accountService.updateIsCloud(
+      accountId,
+      data.device_id,
+      false,
+    )
   }
 
   @Post('')

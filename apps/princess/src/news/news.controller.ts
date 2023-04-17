@@ -1,8 +1,9 @@
-import { Controller, Get, ParseIntPipe, Query, UsePipes } from '@nestjs/common'
+import { Controller, Get, Query, UsePipes } from '@nestjs/common'
 import { NewsService } from './news.service'
 import { NewsValidationPipe } from './news.pipe'
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { NewsPagination } from './dto/NewsPagination.dto'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { NewsPaginationDto } from './dto/NewsPagination.dto'
+import { NewsTopDto } from './dto/NewsTopDto'
 
 @Controller('news')
 @ApiTags('news')
@@ -11,12 +12,8 @@ export class NewsController {
 
   @Get('top')
   @ApiOperation({ summary: 'Get the top news' })
-  @ApiQuery({
-    name: 'count',
-    description: 'count of top news',
-  })
-  getLatestNews(@Query('count', ParseIntPipe) count?: number) {
-    return this.newsService.getLatestNews(count)
+  getLatestNews(@Query() query?: NewsTopDto) {
+    return this.newsService.getLatestNews(query.count, query.symbol)
   }
 
   @Get()
@@ -24,7 +21,7 @@ export class NewsController {
   @UsePipes(new NewsValidationPipe())
   getNews(
     @Query()
-    query: NewsPagination,
+    query: NewsPaginationDto,
   ) {
     return this.newsService.getNews(query)
   }

@@ -32,7 +32,7 @@
     "db": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker run --name fluffy -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -e POSTGRES_DB=pairs -p 5432:5432 -d postgres"
+        "command": "docker run --name fluffy -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -e POSTGRES_DB=pairs -p 5433:5432 -d postgres"
       },
       "dependsOn": [
         "db:stop"

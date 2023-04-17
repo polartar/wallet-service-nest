@@ -13,7 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.GANDALF_DB_HOST || 'localhost',
-      port: parseInt(process.env.GANDALF_DB_PORT) || 5431,
+      port: parseInt(process.env.GANDALF_DB_PORT) || 5434,
       username: process.env.GANDALF_DB_USERNAME || 'myusername',
       password: process.env.GANDALF_DB_PASSWORD || 'mypassword',
       database: process.env.GANDALF_DB_NAME || 'gandalf',

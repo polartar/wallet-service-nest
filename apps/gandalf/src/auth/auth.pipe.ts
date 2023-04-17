@@ -1,7 +1,8 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 
-import { EAuth, IAuthData } from './auth.types'
+import { IAuthData } from './auth.types'
+import { EAuth } from '@rana/core'
 
 @Injectable()
 export class LoginValidationPipe implements PipeTransform {

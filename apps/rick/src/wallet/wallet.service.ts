@@ -1,4 +1,3 @@
-import { GetWalletHistoryDto } from './dto/get-wallet-history.dto'
 import { AddWalletDto } from './dto/add-wallet.dto'
 import { MoreThanOrEqual, Repository } from 'typeorm'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
@@ -20,7 +19,7 @@ import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
-import { ECoinType, EWalletType } from '@rana/core'
+import { ECoinType, EPeriod, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 
 @Injectable()
@@ -263,14 +262,18 @@ export class WalletService {
     return this.historyRepository.save(data)
   }
 
-  async getUserWalletHistory(data: GetWalletHistoryDto) {
-    const periodAsNumber =
-      data.period in SecondsIn ? SecondsIn[data.period] : null
+  async _getWalletHistory(
+    accountId: number,
+    period: EPeriod,
+    walletId?: number,
+  ) {
+    const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast = this.getCurrentTimeBySeconds() - periodAsNumber || 0
     return this.walletRepository.find({
       where: {
         isActive: true,
-        accounts: { id: data.accountId },
+        accounts: { id: accountId },
+        id: walletId,
         addresses: {
           history:
             periodAsNumber === null
@@ -296,6 +299,17 @@ export class WalletService {
     })
   }
 
+  async getUserHistory(accountId: number, period: EPeriod) {
+    return this._getWalletHistory(accountId, period)
+  }
+
+  async getUserWalletHistory(
+    accountId: number,
+    walletId: number,
+    period: EPeriod,
+  ) {
+    return this._getWalletHistory(accountId, period, walletId)
+  }
   async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
     const trxHistory = await this.provider.getHistory(address.address)
 

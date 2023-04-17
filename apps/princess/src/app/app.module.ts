@@ -9,17 +9,21 @@ import { MarketModule } from '../market/market.module'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
+import { OnboardingModule } from '../onboarding/onboarding.module'
 import { AccountsModule } from '../accounts/accounts.module'
 import { TransactionModule } from '../transaction/transaction.module'
+import { AuthModule } from '../auth/auth.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [Environment] }),
+    AuthModule,
     AnonModule, //
     RickModule,
     NewsModule,
     MarketModule,
     PortfolioModule,
+    OnboardingModule,
     AccountsModule,
     TransactionModule,
   ],

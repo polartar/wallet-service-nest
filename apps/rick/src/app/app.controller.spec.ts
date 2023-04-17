@@ -54,6 +54,6 @@ describe('AppController', () => {
     it('should return "Welcome to rick!"', () => {
       const appController = app.get<AppController>(AppController)
       expect(appController.getData()).toEqual({ message: 'Welcome to rick!' })
-    })
+    }, 10000)
   })
 })

@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ESort } from '../news.types'
 import { IsOptional } from 'class-validator'
+import { ECoinType } from '@rana/core'
 
-export class NewsPagination {
+export class NewsPaginationDto {
   @ApiProperty({
     description: 'sort type',
     enum: [ESort.ASC, ESort.DESC],
@@ -25,4 +26,12 @@ export class NewsPagination {
 
   @ApiProperty({ description: 'end time', required: false })
   endTime: Date
+
+  @ApiProperty({
+    description: 'symbol type',
+    enum: [ECoinType.BITCOIN, ECoinType.ETHEREUM],
+    required: false,
+  })
+  @IsOptional()
+  symbol: ECoinType
 }

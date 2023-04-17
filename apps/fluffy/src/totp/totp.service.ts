@@ -1,46 +1,88 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { authenticator } from 'otplib'
 
-import { PairingService } from '../pairing/pairing.service'
+// import { PairingService } from '../pairing/pairing.service'
+import { InjectRepository } from '@nestjs/typeorm'
+import { DeviceEntity } from './device.entity'
+import { Repository } from 'typeorm'
+import { FindPairingDto } from './dto/FindPairingDto'
+import { CreateDeviceDto } from './dto/CreateDeviceDto'
 
 @Injectable()
 export class TotpService {
-  constructor(private readonly pairingService: PairingService) {}
+  constructor(
+    // private readonly pairingService: PairingService,
+    @InjectRepository(DeviceEntity)
+    private readonly deviceRepository: Repository<DeviceEntity>,
+  ) {}
 
-  private async pairDevice(userID: string) {
-    return this.pairingService.create({
-      userID: userID,
-    })
-  }
+  async createDevice() {
+    const device = new DeviceEntity()
 
-  async generate(userID: string) {
-    const pairing = await this.pairDevice(userID)
-
+    await this.deviceRepository.save(device)
     return {
-      userID: pairing.userID,
-      totp: pairing.secret,
-      deviceID: pairing.deviceID,
+      otp: device.secret,
+      deviceId: device.deviceId,
     }
   }
 
-  async verify(userID: string, deviceID: string, token: string) {
-    const pairingEntity = await this.pairingService.lookup({
-      userID,
-      deviceID,
+  lookup(findPairingDto: FindPairingDto): Promise<DeviceEntity> {
+    return this.deviceRepository.findOne({
+      where: findPairingDto,
     })
+  }
 
-    // First, is there a pairing?
-    if (pairingEntity === null) {
-      return [
-        false, //
-        'Not a paired device',
-      ]
+  async pair(createDeviceDto: CreateDeviceDto) {
+    const device = await this.lookup({
+      deviceId: createDeviceDto.deviceId,
+    })
+    if (!device) {
+      throw new BadRequestException('Not found matched userId and deviceId')
     }
 
-    // Now, do the final check of TOTP
-    return [
-      'Validation', //
-      authenticator.check(token, pairingEntity.secret),
-    ]
+    if (!authenticator.check(createDeviceDto.otp, device.secret)) {
+      throw new BadRequestException('Invalid token')
+    }
+
+    device.userId = createDeviceDto.userId
+    device.serverProposedShard = createDeviceDto.serverProposedShard
+    device.ownProposedShard = createDeviceDto.ownProposedShard
+    device.passCodeKey = createDeviceDto.passCodeKey
+    device.recoveryKey = createDeviceDto.recoveryKey
+    this.deviceRepository.save(device)
+
+    return device
+  }
+
+  async updatePassCode(deviceId: string, userId: number, passCodeKey: string) {
+    const deviceEntity = await this.lookup({ userId, deviceId })
+    if (deviceEntity) {
+      deviceEntity.passCodeKey = passCodeKey
+      return await this.deviceRepository.save(deviceEntity)
+    } else {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+  }
+
+  async updateIsCloud(deviceId: string, userId: number, isCloud: boolean) {
+    const deviceEntity = await this.lookup({ userId, deviceId })
+    if (deviceEntity) {
+      deviceEntity.isCloud = isCloud
+      return await this.deviceRepository.save(deviceEntity)
+    } else {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+  }
+
+  async verify(deviceId: string, userId: number, otp: string) {
+    const device = await this.lookup({
+      deviceId,
+      userId,
+    })
+    if (!device) {
+      throw new BadRequestException('Not found matched userId and deviceId')
+    }
+
+    return authenticator.check(otp, device.secret)
   }
 }

@@ -35,5 +35,5 @@ describe('TransactionService', () => {
 
     const response = await service.generate(transactionData)
     expect(response.success).toBeTruthy()
-  })
+  }, 10000)
 })

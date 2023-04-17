@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
@@ -11,10 +11,10 @@ import {
   IWalletHistoryResponse,
 } from './portfolio.types'
 import { Socket } from 'socket.io'
-import { IRickGetPortfolioHistory } from '../gateways/rick.types'
 import { EEnvironment } from '../environments/environment.types'
 import { ConfigService } from '@nestjs/config'
-import { EPortfolioType } from '@rana/core'
+import { EPeriod, EPortfolioType } from '@rana/core'
+import { JwtService } from '@nestjs/jwt'
 
 @Injectable()
 export class PortfolioService {
@@ -26,22 +26,35 @@ export class PortfolioService {
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
+    private jwtService: JwtService,
   ) {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
+  async getAccountIdFromAccessToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      })
+      return payload.userId
+    } catch (err) {
+      throw new UnauthorizedException()
+    }
+  }
+
   async getWalletHistory(
-    data: IRickGetPortfolioHistory,
+    accountId: string,
+    periods: EPeriod[],
   ): Promise<IWalletHistoryResponse> {
-    if (!data.periods) data.periods = ['All']
+    if (!periods) periods = [EPeriod.All]
     let res
     try {
       res = await Promise.all(
-        data.periods.map((period) =>
+        periods.map((period) =>
           firstValueFrom(
             this.httpService.get(
-              `${this.rickApiUrl}/wallet/${data.accountId}?period=${period}`,
+              `${this.rickApiUrl}/wallet/${accountId}?period=${period}`,
             ),
           ),
         ),
@@ -59,7 +72,7 @@ export class PortfolioService {
         success: false,
       }
 
-    const result = data.periods.map((period, index) => {
+    const result = periods.map((period, index) => {
       const wallets = res[index].data.map((wallet) => {
         const addresses = wallet.addresses.map((address) => {
           const history = address.history

@@ -1,8 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
-
-import { PairingModule } from '../pairing/pairing.module'
 import { TotpService } from './totp.service'
+import { DeviceEntity } from './device.entity'
 
 describe('TotpService', () => {
   let service: TotpService
@@ -15,8 +14,11 @@ describe('TotpService', () => {
           database: ':memory:',
           dropSchema: true,
           synchronize: true,
+          entities: [
+            DeviceEntity, //
+          ],
         }),
-        PairingModule,
+        TypeOrmModule.forFeature([DeviceEntity]),
       ],
       providers: [TotpService],
     }).compile()
@@ -26,5 +28,11 @@ describe('TotpService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  it('should create device from hardware id', async () => {
+    const device = await service.createDevice()
+    expect(device.deviceId).not.toBeNull()
+    expect(device.otp).not.toBeNull()
   })
 })

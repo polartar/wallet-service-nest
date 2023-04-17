@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { PairingModule } from '../pairing/pairing.module'
 import { TotpController } from './totp.controller'
 import { TotpService } from './totp.service'
+import { DeviceEntity } from './device.entity'
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { TotpService } from './totp.service'
       autoLoadEntities: true,
       synchronize: true,
     }),
-    PairingModule,
+    TypeOrmModule.forFeature([DeviceEntity]),
   ],
   providers: [TotpService],
   controllers: [TotpController],

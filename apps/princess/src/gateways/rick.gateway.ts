@@ -51,9 +51,25 @@ export class RickGateway
     data: IRickGetPortfolioHistory,
     @ConnectedSocket() client: Socket,
   ) {
-    this.portfolioService.getWalletHistory(data).then((response) => {
-      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, response)
-    })
+    let accountId
+    try {
+      accountId = await this.portfolioService.getAccountIdFromAccessToken(
+        data.access_token,
+      )
+    } catch (err) {
+      client.emit(this.PORTFOLIO_HISTORY_CHANNEL, { error: 'Unauthorized' })
+      return
+    }
+    this.portfolioService.addClient(accountId, client)
+
+    this.portfolioService
+      .getWalletHistory(accountId, data.periods)
+      .then((response) => {
+        client.emit(this.PORTFOLIO_HISTORY_CHANNEL, response)
+      })
+      .catch((err) => {
+        client.emit(this.PORTFOLIO_HISTORY_CHANNEL, { error: err.message })
+      })
   }
 
   @SubscribeMessage('get_account')
