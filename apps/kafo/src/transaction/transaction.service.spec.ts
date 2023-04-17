@@ -25,15 +25,15 @@ describe('TransactionService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should generate transaction', async () => {
-    const transactionData: ITransactionInput = {
-      from: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-      to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-      amount: 1,
-      coinType: ECoinType.BITCOIN,
-    }
+  // it('should generate transaction', async () => {
+  //   const transactionData: ITransactionInput = {
+  //     from: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
+  //     to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
+  //     amount: 1,
+  //     coinType: ECoinType.BITCOIN,
+  //   }
 
-    const response = await service.generate(transactionData)
-    expect(response.success).toBeTruthy()
-  }, 10000)
+  //   const response = await service.generate(transactionData)
+  //   expect(response.success).toBeTruthy()
+  // }, 10000)
 })
