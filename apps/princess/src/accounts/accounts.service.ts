@@ -9,8 +9,8 @@ import { EEnvironment } from '../environments/environment.types'
 import { EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { EAPIMethod } from './accounts.typs'
 import { AxiosResponse } from 'axios'
+import { EAPIMethod } from './accounts.types'
 
 @Injectable()
 export class AccountsService {

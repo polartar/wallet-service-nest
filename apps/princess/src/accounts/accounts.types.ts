@@ -1,4 +1,4 @@
-import { Request } from 'express'
+import { Request } from '@nestjs/common'
 
 export enum EAPIMethod {
   POST = 'post',
