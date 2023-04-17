@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto } from './dto/CreateWalletDto'
@@ -19,8 +20,8 @@ import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
 import { CreateAccountDto } from './dto/CreateAccountDto'
 import { REQUEST } from '@nestjs/core'
-import { Request } from 'express'
-import { IRequest } from './accounts.typs'
+// import { Request } from 'express'
+import { IRequest } from './accounts.types'
 
 @Controller('accounts')
 @ApiTags('accounts')

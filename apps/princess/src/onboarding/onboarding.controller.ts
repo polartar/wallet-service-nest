@@ -7,14 +7,15 @@ import {
   Inject,
   Post,
   UsePipes,
+  Request,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
-import { Request } from 'express'
-import { IRequest } from '../accounts/accounts.typs'
+// import { Request } from 'express'
+import { IRequest } from '../accounts/accounts.types'
 import { SignInDto } from './dto/SigninDto'
 
 @Controller('onboarding')
