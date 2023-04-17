@@ -18,6 +18,7 @@ import {
 import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
+import { IEncodeData } from './dto/VerifyPayloadDto'
 
 @Injectable()
 export class OnboardingService {
@@ -188,5 +189,9 @@ export class OnboardingService {
 
   getVersion(): string {
     return this.version
+  }
+
+  verifyPayload(data: IEncodeData[]) {
+    return true
   }
 }

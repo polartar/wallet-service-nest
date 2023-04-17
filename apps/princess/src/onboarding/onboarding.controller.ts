@@ -16,6 +16,7 @@ import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
 import { IRequest } from '../accounts/accounts.typs'
 import { SignInDto } from './dto/SigninDto'
+import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
@@ -74,6 +75,12 @@ export class OnboardingController {
       data.account_hash,
       data.otp,
     )
+  }
+
+  @Public()
+  @Post('verify/payload')
+  async verifyPayload(@Body() data: VerifyPayloadDto) {
+    return this.onboardingService.verifyPayload(data.data)
   }
 
   // @Post('check_hash')
