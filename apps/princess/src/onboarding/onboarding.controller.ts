@@ -9,7 +9,7 @@ import {
   UsePipes,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
@@ -79,8 +79,9 @@ export class OnboardingController {
 
   @Public()
   @Post('verify/payload')
-  async verifyPayload(@Body() data: VerifyPayloadDto) {
-    return this.onboardingService.verifyPayload(data.data)
+  @ApiBody({ type: [VerifyPayloadDto] })
+  async verifyPayload(@Body() data: VerifyPayloadDto[]) {
+    return this.onboardingService.verifyPayload(data)
   }
 
   // @Post('check_hash')
