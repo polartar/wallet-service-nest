@@ -48,6 +48,12 @@ async function bootstrap() {
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: parseInt(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0.5,
     environment: process.env.SENTRY_ENVIRONMENT || 'dev',
+    integrations: [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // Automatically instrument Node.js libraries and frameworks
+      ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+    ],
   })
 
   const transaction = Sentry.startTransaction({
