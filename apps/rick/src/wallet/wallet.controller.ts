@@ -18,6 +18,7 @@ import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import { EPeriod, EWalletType } from '@rana/core'
+import * as Sentry from '@sentry/node'
 
 @Controller('wallet')
 export class WalletController {
@@ -36,6 +37,8 @@ export class WalletController {
     try {
       return await this.walletService.getUserHistory(accountId, period)
     } catch (e) {
+      Sentry.captureException(e.message + ' in getHistory()')
+
       throw new InternalServerErrorException(e?.message)
     }
   }
@@ -51,6 +54,8 @@ export class WalletController {
       id: account_id,
     })
     if (!account) {
+      Sentry.captureException('Invalid accountId in createPortfolio()')
+
       throw new BadRequestException('Invalid account id')
     }
     try {
@@ -62,6 +67,8 @@ export class WalletController {
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
+      Sentry.captureException(e.message + ' while addNewWallet')
+
       throw new BadRequestException(e.message)
     }
   }
@@ -75,6 +82,8 @@ export class WalletController {
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
+      Sentry.captureException(e.message + ' in updateWalletsActive()')
+
       throw new NotFoundException(e?.message)
     }
   }
@@ -92,6 +101,8 @@ export class WalletController {
         period,
       )
     } catch (e) {
+      Sentry.captureException(e.message + ' in getWalletHistory')
+
       throw new InternalServerErrorException(e?.message)
     }
   }
