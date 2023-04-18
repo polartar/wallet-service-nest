@@ -50,6 +50,25 @@ async function bootstrap() {
     environment: process.env.SENTRY_ENVIRONMENT || 'dev',
   })
 
+  const transaction = Sentry.startTransaction({
+    op: 'test_txn',
+    name: 'Test transaction to check if sentry works',
+  })
+
+  setTimeout(() => {
+    try {
+      // @ts-expect-error we want to raise a runtime error here
+      foo()
+    } catch (e) {
+      Logger.log(
+        `sentry: capturing error. DSN: ${process.env.SENTRY_DSN}, e: ${e}`,
+      )
+      Sentry.captureException(e)
+    } finally {
+      transaction.finish()
+    }
+  }, 99)
+
   const listen_host = process.env.DOCKER ? '0.0.0.0' : '127.0.0.1'
   await app.listen(port, listen_host)
   Logger.log(`🚀 Application is running on: ${await app.getUrl()}/`)
