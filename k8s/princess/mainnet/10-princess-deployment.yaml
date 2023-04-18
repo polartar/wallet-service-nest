@@ -28,6 +28,10 @@ spec:
             value: "http://morty.mainnet.svc.cluster.local"
           - name: GANDALF_API_URL
             value: "http://gandalf.mainnet.svc.cluster.local"
+          - name: FLUFFY_API_URL
+            value: "http://fluffy.mainnet.svc.cluster.local"
+          - name: KAFO_API_URL
+            value: "http://kafo.mainnet.svc.cluster.local"
           - name: FIDELITY_CLIENT_ID
             valueFrom:
               secretKeyRef:
