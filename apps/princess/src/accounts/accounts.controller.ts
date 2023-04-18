@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Body,
   Controller,
@@ -18,7 +17,6 @@ import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto } from './dto/GetPortfolioDto'
 import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
-import { CreateAccountDto } from './dto/CreateAccountDto'
 import { REQUEST } from '@nestjs/core'
 // import { Request } from 'express'
 import { IRequest } from './accounts.types'
@@ -156,24 +154,5 @@ export class AccountsController {
       data.device_id,
       false,
     )
-  }
-
-  @Post('')
-  @ApiOperation({
-    summary: 'Create account(testing purpose)',
-  })
-  async createAccount(@Body() data: CreateAccountDto) {
-    try {
-      const response = await this.accountService.createAccount(
-        data.email,
-        data.name,
-      )
-      return response
-    } catch (err) {
-      const message = err.response
-        ? err.response.data.message
-        : 'Rick server connection error'
-      throw new BadGatewayException(message)
-    }
   }
 }

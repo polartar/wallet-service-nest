@@ -122,11 +122,4 @@ export class AccountsService {
       throw new BadGatewayException(err.message)
     }
   }
-
-  async createAccount(email: string, name: string) {
-    const response = await firstValueFrom(
-      this.httpService.post(`${this.rickApiUrl}/account`, { email, name }),
-    )
-    return response.data
-  }
 }
