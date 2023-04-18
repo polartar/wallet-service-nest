@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { TotpService } from './totp.service'
 import { DeviceEntity } from './device.entity'
+import { authenticator } from 'otplib'
 
 describe('TotpService', () => {
   let service: TotpService
@@ -34,5 +35,28 @@ describe('TotpService', () => {
     const device = await service.createDevice()
     expect(device.deviceId).not.toBeNull()
     expect(device.otp).not.toBeNull()
+  })
+
+  it('should create pair', async () => {
+    const device = await service.createDevice()
+    const token = authenticator.generate(device.otp)
+    await service.pair({
+      userId: 1,
+      deviceId: device.deviceId,
+      serverProposedShard: 'server shard',
+      ownProposedShard: 'own shard',
+      passCodeKey: 'pass code',
+      recoveryKey: 'recovery key',
+      otp: token,
+    })
+
+    expect(
+      (
+        await service.lookup({
+          userId: 1,
+          deviceId: device.deviceId,
+        })
+      ).deviceId,
+    ).toBe(device.deviceId)
   })
 })

@@ -49,7 +49,7 @@ export class TotpService {
     device.ownProposedShard = createDeviceDto.ownProposedShard
     device.passCodeKey = createDeviceDto.passCodeKey
     device.recoveryKey = createDeviceDto.recoveryKey
-    this.deviceRepository.save(device)
+    await this.deviceRepository.save(device)
 
     return device
   }
