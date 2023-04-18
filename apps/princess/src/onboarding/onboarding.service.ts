@@ -50,7 +50,7 @@ export class OnboardingService {
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
       return {
-        otp: response.data.otp,
+        secret: response.data.otp,
         device_id: response.data.deviceId,
       }
     } catch (err) {
