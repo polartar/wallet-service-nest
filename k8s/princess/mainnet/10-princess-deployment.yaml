@@ -26,6 +26,8 @@ spec:
             value: "http://rick.mainnet.svc.cluster.local"
           - name: MORTY_API_URL
             value: "http://morty.mainnet.svc.cluster.local"
+          - name: GANDALF_API_URL
+            value: "http://gandalf.mainnet.svc.cluster.local"
           - name: FIDELITY_CLIENT_ID
             valueFrom:
               secretKeyRef:
