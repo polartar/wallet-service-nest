@@ -23,6 +23,21 @@ spec:
         env:
           - name: FLUFFY_DB_HOST
             value: "fluffy-db-service.default.svc.cluster.local"
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: fluffy-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: fluffy-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: fluffy-sentry-config
+                key: sentry_environment
         resources:
           requests:
             cpu: "20m"
