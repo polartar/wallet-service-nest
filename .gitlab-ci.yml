@@ -86,13 +86,13 @@ push to registry:
     DOCKER_BUILDKIT: 1
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} . --target=anton_prod && docker push ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} . --target=princess_prod && docker push ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} . --target=fluffy_prod && docker push ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} . --target=gandalf_prod && docker push ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} . --target=kafo_prod && docker push ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} . --target=morty_prod && docker push ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} . --target=rick_prod && docker push ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} --build-arg BUILDKIT_INLINE_CACHE=1"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} . --target=anton_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} . --target=princess_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} . --target=fluffy_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} . --target=gandalf_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} . --target=kafo_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} . --target=morty_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
+    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} . --target=rick_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
