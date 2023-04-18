@@ -20,6 +20,22 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3333
+        env:
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: anton-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: anton-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: anton-sentry-config
+                key: sentry_environment
         resources:
           limits:
             cpu: "50m"

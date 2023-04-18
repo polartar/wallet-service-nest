@@ -33,6 +33,21 @@ spec:
                 key: INFURA_API_KEY
           - name: NODE_ENV
             value: ""
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_environment
         resources:
           requests:
             cpu: "20m"

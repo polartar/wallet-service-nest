@@ -50,6 +50,21 @@ spec:
             value: "rick-db-service.default.svc.cluster.local"
           - name: RICK_DB_PORT
             value: "5432"
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: rick-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: rick-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: rick-sentry-config
+                key: sentry_environment
         resources:
           requests:
             cpu: "20m"

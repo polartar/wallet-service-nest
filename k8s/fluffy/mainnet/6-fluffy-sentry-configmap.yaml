@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluffy-sentry-config
+  namespace: mainnet
+data:
+  sentry_dsn: "http://2480e806131242638b56c64a2f9aa6ff@10.207.0.2:9000/7"
+  sentry_traces_sample_rate: "0.25"
+  sentry_environment: "mainnet_staging"
