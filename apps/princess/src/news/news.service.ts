@@ -1,11 +1,12 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { ESort, INewsQuery, INewsResponse } from './news.types'
 import { ECoinType } from '@rana/core'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class NewsService {
@@ -53,7 +54,7 @@ export class NewsService {
 
       this.fidelityAccessToken = response.data.access_token
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in getAuthToken()')
     }
   }
 
@@ -127,7 +128,7 @@ export class NewsService {
         },
       }
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in getNews()')
 
       return {
         success: false,

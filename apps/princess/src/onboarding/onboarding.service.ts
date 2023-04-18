@@ -20,6 +20,7 @@ import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import { URDecoder } from '@ngraveio/bc-ur'
 import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class OnboardingService {
@@ -54,6 +55,8 @@ export class OnboardingService {
         device_id: response.data.deviceId,
       }
     } catch (err) {
+      Sentry.captureException(err.message + ' in createDevice()')
+
       throw new BadRequestException(err.message)
     }
   }
@@ -79,8 +82,14 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(
+          err.response.data.message + ' in gandalfApi call of signIn()',
+        )
+
         throw new UnauthorizedException(err.response.data.message)
       } else {
+        Sentry.captureException(err.message + ' in gandalfApi call of signIn()')
+
         throw new BadGatewayException('Gandalf API call error')
       }
     }
@@ -95,8 +104,12 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(
+          err.response.data.message + ' in Rick api call of signIn()',
+        )
         throw new InternalServerErrorException(err.response.data.message)
       } else {
+        Sentry.captureException(err.message + ' in Rick api call of signIn()')
         throw new BadGatewayException('Rick API call error')
       }
     }
@@ -115,8 +128,14 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(
+          err.response.data.message + ' in Fluffy api call of signIn()',
+        )
+
         throw new BadRequestException(err.response.data.message)
       } else {
+        Sentry.captureException(err.message + ' in Fluffy api call of signIn()')
+
         throw new BadGatewayException('Fluffy API call error')
       }
     }
@@ -171,8 +190,12 @@ export class OnboardingService {
       )
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(err.response.data.message + ' in syncUser()')
+
         throw new BadRequestException(err.response.data.message)
       }
+
+      Sentry.captureException(err.message + ' in syncUser()')
       throw new BadGatewayException('Fluffy API call')
     }
     if (!verifyResponse.data) {
