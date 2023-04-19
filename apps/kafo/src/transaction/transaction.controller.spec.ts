@@ -37,7 +37,7 @@ describe('TransactionController', () => {
   const getRawTransaction = async () => {
     const transactionData: ITransactionInput = {
       from: address,
-      to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
+      to: 'mvGvyL7wiueCNfkKrFPN6FfBWwbJPFQ3NL',
       amount: 1,
       coinType: ECoinType.BITCOIN,
     }
