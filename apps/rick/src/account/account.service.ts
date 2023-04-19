@@ -7,6 +7,7 @@ import {
   FindAccountByIdDto,
   FindAccountByEmailDto,
 } from './dto/find-account.dto'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AccountService {
@@ -18,7 +19,9 @@ export class AccountService {
   async create(createAccount: CreateAccountDto): Promise<AccountEntity> {
     const existingAccount = await this.lookup({ email: createAccount.email })
     if (existingAccount) {
-      throw new Error('Email already exists')
+      Sentry.captureException('Email already exists')
+
+      throw new Error('Email already exists in create()')
     }
     return this.accountRepository.save(createAccount)
   }

@@ -1,12 +1,13 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import { IResponse } from './market.type'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { EPeriod, ECoinType } from '@rana/core'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class MarketService {
@@ -64,7 +65,7 @@ export class MarketService {
 
       this.fidelityAccessToken = response.data.access_token
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + 'in getAuthToken()')
     }
   }
 
@@ -72,7 +73,7 @@ export class MarketService {
     this.ethClient = new WebSocket(`wss://ws.coincap.io/prices?assets=ethereum`)
 
     this.ethClient.on('error', () => {
-      Logger.log('Eth client reconnecting!')
+      Sentry.captureException('Eth client reconnecting!')
 
       this.ethClose()
       //retry to connect after 10s
@@ -84,7 +85,7 @@ export class MarketService {
     this.btcClient = new WebSocket(`wss://ws.coincap.io/prices?assets=bitcoin`)
 
     this.btcClient.on('error', () => {
-      Logger.log('Btc client reconnecting!')
+      Sentry.captureException('Btc client reconnecting!')
       this.btcClose()
       //retry to connect after 10s
       setTimeout(() => this.btcConnect(), this.retryInterval)
@@ -102,7 +103,9 @@ export class MarketService {
       firstValueFrom(
         this.httpService.post(`${this.princessAPIUrl}/market/ethereum`, res),
       ).catch(() => {
-        Logger.log('Princess market/ethereum api error')
+        Sentry.captureException(
+          'Princess market/ethereum api error in subscribeETHPrice()',
+        )
       })
     })
   }
@@ -116,7 +119,9 @@ export class MarketService {
       firstValueFrom(
         this.httpService.post(`${this.princessAPIUrl}/market/bitcoin`, res),
       ).catch(() => {
-        Logger.log('Princess market/bitcoin api error')
+        Sentry.captureException(
+          'Princess market/bitcoin api error in subscribeBTCPrice()',
+        )
       })
     })
   }
@@ -153,6 +158,9 @@ export class MarketService {
         return { success: true, data: res.data.data[1]['quote']['USD'] }
       }
     } catch (err) {
+      Sentry.captureException(
+        err.response.data.status.error_message + ' in getMarketData()',
+      )
       return {
         success: false,
         error: err.response.data.status.error_message,
@@ -218,7 +226,8 @@ export class MarketService {
         data: res.data,
       }
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in getHistoricalData()')
+
       return {
         success: false,
         error: JSON.stringify(err.response.data),

@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
 import { hexlify, serializeTransaction } from 'ethers/lib/utils'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class TransactionService {
@@ -80,9 +81,13 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
+      const message =
+        err.response.data.errors[0].error || err.response.data.error
+      Sentry.captureException(message + ' in generate()')
+
       return {
         success: false,
-        error: err.response.data.errors[0].error || [err.response.data.error],
+        error: message,
         data: err.response.data,
       }
     }
@@ -112,9 +117,13 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
+      const message =
+        err.response.data.errors[0].error || err.response.data.error
+      Sentry.captureException(message + 'in publish()')
+
       return {
         success: false,
-        error: err.response.data.errors[0].error || [err.response.data.error],
+        error: message,
         data: err.response.data,
       }
     }
@@ -156,7 +165,7 @@ export class TransactionService {
         },
       }
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in getFee()')
       return {
         success: false,
       }
@@ -203,6 +212,8 @@ export class TransactionService {
         data: serializedTx,
       }
     } catch (err) {
+      Sentry.captureException(err.message + 'in generateNFTRawTransaction()')
+
       throw new BadRequestException(err.message)
     }
   }
@@ -216,6 +227,8 @@ export class TransactionService {
         data: response,
       }
     } catch (err) {
+      Sentry.captureException(err.message + 'in sendNFTTransaction()')
+
       throw new BadRequestException(err.message)
     }
   }

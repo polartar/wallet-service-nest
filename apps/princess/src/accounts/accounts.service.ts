@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
 import { EAPIMethod } from './accounts.types'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AccountsService {
@@ -42,10 +43,13 @@ export class AccountsService {
       return res.data
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(err.response.data.message + ' in rickAPICall()')
+
         throw new InternalServerErrorException(
           'Something went wrong in Rick API',
         )
       }
+      Sentry.captureException(err.message + ' in rickAPICall()')
       throw new BadGatewayException('Rick server connection error')
     }
   }
@@ -92,8 +96,13 @@ export class AccountsService {
       return res.data
     } catch (err) {
       if (err.response) {
+        Sentry.captureException(
+          err.response.data.message + ' in fluffyAPICall()',
+        )
         throw new InternalServerErrorException(err.response.data.message)
       }
+
+      Sentry.captureException(err.message + ' in fluffyAPICall()')
       throw new BadGatewayException('Fluffy server connection error')
     }
   }
@@ -119,6 +128,7 @@ export class AccountsService {
       )
       return accountResponse.data
     } catch (err) {
+      Sentry.captureException(err.message + ' in getAccount()')
       throw new BadGatewayException(err.message)
     }
   }

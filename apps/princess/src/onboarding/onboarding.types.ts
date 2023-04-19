@@ -14,7 +14,7 @@ export interface IOnboardingSigningResponse {
 }
 
 export interface IDeviceCreateResponse {
-  otp: string
+  secret: string
   device_id: string
 }
 

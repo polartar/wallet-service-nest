@@ -1,6 +1,6 @@
 import { EPortfolioType } from '@rana/core'
 import { AddressEntity } from './../wallet/address.entity'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -12,6 +12,7 @@ import { ECoinType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { Alchemy, Network } from 'alchemy-sdk'
 import { ethers } from 'ethers'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class PortfolioService {
@@ -167,13 +168,15 @@ export class PortfolioService {
             data: postUpdatedAddresses,
           }),
         ).catch(() => {
-          Logger.error('Princess portfolio/updated api error')
+          Sentry.captureException(
+            'Princess portfolio/updated api error in onBTCTransaction()',
+          )
         })
 
         return this.walletService.updateWallets(updatedAddresses)
       }
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in onBTCTransaction()')
     }
   }
 
@@ -204,7 +207,9 @@ export class PortfolioService {
       try {
         block = await this.provider.getBlock(blockNumber)
       } catch (err) {
-        Logger.error(err.message)
+        Sentry.captureException(
+          err.message + ' in getBlock of runEthereumService',
+        )
       }
 
       if (block && block.transactions) {
@@ -302,7 +307,9 @@ export class PortfolioService {
                 },
               ),
             ).catch(() => {
-              Logger.error('Princess portfolio/updated api error')
+              Sentry.captureException(
+                'Princess portfolio/updated api error in runEthereumService()',
+              )
             })
 
             return this.walletService.updateWallets(updatedAddresses)
@@ -330,7 +337,9 @@ export class PortfolioService {
         ],
       }),
     ).catch(() => {
-      Logger.error('Princess portfolio/updated api error')
+      Sentry.captureException(
+        'Princess portfolio/updated api error in notifyNFTUpdate()',
+      )
     })
   }
 

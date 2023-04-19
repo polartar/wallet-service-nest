@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
@@ -15,6 +15,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { ConfigService } from '@nestjs/config'
 import { EPeriod, EPortfolioType } from '@rana/core'
 import { JwtService } from '@nestjs/jwt'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class PortfolioService {
@@ -39,6 +40,8 @@ export class PortfolioService {
       })
       return payload.userId
     } catch (err) {
+      Sentry.captureException('Unauthorize')
+
       throw new UnauthorizedException()
     }
   }
@@ -60,7 +63,8 @@ export class PortfolioService {
         ),
       )
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.message + ' in getWalletHistory')
+
       return {
         success: false,
         error: err.message,
@@ -196,6 +200,8 @@ export class PortfolioService {
       .get<AxiosResponse>(`${this.rickApiUrl}/account/${accountId}`)
       .pipe(
         catchError((error: AxiosError) => {
+          Sentry.captureException(error.message + ' in getAccount')
+
           throw 'An error happened!' + error.message
         }),
       )

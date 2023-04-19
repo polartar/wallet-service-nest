@@ -21,6 +21,7 @@ import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
 import { ECoinType, EPeriod, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class WalletService {
@@ -222,7 +223,8 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
-      Logger.log(err.message)
+      Sentry.captureException(err.message + ' in addNewAddress')
+
       throw new BadRequestException(err.message)
     }
 

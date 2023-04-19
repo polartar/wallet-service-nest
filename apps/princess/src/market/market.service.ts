@@ -6,6 +6,7 @@ import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
 import { EPeriod, ECoinType } from '@rana/core'
 import { EEnvironment } from '../environments/environment.types'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class MarketService {
@@ -27,6 +28,8 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
+      Sentry.captureException(err.message + 'in getMarketData()')
+
       throw new InternalServerErrorException('Morty API call error')
     }
   }
@@ -40,6 +43,8 @@ export class MarketService {
       )
       return res.data
     } catch (err) {
+      Sentry.captureException(err.message + 'in getHistoricalData()')
+
       throw new InternalServerErrorException('Morty API call error')
     }
   }

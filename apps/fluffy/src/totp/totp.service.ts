@@ -1,17 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { authenticator } from 'otplib'
-
-// import { PairingService } from '../pairing/pairing.service'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/FindPairingDto'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class TotpService {
   constructor(
-    // private readonly pairingService: PairingService,
     @InjectRepository(DeviceEntity)
     private readonly deviceRepository: Repository<DeviceEntity>,
   ) {}
@@ -37,10 +35,14 @@ export class TotpService {
       deviceId: createDeviceDto.deviceId,
     })
     if (!device) {
-      throw new BadRequestException('Not found matched userId and deviceId')
+      Sentry.captureMessage(
+        `Not found matched deviceId(${createDeviceDto.deviceId}) in pair`,
+      )
+      throw new BadRequestException('Not found matched deviceId')
     }
 
     if (!authenticator.check(createDeviceDto.otp, device.secret)) {
+      Sentry.captureMessage(`Invalid otp token(${createDeviceDto.otp}) in pair`)
       throw new BadRequestException('Invalid token')
     }
 
@@ -60,6 +62,9 @@ export class TotpService {
       deviceEntity.passCodeKey = passCodeKey
       return await this.deviceRepository.save(deviceEntity)
     } else {
+      Sentry.captureMessage(
+        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+      )
       throw new BadRequestException('Not found matched userId and deviceId')
     }
   }
@@ -70,6 +75,9 @@ export class TotpService {
       deviceEntity.isCloud = isCloud
       return await this.deviceRepository.save(deviceEntity)
     } else {
+      Sentry.captureMessage(
+        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+      )
       throw new BadRequestException('Not found matched userId and deviceId')
     }
   }
@@ -80,6 +88,9 @@ export class TotpService {
       userId,
     })
     if (!device) {
+      Sentry.captureMessage(
+        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+      )
       throw new BadRequestException('Not found matched userId and deviceId')
     }
 

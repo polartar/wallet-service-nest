@@ -5,6 +5,7 @@ import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,8 @@ export class AuthService {
           name: payload.name,
         }
       } catch (err) {
-        throw new Error('Invalid token')
+        Sentry.captureException(err.message + 'in authorize')
+        throw new Error('Invalid Id token')
       }
     } else if (data.type === EAuth.Apple) {
       try {
@@ -49,7 +51,8 @@ export class AuthService {
           name: jwtClaims.name,
         }
       } catch (err) {
-        throw new Error('Invalid token')
+        Sentry.captureException(err.message + 'in authorize')
+        throw new Error('Invalid Id token')
       }
     } else {
       throw new Error('Unsupported type')

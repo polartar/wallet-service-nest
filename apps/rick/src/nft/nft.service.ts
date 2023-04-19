@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
 import { EEnvironment } from '../environments/environment.types'
 import { INFTAssetResponse, INTAssetInput } from './nft.types'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class NftService {
@@ -58,7 +59,8 @@ export class NftService {
         },
       }
     } catch (err) {
-      Logger.error(err.message)
+      Sentry.captureException(err.mesage + 'in getNFTAssets()')
+
       return {
         success: false,
         error: err.message,
