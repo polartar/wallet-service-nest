@@ -70,10 +70,15 @@ test:
     GANDALF_DB_PORT: $PG_PORT
     RICK_DB_PORT: $PG_PORT
     FLUFFY_DB_PORT: $PG_PORT
-    RICK_DB_NAME: $POSTGRES_DB
-    FLUFFY_DB_NAME: $POSTGRES_DB
-    GANDALF_DB_NAME: $POSTGRES_DB
+    RICK_DB_NAME: rick_db
+    FLUFFY_DB_NAME: fluffy_db
+    GANDALF_DB_NAME: gandalf_db
   script:
+    - apt-get update && apt-get install -y postgresql-client
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $RICK_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $FLUFFY_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $GANDALF_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "GRANT ALL ON DATABASE $RICK_DB_NAME,$FLUFFY_DB_NAME,$GANDALF_DB_NAME TO $POSTGRES_USER;"
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
 build:
