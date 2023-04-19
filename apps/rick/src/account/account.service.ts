@@ -19,7 +19,7 @@ export class AccountService {
   async create(createAccount: CreateAccountDto): Promise<AccountEntity> {
     const existingAccount = await this.lookup({ email: createAccount.email })
     if (existingAccount) {
-      Sentry.captureMessage('Email already exists')
+      Sentry.captureException('Email already exists')
 
       throw new Error('Email already exists in create()')
     }
