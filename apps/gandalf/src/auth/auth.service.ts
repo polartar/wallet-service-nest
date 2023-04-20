@@ -9,24 +9,30 @@ import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AuthService {
-  constructor(private configService: ConfigService) {}
+  googleClientId: string
+  appleClientId: string
+  constructor(private configService: ConfigService) {
+    this.googleClientId = this.configService.get<string>(
+      EEnvironment.googleClientID,
+    )
+    this.appleClientId = this.configService.get<string>(
+      EEnvironment.appleClientID,
+    )
+  }
 
   async authorize(data: IAuthData): Promise<IAuthResponse> {
     if (data.type === EAuth.Google) {
-      const google_client_id = this.configService.get<string>(
-        EEnvironment.googleClientID,
-      )
-      const client = new OAuth2Client(google_client_id)
+      const client = new OAuth2Client(this.googleClientId)
       try {
         const response = await client.verifyIdToken({
           idToken: data.idToken,
         })
 
         const payload = response.getPayload()
-
         if (
-          payload.iss !== 'accounts.google.com' &&
-          payload.aud !== google_client_id
+          !payload.iss.includes('accounts.google.com') ||
+          (payload.aud !== this.googleClientId &&
+            payload.azp !== this.googleClientId)
         ) {
           throw new Error('Invalid Google Id token')
         }
@@ -37,13 +43,13 @@ export class AuthService {
         }
       } catch (err) {
         Sentry.captureException(err.message + 'in authorize')
-        throw new Error('Invalid Id token')
+        throw new Error(err.message)
       }
     } else if (data.type === EAuth.Apple) {
       try {
         const jwtClaims = await verifyAppleToken({
           idToken: data.idToken,
-          clientId: this.configService.get(EEnvironment.googleClientID),
+          clientId: this.appleClientId,
         })
 
         return {
@@ -52,7 +58,7 @@ export class AuthService {
         }
       } catch (err) {
         Sentry.captureException(err.message + 'in authorize')
-        throw new Error('Invalid Id token')
+        throw new Error(err.message)
       }
     } else {
       throw new Error('Unsupported type')
