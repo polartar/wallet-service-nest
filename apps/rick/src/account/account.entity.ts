@@ -9,10 +9,10 @@ export class AccountEntity {
   @Column()
   accountId: number
 
-  @Column()
+  @Column({ nullable: true })
   email: string
 
-  @Column()
+  @Column({ nullable: true })
   name: string
 
   @ManyToMany(() => WalletEntity, (wallet) => wallet.accounts)
