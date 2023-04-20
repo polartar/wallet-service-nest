@@ -51,7 +51,7 @@ export class WalletController {
     walletType: EWalletType,
   ) {
     const account = await this.accountService.lookup({
-      id: account_id,
+      accountId: account_id,
     })
     if (!account) {
       Sentry.captureException('Invalid accountId in createPortfolio()')

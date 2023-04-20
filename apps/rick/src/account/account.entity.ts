@@ -7,6 +7,9 @@ export class AccountEntity {
   id: number
 
   @Column()
+  accountId: number
+
+  @Column()
   email: string
 
   @Column()

@@ -73,7 +73,11 @@ describe('WalletController', () => {
   })
 
   it('should create new account', async () => {
-    await accountService.create({ email: 'test@gmail.com', name: 'test' })
+    await accountService.create({
+      email: 'test@gmail.com',
+      name: 'test',
+      accountId: 1,
+    })
     const account = await accountService.lookup({ email: 'test@gmail.com' })
     expect(account.email).toBe('test@gmail.com')
   })
@@ -114,7 +118,11 @@ describe('WalletController', () => {
   })
 
   it('should add new BTC wallet', async () => {
-    await accountService.create({ email: 'test1@gmail.com', name: 'test1' })
+    await accountService.create({
+      email: 'test1@gmail.com',
+      name: 'test1',
+      accountId: 2,
+    })
     await controller.createPortfolio(
       'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       2,
@@ -145,7 +153,7 @@ describe('WalletController', () => {
     let ethWallets = await portfolioService.getEthWallets()
     expect(ethWallets.length).toBe(1)
     await controller.activeWallet({
-      id: 1,
+      accountId: 1,
       isActive: false,
     })
     ethWallets = await portfolioService.getEthWallets()
@@ -154,7 +162,7 @@ describe('WalletController', () => {
 
   it('should active the wallet', async () => {
     await controller.activeWallet({
-      id: 1,
+      accountId: 1,
       isActive: true,
     })
     const ethWallets = await portfolioService.getEthWallets()

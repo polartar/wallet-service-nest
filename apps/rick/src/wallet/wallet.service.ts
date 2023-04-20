@@ -240,7 +240,7 @@ export class WalletService {
   async updateWalletsActive(data: IWalletActiveData): Promise<WalletEntity> {
     const wallet = await this.walletRepository.findOne({
       where: {
-        id: data.id,
+        accounts: { accountId: data.accountId },
       },
       relations: {
         accounts: true,
@@ -271,10 +271,11 @@ export class WalletService {
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast = this.getCurrentTimeBySeconds() - periodAsNumber || 0
+
     return this.walletRepository.find({
       where: {
         isActive: true,
-        accounts: { id: accountId },
+        accounts: { accountId },
         id: walletId,
         addresses: {
           history:

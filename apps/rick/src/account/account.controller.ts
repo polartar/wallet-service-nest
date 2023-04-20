@@ -26,8 +26,8 @@ export class AccountController {
     }
   }
 
-  @Get(':id')
-  async getAccount(@Param('id', ParseIntPipe) id: number) {
-    return await this.accountService.lookup({ id })
+  @Get(':accountId')
+  async getAccount(@Param('accountId', ParseIntPipe) accountId: number) {
+    return await this.accountService.lookup({ accountId })
   }
 }
