@@ -209,9 +209,9 @@ export class PortfolioService {
       try {
         block = await this.provider.getBlock(blockNumber)
       } catch (err) {
-        Sentry.captureException(
-          err.message + ' in getBlock of runEthereumService',
-        )
+        // Sentry.captureException(
+        //   err.message + ' in getBlock of runEthereumService',
+        // )
       }
 
       if (block && block.transactions) {
