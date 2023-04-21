@@ -10,6 +10,7 @@ import {
 import { MarketService } from './market.service'
 import { EPeriod, ECoinType } from '@rana/core'
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Public } from '../auth/decorators/public.decorator'
 
 @Controller('market')
 @ApiTags('market')
@@ -18,6 +19,7 @@ export class MarketController {
 
   @ApiOperation({ summary: "This api can't be called directly" })
   @Post('ethereum')
+  @Public()
   async setEthPrice(@Body() data: { ethereum: string }) {
     this.marketService.setEthPrice(data.ethereum)
     return true
@@ -25,6 +27,7 @@ export class MarketController {
 
   @ApiOperation({ summary: "This api can't be called directly" })
   @Post('bitcoin')
+  @Public()
   async setBtcPrice(@Body() data: { bitcoin: string }) {
     this.marketService.setBtcPrice(data.bitcoin)
     return true

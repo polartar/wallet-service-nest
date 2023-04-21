@@ -116,9 +116,11 @@ export class MarketService {
 
     this.btcClient.on('message', (response) => {
       const res = JSON.parse(response)
+      console.log({ res })
       firstValueFrom(
         this.httpService.post(`${this.princessAPIUrl}/market/bitcoin`, res),
-      ).catch(() => {
+      ).catch((err) => {
+        console.log(err)
         Sentry.captureException(
           'Princess market/bitcoin api error in subscribeBTCPrice()',
         )
