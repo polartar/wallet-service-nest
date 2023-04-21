@@ -100,7 +100,7 @@ export class OnboardingService {
         this.httpService.post(`${this.rickApiUrl}/account`, {
           email: user.account.email,
           name: user.account.name,
-          id: user.account.id,
+          accountId: user.account.id,
         }),
       )
     } catch (err) {
