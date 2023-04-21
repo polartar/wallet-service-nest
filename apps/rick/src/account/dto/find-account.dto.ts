@@ -3,5 +3,5 @@ export class FindAccountByEmailDto {
 }
 
 export class FindAccountByIdDto {
-  id: number
+  accountId: number
 }

@@ -50,13 +50,15 @@ export class WalletController {
     @Body('wallet_type', new ParseEnumPipe(EWalletType))
     walletType: EWalletType,
   ) {
-    const account = await this.accountService.lookup({
-      id: account_id,
+    let account = await this.accountService.lookup({
+      accountId: account_id,
     })
     if (!account) {
-      Sentry.captureException('Invalid accountId in createPortfolio()')
-
-      throw new BadRequestException('Invalid account id')
+      account = await this.accountService.create({
+        email: '',
+        name: '',
+        accountId: account_id,
+      })
     }
     try {
       const res = await this.walletService.addNewWallet({
@@ -76,7 +78,6 @@ export class WalletController {
   @Post('activate')
   async activeWallet(@Body() data: IWalletActiveData) {
     try {
-      // need to validate the wallet id and authorized account later
       const res = await this.walletService.updateWalletsActive(data)
 
       await this.portfolioService.initializeWallets()

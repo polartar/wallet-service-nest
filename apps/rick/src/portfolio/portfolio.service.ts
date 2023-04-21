@@ -143,7 +143,9 @@ export class PortfolioService {
             postUpdatedAddresses.push({
               addressId: address.id,
               walletId: address.wallet.id,
-              accountIds: address.wallet.accounts.map((account) => account.id),
+              accountIds: address.wallet.accounts.map(
+                (account) => account.accountId,
+              ),
               newHistory: newHistoryData[0],
             })
             if (newHistoryData.length === 2) {
@@ -151,7 +153,7 @@ export class PortfolioService {
                 addressId: address.id,
                 walletId: address.wallet.id,
                 accountIds: address.wallet.accounts.map(
-                  (account) => account.id,
+                  (account) => account.accountId,
                 ),
                 newHistory: newHistoryData[1],
               })
@@ -288,7 +290,7 @@ export class PortfolioService {
                     addressId: updatedAddress.id,
                     walletId: updatedAddress.wallet.id,
                     accountIds: updatedAddress.wallet.accounts.map(
-                      (account) => account.id,
+                      (account) => account.accountId,
                     ),
                     newHistory: newHistoryData,
                   })
@@ -331,7 +333,7 @@ export class PortfolioService {
             addressId: addressEntity.id,
             walletId: addressEntity.wallet.id,
             accountIds: addressEntity.wallet.accounts.map(
-              (account) => account.id,
+              (account) => account.accountId,
             ),
           },
         ],

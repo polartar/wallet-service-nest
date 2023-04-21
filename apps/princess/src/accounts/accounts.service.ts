@@ -68,7 +68,7 @@ export class AccountsService {
   ) {
     return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
       account_id: accountId, // depending on the authorization flow between princess and rick
-      id: walletId,
+      accountId: walletId,
       is_active: data.is_active,
     })
   }

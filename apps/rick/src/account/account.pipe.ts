@@ -7,6 +7,7 @@ export class AccountValidationPipe implements PipeTransform {
   private schema = Joi.object({
     email: Joi.string().email({ tlds: { allow: false } }),
     name: Joi.string().required(),
+    accountId: Joi.number().required(),
   })
 
   transform(value: CreateAccountDto) {

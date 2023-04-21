@@ -16,7 +16,9 @@ export class AccountService {
   ) {}
 
   async create(createAccount: CreateAccountDto): Promise<AccountEntity> {
-    const existingAccount = await this.lookup({ email: createAccount.email })
+    const existingAccount = await this.lookup({
+      accountId: createAccount.accountId,
+    })
     if (existingAccount) {
       return existingAccount
     }
