@@ -7,7 +7,6 @@ import {
   FindAccountByIdDto,
   FindAccountByEmailDto,
 } from './dto/find-account.dto'
-import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AccountService {

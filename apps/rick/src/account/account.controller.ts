@@ -11,6 +11,7 @@ import {
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { AccountValidationPipe } from './account.pipe'
+import * as Sentry from '@sentry/node'
 
 @Controller('account')
 export class AccountController {
@@ -22,6 +23,7 @@ export class AccountController {
     try {
       return await this.accountService.create(data)
     } catch (err) {
+      Sentry.captureException(`${err.message} with ${data.email}`)
       throw new BadRequestException(err.message)
     }
   }
