@@ -144,9 +144,9 @@ export class OnboardingService {
     const accessToken = await this.jwtService.signAsync(payload)
 
     return {
-      type: user.data.is_new ? 'new email' : 'existing email',
+      type: user.is_new ? 'new email' : 'existing email',
       account_id: user.account.id,
-      account: user.data.is_new ? user.account : {},
+      account: user.is_new ? user.account : {},
       access_token: accessToken,
       server_shard: serverProposedShard,
       passcode_key: passCodeKey,
