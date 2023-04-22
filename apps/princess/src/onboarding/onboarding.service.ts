@@ -71,15 +71,16 @@ export class OnboardingService {
     passCodeKey: string,
     recoveryKey: string,
   ): Promise<IOnboardingSigningResponse> {
-    let userResponse
+    let user
 
     try {
-      userResponse = await firstValueFrom(
+      const userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
           type,
         }),
       )
+      user = userResponse.data
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
@@ -94,7 +95,6 @@ export class OnboardingService {
       }
     }
 
-    const user = userResponse.data
     try {
       await firstValueFrom(
         this.httpService.post(`${this.rickApiUrl}/account`, {
@@ -127,6 +127,19 @@ export class OnboardingService {
           recoveryKey,
         }),
       )
+
+      const payload = { type: type, accountId: user.account.id, idToken: token }
+      const accessToken = await this.jwtService.signAsync(payload)
+
+      return {
+        type: user.is_new ? 'new email' : 'existing email',
+        account_id: user.account.id,
+        account: user.is_new ? user.account : {},
+        access_token: accessToken,
+        server_shard: serverProposedShard,
+        passcode_key: passCodeKey,
+        recovery_key: recoveryKey,
+      }
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
@@ -139,18 +152,6 @@ export class OnboardingService {
 
         throw new BadGatewayException('Fluffy API call error')
       }
-    }
-    const payload = { type: type, accountId: user.account.id, idToken: token }
-    const accessToken = await this.jwtService.signAsync(payload)
-
-    return {
-      type: user.is_new ? 'new email' : 'existing email',
-      account_id: user.account.id,
-      account: user.is_new ? user.account : {},
-      access_token: accessToken,
-      server_shard: serverProposedShard,
-      passcode_key: passCodeKey,
-      recovery_key: recoveryKey,
     }
   }
 
