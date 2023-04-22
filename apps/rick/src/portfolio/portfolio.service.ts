@@ -251,7 +251,7 @@ export class PortfolioService {
                 }
 
                 if (
-                  tx.value.to &&
+                  tx.value?.to &&
                   currentAddresses.includes(tx.value.to.toLowerCase())
                 ) {
                   isTx = true
