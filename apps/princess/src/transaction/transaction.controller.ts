@@ -30,7 +30,6 @@ export class TransactionController {
 
   @Get(':coin/fee')
   @ApiOkResponse({ type: TransactionFeeResponse })
-  @Public()
   @ApiOperation({
     summary: 'Get the current network fee of the selected chain',
   })
@@ -40,7 +39,6 @@ export class TransactionController {
   }
 
   @Post()
-  @Public()
   @ApiOkResponse({ type: GenerateTransactionResponse })
   @ApiOperation({
     summary: 'Generate transaction object',
@@ -55,7 +53,6 @@ export class TransactionController {
   }
 
   @Post('publish')
-  @Public()
   @ApiOkResponse({ type: PublishTransactionResponse })
   @ApiOperation({
     summary: 'Publish the signed transaction',
@@ -68,7 +65,6 @@ export class TransactionController {
   }
 
   @Post('nft')
-  @Public()
   @ApiOkResponse({ type: GenerateNFTTransactionResponse })
   @ApiOperation({
     summary: 'Generate NFT transfer transaction hash',
@@ -85,7 +81,6 @@ export class TransactionController {
   }
 
   @Post('nft/publish')
-  @Public()
   @ApiOperation({
     summary: 'Publish the transaction',
   })

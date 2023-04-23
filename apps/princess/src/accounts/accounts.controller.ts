@@ -11,10 +11,10 @@ import {
   Request,
 } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
-import { CreateWalletDto } from './dto/CreateWalletDto'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { CreateWalletDto, CreateWalletResponse } from './dto/CreateWalletDto'
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { GetPortfolioDto } from './dto/GetPortfolioDto'
+import { GetPortfolioDto, GetPortfolioResponse } from './dto/GetPortfolioDto'
 import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
 import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
 import { REQUEST } from '@nestjs/core'
@@ -43,6 +43,7 @@ export class AccountsController {
 
   // we should validate the xPub
   @Post(':accountId/wallet')
+  @ApiOkResponse({ type: CreateWalletResponse })
   @ApiOperation({
     summary: 'Add the wallet to the account',
   })
@@ -74,6 +75,7 @@ export class AccountsController {
   }
 
   @Get(':accountId/portfolio')
+  @ApiOkResponse({ type: GetPortfolioResponse })
   @ApiOperation({
     summary:
       'Timeseries data, where date is timestamp (number), and the value of that date.',
