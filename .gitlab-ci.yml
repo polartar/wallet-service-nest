@@ -127,7 +127,7 @@ deploy to testnet k8s cluster:
     - kubectl rollout restart deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
   environment:
     name: testnet gke cluster
-    url: http://35.240.5.170
+    url: http://testnet.be.nscribe.xyz
     kubernetes:
       namespace: default
   rules:
@@ -154,7 +154,7 @@ deploy to mainnet k8s cluster:
     - kubectl rollout restart deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
   environment:
     name: mainnet gke cluster
-    url: http://35.240.5.170
+    url: https://mainnet.be.nscribe.xyz
     kubernetes:
       namespace: mainnet
   rules:
