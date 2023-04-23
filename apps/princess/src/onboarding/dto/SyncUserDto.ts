@@ -20,3 +20,19 @@ export class SyncUserDto {
   @IsNotEmpty()
   otp: string
 }
+
+export class SyncUserResponse {
+  @ApiProperty({
+    example: true,
+  })
+  isSync: boolean
+
+  @ApiProperty({
+    example: {
+      name: 'Michael',
+      email: 'test@gmail.com',
+      id: 1,
+    },
+  })
+  account: string
+}

@@ -17,8 +17,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { Public } from '../auth/decorators/public.decorator'
-import { CoinHistoryDto } from './dto/CoinHistoryDto'
-import { CoinMarketDto } from './dto/CoinMarketDto'
+import { CoinMarketResponse } from './dto/CoinMarketDto'
+import { CoinHistoryResponse } from './dto/CoinHistoryDto'
 
 @Controller('market')
 @ApiTags('market')
@@ -42,7 +42,7 @@ export class MarketController {
   }
 
   @Get(':coin')
-  @ApiOkResponse({ type: CoinMarketDto })
+  @ApiOkResponse({ type: CoinMarketResponse })
   @ApiOperation({ summary: 'Get the current market data of the selected coin' })
   @ApiParam({ name: 'coin', enum: ECoinType })
   async getEthMarketData(
@@ -52,7 +52,7 @@ export class MarketController {
   }
 
   @Get('eth/history')
-  @ApiOkResponse({ type: CoinHistoryDto })
+  @ApiOkResponse({ type: CoinHistoryResponse })
   @ApiOperation({
     summary: 'Get the current market history of the selected coin',
   })
@@ -64,7 +64,7 @@ export class MarketController {
   }
 
   @Get('btc/history')
-  @ApiOkResponse({ type: CoinHistoryDto })
+  @ApiOkResponse({ type: CoinHistoryResponse })
   @ApiOperation({
     summary: 'Get the current market history of the selected coin',
   })

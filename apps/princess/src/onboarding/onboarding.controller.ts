@@ -10,14 +10,15 @@ import {
   Request,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { SyncUserDto } from './dto/SyncUserDto'
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { SyncUserDto, SyncUserResponse } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
 // import { Request } from 'express'
 import { IRequest } from '../accounts/accounts.types'
-import { SignInDto } from './dto/SigninDto'
+import { SignInDto, SignInResponse } from './dto/SigninDto'
 import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
+import { CreateDeviceResponse } from './dto/CreateDevice.dto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
@@ -37,12 +38,14 @@ export class OnboardingController {
 
   @Public()
   @Post('device')
+  @ApiOkResponse({ type: CreateDeviceResponse })
   async createDevice() {
     return this.onboardingService.createDevice()
   }
 
   @Public()
   @Post('login')
+  @ApiOkResponse({ type: SignInResponse })
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
     return this.onboardingService.signIn(
@@ -64,6 +67,7 @@ export class OnboardingController {
   }
 
   @Post('sync')
+  @ApiOkResponse({ type: SyncUserResponse })
   @ApiOperation({
     summary: 'Sync user',
   })
