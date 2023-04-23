@@ -106,18 +106,18 @@ describe('TransactionController', () => {
   //   expect(finalTx.error).toBeDefined()
   // })
 
-  // it('should generate the raw nft transfer transaction', async () => {
-  //   const tx = {
-  //     from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-  //     to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-  //     tokenId: 52852,
-  //     type: ENFTTypes.ERC721,
-  //     contractAddress: '0xc36442b4a4522e871399cd717abdd847ab11fe88',
-  //   }
+  it('should generate the raw nft transfer transaction', async () => {
+    const tx = {
+      from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+      to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+      tokenId: 52852,
+      type: ENFTTypes.ERC721,
+      contractAddress: '0xc36442b4a4522e871399cd717abdd847ab11fe88',
+    }
 
-  //   const response = await controller.generateNFTRawTransaction(tx)
-  //   expect(response.success).toBeTruthy()
-  // }, 10000)
+    const response = await controller.generateNFTRawTransaction(tx)
+    expect(response.success).toBeTruthy()
+  }, 10000)
 
   // it('should transfer the nft', async () => {
   //   const tx = {
@@ -140,6 +140,7 @@ describe('TransactionController', () => {
 
   //   const signedTx = await signer.signTransaction(newTx)
   //   const response = await controller.sendNFTTransaction(signedTx)
+  //   console.log(response)
   //   expect(response.success).toBeTruthy()
   // }, 40000)
 })

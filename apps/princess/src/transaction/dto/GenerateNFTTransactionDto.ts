@@ -45,3 +45,14 @@ export class GenerateNFTTransactionDto {
   })
   type: ENFTTypes
 }
+
+export class GenerateNFTTransactionResponse {
+  @ApiProperty({ example: true })
+  success: boolean
+
+  @ApiProperty({
+    example:
+      '0xf88a318501f5afbeda830156ab94c36442b4a4522e871399cd717abdd847ab11fe8880b86442842e0e000000000000000000000000dbc3a556693cbb5682127864fd80c8ae6976bfcf000000000000000000000000dbc3a556693cbb5682127864fd80c8ae6976bfcf000000000000000000000000000000000000000000000000000000000000ce74058080',
+  })
+  data: string
+}
