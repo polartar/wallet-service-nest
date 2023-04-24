@@ -94,8 +94,8 @@ build source maps:
     - source_map_release() {
         local project=$1;
         local version="${project}_${COMMIT_SHA}";
-        sentry-cli releases set-commits $version --auto --project "be-$project";
-        sentry-cli releases new $version upload-sourcemaps "./dist/apps/$project/" --project "be-$project";
+        sentry-cli releases set-commits $version --auto --project "be-$project" --org ngrave;
+        sentry-cli releases files $version upload-sourcemaps "./dist/apps/$project/" --project "be-$project" --org ngrave;
       }
     - source_map_release anton
     - source_map_release fluffy
@@ -144,6 +144,9 @@ deploy to testnet k8s cluster:
       local project=$1;
       "kubectl set image deployment/$project-deployment $project-prod=${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG}";
       sentry-cli releases finalize $project_$COMMIT_SHA --project be-$project;
+      now=$(date +%s);
+      pipeline_start=$(date -d "$CI_PIPELINE_CREATED_AT" +%s);
+      sentry-cli releases deploys $project_$COMMIT_SHA --project be-$project new -e testnet_staging -t $((pipeline_start-now)) --org ngrave;
       }
     - deploy_k8s anton
     - deploy_k8s fluffy
