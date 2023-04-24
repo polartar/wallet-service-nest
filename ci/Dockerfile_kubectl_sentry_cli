@@ -1,0 +1,4 @@
+FROM bitnami/kubectl:latest
+USER root
+RUN apt-get -y update && apt-get install -y curl && curl -sL https://sentry.io/get-cli/ | sh
+ENTRYPOINT [ "" ]
