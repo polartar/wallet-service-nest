@@ -136,7 +136,7 @@ push to registry:
     - docker_build_push() {
       local project=$?;
       docker build --cache-from ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} . --target=$project_prod --build-arg BUILDKIT_INLINE_CACHE=1;
-      docker push ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG}";
+      docker push ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG};
       }
     - docker_build_push anton
     - docker_build_push princess
