@@ -134,7 +134,7 @@ push to registry:
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker_build_push() {
-      local project=$?;
+      local project=$1;
       docker build --cache-from ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} . --target=${project}_prod --build-arg BUILDKIT_INLINE_CACHE=1;
       docker push ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
       }
