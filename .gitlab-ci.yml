@@ -166,6 +166,7 @@ deploy to testnet k8s cluster:
     - deploy_k8s() {
       local project=$1;
       kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+      kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
       sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave;
       pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
       now=$(date +%s);
