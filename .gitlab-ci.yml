@@ -81,13 +81,24 @@ test:
     - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "GRANT ALL ON DATABASE $RICK_DB_NAME,$FLUFFY_DB_NAME,$GANDALF_DB_NAME TO $POSTGRES_USER;"
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
 
-build source maps:
+build:
   stage: build
   extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
+
+build source maps:
+  stage: build
+  before_script:
+    - yarn install --frozen-lockfile --cache .yarn --prefer-offline
+  cache:
+    key:
+      files:
+        - node_modules/.cache/nx
   variables:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
-    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
+    - yarn nx run-many --target=build --parallel=3
     - curl -sL https://sentry.io/get-cli/ | sh
     - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
@@ -104,6 +115,10 @@ build source maps:
     - source_map_release morty
     - source_map_release princess
     - source_map_release rick
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 push to registry:
   image: docker:20.10.16
@@ -114,13 +129,18 @@ push to registry:
     DOCKER_BUILDKIT: 1
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG} . --target=anton_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG} . --target=princess_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG} . --target=fluffy_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG} . --target=gandalf_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG} . --target=kafo_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG} . --target=morty_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
-    - "docker build --cache-from ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG} . --target=rick_prod --build-arg BUILDKIT_INLINE_CACHE=1 && docker push ${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+    - docker_build_push() {
+      local project=$?;
+      docker build --cache-from ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} . --target=$project_prod --build-arg BUILDKIT_INLINE_CACHE=1;
+      docker push ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG}";
+      }
+    - docker_build_push anton
+    - docker_build_push princess
+    - docker_build_push fluffy
+    - docker_build_push gandalf
+    - docker_build_push kafo
+    - docker_build_push morty
+    - docker_build_push rick
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
@@ -129,7 +149,7 @@ push to registry:
 deploy to testnet k8s cluster:
   stage: deploy
   when: on_success
-  needs: ["push to registry"]
+  needs: ["push to registry", "build source maps"]
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
@@ -169,7 +189,7 @@ deploy to testnet k8s cluster:
 deploy to mainnet k8s cluster:
   stage: deploy
   when: on_success
-  needs: ["push to registry"]
+  needs: ["push to registry", "build source maps"]
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
