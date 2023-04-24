@@ -89,7 +89,7 @@ build source maps:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
     - curl -sL https://sentry.io/get-cli/ | sh
-    - sentry-cli login
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - source_map_release() {
         local project=$1;
@@ -137,7 +137,7 @@ deploy to testnet k8s cluster:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
     - curl -sL https://sentry.io/get-cli/ | sh
-    - sentry-cli login
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - kubectl config use-context ngrave/rana/app/be:gke-agent
     - deploy_k8s() {
