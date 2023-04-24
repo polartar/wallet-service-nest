@@ -155,12 +155,11 @@ deploy to testnet k8s cluster:
   when: on_success
   needs: ["push to registry", "build source maps"]
   image:
-    name: bitnami/kubectl:latest
+    name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
     entrypoint: [""]
   variables:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
-    - curl -sL https://sentry.io/get-cli/ | sh
     - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - kubectl config use-context ngrave/rana/app/be:gke-agent

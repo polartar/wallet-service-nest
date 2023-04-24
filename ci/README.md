@@ -1,0 +1,1 @@
+docker buildx build --push --platform linux/amd64 -t registry.gitlab.com/ngrave/rana/app/be/kubectl_sentry_cli . -f Dockerfile_kubectl_sentry_cli
