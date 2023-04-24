@@ -110,7 +110,7 @@ build source maps:
         local project=$1;
         local version="${project}_${COMMIT_SHA}";
         sentry-cli releases set-commits $version --auto --project "be-$project" --org ngrave;
-        sentry-cli releases files $version upload-sourcemaps "./dist/apps/$project/" --project "be-$project" --org ngrave;
+        sentry-cli releases files $version upload-sourcemaps "./dist/apps/$project/" --project "be-${project}" --org ngrave;
       }
     - source_map_release anton
     - source_map_release fluffy
@@ -135,8 +135,8 @@ push to registry:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker_build_push() {
       local project=$?;
-      docker build --cache-from ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG} . --target=$project_prod --build-arg BUILDKIT_INLINE_CACHE=1;
-      docker push ${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG};
+      docker build --cache-from ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} . --target=${project}_prod --build-arg BUILDKIT_INLINE_CACHE=1;
+      docker push ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
       }
     - docker_build_push anton
     - docker_build_push princess
@@ -166,11 +166,11 @@ deploy to testnet k8s cluster:
     - kubectl config use-context ngrave/rana/app/be:gke-agent
     - deploy_k8s() {
       local project=$1;
-      "kubectl set image deployment/$project-deployment $project-prod=${CI_REGISTRY_IMAGE}/$project_prod:${CI_COMMIT_REF_SLUG}";
-      sentry-cli releases finalize $project_$COMMIT_SHA --project be-$project;
+      "kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG}";
+      sentry-cli releases finalize "${project}_${COMMIT_SHA}" --project be-$project;
       now=$(date +%s);
       pipeline_start=$(date -d "$CI_PIPELINE_CREATED_AT" +%s);
-      sentry-cli releases deploys $project_$COMMIT_SHA --project be-$project new -e testnet_staging -t $((pipeline_start-now)) --org ngrave;
+      sentry-cli releases deploys "${project}_${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((pipeline_start-now)) --org ngrave;
       }
     - deploy_k8s anton
     - deploy_k8s fluffy
