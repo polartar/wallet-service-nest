@@ -12,6 +12,7 @@ import {
 
 import { AppModule } from './app/app.module'
 import * as Sentry from '@sentry/node'
+import { ProfilingIntegration } from '@sentry/profiling-node'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -23,12 +24,16 @@ async function bootstrap() {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: parseInt(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0.5,
+    // Set sampling rate for profiling - this is relative to tracesSampleRate
+    profilesSampleRate:
+      parseInt(process.env.SENTRY_PROFILES_SAMPLE_RATE) || 1.0,
     environment: process.env.SENTRY_ENVIRONMENT || 'dev',
     integrations: [
       // enable HTTP calls tracing
       new Sentry.Integrations.Http({ tracing: true }),
       // Automatically instrument Node.js libraries and frameworks
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+      new ProfilingIntegration(),
     ],
   })
   const port = process.env.PORT || 3333
