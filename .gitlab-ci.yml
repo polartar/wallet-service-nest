@@ -91,9 +91,10 @@ build source maps:
   stage: build
   before_script:
     - yarn install --frozen-lockfile --cache .yarn --prefer-offline
-  artifacts:
-    paths:
-      - node_modules/.cache/nx
+  cache:
+    key:
+      files:
+        - node_modules/.cache/nx
   variables:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
