@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   InternalServerErrorException,
   Param,
   Post,
@@ -22,9 +23,9 @@ export class AuthController {
 
   @Post()
   @UsePipes(new LoginValidationPipe())
-  async login(@Body() data: IAuthData) {
+  async login(@Body() data: IAuthData, @Headers() headers: Headers) {
     try {
-      const { name, email } = await this.authService.authorize(data)
+      const { name, email } = await this.authService.authorize(data, headers)
       const account = await this.accountService.lookup({ email })
 
       if (account) {

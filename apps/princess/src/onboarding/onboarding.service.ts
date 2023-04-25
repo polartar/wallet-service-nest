@@ -72,65 +72,89 @@ export class OnboardingService {
     recoveryKey: string,
   ): Promise<IOnboardingSigningResponse> {
     let user
-
+    const sentry_txn = Sentry.startTransaction({
+      op: 'onboarding_signIn',
+      name: 'signIn method in princess',
+    })
     try {
       const userResponse = await firstValueFrom(
-        this.httpService.post(`${this.gandalfApiUrl}/auth`, {
-          idToken: token,
-          type,
-        }),
+        this.httpService.post(
+          `${this.gandalfApiUrl}/auth`,
+          {
+            idToken: token,
+            type,
+          },
+          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+        ),
       )
       user = userResponse.data
     } catch (err) {
+      Sentry.captureException(err, {
+        extra: { message: err.message, src: 'gandalf api call of signIn()' },
+      })
       if (err.response) {
-        Sentry.captureException(
-          err.response.data.message + ' in gandalfApi call of signIn()',
-        )
-
         throw new UnauthorizedException(err.response.data.message)
       } else {
-        Sentry.captureException(err.message + ' in gandalfApi call of signIn()')
-
         throw new BadGatewayException('Gandalf API call error')
       }
     }
-
+    Sentry.addBreadcrumb({
+      category: 'signIn',
+      message: 'gandalf api call done',
+    })
     try {
       await firstValueFrom(
-        this.httpService.post(`${this.rickApiUrl}/account`, {
-          email: user.account.email,
-          name: user.account.name,
-          accountId: user.account.id,
-        }),
+        this.httpService.post(
+          `${this.rickApiUrl}/account`,
+          {
+            email: user.account.email,
+            name: user.account.name,
+            accountId: user.account.id,
+          },
+          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+        ),
       )
     } catch (err) {
+      Sentry.captureException(err, {
+        extra: { message: err.message, src: 'rick api call of signIn()' },
+      })
       if (err.response) {
-        Sentry.captureException(
-          err.response.data.message + ' in Rick api call of signIn()',
-        )
         throw new InternalServerErrorException(err.response.data.message)
       } else {
-        Sentry.captureException(err.message + ' in Rick api call of signIn()')
         throw new BadGatewayException('Rick API call error')
       }
     }
-
+    Sentry.addBreadcrumb({
+      category: 'signIn',
+      message: 'rick api call done',
+    })
     try {
       await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-          userId: user.account.id,
-          deviceId,
-          otp,
-          serverProposedShard,
-          ownProposedShard,
-          passCodeKey,
-          recoveryKey,
-        }),
+        this.httpService.post(
+          `${this.fluffyApiUrl}/pair`,
+          {
+            userId: user.account.id,
+            deviceId,
+            otp,
+            serverProposedShard,
+            ownProposedShard,
+            passCodeKey,
+            recoveryKey,
+          },
+          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+        ),
       )
 
       const payload = { type: type, accountId: user.account.id, idToken: token }
+      Sentry.addBreadcrumb({
+        category: 'signIn',
+        message: 'signing access token',
+      })
       const accessToken = await this.jwtService.signAsync(payload)
-
+      Sentry.addBreadcrumb({
+        category: 'signIn',
+        message: 'access token signed',
+      })
       return {
         type: user.is_new ? 'new email' : 'existing email',
         account_id: user.account.id,
@@ -141,17 +165,20 @@ export class OnboardingService {
         recovery_key: recoveryKey,
       }
     } catch (err) {
+      Sentry.captureException(err, {
+        extra: { message: err.message, src: 'fluffy api call of signIn()' },
+      })
       if (err.response) {
-        Sentry.captureException(
-          err.response.data.message + ' in Fluffy api call of signIn()',
-        )
-
         throw new BadRequestException(err.response.data.message)
       } else {
-        Sentry.captureException(err.message + ' in Fluffy api call of signIn()')
-
         throw new BadGatewayException('Fluffy API call error')
       }
+    } finally {
+      Sentry.addBreadcrumb({
+        category: 'signIn',
+        message: 'fluffy api call done',
+      })
+      sentry_txn.finish()
     }
   }
 

@@ -14,11 +14,13 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app/app.module'
 import * as Sentry from '@sentry/node'
 import { ProfilingIntegration } from '@sentry/profiling-node'
+import * as SentryTracing from '@sentry/tracing'
 
 async function bootstrap() {
   /* TODO: Switch to fastify by defauly
     https://docs.nestjs.com/techniques/performance#installation
   */
+  SentryTracing && true // This is to ensure bundler won't optimise the sentry/tracing import (https://github.com/getsentry/sentry-javascript/issues/4731#issuecomment-1098530656)
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({

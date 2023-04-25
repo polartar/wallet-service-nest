@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Headers,
   UsePipes,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
@@ -19,12 +20,30 @@ export class AccountController {
 
   @Post()
   @UsePipes(new AccountValidationPipe())
-  async createAccount(@Body() data: CreateAccountDto) {
+  async createAccount(
+    @Body() data: CreateAccountDto,
+    @Headers() headers: Headers,
+  ) {
+    const sentry_trace_data = Sentry.extractTraceparentData(
+      headers.get('sentry-trace'),
+    )
+    const sentry_txn = Sentry.startTransaction({
+      op: 'createAccount',
+      name: 'createAccount in rick',
+      ...sentry_trace_data,
+    })
     try {
       return await this.accountService.create(data)
     } catch (err) {
-      Sentry.captureException(`${err.message} with ${data.email}`)
+      Sentry.captureException(err, {
+        extra: {
+          message: err.message,
+          email: data.email,
+        },
+      })
       throw new BadRequestException(err.message)
+    } finally {
+      sentry_txn.finish()
     }
   }
 
