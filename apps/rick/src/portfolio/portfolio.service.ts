@@ -45,7 +45,7 @@ export class PortfolioService {
       infura_key,
     )
 
-    this.runEthereumService()
+    // this.runEthereumService()
     const alchemyKey = this.configService.get<string>(
       EEnvironment.alchemyAPIKey,
     )
