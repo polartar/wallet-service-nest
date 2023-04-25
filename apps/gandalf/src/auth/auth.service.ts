@@ -24,7 +24,7 @@ export class AuthService {
   async authorize(data: IAuthData, headers?: Headers): Promise<IAuthResponse> {
     SentryTracing && true // This is to ensure bundler won't optimise the sentry/tracing import (https://github.com/getsentry/sentry-javascript/issues/4731#issuecomment-1098530656)
     const sentry_trace_data = Sentry.extractTraceparentData(
-      headers ? headers.get('sentry-trace') : '',
+      headers ? headers['sentry-trace'] : '',
     )
     const sentry_txn = Sentry.startTransaction({
       op: 'authorize',
