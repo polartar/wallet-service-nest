@@ -5,7 +5,9 @@ import { HttpModule } from '@nestjs/axios'
 import { AccountsService } from '../accounts/accounts.service'
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule.register({
+    timeout: parseInt(process.env.httptimeout) || 0
+  })],
   controllers: [OnboardingController],
   providers: [OnboardingService, AccountsService],
 })
