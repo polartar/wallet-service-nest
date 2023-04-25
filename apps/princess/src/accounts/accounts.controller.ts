@@ -15,8 +15,15 @@ import { CreateWalletDto, CreateWalletResponse } from './dto/CreateWalletDto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetPortfolioDto, GetPortfolioResponse } from './dto/GetPortfolioDto'
-import { UpdatePassCodeDto } from './dto/UpdatePassCodeDto'
-import { SwitchToCloudShardDto } from './dto/SwitchToCloudShardDto'
+import {
+  UpdatePassCodeDto,
+  UpdatePassCodeResponse,
+} from './dto/UpdatePassCodeDto'
+import {
+  SwitchAccountResponse,
+  SwitchCloudResponse,
+  SwitchToCloudShardDto,
+} from './dto/SwitchToCloudShardDto'
 import { REQUEST } from '@nestjs/core'
 // import { Request } from 'express'
 import { IRequest } from './accounts.types'
@@ -90,6 +97,7 @@ export class AccountsController {
   }
 
   @Get(':accountId/wallets/:walletId/portfolio')
+  @ApiOkResponse({ type: GetPortfolioResponse })
   @ApiOperation({
     summary:
       'Timeseries data, where date is timestamp (number), and the value of that date.',
@@ -109,6 +117,7 @@ export class AccountsController {
   }
 
   @Put(':accountId')
+  @ApiOkResponse({ type: UpdatePassCodeResponse })
   @ApiOperation({
     summary: 'Update pass code key',
   })
@@ -126,6 +135,7 @@ export class AccountsController {
   }
 
   @Put(':accountId/switchToiCloudShard')
+  @ApiOkResponse({ type: SwitchCloudResponse })
   @ApiOperation({
     summary: 'Switch to Cloud',
   })
@@ -143,6 +153,7 @@ export class AccountsController {
   }
 
   @Put(':accountId/switchToAccountShard')
+  @ApiOkResponse({ type: SwitchAccountResponse })
   @ApiOperation({
     summary: 'Switch to Cloud',
   })
