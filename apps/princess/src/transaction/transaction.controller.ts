@@ -6,13 +6,21 @@ import {
   ParseEnumPipe,
   Post,
 } from '@nestjs/common'
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { ECoinType } from '@rana/core'
 import { TransactionService } from './transaction.service'
-import { GenerateTransactionDto } from './dto/GenerateTransactionDto'
+import {
+  GenerateTransactionDto,
+  GenerateTransactionResponse,
+  PublishTransactionResponse,
+} from './dto/GenerateTransactionDto'
 import { ITransaction } from './transaction.types'
-import { GenerateNFTTransactionDto } from './dto/GenerateNFTTransactionDto'
+import {
+  GenerateNFTTransactionDto,
+  GenerateNFTTransactionResponse,
+} from './dto/GenerateNFTTransactionDto'
 import { PublishNFTTransactionDto } from './dto/PublishNFTTransactionDto'
+import { TransactionFeeResponse } from './dto/TransactionFeeResponse'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -20,6 +28,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Get(':coin/fee')
+  @ApiOkResponse({ type: TransactionFeeResponse })
   @ApiOperation({
     summary: 'Get the current network fee of the selected chain',
   })
@@ -29,6 +38,7 @@ export class TransactionController {
   }
 
   @Post()
+  @ApiOkResponse({ type: GenerateTransactionResponse })
   @ApiOperation({
     summary: 'Generate transaction object',
   })
@@ -42,6 +52,7 @@ export class TransactionController {
   }
 
   @Post('publish')
+  @ApiOkResponse({ type: PublishTransactionResponse })
   @ApiOperation({
     summary: 'Publish the signed transaction',
   })
@@ -53,6 +64,7 @@ export class TransactionController {
   }
 
   @Post('nft')
+  @ApiOkResponse({ type: GenerateNFTTransactionResponse })
   @ApiOperation({
     summary: 'Generate NFT transfer transaction hash',
   })
