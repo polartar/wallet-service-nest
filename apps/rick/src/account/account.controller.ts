@@ -25,7 +25,7 @@ export class AccountController {
     @Headers() headers: Headers,
   ) {
     const sentry_trace_data = Sentry.extractTraceparentData(
-      headers.get('sentry-trace'),
+      headers['sentry-trace'],
     )
     const sentry_txn = Sentry.startTransaction({
       op: 'createAccount',
