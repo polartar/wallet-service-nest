@@ -20,7 +20,6 @@ import {
   GenerateNFTTransactionResponse,
 } from './dto/GenerateNFTTransactionDto'
 import { PublishNFTTransactionDto } from './dto/PublishNFTTransactionDto'
-import { Public } from '../auth/decorators/public.decorator'
 import { TransactionFeeResponse } from './dto/TransactionFeeResponse'
 
 @Controller('transaction')
