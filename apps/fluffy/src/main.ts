@@ -13,8 +13,10 @@ import {
 import { AppModule } from './app/app.module'
 import * as Sentry from '@sentry/node'
 import { ProfilingIntegration } from '@sentry/profiling-node'
+import * as SentryTracing from '@sentry/tracing'
 
 async function bootstrap() {
+  SentryTracing && true
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),

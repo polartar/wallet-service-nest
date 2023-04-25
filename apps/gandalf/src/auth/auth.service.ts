@@ -20,7 +20,15 @@ export class AuthService {
     )
   }
 
-  async authorize(data: IAuthData): Promise<IAuthResponse> {
+  async authorize(data: IAuthData, headers?: Headers): Promise<IAuthResponse> {
+    const sentry_trace_data = Sentry.extractTraceparentData(
+      headers ? headers.get('sentry-trace') : '',
+    )
+    const sentry_txn = Sentry.startTransaction({
+      op: 'authorize',
+      name: 'authorize fn in gandalf',
+      ...sentry_trace_data,
+    })
     if (data.type === EAuth.Google) {
       const client = new OAuth2Client(this.googleClientId)
       try {
@@ -42,8 +50,12 @@ export class AuthService {
           name: payload.name,
         }
       } catch (err) {
-        Sentry.captureException(err.message + 'in authorize')
+        Sentry.captureException(err, {
+          extra: { message: err.message, src: 'gandalf authorize api' },
+        })
         throw new Error(err.message)
+      } finally {
+        sentry_txn.finish()
       }
     } else if (data.type === EAuth.Apple) {
       try {
@@ -57,10 +69,15 @@ export class AuthService {
           name: jwtClaims.name,
         }
       } catch (err) {
-        Sentry.captureException(err.message + 'in authorize')
+        Sentry.captureException(err, {
+          extra: { message: err.message, src: 'gandalf authorize api' },
+        })
         throw new Error(err.message)
+      } finally {
+        sentry_txn.finish()
       }
     } else {
+      sentry_txn.finish()
       throw new Error('Unsupported type')
     }
   }
