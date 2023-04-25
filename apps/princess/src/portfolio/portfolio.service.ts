@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
@@ -205,5 +209,22 @@ export class PortfolioService {
           throw 'An error happened!' + error.message
         }),
       )
+  }
+
+  async getNFTAssets(address: string, pageNumber: number) {
+    const page = pageNumber || 1
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.rickApiUrl}/nft?address=${address}&page=${page}`,
+        ),
+      )
+
+      return response.data
+    } catch (err) {
+      Sentry.captureException(err.message + 'in getNFTAssets')
+      throw new BadRequestException(err.message + ' in Rick API call')
+    }
   }
 }

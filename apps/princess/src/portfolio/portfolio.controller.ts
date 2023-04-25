@@ -1,14 +1,22 @@
 import { EPortfolioType } from '@rana/core'
 import { PortfolioService } from './portfolio.service'
 import { IUpdatedAddress } from './portfolio.types'
-import { Body, Controller, ParseEnumPipe, Post } from '@nestjs/common'
-import { ApiOperation } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseEnumPipe,
+  Post,
+  Query,
+} from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 @Controller('portfolio')
+@ApiTags('portfolio')
 export class PortfolioController {
   constructor(private readonly portfolioService: PortfolioService) {}
 
-  // need to add the restriction so that is should be called by only rick
   @Post('updated')
   @ApiOperation({ summary: "This api can't be called directly" })
   async updatedAddresses(
@@ -16,5 +24,14 @@ export class PortfolioController {
     @Body('data') data: IUpdatedAddress[],
   ) {
     this.portfolioService.handleUpdatedAddresses(type, data)
+  }
+
+  @Get('/nft/:address')
+  @ApiOperation({ summary: 'Get NFT assets from address' })
+  async getNFTAssets(
+    @Param('address') address: string,
+    @Query('page') pageNumber?: number,
+  ) {
+    return this.portfolioService.getNFTAssets(address, pageNumber)
   }
 }
