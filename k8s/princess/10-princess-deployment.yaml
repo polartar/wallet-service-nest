@@ -63,10 +63,10 @@ spec:
                 key: sentry_environment
         resources:
           requests:
-            cpu: "20m"
+            cpu: "50m"
             memory: "64Mi"
           limits:
-            cpu: "50m"
-            memory: "256Mi"
+            cpu: "150m"
+            memory: "512Mi"
       imagePullSecrets:
         - name: gitlabregistry
