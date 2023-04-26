@@ -8,6 +8,13 @@ metadata:
     # nginx.ingress.kubernetes.io/canary-by-header: "X-NETWORK"
     # nginx.ingress.kubernetes.io/canary-by-header-value: "mainnet"
     cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($request_uri ~* "/market/(ethereum|bitcoin)") {
+        return 403;
+      }
+      if ($request_uri ~* "/portfolio/updated") {
+        return 403;
+      }
 spec:
   ingressClassName: nginx
   tls:
@@ -36,6 +43,13 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "180"
     cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($request_uri ~* "/market/(ethereum|bitcoin)") {
+        return 403;
+      }
+      if ($request_uri ~* "/portfolio/updated") {
+        return 403;
+      }
 spec:
   tls:
   - hosts:
