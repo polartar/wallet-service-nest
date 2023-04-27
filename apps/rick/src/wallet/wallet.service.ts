@@ -10,7 +10,7 @@ import {
   IWalletPath,
   SecondsIn,
 } from './wallet.types'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
@@ -19,14 +19,17 @@ import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
-import { ECoinType, EPeriod, EWalletType } from '@rana/core'
+import { ECoinType, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import * as Sentry from '@sentry/node'
+import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
 
 @Injectable()
 export class WalletService {
   provider: ethers.providers.EtherscanProvider
   isProduction: boolean
+  alchemyInstance
+  princessAPIUrl: string
 
   constructor(
     private configService: ConfigService,
@@ -41,11 +44,27 @@ export class WalletService {
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
     )
+    this.princessAPIUrl = this.configService.get<string>(
+      EEnvironment.princessAPIUrl,
+    )
     this.provider = new ethers.providers.EtherscanProvider(
       this.isProduction ? 'mainnet' : 'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
     this.confirmWalletBalances()
+
+    const alchemyKey = this.configService.get<string>(
+      EEnvironment.alchemyAPIKey,
+    )
+    this.alchemyConfigure(this.isProduction, alchemyKey)
+  }
+  alchemyConfigure(isProd: boolean, alchemyKey: string) {
+    const settings = {
+      apiKey: alchemyKey,
+      network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+    }
+
+    this.alchemyInstance = new Alchemy(settings)
   }
 
   getCurrentTimeBySeconds() {
@@ -184,7 +203,7 @@ export class WalletService {
       } else {
         await this.addAddressesFromXPub(wallet, data.xPub)
       }
-
+      this.runEthereumService()
       return wallet
     }
   }
@@ -235,6 +254,10 @@ export class WalletService {
     return Promise.all(
       wallets.map((wallet) => this.walletRepository.save(wallet)),
     )
+  }
+
+  updateAddress(address: AddressEntity) {
+    return this.addressRepository.save(address)
   }
 
   async updateWalletsActive(data: IWalletActiveData): Promise<WalletEntity> {
@@ -363,5 +386,133 @@ export class WalletService {
       }),
     )
     this.walletRepository.save(updatedAddresses.filter((address) => !!address))
+  }
+
+  async updateHistory(
+    updatedAddress: AddressEntity,
+    tx: {
+      transaction: { from: string; to: string; value: string; hash: string }
+    },
+    amount: BigNumber,
+  ) {
+    const history = updatedAddress.history
+    const newHistoryData = {
+      from: tx.transaction.from,
+      to: tx.transaction.to,
+      amount: tx.transaction.value.toString(),
+      hash: tx.transaction.hash,
+      balance: history.length
+        ? BigNumber.from(history[0].balance).sub(amount).toString()
+        : BigNumber.from(tx.transaction.value).toString(),
+      timestamp: this.getCurrentTimeBySeconds(),
+    }
+
+    let newHistory
+    try {
+      newHistory = await this.addHistory({
+        address: updatedAddress,
+        ...newHistoryData,
+      })
+    } catch (err) {
+      Sentry.captureException(
+        `${err.message} + " in updateHistory(address: ${updatedAddress.address}, hash: ${tx.transaction.hash}`,
+      )
+      return
+    }
+
+    history.push(newHistory)
+    updatedAddress.history = history
+
+    const postUpdatedAddress = {
+      addressId: updatedAddress.id,
+      walletId: updatedAddress.wallet.id,
+      accountIds: updatedAddress.wallet.accounts.map(
+        (account) => account.accountId,
+      ),
+      newHistory: newHistoryData,
+    }
+
+    firstValueFrom(
+      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+        type: EPortfolioType.TRANSACTION,
+        data: [postUpdatedAddress],
+      }),
+    ).catch(() => {
+      Sentry.captureException(
+        'Princess portfolio/updated api error in runEthereumService()',
+      )
+    })
+  }
+
+  subscribeEthereumTransactions(addresses: AddressEntity[]) {
+    let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
+      (address) => ({
+        from: address.address,
+      }),
+    )
+
+    sourceAddresses = sourceAddresses.concat(
+      addresses.map((address) => ({
+        to: address.address,
+      })),
+    )
+    const currentAddresses = addresses.map((address) =>
+      address.address.toLowerCase(),
+    )
+
+    this.alchemyInstance.ws.on(
+      {
+        method: AlchemySubscription.MINED_TRANSACTIONS,
+        addresses: sourceAddresses,
+        includeRemoved: true,
+        hashesOnly: false,
+      },
+      (tx) => {
+        try {
+          if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
+            const fee = BigNumber.from(tx.transaction.gasPrice).mul(
+              BigNumber.from(tx.transaction.gas),
+            )
+            const amount = BigNumber.from(tx.transaction.value).add(fee)
+            const updatedAddress = addresses.find(
+              (address) =>
+                address.address.toLowerCase() ===
+                tx.transaction.from.toLowerCase(),
+            )
+            this.updateHistory(updatedAddress, tx, amount)
+          }
+
+          if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
+            const amount = BigNumber.from(0).sub(
+              BigNumber.from(tx.transaction.value),
+            )
+            const updatedAddress = addresses.find(
+              (address) =>
+                address.address.toLowerCase() ===
+                tx.transaction.to.toLowerCase(),
+            )
+            this.updateHistory(updatedAddress, tx, amount)
+          }
+        } catch (err) {
+          Sentry.captureException(
+            `${err.message} in subscribeEthereumTransactions: (${tx}) `,
+          )
+        }
+      },
+    )
+  }
+
+  async runEthereumService() {
+    let addresses = await this.getAllAddresses()
+    addresses = addresses.filter((address) => address.wallet.isActive)
+
+    const activeEthAddresses = addresses.filter(
+      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
+    )
+    if (activeEthAddresses.length === 0) return
+
+    this.alchemyInstance.ws.removeAllListeners()
+
+    this.subscribeEthereumTransactions(activeEthAddresses)
   }
 }

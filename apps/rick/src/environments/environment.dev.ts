@@ -3,7 +3,6 @@ import { IData } from '@rana/core'
 import { EEnvironment } from './environment.types'
 export const Environment = () => {
   const env: { [key in EEnvironment]: IData } = {
-    [EEnvironment.infuraAPIKey]: process.env.INFURA_API_KEY,
     [EEnvironment.etherscanAPIKey]: process.env.ETHERSCAN_API_KEY,
     [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
     [EEnvironment.princessAPIUrl]:

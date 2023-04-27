@@ -2,7 +2,6 @@ import { EPortfolioType } from '@rana/core'
 import { AddressEntity } from './../wallet/address.entity'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
-import { BigNumber } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
@@ -35,17 +34,11 @@ export class PortfolioService {
       this.onBTCTransaction(transaction)
     })
 
-    const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     const isProd = this.configService.get<boolean>(EEnvironment.isProduction)
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
     )
-    this.provider = new Ethers.providers.InfuraProvider(
-      isProd ? 'mainnet' : 'goerli',
-      infura_key,
-    )
 
-    // this.runEthereumService()
     const alchemyKey = this.configService.get<string>(
       EEnvironment.alchemyAPIKey,
     )
@@ -201,124 +194,6 @@ export class PortfolioService {
 
   async getBtcWallets(): Promise<AddressEntity[]> {
     return this.activeBtcAddresses
-  }
-
-  runEthereumService() {
-    this.provider.on('block', async (blockNumber) => {
-      let block
-      try {
-        block = await this.provider.getBlock(blockNumber)
-      } catch (err) {
-        // Sentry.captureException(
-        //   err.message + ' in getBlock of runEthereumService',
-        // )
-      }
-
-      if (block && block.transactions) {
-        const promises = block.transactions.map((txHash) =>
-          this.provider.getTransaction(txHash),
-        )
-
-        const currentAddresses: string[] = this.activeEthAddresses.map(
-          (address) => address.address.toLowerCase(),
-        )
-
-        Promise.allSettled(promises).then(async (results) => {
-          const updatedAddresses = []
-          const postUpdatedAddresses = []
-
-          await Promise.all(
-            results.map(async (tx) => {
-              if (tx.status === 'fulfilled') {
-                let amount = BigNumber.from(0)
-                let updatedAddress: AddressEntity
-                let isTx = false
-
-                if (
-                  tx.value?.from &&
-                  currentAddresses.includes(tx.value.from.toLowerCase())
-                ) {
-                  isTx = true
-                  const fee = BigNumber.from(tx.value.gasPrice).mul(
-                    BigNumber.from(tx.value.gasLimit),
-                  )
-                  amount = BigNumber.from(tx.value.value).add(fee)
-                  updatedAddress = this.activeEthAddresses.find(
-                    (address) =>
-                      address.address.toLowerCase() ===
-                      tx.value.from.toLowerCase(),
-                  )
-                }
-
-                if (
-                  tx.value?.to &&
-                  currentAddresses.includes(tx.value.to.toLowerCase())
-                ) {
-                  isTx = true
-                  amount = amount.sub(BigNumber.from(tx.value.value))
-                  updatedAddress = this.activeEthAddresses.find(
-                    (address) =>
-                      address.address.toLowerCase() ===
-                      tx.value.to.toLowerCase(),
-                  )
-                }
-                if (isTx) {
-                  const history = updatedAddress.history
-                  const newHistoryData = {
-                    from: tx.value.from,
-                    to: tx.value.to,
-                    amount: tx.value.value.toString(),
-                    hash: tx.value.hash,
-                    balance: history.length
-                      ? BigNumber.from(history[0].balance)
-                          .sub(amount)
-                          .toString()
-                      : BigNumber.from(tx.value.value).toString(),
-                    timestamp: this.walletService.getCurrentTimeBySeconds(),
-                  }
-
-                  const newHistory = await this.walletService.addHistory({
-                    address: updatedAddress,
-                    ...newHistoryData,
-                  })
-
-                  history.push(newHistory)
-                  updatedAddress.history = history
-                  updatedAddresses.push(updatedAddress)
-
-                  postUpdatedAddresses.push({
-                    addressId: updatedAddress.id,
-                    walletId: updatedAddress.wallet.id,
-                    accountIds: updatedAddress.wallet.accounts.map(
-                      (account) => account.accountId,
-                    ),
-                    newHistory: newHistoryData,
-                  })
-                }
-              }
-            }),
-          )
-
-          if (postUpdatedAddresses.length > 0) {
-            firstValueFrom(
-              this.httpService.post(
-                `${this.princessAPIUrl}/portfolio/updated`,
-                {
-                  type: EPortfolioType.TRANSACTION,
-                  data: postUpdatedAddresses,
-                },
-              ),
-            ).catch(() => {
-              Sentry.captureException(
-                'Princess portfolio/updated api error in runEthereumService()',
-              )
-            })
-
-            return this.walletService.updateWallets(updatedAddresses)
-          }
-        })
-      }
-    })
   }
 
   notifyNFTUpdate(sourceAddress: string) {
