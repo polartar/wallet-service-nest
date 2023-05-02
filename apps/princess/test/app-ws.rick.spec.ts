@@ -84,12 +84,12 @@ describe('RickGateway', () => {
     princessPortfoloApp = await runPrincessPortfolioModule()
 
     princessPortfoloApp.useLogger(new Logger())
-    await princessPortfoloApp.listen(3335)
+    await princessPortfoloApp.listen(3331)
 
     // portfoloApp = await runPortfolioModule()
     // await portfoloApp.listen(3333)
     // Connect the client
-    socket = io('http://localhost:3335/')
+    socket = io('http://localhost:3331/')
   })
 
   afterAll(async () => {
