@@ -29,7 +29,7 @@ export class OnboardingController {
   ) {}
 
   validateAccountId(accountId: number) {
-    if (accountId === Number((this.request as IRequest).accountId)) {
+    if (Number(accountId) === Number((this.request as IRequest).accountId)) {
       return true
     } else {
       throw new BadRequestException('Account Id  not matched')

@@ -41,7 +41,7 @@ export class AccountsController {
   }
 
   validateAccountId(accountId: number) {
-    if (accountId === this.getAccountIdFromRequest()) {
+    if (Number(accountId) === this.getAccountIdFromRequest()) {
       return true
     } else {
       throw new BadRequestException('Account Id  not matched')
