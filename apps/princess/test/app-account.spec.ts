@@ -5,16 +5,12 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
 import { Test, TestingModule } from '@nestjs/testing'
-import { AppController } from '../src/app/app.controller'
 import { AppService } from '../src/app/app.service'
 
-import { AppController as FluffyController } from '../../fluffy/src/app/app.controller'
 import { AppService as FluffyService } from '../../fluffy/src/app/app.service'
 import { AppService as GandalfService } from '../../gandalf/src/app/app.service'
 
 import axios from 'axios'
-import { OnboardingController } from '../src/onboarding/onboarding.controller'
-import { OnboardingService } from '../src/onboarding/onboarding.service'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../src/environments/environment.dev'
@@ -43,31 +39,16 @@ import { AccountModule as RickAccountModule } from '../../rick/src/account/accou
 import { AppService as RickService } from '../../rick/src/app/app.service'
 import { Environment as RickEnvironment } from '../../rick/src/environments/environment.dev'
 import { Environment as GandalfEnvironment } from '../../gandalf/src/environments/environment.dev'
+import { authenticator } from 'otplib'
+import { NewsModule } from '../src/news/news.module'
 
 describe('Princess System Test', () => {
   let app: INestApplication
-  let fluffyApp: INestApplication
-  let gandalfApp: INestApplication
-  let rickApp: INestApplication
   let gandalfAuthService
   let device
+  let accessToken
 
-  beforeAll(async () => {
-    // Initialize and start the server
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        OnboardingModule,
-        HttpModule, //
-        ConfigModule.forRoot({ load: [Environment] }),
-      ],
-    }).compile()
-
-    app = module.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    )
-    await app.listen(3000)
-
+  async function runFluffyServer() {
     const fluffyModule: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
@@ -85,11 +66,14 @@ describe('Princess System Test', () => {
       ],
     }).compile()
 
-    fluffyApp = fluffyModule.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    )
+    const fluffyApp =
+      fluffyModule.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter(),
+      )
     await fluffyApp.listen(3335)
+  }
 
+  async function runGandalfServer() {
     const gandalfModule: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [GandalfEnvironment] }),
@@ -110,31 +94,34 @@ describe('Princess System Test', () => {
       ],
     }).compile()
 
-    gandalfApp = gandalfModule.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    )
+    const gandalfApp =
+      gandalfModule.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter(),
+      )
     await gandalfApp.listen(3333)
 
     gandalfAuthService = gandalfApp.get<AuthService>(AuthService)
+  }
 
+  async function runRickServer() {
     const rickModule: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ load: [RickEnvironment] }),
+        ConfigModule.forRoot({ load: [Environment] }),
         TypeOrmModule.forRoot({
           type: 'better-sqlite3',
           database: ':memory:',
           dropSchema: true,
           synchronize: true,
           entities: [
-            RickAccountEntity,
             WalletEntity, //
+            RickAccountEntity,
             AddressEntity,
             HistoryEntity,
           ],
         }),
         TypeOrmModule.forFeature([
-          RickAccountEntity,
           WalletEntity, //
+          RickAccountEntity,
           AddressEntity,
           HistoryEntity,
         ]),
@@ -142,14 +129,41 @@ describe('Princess System Test', () => {
         PortfolioModule,
         WalletModule,
         RickAccountModule,
+        NewsModule,
         HttpModule,
       ],
     }).compile()
 
-    rickApp = rickModule.createNestApplication<NestFastifyApplication>(
+    const rickApp = rickModule.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     )
     await rickApp.listen(3334)
+  }
+
+  // Princess server
+  async function runMainServer() {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({ load: [Environment] }),
+        AppModule,
+        OnboardingModule,
+        HttpModule, //
+      ],
+    }).compile()
+
+    app = module.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    )
+    await app.listen(3000)
+  }
+
+  beforeAll(async () => {
+    // Initialize and start the server
+    // jest.useFakeTimers()
+    await runMainServer()
+    await runFluffyServer()
+    await runGandalfServer()
+    await runRickServer()
   }, 20000)
 
   describe('Service health check', () => {
@@ -191,20 +205,22 @@ describe('Princess System Test', () => {
         name: 'test',
         email: 'test@gmail.com',
       }))
+      const otp = authenticator.generate(device.secret)
       const data = await axios.post('http://localhost:3000/onboarding/login', {
         type: 'google',
         id_token:
           'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk2OTcxODA4Nzk2ODI5YTk3MmU3OWE5ZDFhOWZmZjExY2Q2MWIxZTMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIxNDE5MTAxNzU3NjMtODZhYTRmbnJmbXFiMGdubGYwYnU1Z2trOTIzamxhaTguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIxNDE5MTAxNzU3NjMtM21wZHBuNGRqN2g1MmZ1NXIxajhvcmdybWU2bXJ2OWQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDc3MzY5OTA5MjI2NjM5ODk2NjMiLCJoZCI6Im5ncmF2ZS5pbyIsImVtYWlsIjoiY2FpcXVlLmNydXpAbmdyYXZlLmlvIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJUZkRlMlBVSGE2RGxEcmJaQW1IcWRRIiwibm9uY2UiOiJHVmdYU2xoSFFrOTkxMGNacmNDWkZPakFsTUFNNnNheWptbUFLOTVrM1FJIiwibmFtZSI6IkNhaXF1ZSBDcnV6IiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FHTm15eFp6WVBEQnpRWEE4WmlCeVNBSVhpdXBTTF9iNkQtS2FzSFVkV1VKPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkNhaXF1ZSIsImZhbWlseV9uYW1lIjoiQ3J1eiIsImxvY2FsZSI6ImVuIiwiaWF0IjoxNjgyMDA5MTg0LCJleHAiOjE2ODIwMTI3ODR9.hYRJYGTULT-9JheUudDmCWTDPIlCYlBhB7gSeDexbFWdH5mIpAdCjTpi_WNfXYglYPaQvLJcZ-C31sM2-KFdiGNuZ-vJ0VVzmyrIDqnEEtplKnUxbChVAd4YnfQSFeyJoRf8HRi2d5Q2BiqtF0z2IlY_nuuLIgGPDe9umkQ9kekGbZD5fgA_zuanOd068V2xtf24WNZadbb9cYk0UQd96x98luCARaA9s-JtUQT4ftL-VtJKF1g8kcF7TjLwhKSS59szgcW27ES8652rF5Rc8_SnYDjdr6-k5QE9JSFN2QdyDHatCEYBM7ERNDf-X5bacoAFTwupccQEa5fi3cKpcw',
         device_id: device.device_id,
-        otp: 'string',
+        otp: otp,
         server_proposed_shard: 'string',
         own_proposed_shard: 'string',
         passcode_key: 'string',
         recovery_key: 'string',
       })
-      console.log({ data })
-      expect(data.status).toEqual(200)
-      expect(await data.data.secret).toBeDefined()
+
+      expect(data.status).toEqual(201)
+      expect(await data.data.type).toBe('new email')
+      accessToken = data.data.access_token
     })
   })
 })

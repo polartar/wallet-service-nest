@@ -1,5 +1,5 @@
 import { AppModule } from '../src/app/app.module'
-import { MarketModule } from './../src/market/market.module'
+import { MarketModule } from '../src/market/market.module'
 import { Environment } from '../src/environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
 import { RickGateway } from '../src/gateways/rick.gateway'
