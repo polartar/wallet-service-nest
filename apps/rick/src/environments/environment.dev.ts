@@ -6,7 +6,7 @@ export const Environment = () => {
     [EEnvironment.etherscanAPIKey]: process.env.ETHERSCAN_API_KEY,
     [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
     [EEnvironment.princessAPIUrl]:
-      process.env.PRINCESS_API_URL || 'http://localhost3000',
+      process.env.PRINCESS_API_URL || 'http://localhost:3000',
     [EEnvironment.moralisAPIKey]: process.env.MORALIS_API_KEY,
     [EEnvironment.alchemyAPIKey]: process.env.ALCHEMY_API_KEY,
   }

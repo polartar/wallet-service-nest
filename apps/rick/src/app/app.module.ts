@@ -9,7 +9,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
-import { AccountEntity } from '../account/account.entity'
+import { RickAccountEntity as AccountEntity } from '../account/account.entity'
 import { HttpModule } from '@nestjs/axios'
 
 @Module({

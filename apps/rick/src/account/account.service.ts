@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm'
 import { Injectable } from '@nestjs/common'
-import { AccountEntity } from './account.entity'
+import { RickAccountEntity as AccountEntity } from './account.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateAccountDto } from './dto/create-account.dto'
 import {

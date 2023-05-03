@@ -87,6 +87,7 @@ export class OnboardingService {
           { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
         ),
       )
+
       user = userResponse.data
     } catch (err) {
       Sentry.captureException(err, {
@@ -128,6 +129,7 @@ export class OnboardingService {
       category: 'signIn',
       message: 'rick api call done',
     })
+
     try {
       await firstValueFrom(
         this.httpService.post(

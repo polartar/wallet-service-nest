@@ -5,20 +5,6 @@ import { Environment } from './../environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
 import { EAuth } from '@rana/core'
 
-jest.mock('google-auth-library')
-import { OAuth2Client } from 'google-auth-library'
-
-const setCredentialsMock = jest.fn()
-const getAccessTokenMock = jest.fn()
-const MockedOAuth2Client = OAuth2Client as unknown as jest.Mock<OAuth2Client>
-
-MockedOAuth2Client.mockImplementation(() => {
-  return {
-    setCredentials: setCredentialsMock,
-    getAccessToken: getAccessTokenMock,
-  }
-})
-
 describe('AuthService', () => {
   let service: AuthService
 

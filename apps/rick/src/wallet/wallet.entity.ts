@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { AddressEntity } from './address.entity'
-import { AccountEntity } from '../account/account.entity'
+import { RickAccountEntity as AccountEntity } from '../account/account.entity'
 import { ECoinType, EWalletType } from '@rana/core'
 
 @Entity()

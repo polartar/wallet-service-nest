@@ -1,7 +1,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AccountService } from './account.service'
-import { AccountEntity } from './account.entity'
+import { RickAccountEntity as AccountEntity } from './account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { HistoryEntity } from '../wallet/history.entity'
 import { AddressEntity } from '../wallet/address.entity'

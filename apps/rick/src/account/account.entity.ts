@@ -2,7 +2,7 @@ import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 
 @Entity()
-export class AccountEntity {
+export class RickAccountEntity {
   @PrimaryGeneratedColumn()
   id: number
 
