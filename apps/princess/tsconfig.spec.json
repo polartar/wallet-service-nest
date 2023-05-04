@@ -10,6 +10,7 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "src/**/*.d.ts",
-    "src/gateways/anon.gateway.spec.ts"
+    "src/gateways/anon.gateway.spec.ts",
+    "src/onboarding/onboarding.service.spec.ts"
   ]
 }

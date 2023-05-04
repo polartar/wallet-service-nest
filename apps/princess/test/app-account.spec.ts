@@ -106,7 +106,7 @@ describe('Princess System Test', () => {
   async function runRickServer() {
     const rickModule: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ load: [Environment] }),
+        ConfigModule.forRoot({ load: [RickEnvironment] }),
         TypeOrmModule.forRoot({
           type: 'better-sqlite3',
           database: ':memory:',
