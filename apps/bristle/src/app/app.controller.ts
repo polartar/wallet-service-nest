@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 
 import { AppService } from './app.service'
-import { ApiBody } from '@nestjs/swagger'
-import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
 
 @Controller()
 export class AppController {
@@ -13,9 +11,8 @@ export class AppController {
     return this.appService.welcomeMessage
   }
 
-  @Post('verify/payload')
-  @ApiBody({ type: [VerifyPayloadDto] })
-  async verifyPayload(@Body() data: VerifyPayloadDto[]) {
+  @Post('sync')
+  async verifyPayload(@Body() data: string[]) {
     return this.appService.verifyPayload(data)
   }
 }

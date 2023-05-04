@@ -13,22 +13,12 @@ import {
 import { AppModule } from './app/app.module'
 import * as Sentry from '@sentry/node'
 import { ProfilingIntegration } from '@sentry/profiling-node'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
   )
-  const config = new DocumentBuilder()
-    .setTitle('Princess API')
-    .setDescription('The Princess API description')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addSecurityRequirements('bearer')
-    .build()
-  const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api', app, document)
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,

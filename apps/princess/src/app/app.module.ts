@@ -13,6 +13,7 @@ import { OnboardingModule } from '../onboarding/onboarding.module'
 import { AccountsModule } from '../accounts/accounts.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { AuthModule } from '../auth/auth.module'
+import { VaultModule } from '../vault/vault.module'
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from '../auth/auth.module'
     OnboardingModule,
     AccountsModule,
     TransactionModule,
+    VaultModule,
   ],
   controllers: [AppController],
   providers: [AppService],

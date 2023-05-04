@@ -1,6 +1,6 @@
 import { URDecoder } from '@ngraveio/bc-ur'
-import { Injectable } from '@nestjs/common'
-import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
+import { BadRequestException, Injectable } from '@nestjs/common'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AppService {
@@ -9,24 +9,28 @@ export class AppService {
     return AppService.welcomeMessage
   }
 
-  verifyPayload(data: VerifyPayloadDto[]) {
-    for (let i = 0; i < data.length; i++) {
-      const decoder = new URDecoder()
-      const encode = data[i]
-      decoder.receivePart(encode.part)
-
-      if (decoder.isComplete()) {
-        const ur = decoder.resultUR()
-        const decoded = ur.decodeCBOR()
-        const originalMessage = decoded.toString()
-
-        if (originalMessage !== encode.message) {
-          return false
-        }
-      } else {
-        return false
+  verifyPayload(parts: string[]) {
+    const decoder = new URDecoder()
+    let i = 0
+    do {
+      const part = parts[i++]
+      try {
+        console.log('receive', part)
+        decoder.receivePart(part)
+      } catch (err) {
+        Sentry.captureException(`${err.message} in ${part}`)
+        throw new BadRequestException(err.message)
       }
+    } while (!decoder.isComplete() && i < parts.length)
+
+    if (decoder.isSuccess()) {
+      const ur = decoder.resultUR()
+      const decoded = ur.decodeCBOR()
+      const originalMessage = decoded.toString()
+      console.log(JSON.parse(originalMessage))
+      return originalMessage
+    } else {
+      throw new BadRequestException('Some parts are missing in the payload')
     }
-    return true
   }
 }
