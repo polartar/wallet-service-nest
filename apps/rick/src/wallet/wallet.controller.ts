@@ -19,6 +19,7 @@ import { PortfolioService } from '../portfolio/portfolio.service'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import { EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
+import { AddXPubs } from './dto/add-xpubs'
 
 @Controller('wallet')
 export class WalletController {
@@ -50,22 +51,12 @@ export class WalletController {
     @Body('wallet_type', new ParseEnumPipe(EWalletType))
     walletType: EWalletType,
   ) {
-    let account = await this.accountService.lookup({
-      accountId: account_id,
-    })
-    if (!account) {
-      account = await this.accountService.create({
-        email: '',
-        name: '',
-        accountId: account_id,
-      })
-    }
     try {
-      const res = await this.walletService.addNewWallet({
-        account,
+      const res = await this.walletService.addNewWallet(
+        account_id,
         xPub,
         walletType,
-      })
+      )
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
@@ -105,6 +96,22 @@ export class WalletController {
       Sentry.captureException(e.message + ' in getWalletHistory')
 
       throw new InternalServerErrorException(e?.message)
+    }
+  }
+
+  @Post('xpubs')
+  async AddXPubs(@Body() data: AddXPubs) {
+    try {
+      const res = await this.walletService.addXPubs(data.accountId, data.xpubs)
+
+      await this.portfolioService.initializeWallets()
+      return res
+    } catch (e) {
+      Sentry.captureException(
+        e.message + ` while addXpubs ${data.xpubs.toString()}`,
+      )
+
+      throw new BadRequestException(e.message)
     }
   }
 }

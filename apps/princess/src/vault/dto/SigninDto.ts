@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth } from '@rana/core'
-import { IsNotEmpty, IsUUID } from 'class-validator'
+import { IsNotEmpty } from 'class-validator'
 
 export class VaultSync {
   @ApiProperty({

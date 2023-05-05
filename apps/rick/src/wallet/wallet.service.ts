@@ -23,6 +23,8 @@ import { ECoinType, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import * as Sentry from '@sentry/node'
 import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
+import { IXPub } from './dto/add-xpubs'
+import { AccountService } from '../account/account.service'
 
 @Injectable()
 export class WalletService {
@@ -40,6 +42,7 @@ export class WalletService {
     private readonly addressRepository: Repository<AddressEntity>,
     @InjectRepository(HistoryEntity)
     private readonly historyRepository: Repository<HistoryEntity>,
+    private readonly accountService: AccountService,
   ) {
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
@@ -157,17 +160,30 @@ export class WalletService {
     })
   }
 
-  async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
-    const wallet = await this.lookUpByXPub(data.xPub)
+  async addNewWallet(
+    accountId: number,
+    xPub: string,
+    walletType: EWalletType,
+  ): Promise<WalletEntity> {
+    let account = await this.accountService.lookup({
+      accountId,
+    })
+    if (!account) {
+      account = await this.accountService.create({
+        email: '',
+        name: '',
+        accountId,
+      })
+    }
+
+    const wallet = await this.lookUpByXPub(xPub)
 
     if (wallet) {
-      if (wallet.type === data.walletType) {
+      if (wallet.type === walletType) {
         if (
-          !wallet.accounts
-            .map((account) => account.id)
-            .includes(data.account.id)
+          !wallet.accounts.map((account) => account.id).includes(account.id)
         ) {
-          wallet.accounts.push(data.account)
+          wallet.accounts.push(account)
         }
         return this.walletRepository.save(wallet)
       } else {
@@ -175,33 +191,33 @@ export class WalletService {
       }
     } else {
       const prototype = new WalletEntity()
-      prototype.xPub = data.xPub
-      prototype.accounts = [data.account]
-      prototype.type = data.walletType
-      prototype.address = data.xPub
+      prototype.xPub = xPub
+      prototype.accounts = [account]
+      prototype.type = walletType
+      prototype.address = xPub
       prototype.addresses = []
       prototype.path = 'path' // need to get the path from xpub
 
-      if (data.walletType === EWalletType.METAMASK) {
+      if (walletType === EWalletType.METAMASK) {
         prototype.coinType = ECoinType.ETHEREUM
         prototype.path = IWalletPath.ETH
-      } else if (data.walletType === EWalletType.VAULT) {
+      } else if (walletType === EWalletType.VAULT) {
         prototype.coinType = ECoinType.BITCOIN
         prototype.path = IWalletPath.BTC
       }
       const wallet = await this.walletRepository.save(prototype)
 
-      if (data.walletType !== EWalletType.HOTWALLET) {
+      if (walletType !== EWalletType.HOTWALLET) {
         await this.addNewAddress({
           wallet,
-          address: data.xPub,
+          address: xPub,
           path:
             prototype.path === IWalletPath.BTC
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
       } else {
-        await this.addAddressesFromXPub(wallet, data.xPub)
+        await this.addAddressesFromXPub(wallet, xPub)
       }
       this.runEthereumService()
       return wallet
@@ -514,5 +530,29 @@ export class WalletService {
     this.alchemyInstance.ws.removeAllListeners()
 
     this.subscribeEthereumTransactions(activeEthAddresses)
+  }
+
+  async addXPubs(accountId: number, xpubs: IXPub[]) {
+    let account = await this.accountService.lookup({
+      accountId: accountId,
+    })
+    if (!account) {
+      account = await this.accountService.create({
+        email: '',
+        name: '',
+        accountId: accountId,
+      })
+    }
+    try {
+      return Promise.all(
+        xpubs.map((xpub) => {
+          return this.addNewWallet(accountId, xpub.xpub, EWalletType.HOTWALLET)
+        }),
+      )
+    } catch (e) {
+      Sentry.captureException(e.message + ' while addNewWallet')
+
+      throw new BadRequestException(e.message)
+    }
   }
 }
