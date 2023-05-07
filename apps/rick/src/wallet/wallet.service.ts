@@ -8,6 +8,7 @@ import {
   IBTCTransaction,
   IBTCTransactionResponse,
   IWalletPath,
+  IXPubInfo,
   SecondsIn,
 } from './wallet.types'
 import { BigNumber, ethers } from 'ethers'
@@ -25,6 +26,7 @@ import * as Sentry from '@sentry/node'
 import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
 import { IXPub } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
+import { AccountEntity } from '../account/account.entity'
 
 @Injectable()
 export class WalletService {
@@ -32,6 +34,8 @@ export class WalletService {
   isProduction: boolean
   alchemyInstance
   princessAPIUrl: string
+  liquidAPIKey: string
+  liquidAPIUrl: string
 
   constructor(
     private configService: ConfigService,
@@ -60,6 +64,13 @@ export class WalletService {
       EEnvironment.alchemyAPIKey,
     )
     this.alchemyConfigure(this.isProduction, alchemyKey)
+
+    this.liquidAPIKey = this.configService.get<string>(
+      EEnvironment.liquidAPIKey,
+    )
+    this.liquidAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidAPIUrl,
+    )
   }
   alchemyConfigure(isProd: boolean, alchemyKey: string) {
     const settings = {
@@ -165,15 +176,11 @@ export class WalletService {
     xPub: string,
     walletType: EWalletType,
   ): Promise<WalletEntity> {
-    let account = await this.accountService.lookup({
+    const account = await this.accountService.lookup({
       accountId,
     })
     if (!account) {
-      account = await this.accountService.create({
-        email: '',
-        name: '',
-        accountId,
-      })
+      throw new BadRequestException(`${accountId} not exists`)
     }
 
     const wallet = await this.lookUpByXPub(xPub)
@@ -217,15 +224,38 @@ export class WalletService {
               : IAddressPath.ETH,
         })
       } else {
-        await this.addAddressesFromXPub(wallet, xPub)
+        await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
+        await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
       }
       this.runEthereumService()
       return wallet
     }
   }
 
-  async addAddressesFromXPub(wallet, xPub) {
-    Logger.log('Should get all addresses', xPub, wallet)
+  async addAddressesFromXPub(wallet, xPub, coinType: ECoinType) {
+    try {
+      const discoverResponse = await firstValueFrom(
+        this.httpService.get(
+          `${this.liquidAPIUrl}/currencies/${
+            coinType === ECoinType.ETHEREUM
+              ? 'ethereumclassic.secp256k1'
+              : 'bitcoincash.secp256k1'
+          }/accounts/discover?xpub=${xPub}`,
+        ),
+      )
+      console.log({ discoverResponse })
+      return Promise.all(
+        discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+          return this.addNewAddress({
+            wallet,
+            address: addressInfo.address,
+            path: addressInfo.path,
+          })
+        }),
+      )
+    } catch (err) {
+      Logger.log('Should get all addresses', xPub, wallet)
+    }
   }
 
   async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
@@ -532,23 +562,54 @@ export class WalletService {
     this.subscribeEthereumTransactions(activeEthAddresses)
   }
 
+  async addXPub(
+    account: AccountEntity,
+    xPub: string,
+    walletType: EWalletType,
+  ): Promise<WalletEntity> {
+    const wallet = await this.lookUpByXPub(xPub)
+
+    if (wallet) {
+      if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
+        wallet.accounts.push(account)
+      }
+      return this.walletRepository.save(wallet)
+    } else {
+      const prototype = new WalletEntity()
+      prototype.xPub = xPub
+      prototype.accounts = [account]
+      prototype.type = walletType
+      prototype.address = xPub
+      prototype.addresses = []
+      prototype.path = 'path' // need to get the path from xpub
+
+      const wallet = await this.walletRepository.save(prototype)
+
+      await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
+      await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
+
+      return wallet
+    }
+  }
+
   async addXPubs(accountId: number, xpubs: IXPub[]) {
-    let account = await this.accountService.lookup({
+    console.log({ accountId, xpubs })
+    const account = await this.accountService.lookup({
       accountId: accountId,
     })
     if (!account) {
-      account = await this.accountService.create({
-        email: '',
-        name: '',
-        accountId: accountId,
-      })
+      throw new BadRequestException(`${accountId} not exists`)
     }
+
     try {
-      return Promise.all(
+      const newWallets = await Promise.all(
         xpubs.map((xpub) => {
-          return this.addNewWallet(accountId, xpub.xpub, EWalletType.HOTWALLET)
+          return this.addXPub(account, xpub.xpub, EWalletType.HOTWALLET)
         }),
       )
+      this.runEthereumService()
+
+      return newWallets
     } catch (e) {
       Sentry.captureException(e.message + ' while addNewWallet')
 

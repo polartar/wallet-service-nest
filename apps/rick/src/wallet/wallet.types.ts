@@ -37,3 +37,10 @@ export interface IBTCTransaction {
   confirmations: number
   confirmed: string
 }
+
+export interface IXPubInfo {
+  path: string
+  address: string
+  publickey: string
+  index: 0
+}
