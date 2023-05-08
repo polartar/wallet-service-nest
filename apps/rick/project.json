@@ -34,9 +34,7 @@
       "options": {
         "command": "docker run --name rick -e POSTGRES_PASSWORD=mypassword -e POSTGRES_USER=myusername -e POSTGRES_DB=rick -p 5431:5432 -d postgres"
       },
-      "dependsOn": [
-        "db:stop"
-      ]
+      "dependsOn": ["db:stop"]
     },
     "db:stop": {
       "executor": "nx:run-commands",
@@ -49,9 +47,7 @@
       "options": {
         "buildTarget": "rick:build"
       },
-      "dependsOn": [
-        "db"
-      ],
+      "dependsOn": ["db"],
       "configurations": {
         "production": {
           "buildTarget": "rick:build:production"

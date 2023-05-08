@@ -101,17 +101,9 @@ export class WalletController {
 
   @Post('xpubs')
   async AddXPubs(@Body() data: AddXPubs) {
-    try {
-      const res = await this.walletService.addXPubs(data.accountId, data.xpubs)
+    const res = await this.walletService.addXPubs(data.accountId, data.xpubs)
 
-      await this.portfolioService.initializeWallets()
-      return res
-    } catch (e) {
-      Sentry.captureException(
-        e.message + ` while addXpubs ${data.xpubs.toString()}`,
-      )
-
-      throw new BadRequestException(e.message)
-    }
+    await this.portfolioService.initializeWallets()
+    return res
   }
 }

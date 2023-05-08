@@ -23,9 +23,6 @@ export class WalletEntity {
   @Column('text')
   type: EWalletType
 
-  @Column()
-  address: string
-
   @ManyToMany(() => AccountEntity, (account) => account.wallets)
   @JoinTable()
   accounts: AccountEntity[]

@@ -39,3 +39,8 @@ export interface IXPubInfo {
   publickey: string
   index: 0
 }
+
+export enum EXPubCurrency {
+  ETHEREUM = 'ethereumclassic.secp256k1',
+  BITCOIN = 'segwit.bitcoin.secp256k1',
+}

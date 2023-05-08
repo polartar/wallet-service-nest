@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
+  EXPubCurrency,
   IAddressPath,
   IBTCTransaction,
   IBTCTransactionResponse,
@@ -199,7 +200,6 @@ export class WalletService {
       prototype.xPub = xPub
       prototype.accounts = [account]
       prototype.type = walletType
-      prototype.address = xPub
       prototype.addresses = []
 
       let coinType
@@ -230,30 +230,43 @@ export class WalletService {
   }
 
   async addAddressesFromXPub(wallet, xPub, coinType: ECoinType) {
+    let discoverResponse
     try {
-      const discoverResponse = await firstValueFrom(
+      discoverResponse = await firstValueFrom(
         this.httpService.get(
-          `${this.liquidAPIUrl}/currencies/${
+          `${this.liquidAPIUrl}/api/v1/currencies/${
             coinType === ECoinType.ETHEREUM
-              ? 'ethereumclassic.secp256k1'
-              : 'bitcoincash.secp256k1'
+              ? EXPubCurrency.ETHEREUM
+              : EXPubCurrency.BITCOIN
           }/accounts/discover?xpub=${xPub}`,
+          {
+            headers: { 'api-secret': this.liquidAPIKey },
+          },
         ),
       )
-      console.log({ discoverResponse })
-      return Promise.all(
-        discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+    } catch (err) {
+      Sentry.captureException(`${err.message}: ${xPub} in addAddressesFromXPub`)
+      throw new BadRequestException(err.message)
+    }
+    return Promise.all(
+      discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+        try {
           return this.addNewAddress({
             wallet,
-            address: addressInfo.address,
+            address:
+              coinType === ECoinType.ETHEREUM
+                ? addressInfo.address
+                : addressInfo.address?.split(':')[1],
             path: addressInfo.path,
             coinType,
           })
-        }),
-      )
-    } catch (err) {
-      Logger.log('Should get all addresses', xPub, wallet)
-    }
+        } catch (err) {
+          Sentry.captureException(
+            `${err.message}: ${addressInfo.address} in addNewAddress`,
+          )
+        }
+      }),
+    )
   }
 
   async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
@@ -568,7 +581,7 @@ export class WalletService {
     walletType: EWalletType,
   ): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(xPub)
-    console.log({ wallet })
+
     if (wallet) {
       if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
         wallet.accounts.push(account)
@@ -579,7 +592,6 @@ export class WalletService {
       prototype.xPub = xPub
       prototype.accounts = [account]
       prototype.type = walletType
-      prototype.address = xPub
       prototype.addresses = []
 
       const wallet = await this.walletRepository.save(prototype)
