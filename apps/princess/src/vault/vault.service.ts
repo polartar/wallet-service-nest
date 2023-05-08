@@ -57,36 +57,15 @@ export class VaultService {
   }
   async sync(parts: string[]) {
     const accountId = this.getAccountIdFromRequest()
-    // const obj = await this.apiCall(EAPIMethod.POST,this.bristleApiUrl '/sync', { parts })
-    const obj = {
-      version: 1,
-      type: 'sync',
-      md5: '',
-      data: {
-        coins: [
-          {
-            BIP44: 0,
-            wallets: [
-              {
-                wallet_index: 0,
-                xpub: 'xpub6CC2ecHtJKaNm29cbw1Hfa7qpdFt1QiiwxCu8ThgRNANkAaZNUdEL9xiQMX9D6cLWxe24SAxnqoxXERV4dxTVxM6naPyVBRsKGZAs5aBUC9',
-              },
-            ],
-          },
-          {
-            BIP44: 714,
-            wallets: [
-              {
-                wallet_index: 0,
-                xpub: 'xpub6Cogi4wR8arxzcrfoia821AAH6Ds3qH9LaMBpvaUBLYKNQK1UbBghYXjttSCdc9RLDtmavGcx5KVnChYb1GNwHhX1vRVncNAQwKiPWeqffU',
-              },
-            ],
-          },
-        ],
-      },
-    }
 
-    if (obj) {
+    const obj = await this.apiCall(
+      EAPIMethod.POST,
+      this.bristleApiUrl,
+      'sync',
+      { parts },
+    )
+
+    if (obj && obj.data && Array.isArray(obj.data.coins)) {
       const xpubs = obj.data.coins
         .filter((coin) => coin.BIP44 === 0 || coin.BIP44 === 714)
         .map((coin) => ({ BIP44: coin.BIP44, xpub: coin.wallets[0].xpub }))
@@ -98,6 +77,8 @@ export class VaultService {
         { accountId, xpubs: xpubs },
       )
       return addresses
+    } else {
+      throw new BadRequestException('Invalid liquid type')
     }
   }
 }

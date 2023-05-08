@@ -12,7 +12,7 @@ export class AppController {
   }
 
   @Post('sync')
-  async verifyPayload(@Body() data: string[]) {
-    return this.appService.verifyPayload(data)
+  async verifyPayload(@Body() data: { parts: string[] }) {
+    return this.appService.verifyPayload(data.parts)
   }
 }
