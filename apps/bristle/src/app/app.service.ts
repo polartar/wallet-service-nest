@@ -15,7 +15,6 @@ export class AppService {
     do {
       const part = parts[i++]
       try {
-        console.log('receive', part)
         decoder.receivePart(part)
       } catch (err) {
         Sentry.captureException(`${err.message} in ${part}`)
@@ -27,7 +26,7 @@ export class AppService {
       const ur = decoder.resultUR()
       const decoded = ur.decodeCBOR()
       const originalMessage = decoded.toString()
-      console.log(JSON.parse(originalMessage))
+
       return originalMessage
     } else {
       throw new BadRequestException('Some parts are missing in the payload')
