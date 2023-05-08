@@ -1,4 +1,3 @@
-import { AddWalletDto } from './dto/add-wallet.dto'
 import { MoreThanOrEqual, Repository } from 'typeorm'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
@@ -7,7 +6,6 @@ import {
   IAddressPath,
   IBTCTransaction,
   IBTCTransactionResponse,
-  IWalletPath,
   IXPubInfo,
   SecondsIn,
 } from './wallet.types'
@@ -203,14 +201,12 @@ export class WalletService {
       prototype.type = walletType
       prototype.address = xPub
       prototype.addresses = []
-      prototype.path = 'path' // need to get the path from xpub
 
+      let coinType
       if (walletType === EWalletType.METAMASK) {
-        prototype.coinType = ECoinType.ETHEREUM
-        prototype.path = IWalletPath.ETH
+        coinType = ECoinType.ETHEREUM
       } else if (walletType === EWalletType.VAULT) {
-        prototype.coinType = ECoinType.BITCOIN
-        prototype.path = IWalletPath.BTC
+        coinType = ECoinType.BITCOIN
       }
       const wallet = await this.walletRepository.save(prototype)
 
@@ -218,8 +214,9 @@ export class WalletService {
         await this.addNewAddress({
           wallet,
           address: xPub,
+          coinType: coinType,
           path:
-            prototype.path === IWalletPath.BTC
+            walletType === EWalletType.VAULT
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
@@ -250,6 +247,7 @@ export class WalletService {
             wallet,
             address: addressInfo.address,
             path: addressInfo.path,
+            coinType,
           })
         }),
       )
@@ -264,11 +262,13 @@ export class WalletService {
     prototype.address = data.address
     prototype.history = []
     prototype.path = data.path
+    prototype.coinType = data.coinType
+
     const address = await this.addressRepository.save(prototype)
 
     let allHistories
     try {
-      if (data.wallet.coinType === ECoinType.ETHEREUM) {
+      if (data.coinType === ECoinType.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
         allHistories = await this.generateEthHistories(trxHistory, address)
       } else {
@@ -553,7 +553,7 @@ export class WalletService {
     addresses = addresses.filter((address) => address.wallet.isActive)
 
     const activeEthAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
+      (address) => address.coinType === ECoinType.ETHEREUM,
     )
     if (activeEthAddresses.length === 0) return
 
@@ -568,7 +568,7 @@ export class WalletService {
     walletType: EWalletType,
   ): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(xPub)
-
+    console.log({ wallet })
     if (wallet) {
       if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
         wallet.accounts.push(account)
@@ -581,7 +581,6 @@ export class WalletService {
       prototype.type = walletType
       prototype.address = xPub
       prototype.addresses = []
-      prototype.path = 'path' // need to get the path from xpub
 
       const wallet = await this.walletRepository.save(prototype)
 
@@ -593,7 +592,6 @@ export class WalletService {
   }
 
   async addXPubs(accountId: number, xpubs: IXPub[]) {
-    console.log({ accountId, xpubs })
     const account = await this.accountService.lookup({
       accountId: accountId,
     })

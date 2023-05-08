@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { HistoryEntity } from './history.entity'
+import { ECoinType } from '@rana/core'
 
 @Entity()
 export class AddressEntity {
@@ -20,6 +21,9 @@ export class AddressEntity {
 
   @CreateDateColumn()
   createdAt: Date
+
+  @Column('text')
+  coinType: ECoinType
 
   @Column()
   path: string
