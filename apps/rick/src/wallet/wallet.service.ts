@@ -320,8 +320,6 @@ export class WalletService {
       address.history = allHistories
     } catch (err) {
       Sentry.captureException(err.message + ' in addNewAddress')
-
-      throw new BadRequestException(err.message)
     }
 
     return await this.addressRepository.save(address)
