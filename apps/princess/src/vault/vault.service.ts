@@ -7,6 +7,7 @@ import * as Sentry from '@sentry/node'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse } from 'axios'
+import zlib = require('zlib')
 
 @Injectable()
 export class VaultService {
@@ -55,8 +56,27 @@ export class VaultService {
       }
     }
   }
+
+  async Gunzip(str: string) {
+    return new Promise((resolve, reject) => {
+      const buf = Buffer.from(str, 'base64')
+      zlib.gunzip(buf, (err, buffer) => {
+        if (err) {
+          reject('Invalid liquid data')
+        }
+        const plain = buffer.toString('utf8')
+        const data = JSON.parse(JSON.parse(plain))
+
+        if (data.coins && Array.isArray(data.coins)) {
+          resolve(data.coins)
+        } else {
+          reject('Invalid liquid data')
+        }
+      })
+    })
+  }
   async sync(parts: string[]) {
-    const accountId = this.getAccountIdFromRequest()
+    const accountId = 2 //this.getAccountIdFromRequest()
 
     const obj = await this.apiCall(
       EAPIMethod.POST,
@@ -65,20 +85,27 @@ export class VaultService {
       { parts },
     )
 
-    if (obj && obj.data && Array.isArray(obj.data.coins)) {
-      const xpubs = obj.data.coins
-        .filter((coin) => coin.BIP44 === 0 || coin.BIP44 === 714)
-        .map((coin) => ({ BIP44: coin.BIP44, xpub: coin.wallets[0].xpub }))
+    let coins
+    try {
+      coins = await this.Gunzip(obj.data)
+    } catch (err) {
+      Sentry.captureException(`${err.message}: ${obj.data} in Sync`)
+      throw new BadRequestException(err.message)
+    }
 
+    const xpubs = coins
+      // .filter((coin) => coin.BIP44 === 0 || coin.BIP44 === 714)
+      .map((coin) => ({ BIP44: coin.BIP44, xpub: coin.wallets[0].xpub }))
+    try {
       const addresses = await this.apiCall(
         EAPIMethod.POST,
         this.rickApiUrl,
-        '/wallet/xpubs',
+        'wallet/xpubs',
         { accountId, xpubs: xpubs },
       )
       return addresses
-    } else {
-      throw new BadRequestException('Invalid liquid type')
+    } catch (err) {
+      throw new BadRequestException(`${err.message}: Rick/wallet/xpubs`)
     }
   }
 }
