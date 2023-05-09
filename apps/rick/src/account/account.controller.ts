@@ -24,14 +24,14 @@ export class AccountController {
     @Body() data: CreateAccountDto,
     @Headers() headers: Headers,
   ) {
-    // const sentry_trace_data = Sentry.extractTraceparentData(
-    //   headers['sentry-trace'],
-    // )
-    // const sentry_txn = Sentry.startTransaction({
-    //   op: 'createAccount',
-    //   name: 'createAccount in rick',
-    //   ...sentry_trace_data,
-    // })
+    const sentry_trace_data = Sentry.extractTraceparentData(
+      headers['sentry-trace'],
+    )
+    const sentry_txn = Sentry.startTransaction({
+      op: 'createAccount',
+      name: 'createAccount in rick',
+      ...sentry_trace_data,
+    })
     try {
       return await this.accountService.create(data)
     } catch (err) {
@@ -43,7 +43,7 @@ export class AccountController {
       })
       throw new BadRequestException(err.message)
     } finally {
-      // sentry_txn.finish()
+      sentry_txn.finish()
     }
   }
 

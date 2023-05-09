@@ -76,7 +76,7 @@ export class VaultService {
     })
   }
   async sync(parts: string[]) {
-    const accountId = 2 //this.getAccountIdFromRequest()
+    const accountId = this.getAccountIdFromRequest()
 
     const obj = await this.apiCall(
       EAPIMethod.POST,
