@@ -45,7 +45,8 @@
     "tiny-secp256k1": "^2.2.1",
     "tslib": "^2.3.0",
     "typeorm": "^0.3.11",
-    "verify-apple-id-token": "^3.0.1"
+    "verify-apple-id-token": "^3.0.1",
+    "zlib": "^1.0.5"
   },
   "devDependencies": {
     "@nestjs/schematics": "^9.0.0",

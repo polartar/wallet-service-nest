@@ -230,9 +230,8 @@ export class WalletService {
   }
 
   async addAddressesFromXPub(wallet, xPub, coinType: ECoinType) {
-    let discoverResponse
     try {
-      discoverResponse = await firstValueFrom(
+      const discoverResponse = await firstValueFrom(
         this.httpService.get(
           `${this.liquidAPIUrl}/api/v1/currencies/${
             coinType === ECoinType.ETHEREUM
@@ -244,29 +243,33 @@ export class WalletService {
           },
         ),
       )
+      return Promise.all(
+        discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+          try {
+            return this.addNewAddress({
+              wallet,
+              address: addressInfo.address,
+              path: addressInfo.path,
+              coinType,
+            })
+          } catch (err) {
+            Sentry.captureException(
+              `${err.message}: ${addressInfo.address} in addNewAddress`,
+            )
+          }
+        }),
+      )
     } catch (err) {
-      Sentry.captureException(`${err.message}: ${xPub} in addAddressesFromXPub`)
-      throw new BadRequestException(err.message)
+      if (err.response) {
+        Sentry.captureException(
+          `${err.response.data.errors[0]}: ${xPub} in addAddressesFromXPub`,
+        )
+      } else {
+        Sentry.captureException(
+          `${err.message}: ${xPub} in addAddressesFromXPub`,
+        )
+      }
     }
-    return Promise.all(
-      discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
-        try {
-          return this.addNewAddress({
-            wallet,
-            address:
-              coinType === ECoinType.ETHEREUM
-                ? addressInfo.address
-                : addressInfo.address?.split(':')[1],
-            path: addressInfo.path,
-            coinType,
-          })
-        } catch (err) {
-          Sentry.captureException(
-            `${err.message}: ${addressInfo.address} in addNewAddress`,
-          )
-        }
-      }),
-    )
   }
 
   async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
@@ -581,7 +584,6 @@ export class WalletService {
     walletType: EWalletType,
   ): Promise<WalletEntity> {
     const wallet = await this.lookUpByXPub(xPub)
-
     if (wallet) {
       if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
         wallet.accounts.push(account)
