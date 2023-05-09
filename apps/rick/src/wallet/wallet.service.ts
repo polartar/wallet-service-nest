@@ -105,6 +105,9 @@ export class WalletService {
     address: AddressEntity,
     balance: number,
   ): Promise<HistoryEntity[]> {
+    if (!transactions || transactions.length === 0) {
+      return []
+    }
     let currentBalance = balance
     const allHistories = await Promise.all(
       transactions.map((record) => {
