@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, Repository } from 'typeorm'
+import { In, MoreThanOrEqual, Repository } from 'typeorm'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -170,6 +170,18 @@ export class WalletService {
     return await this.walletRepository.findOne({
       where: { xPub },
       relations: { accounts: true },
+    })
+  }
+
+  async lookUpByXPubs(xPubs: string[]): Promise<WalletEntity[]> {
+    return await this.walletRepository.find({
+      where: { xPub: In(xPubs) },
+      relations: {
+        accounts: true,
+        addresses: {
+          history: true,
+        },
+      },
     })
   }
 
@@ -617,13 +629,16 @@ export class WalletService {
     }
 
     try {
-      const newWallets = await Promise.all(
+      await Promise.all(
         xpubs.map((xpub) => {
           return this.addXPub(account, xpub.xpub, EWalletType.HOTWALLET)
         }),
       )
       this.runEthereumService()
 
+      const newWallets = await this.lookUpByXPubs(
+        xpubs.map((xpub) => xpub.xpub),
+      )
       return newWallets
     } catch (e) {
       Sentry.captureException(e.message + ' while addNewWallet')
