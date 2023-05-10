@@ -14,7 +14,6 @@ import { EAPIMethod, IMarketData, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { MarketService } from '../market/market.service'
 import { formatUnits } from 'ethers/lib/utils'
-import { BigNumber } from 'ethers'
 
 @Injectable()
 export class AccountsService {
@@ -87,12 +86,7 @@ export class AccountsService {
     return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
   }
 
-  async getPortfolio(accountId: number, period?: EPeriod) {
-    const wallets: IWallet[] = await this.rickAPICall(
-      EAPIMethod.GET,
-      `wallet/${accountId}?period=${period}`,
-    )
-
+  async addUSDPrice(wallets: IWallet[], period: EPeriod) {
     const ethMarketHistories = await this.marketService.getHistoricalData(
       ECoinType.ETHEREUM,
       period,
@@ -129,11 +123,22 @@ export class AccountsService {
     })
   }
 
+  async getPortfolio(accountId: number, period?: EPeriod) {
+    const wallets: IWallet[] = await this.rickAPICall(
+      EAPIMethod.GET,
+      `wallet/${accountId}?period=${period}`,
+    )
+
+    return this.addUSDPrice(wallets, period)
+  }
+
   async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
-    return this.rickAPICall(
+    const wallets: IWallet[] = await this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}/wallet/${walletId}?period=${period}`,
     )
+
+    return this.addUSDPrice(wallets, period)
   }
 
   async fluffyAPICall(path, body) {
