@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Request,
+} from '@nestjs/common'
 import { REQUEST } from '@nestjs/core'
 import { EAPIMethod, IRequest } from './vault.types'
 import { ConfigService } from '@nestjs/config'
