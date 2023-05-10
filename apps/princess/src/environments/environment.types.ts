@@ -8,4 +8,5 @@ export enum EEnvironment {
   fluffyAPIUrl = 'fluffy_api_url',
   kafoAPIUrl = 'kafo_api_url',
   version = 'version',
+  bristleAPIUrl = 'bristle_api_url',
 }

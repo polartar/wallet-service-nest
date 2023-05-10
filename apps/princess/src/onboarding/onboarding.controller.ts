@@ -10,14 +10,13 @@ import {
   Request,
 } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
-import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto, SyncUserResponse } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
 import { REQUEST } from '@nestjs/core'
 // import { Request } from 'express'
 import { IRequest } from '../accounts/accounts.types'
 import { SignInDto, SignInResponse } from './dto/SigninDto'
-import { VerifyPayloadDto } from './dto/VerifyPayloadDto'
 import { CreateDeviceResponse } from './dto/CreateDevice.dto'
 
 @Controller('onboarding')
@@ -80,13 +79,6 @@ export class OnboardingController {
       data.account_hash,
       data.otp,
     )
-  }
-
-  @Public()
-  @Post('verify/payload')
-  @ApiBody({ type: [VerifyPayloadDto] })
-  async verifyPayload(@Body() data: VerifyPayloadDto[]) {
-    return this.onboardingService.verifyPayload(data)
   }
 
   // @Post('check_hash')

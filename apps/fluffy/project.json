@@ -34,9 +34,7 @@
       "options": {
         "command": "docker run --name fluffy -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -e POSTGRES_DB=pairs -p 5433:5432 -d postgres"
       },
-      "dependsOn": [
-        "db:stop"
-      ]
+      "dependsOn": ["db:stop"]
     },
     "db:stop": {
       "executor": "nx:run-commands",
@@ -49,9 +47,7 @@
       "options": {
         "buildTarget": "fluffy:build"
       },
-      "dependsOn": [
-        "db"
-      ],
+      "dependsOn": ["db"],
       "configurations": {
         "production": {
           "buildTarget": "fluffy:build:production"

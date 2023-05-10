@@ -4,4 +4,6 @@ export enum EEnvironment {
   princessAPIUrl = 'princess_api_url',
   moralisAPIKey = 'moralis_api_key',
   alchemyAPIKey = 'alchemy_api_key',
+  liquidAPIKey = 'liquid_api_key',
+  liquidAPIUrl = 'liquid_api_url',
 }

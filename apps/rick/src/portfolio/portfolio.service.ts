@@ -180,11 +180,11 @@ export class PortfolioService {
     addresses = addresses.filter((address) => address.wallet.isActive)
 
     this.activeEthAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
+      (address) => address.coinType === ECoinType.ETHEREUM,
     )
 
     this.activeBtcAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ECoinType.BITCOIN,
+      (address) => address.coinType === ECoinType.BITCOIN,
     )
   }
 

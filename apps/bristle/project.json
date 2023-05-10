@@ -1,7 +1,7 @@
 {
-  "name": "rick",
+  "name": "bristle",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/rick/src",
+  "sourceRoot": "apps/bristle/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -10,10 +10,10 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/rick",
-        "main": "apps/rick/src/main.ts",
-        "tsConfig": "apps/rick/tsconfig.app.json",
-        "assets": ["apps/rick/src/assets"]
+        "outputPath": "dist/apps/bristle",
+        "main": "apps/bristle/src/main.ts",
+        "tsConfig": "apps/bristle/tsconfig.app.json",
+        "assets": ["apps/bristle/src/assets"]
       },
       "configurations": {
         "production": {
@@ -22,35 +22,21 @@
           "inspect": false,
           "fileReplacements": [
             {
-              "replace": "apps/rick/src/environments/environment.ts",
-              "with": "apps/rick/src/environments/environment.prod.ts"
+              "replace": "apps/bristle/src/environments/environment.ts",
+              "with": "apps/bristle/src/environments/environment.prod.ts"
             }
           ]
         }
       }
     },
-    "db": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "docker run --name rick -e POSTGRES_PASSWORD=mypassword -e POSTGRES_USER=myusername -e POSTGRES_DB=rick -p 5431:5432 -d postgres"
-      },
-      "dependsOn": ["db:stop"]
-    },
-    "db:stop": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "docker stop rick || true && docker rm rick || true"
-      }
-    },
     "serve": {
       "executor": "@nrwl/js:node",
       "options": {
-        "buildTarget": "rick:build"
+        "buildTarget": "bristle:build"
       },
-      "dependsOn": ["db"],
       "configurations": {
         "production": {
-          "buildTarget": "rick:build:production"
+          "buildTarget": "bristle:build:production"
         }
       }
     },
@@ -58,14 +44,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/rick/**/*.ts"]
+        "lintFilePatterns": ["apps/bristle/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/rick/jest.config.ts",
+        "jestConfig": "apps/bristle/jest.config.ts",
         "passWithNoTests": true
       }
     }

@@ -1,13 +1,13 @@
-import { AddWalletDto } from './dto/add-wallet.dto'
-import { MoreThanOrEqual, Repository } from 'typeorm'
+import { In, MoreThanOrEqual, Repository } from 'typeorm'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
+  EXPubCurrency,
   IAddressPath,
   IBTCTransaction,
   IBTCTransactionResponse,
-  IWalletPath,
+  IXPubInfo,
   SecondsIn,
 } from './wallet.types'
 import { BigNumber, ethers } from 'ethers'
@@ -23,6 +23,9 @@ import { ECoinType, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import * as Sentry from '@sentry/node'
 import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
+import { IXPub } from './dto/add-xpubs'
+import { AccountService } from '../account/account.service'
+import { AccountEntity } from '../account/account.entity'
 
 @Injectable()
 export class WalletService {
@@ -30,6 +33,8 @@ export class WalletService {
   isProduction: boolean
   alchemyInstance
   princessAPIUrl: string
+  liquidAPIKey: string
+  liquidAPIUrl: string
 
   constructor(
     private configService: ConfigService,
@@ -40,6 +45,7 @@ export class WalletService {
     private readonly addressRepository: Repository<AddressEntity>,
     @InjectRepository(HistoryEntity)
     private readonly historyRepository: Repository<HistoryEntity>,
+    private readonly accountService: AccountService,
   ) {
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
@@ -57,6 +63,13 @@ export class WalletService {
       EEnvironment.alchemyAPIKey,
     )
     this.alchemyConfigure(this.isProduction, alchemyKey)
+
+    this.liquidAPIKey = this.configService.get<string>(
+      EEnvironment.liquidAPIKey,
+    )
+    this.liquidAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidAPIUrl,
+    )
   }
   alchemyConfigure(isProd: boolean, alchemyKey: string) {
     const settings = {
@@ -92,6 +105,9 @@ export class WalletService {
     address: AddressEntity,
     balance: number,
   ): Promise<HistoryEntity[]> {
+    if (!transactions || transactions.length === 0) {
+      return []
+    }
     let currentBalance = balance
     const allHistories = await Promise.all(
       transactions.map((record) => {
@@ -157,17 +173,38 @@ export class WalletService {
     })
   }
 
-  async addNewWallet(data: AddWalletDto): Promise<WalletEntity> {
-    const wallet = await this.lookUpByXPub(data.xPub)
+  async lookUpByXPubs(xPubs: string[]): Promise<WalletEntity[]> {
+    return await this.walletRepository.find({
+      where: { xPub: In(xPubs) },
+      relations: {
+        accounts: true,
+        addresses: {
+          history: true,
+        },
+      },
+    })
+  }
+
+  async addNewWallet(
+    accountId: number,
+    xPub: string,
+    walletType: EWalletType,
+  ): Promise<WalletEntity> {
+    const account = await this.accountService.lookup({
+      accountId,
+    })
+    if (!account) {
+      throw new BadRequestException(`${accountId} not exists`)
+    }
+
+    const wallet = await this.lookUpByXPub(xPub)
 
     if (wallet) {
-      if (wallet.type === data.walletType) {
+      if (wallet.type === walletType) {
         if (
-          !wallet.accounts
-            .map((account) => account.id)
-            .includes(data.account.id)
+          !wallet.accounts.map((account) => account.id).includes(account.id)
         ) {
-          wallet.accounts.push(data.account)
+          wallet.accounts.push(account)
         }
         return this.walletRepository.save(wallet)
       } else {
@@ -175,41 +212,79 @@ export class WalletService {
       }
     } else {
       const prototype = new WalletEntity()
-      prototype.xPub = data.xPub
-      prototype.accounts = [data.account]
-      prototype.type = data.walletType
-      prototype.address = data.xPub
+      prototype.xPub = xPub
+      prototype.accounts = [account]
+      prototype.type = walletType
       prototype.addresses = []
-      prototype.path = 'path' // need to get the path from xpub
 
-      if (data.walletType === EWalletType.METAMASK) {
-        prototype.coinType = ECoinType.ETHEREUM
-        prototype.path = IWalletPath.ETH
-      } else if (data.walletType === EWalletType.VAULT) {
-        prototype.coinType = ECoinType.BITCOIN
-        prototype.path = IWalletPath.BTC
+      let coinType
+      if (walletType === EWalletType.METAMASK) {
+        coinType = ECoinType.ETHEREUM
+      } else if (walletType === EWalletType.VAULT) {
+        coinType = ECoinType.BITCOIN
       }
       const wallet = await this.walletRepository.save(prototype)
 
-      if (data.walletType !== EWalletType.HOTWALLET) {
+      if (walletType !== EWalletType.HOTWALLET) {
         await this.addNewAddress({
           wallet,
-          address: data.xPub,
+          address: xPub,
+          coinType: coinType,
           path:
-            prototype.path === IWalletPath.BTC
+            walletType === EWalletType.VAULT
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
       } else {
-        await this.addAddressesFromXPub(wallet, data.xPub)
+        await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
+        await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
       }
       this.runEthereumService()
       return wallet
     }
   }
 
-  async addAddressesFromXPub(wallet, xPub) {
-    Logger.log('Should get all addresses', xPub, wallet)
+  async addAddressesFromXPub(wallet, xPub, coinType: ECoinType) {
+    try {
+      const discoverResponse = await firstValueFrom(
+        this.httpService.get(
+          `${this.liquidAPIUrl}/api/v1/currencies/${
+            coinType === ECoinType.ETHEREUM
+              ? EXPubCurrency.ETHEREUM
+              : EXPubCurrency.BITCOIN
+          }/accounts/discover?xpub=${xPub}`,
+          {
+            headers: { 'api-secret': this.liquidAPIKey },
+          },
+        ),
+      )
+      return Promise.all(
+        discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+          try {
+            return this.addNewAddress({
+              wallet,
+              address: addressInfo.address,
+              path: addressInfo.path,
+              coinType,
+            })
+          } catch (err) {
+            Sentry.captureException(
+              `${err.message}: ${addressInfo.address} in addNewAddress`,
+            )
+          }
+        }),
+      )
+    } catch (err) {
+      if (err.response) {
+        Sentry.captureException(
+          `${err.response.data.errors[0]}: ${xPub} in addAddressesFromXPub`,
+        )
+      } else {
+        Sentry.captureException(
+          `${err.message}: ${xPub} in addAddressesFromXPub`,
+        )
+      }
+    }
   }
 
   async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
@@ -218,11 +293,13 @@ export class WalletService {
     prototype.address = data.address
     prototype.history = []
     prototype.path = data.path
+    prototype.coinType = data.coinType
+
     const address = await this.addressRepository.save(prototype)
 
     let allHistories
     try {
-      if (data.wallet.coinType === ECoinType.ETHEREUM) {
+      if (data.coinType === ECoinType.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
         allHistories = await this.generateEthHistories(trxHistory, address)
       } else {
@@ -243,8 +320,6 @@ export class WalletService {
       address.history = allHistories
     } catch (err) {
       Sentry.captureException(err.message + ' in addNewAddress')
-
-      throw new BadRequestException(err.message)
     }
 
     return await this.addressRepository.save(address)
@@ -507,12 +582,66 @@ export class WalletService {
     addresses = addresses.filter((address) => address.wallet.isActive)
 
     const activeEthAddresses = addresses.filter(
-      (address) => address.wallet.coinType === ECoinType.ETHEREUM,
+      (address) => address.coinType === ECoinType.ETHEREUM,
     )
     if (activeEthAddresses.length === 0) return
 
     this.alchemyInstance.ws.removeAllListeners()
 
     this.subscribeEthereumTransactions(activeEthAddresses)
+  }
+
+  async addXPub(
+    account: AccountEntity,
+    xPub: string,
+    walletType: EWalletType,
+  ): Promise<WalletEntity> {
+    const wallet = await this.lookUpByXPub(xPub)
+    if (wallet) {
+      if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
+        wallet.accounts.push(account)
+      }
+      return this.walletRepository.save(wallet)
+    } else {
+      const prototype = new WalletEntity()
+      prototype.xPub = xPub
+      prototype.accounts = [account]
+      prototype.type = walletType
+      prototype.addresses = []
+
+      const wallet = await this.walletRepository.save(prototype)
+
+      await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
+      await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
+
+      return wallet
+    }
+  }
+
+  async addXPubs(accountId: number, xpubs: IXPub[]) {
+    const account = await this.accountService.lookup({
+      accountId: accountId,
+    })
+    if (!account) {
+      throw new BadRequestException(`${accountId} not exists`)
+    }
+
+    try {
+      await Promise.all(
+        xpubs.map((xpub) => {
+          return this.addXPub(account, xpub.xpub, EWalletType.HOTWALLET)
+        }),
+      )
+      this.runEthereumService()
+
+      const newWallets = await this.lookUpByXPubs(
+        xpubs.map((xpub) => xpub.xpub),
+      )
+      return newWallets
+    } catch (e) {
+      Sentry.captureException(e.message + ' while addNewWallet')
+
+      throw new BadRequestException(e.message)
+    }
   }
 }

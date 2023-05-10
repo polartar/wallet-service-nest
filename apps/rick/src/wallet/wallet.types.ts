@@ -12,13 +12,8 @@ export const SecondsIn: {
 }
 
 export enum IAddressPath {
-  BTC = '/0/1',
-  ETH = '/0/5',
-}
-
-export enum IWalletPath {
-  BTC = 'm/44/0/0',
-  ETH = 'm/44/60/0',
+  BTC = 'm/44/0/0/0/1',
+  ETH = 'm/44/60/0/0/5',
 }
 
 export interface IBTCTransactionResponse {
@@ -36,4 +31,16 @@ export interface IBTCTransaction {
   ref_balance: number
   confirmations: number
   confirmed: string
+}
+
+export interface IXPubInfo {
+  path: string
+  address: string
+  publickey: string
+  index: 0
+}
+
+export enum EXPubCurrency {
+  ETHEREUM = 'ethereumclassic.secp256k1',
+  BITCOIN = 'segwit.bitcoin.secp256k1',
 }

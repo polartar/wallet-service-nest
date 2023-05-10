@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
-import { ECoinType, EWalletType } from '@rana/core'
+import { EWalletType } from '@rana/core'
 
 @Entity()
 export class WalletEntity {
@@ -18,16 +18,10 @@ export class WalletEntity {
   id: number
 
   @Column('text')
-  coinType: ECoinType
-
-  @Column('text')
   xPub: string
 
   @Column('text')
   type: EWalletType
-
-  @Column()
-  address: string
 
   @ManyToMany(() => AccountEntity, (account) => account.wallets)
   @JoinTable()
@@ -39,9 +33,6 @@ export class WalletEntity {
 
   @Column('boolean', { default: true })
   isActive = true
-
-  @Column()
-  path: string
 
   @CreateDateColumn()
   createdAt: Date
