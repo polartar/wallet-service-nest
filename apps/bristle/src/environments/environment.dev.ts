@@ -4,8 +4,6 @@ import { EEnvironment } from './environment.types'
 export const Environment = () => {
   const env: { [key in EEnvironment]: IData } = {
     [EEnvironment.isProduction]: process.env.NODE_ENV === 'production',
-    [EEnvironment.princessAPIUrl]:
-      process.env.PRINCESS_API_URL || 'http://localhost3000',
   }
 
   return env
