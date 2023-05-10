@@ -177,7 +177,6 @@ export class WalletService {
     return await this.walletRepository.find({
       where: { xPub: In(xPubs) },
       relations: {
-        accounts: true,
         addresses: {
           history: true,
         },
