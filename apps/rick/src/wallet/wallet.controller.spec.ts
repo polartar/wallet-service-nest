@@ -126,7 +126,7 @@ describe('WalletController', () => {
     await controller.createPortfolio(
       'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       2,
-      EWalletType.VAULT,
+      EWalletType.HOTWALLET,
       // ECoinType.ETHEREUM,
     )
 

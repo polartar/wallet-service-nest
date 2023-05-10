@@ -1,5 +1,5 @@
 import { In, MoreThanOrEqual, Repository } from 'typeorm'
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -177,7 +177,6 @@ export class WalletService {
     return await this.walletRepository.find({
       where: { xPub: In(xPubs) },
       relations: {
-        accounts: true,
         addresses: {
           history: true,
         },
@@ -220,18 +219,18 @@ export class WalletService {
       let coinType
       if (walletType === EWalletType.METAMASK) {
         coinType = ECoinType.ETHEREUM
-      } else if (walletType === EWalletType.VAULT) {
+      } else if (walletType === EWalletType.HOTWALLET) {
         coinType = ECoinType.BITCOIN
       }
       const wallet = await this.walletRepository.save(prototype)
 
-      if (walletType !== EWalletType.HOTWALLET) {
+      if (walletType !== EWalletType.VAULT) {
         await this.addNewAddress({
           wallet,
           address: xPub,
           coinType: coinType,
           path:
-            walletType === EWalletType.VAULT
+            walletType === EWalletType.HOTWALLET
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
@@ -629,7 +628,7 @@ export class WalletService {
     try {
       await Promise.all(
         xpubs.map((xpub) => {
-          return this.addXPub(account, xpub.xpub, EWalletType.HOTWALLET)
+          return this.addXPub(account, xpub.xpub, EWalletType.VAULT)
         }),
       )
       this.runEthereumService()
