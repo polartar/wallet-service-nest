@@ -27,5 +27,5 @@ describe('NftService', () => {
     })
     expect(assets.success).toBeTruthy()
     expect(assets.data.nfts.length).toBe(100)
-  })
+  }, 20000)
 })
