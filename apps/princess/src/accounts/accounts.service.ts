@@ -6,12 +6,15 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EPeriod, EWalletType } from '@rana/core'
+import { ECoinType, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod } from './accounts.types'
+import { EAPIMethod, IMarketData, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
+import { MarketService } from '../market/market.service'
+import { formatUnits } from 'ethers/lib/utils'
+import { BigNumber } from 'ethers'
 
 @Injectable()
 export class AccountsService {
@@ -21,7 +24,8 @@ export class AccountsService {
 
   constructor(
     private configService: ConfigService,
-    private readonly httpService: HttpService, // @Inject(REQUEST) private readonly request: Request,
+    private readonly httpService: HttpService,
+    private readonly marketService: MarketService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
@@ -37,8 +41,8 @@ export class AccountsService {
       const url = `${this.rickApiUrl}/${path}`
       const res = await firstValueFrom(
         method === EAPIMethod.POST
-          ? this.httpService.post<AxiosResponse>(url, body)
-          : this.httpService.get<AxiosResponse>(url),
+          ? this.httpService.post(url, body)
+          : this.httpService.get(url),
       )
       return res.data
     } catch (err) {
@@ -73,11 +77,56 @@ export class AccountsService {
     })
   }
 
+  getPrice(source: IMarketData[], timestamp: string) {
+    const index = source.findIndex(
+      (market) =>
+        new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
+        +timestamp >= new Date(market.periodStart).getTime() / 1000,
+    )
+
+    return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
+  }
+
   async getPortfolio(accountId: number, period?: EPeriod) {
-    return this.rickAPICall(
+    const wallets: IWallet[] = await this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}?period=${period}`,
     )
+
+    const ethMarketHistories = await this.marketService.getHistoricalData(
+      ECoinType.ETHEREUM,
+      period,
+    )
+
+    const btcMarketHistories = await this.marketService.getHistoricalData(
+      ECoinType.BITCOIN,
+      period,
+    )
+
+    return wallets.map((wallet) => {
+      wallet.addresses = wallet.addresses.map((address) => {
+        const source =
+          address.coinType === ECoinType.ETHEREUM
+            ? ethMarketHistories.data
+            : btcMarketHistories.data
+        const decimal = address.coinType === ECoinType.ETHEREUM ? 18 : 8
+        const history = address.history.map((item) => {
+          const price = this.getPrice(source, item.timestamp)
+          const value = formatUnits(item.balance, decimal)
+          return {
+            ...item,
+            usdPrice: (+value * price).toString(),
+          }
+        })
+
+        return {
+          ...address,
+          history,
+        }
+      })
+      console.log(wallet.addresses)
+      return wallet
+    })
   }
 
   async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {

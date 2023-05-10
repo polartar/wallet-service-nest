@@ -37,7 +37,7 @@ export class MarketService {
   async getHistoricalData(coin: ECoinType, period: EPeriod) {
     try {
       const res = await firstValueFrom(
-        this.httpService.get<AxiosResponse>(
+        this.httpService.get(
           `${this.mortyApiUrl}/api/market/${coin}/history?period=${period}`,
         ),
       )
