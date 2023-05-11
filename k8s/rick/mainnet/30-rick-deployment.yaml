@@ -22,6 +22,10 @@ spec:
         ports:
         - containerPort: 3333
         env:
+          - name: LIQUID_API_KEY
+            value: a # TODO: Make this a secret once its a 'real secret'
+          - name: LIQUID_API_URL
+            value: "https://development.mainnet.liquid-debug.ngrave.io"
           - name: INFURA_API_KEY
             valueFrom:
               secretKeyRef:

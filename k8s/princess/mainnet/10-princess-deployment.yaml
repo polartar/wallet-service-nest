@@ -37,6 +37,8 @@ spec:
             value: "http://fluffy.mainnet.svc.cluster.local"
           - name: KAFO_API_URL
             value: "http://kafo.mainnet.svc.cluster.local"
+          - name: BRISTLE_API_URL
+            value: "http://bristle.mainnet.svc.cluster.local"
           - name: FIDELITY_CLIENT_ID
             valueFrom:
               secretKeyRef:

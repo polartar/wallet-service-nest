@@ -69,3 +69,11 @@ COPY --from=prod_builder /app/dist/libs /app/libs/
 COPY --from=prod_builder /app/dist/apps/anton /app/anton/
 EXPOSE 3333
 CMD node /app/anton/main.js
+
+FROM node:18-alpine AS bristle_prod
+ENV DOCKER=True
+COPY --from=prod_node_modules /app/node_modules /app/node_modules
+COPY --from=prod_builder /app/dist/libs /app/libs/
+COPY --from=prod_builder /app/dist/apps/bristle /app/bristle/
+EXPOSE 3333
+CMD node /app/bristle/main.js

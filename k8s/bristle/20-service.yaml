@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bristle
+spec:
+  selector:
+    app: bristle
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3333
