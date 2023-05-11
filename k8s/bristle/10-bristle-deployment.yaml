@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bristle-deployment
+  labels:
+    app: bristle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bristle
+  template:
+    metadata:
+      labels:
+        app: bristle
+    spec:
+      containers:
+      - name: bristle-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/bristle_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: bristle-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: bristle-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: bristle-sentry-config
+                key: sentry_environment
+        resources:
+          limits:
+            cpu: "50m"
+            memory: "128Mi"
+      imagePullSecrets:
+        - name: gitlabregistry

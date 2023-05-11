@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bristle-sentry-config
+  namespace: default
+data:
+  sentry_dsn: "http://a09bf1ba609144639bba752cc45c78d8@10.207.0.2:9000/8"
+  sentry_traces_sample_rate: "0.25"
+  sentry_environment: "testnet_staging"
