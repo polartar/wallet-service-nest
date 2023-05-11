@@ -17,31 +17,15 @@ export class VaultSyncSwaggerResponse {
   isActive: boolean
 
   @ApiProperty({
-    example: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+    example:
+      'xpub6CC2ecHtJKaNm29cbw1Hfa7qpdFt1QiiwxCu8ThgRNANkAaZNUdEL9xiQMX9D6cLWxe24SAxnqoxXERV4dxTVxM6naPyVBRsKGZAs5aBUC9',
   })
   xPub: string
-
-  @ApiProperty({
-    example: [
-      {
-        email: '',
-        name: '',
-        accountId: 3,
-        id: 2,
-      },
-    ],
-  })
-  accounts: string
 
   @ApiProperty({
     example: 'metamask',
   })
   type: string
-
-  @ApiProperty({
-    example: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-  })
-  address: string
 
   @ApiProperty({
     example: [
