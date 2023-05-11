@@ -3,6 +3,7 @@ import { AccountsService } from './accounts.service'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
+import { MarketService } from '../market/market.service'
 
 describe('AccountsService', () => {
   let service: AccountsService
@@ -13,7 +14,7 @@ describe('AccountsService', () => {
         HttpModule, //
         ConfigModule.forRoot({ load: [Environment] }),
       ],
-      providers: [AccountsService],
+      providers: [AccountsService, MarketService],
     }).compile()
 
     service = module.get<AccountsService>(AccountsService)

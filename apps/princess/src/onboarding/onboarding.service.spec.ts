@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { AccountsService } from '../accounts/accounts.service'
 import { JwtService } from '@nestjs/jwt'
+import { MarketService } from '../market/market.service'
 
 describe('OnboardingService', () => {
   let service: OnboardingService
@@ -15,7 +16,12 @@ describe('OnboardingService', () => {
         HttpModule, //
         ConfigModule.forRoot({ load: [Environment] }),
       ],
-      providers: [OnboardingService, AccountsService, JwtService],
+      providers: [
+        OnboardingService,
+        AccountsService,
+        JwtService,
+        MarketService,
+      ],
     }).compile()
 
     service = module.get<OnboardingService>(OnboardingService)
