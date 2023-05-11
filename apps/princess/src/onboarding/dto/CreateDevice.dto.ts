@@ -10,4 +10,10 @@ export class CreateDeviceResponse {
     example: '7e430da0-460b-47d7-b7da-c573bfccac21',
   })
   device_id: string
+
+  @ApiProperty({
+    example:
+      'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk2OTcxODA4Nzk2ODI5YTk3MmU3OWE5ZDFhOWZmZjExY2Q2MWIxZTMiLCJ0eXAiOiJKV1QifQ',
+  })
+  access_token: string
 }
