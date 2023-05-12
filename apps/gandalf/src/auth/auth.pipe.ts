@@ -11,6 +11,7 @@ export class LoginValidationPipe implements PipeTransform {
       /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/,
     ),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
+    accountId: Joi.number(),
   })
 
   transform(value: IAuthData) {

@@ -50,14 +50,11 @@ export class OnboardingService {
   }
 
   async createDevice(): Promise<IDeviceCreateResponse> {
-    const sentry_txn = Sentry.startTransaction({
-      op: 'onboarding_device',
-      name: 'create device in princess',
-    })
     try {
       const deviceResponse = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
+
       const tmpEmail = `any${deviceResponse.data.deviceId}@gmail.com`
       const tmpName = 'Anonymous'
       // create anonymous user
@@ -70,15 +67,11 @@ export class OnboardingService {
 
       // create the anonymous user in rick
       await firstValueFrom(
-        this.httpService.post(
-          `${this.rickApiUrl}/account`,
-          {
-            email: tmpEmail,
-            name: tmpName,
-            accountId: userResponse.data.id,
-          },
-          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-        ),
+        this.httpService.post(`${this.rickApiUrl}/account`, {
+          email: tmpEmail,
+          name: tmpName,
+          accountId: userResponse.data.id,
+        }),
       )
 
       const payload = {
@@ -86,9 +79,7 @@ export class OnboardingService {
         idToken: deviceResponse.data.deviceId,
         deviceId: deviceResponse.data.deviceId,
       }
-      const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '1d',
-      })
+      const accessToken = await this.jwtService.signAsync(payload)
       return {
         secret: deviceResponse.data.otp,
         device_id: deviceResponse.data.deviceId,
@@ -161,12 +152,14 @@ export class OnboardingService {
         )
       } else {
         // combine wallets
-        await firstValueFrom(
-          this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
-            existingAccountId: user.account.id,
-            anonymousId: accountId,
-          }),
-        )
+        if (user.account.id !== accountId) {
+          await firstValueFrom(
+            this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
+              existingAccountId: user.account.id,
+              anonymousId: accountId,
+            }),
+          )
+        }
       }
     } catch (err) {
       Sentry.captureException(err, {

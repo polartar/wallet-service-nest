@@ -118,7 +118,6 @@ export class AccountsService {
           history,
         }
       })
-      console.log(wallet.addresses)
       return wallet
     })
   }

@@ -11,10 +11,9 @@ export class AccountController {
     try {
       let account = await this.accountService.lookup({ email: data.email })
 
-      if (account) {
+      if (!account) {
         account = await this.accountService.create(data)
       }
-
       return account
     } catch (e) {
       throw new BadRequestException(e?.message)

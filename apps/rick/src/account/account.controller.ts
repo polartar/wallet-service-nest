@@ -22,18 +22,7 @@ export class AccountController {
 
   @Post()
   @UsePipes(new AccountValidationPipe())
-  async createAccount(
-    @Body() data: CreateAccountDto,
-    @Headers() headers: Headers,
-  ) {
-    const sentry_trace_data = Sentry.extractTraceparentData(
-      headers['sentry-trace'],
-    )
-    const sentry_txn = Sentry.startTransaction({
-      op: 'createAccount',
-      name: 'createAccount in rick',
-      ...sentry_trace_data,
-    })
+  async createAccount(@Body() data: CreateAccountDto) {
     try {
       return await this.accountService.create(data)
     } catch (err) {
@@ -44,12 +33,10 @@ export class AccountController {
         },
       })
       throw new BadRequestException(err.message)
-    } finally {
-      sentry_txn.finish()
     }
   }
 
-  @Put(':/accountId')
+  @Put(':accountId')
   async updateAccount(
     @Body() data: UpdateAccountDto,
     @Param('accountId') accountId: number,

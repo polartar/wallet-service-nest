@@ -20,14 +20,14 @@ export class AccountService {
     return this.accountRepository.save(account)
   }
 
-  update(
+  async update(
     account: AccountEntity,
-    updateAcount: CreateAccountDto,
+    data: CreateAccountDto,
   ): Promise<AccountEntity> {
-    account.email = updateAcount.email
-    account.name = updateAcount.name
+    account.email = data.email
+    account.name = data.name
 
-    return this.accountRepository.save(account)
+    return await this.accountRepository.save(account)
   }
 
   lookup(findAccount: FindAccountDto): Promise<AccountEntity> {

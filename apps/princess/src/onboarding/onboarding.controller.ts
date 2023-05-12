@@ -19,11 +19,11 @@ export class OnboardingController {
     return this.onboardingService.createDevice()
   }
 
-  @Public()
   @Post('login')
   @ApiOkResponse({ type: SignInResponse })
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
+    console.log(data.device_id)
     this.onboardingService.validateDeviceId(data.device_id)
 
     return this.onboardingService.signIn(
