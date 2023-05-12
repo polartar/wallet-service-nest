@@ -1,39 +1,16 @@
 import { OnboardingService } from './onboarding.service'
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  UsePipes,
-  Request,
-} from '@nestjs/common'
+import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto, SyncUserResponse } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
-import { REQUEST } from '@nestjs/core'
-// import { Request } from 'express'
-import { IRequest } from '../accounts/accounts.types'
 import { SignInDto, SignInResponse } from './dto/SigninDto'
 import { CreateDeviceResponse } from './dto/CreateDevice.dto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
 export class OnboardingController {
-  constructor(
-    @Inject(REQUEST) private readonly request: Request,
-    private readonly onboardingService: OnboardingService,
-  ) {}
-
-  validateAccountId(accountId: number) {
-    if (Number(accountId) === Number((this.request as IRequest).accountId)) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
-  }
+  constructor(private readonly onboardingService: OnboardingService) {}
 
   @Public()
   @Post('device')
@@ -42,11 +19,13 @@ export class OnboardingController {
     return this.onboardingService.createDevice()
   }
 
-  @Public()
   @Post('login')
   @ApiOkResponse({ type: SignInResponse })
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
+    console.log(data.device_id)
+    this.onboardingService.validateDeviceId(data.device_id)
+
     return this.onboardingService.signIn(
       data.type,
       data.id_token,
@@ -71,7 +50,7 @@ export class OnboardingController {
     summary: 'Sync user',
   })
   async syncUser(@Body() data: SyncUserDto) {
-    this.validateAccountId(data.account_id)
+    this.onboardingService.validateAccountId(data.account_id)
 
     return this.onboardingService.syncUser(
       data.account_id,

@@ -20,6 +20,7 @@ import { IWalletActiveData } from '../portfolio/portfolio.types'
 import { EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
+import { CombineWalletDto } from './dto/combine-wallet.dto'
 
 @Controller('wallet')
 export class WalletController {
@@ -105,5 +106,13 @@ export class WalletController {
 
     await this.portfolioService.initializeWallets()
     return res
+  }
+
+  @Post('combine')
+  async combineWallets(@Body() data: CombineWalletDto) {
+    return await this.walletService.combineWallets(
+      data.existingAccountId,
+      data.anonymousId,
+    )
   }
 }

@@ -23,10 +23,10 @@ export class AuthController {
 
   @Post()
   @UsePipes(new LoginValidationPipe())
-  async login(@Body() data: IAuthData, @Headers() headers: Headers) {
+  async auth(@Body() data: IAuthData, @Headers() headers: Headers) {
     try {
       const { name, email } = await this.authService.authorize(data, headers)
-      const account = await this.accountService.lookup({ email })
+      let account = await this.accountService.lookup({ email })
 
       if (account) {
         return {
@@ -34,10 +34,13 @@ export class AuthController {
           account,
         }
       } else {
-        const createdAccount = await this.accountService.create({ name, email })
+        account = await this.accountService.getAccount(data.accountId)
+        console.log({ account })
+        await this.accountService.update(account, { name, email })
+
         return {
           is_new: true,
-          account: createdAccount,
+          account: account,
         }
       }
     } catch (e) {

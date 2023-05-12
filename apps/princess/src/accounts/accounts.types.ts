@@ -8,6 +8,7 @@ export enum EAPIMethod {
 
 export interface IRequest extends Request {
   accountId: number
+  deviceId: string
 }
 
 export interface IMarketData {

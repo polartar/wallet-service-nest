@@ -5,6 +5,9 @@ import {
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
+  Request,
+  Inject,
+  ForbiddenException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -19,6 +22,8 @@ import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import * as Sentry from '@sentry/node'
+import { REQUEST } from '@nestjs/core'
+import { IRequest } from '../accounts/accounts.types'
 
 @Injectable()
 export class OnboardingService {
@@ -32,6 +37,7 @@ export class OnboardingService {
     private readonly httpService: HttpService,
     private accountService: AccountsService,
     private jwtService: JwtService,
+    @Inject(REQUEST) private readonly request: Request,
   ) {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
@@ -45,12 +51,40 @@ export class OnboardingService {
 
   async createDevice(): Promise<IDeviceCreateResponse> {
     try {
-      const response = await firstValueFrom(
+      const deviceResponse = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
+
+      const tmpEmail = `any${deviceResponse.data.deviceId}@gmail.com`
+      const tmpName = 'Anonymous'
+      // create anonymous user
+      const userResponse = await firstValueFrom(
+        this.httpService.post(`${this.gandalfApiUrl}/account`, {
+          email: tmpEmail,
+          name: tmpName,
+        }),
+      )
+
+      // create the anonymous user in rick
+      await firstValueFrom(
+        this.httpService.post(`${this.rickApiUrl}/account`, {
+          email: tmpEmail,
+          name: tmpName,
+          accountId: userResponse.data.id,
+        }),
+      )
+
+      const payload = {
+        accountId: userResponse.data.id,
+        idToken: deviceResponse.data.deviceId,
+        deviceId: deviceResponse.data.deviceId,
+      }
+      const accessToken = await this.jwtService.signAsync(payload)
       return {
-        secret: response.data.otp,
-        device_id: response.data.deviceId,
+        secret: deviceResponse.data.otp,
+        device_id: deviceResponse.data.deviceId,
+        account_id: userResponse.data.id,
+        access_token: accessToken,
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in createDevice()')
@@ -74,6 +108,7 @@ export class OnboardingService {
       op: 'onboarding_signIn',
       name: 'signIn method in princess',
     })
+    const accountId = this.getAccountIdFromRequest()
     try {
       const userResponse = await firstValueFrom(
         this.httpService.post(
@@ -81,6 +116,7 @@ export class OnboardingService {
           {
             idToken: token,
             type,
+            accountId,
           },
           { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
         ),
@@ -100,18 +136,31 @@ export class OnboardingService {
       category: 'signIn',
       message: 'gandalf api call done',
     })
+
     try {
-      await firstValueFrom(
-        this.httpService.post(
-          `${this.rickApiUrl}/account`,
-          {
-            email: user.account.email,
-            name: user.account.name,
-            accountId: user.account.id,
-          },
-          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-        ),
-      )
+      // if new user email, then register, then update the anonymous user with real info.
+      if (user.is_new) {
+        await firstValueFrom(
+          this.httpService.put(
+            `${this.rickApiUrl}/account/${user.account.id}`,
+            {
+              email: user.account.email,
+              name: user.account.name,
+              accountId: user.account.id,
+            },
+          ),
+        )
+      } else {
+        // combine wallets
+        if (user.account.id !== accountId) {
+          await firstValueFrom(
+            this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
+              existingAccountId: user.account.id,
+              anonymousId: accountId,
+            }),
+          )
+        }
+      }
     } catch (err) {
       Sentry.captureException(err, {
         extra: { message: err.message, src: 'rick api call of signIn()' },
@@ -143,16 +192,16 @@ export class OnboardingService {
         ),
       )
 
-      const payload = { type: type, accountId: user.account.id, idToken: token }
-      Sentry.addBreadcrumb({
-        category: 'signIn',
-        message: 'signing access token',
+      const payload = {
+        type: type,
+        accountId: user.account.id,
+        idToken: token,
+        deviceId,
+      }
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '1d',
       })
-      const accessToken = await this.jwtService.signAsync(payload)
-      Sentry.addBreadcrumb({
-        category: 'signIn',
-        message: 'access token signed',
-      })
+
       return {
         type: user.is_new ? 'new email' : 'existing email',
         account_id: user.account.id,
@@ -240,5 +289,25 @@ export class OnboardingService {
 
   getVersion(): string {
     return this.version
+  }
+
+  getAccountIdFromRequest(): number {
+    return Number((this.request as IRequest).accountId)
+  }
+
+  validateAccountId(accountId: number) {
+    if (Number(accountId) === this.getAccountIdFromRequest()) {
+      return true
+    } else {
+      throw new ForbiddenException('Account Id not matched')
+    }
+  }
+
+  validateDeviceId(deviceId: string) {
+    if (deviceId === (this.request as IRequest).deviceId) {
+      return true
+    } else {
+      throw new ForbiddenException('Device Id not matched')
+    }
   }
 }

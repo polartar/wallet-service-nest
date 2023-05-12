@@ -6,13 +6,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Headers,
   UsePipes,
+  Put,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { AccountValidationPipe } from './account.pipe'
 import * as Sentry from '@sentry/node'
+import { UpdateAccountDto } from './dto/update-account.dto'
 
 @Controller('account')
 export class AccountController {
@@ -20,18 +21,7 @@ export class AccountController {
 
   @Post()
   @UsePipes(new AccountValidationPipe())
-  async createAccount(
-    @Body() data: CreateAccountDto,
-    @Headers() headers: Headers,
-  ) {
-    const sentry_trace_data = Sentry.extractTraceparentData(
-      headers['sentry-trace'],
-    )
-    const sentry_txn = Sentry.startTransaction({
-      op: 'createAccount',
-      name: 'createAccount in rick',
-      ...sentry_trace_data,
-    })
+  async createAccount(@Body() data: CreateAccountDto) {
     try {
       return await this.accountService.create(data)
     } catch (err) {
@@ -42,8 +32,24 @@ export class AccountController {
         },
       })
       throw new BadRequestException(err.message)
-    } finally {
-      sentry_txn.finish()
+    }
+  }
+
+  @Put(':accountId')
+  async updateAccount(
+    @Body() data: UpdateAccountDto,
+    @Param('accountId') accountId: number,
+  ) {
+    try {
+      return await this.accountService.update(accountId, data)
+    } catch (err) {
+      Sentry.captureException(err, {
+        extra: {
+          message: err.message,
+          email: data.email,
+        },
+      })
+      throw new BadRequestException(err.message)
     }
   }
 
