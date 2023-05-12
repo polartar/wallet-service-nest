@@ -49,19 +49,17 @@ export class OnboardingService {
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
 
+      // create anonymous user
       const userResponse = await firstValueFrom(
-        this.httpService.post(
-          `${this.gandalfApiUrl}/auth`,
-          {
-            idToken: token,
-            type,
-          },
-          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-        ),
+        this.httpService.post(`${this.gandalfApiUrl}/account`, {
+          email: `any${response.data.deviceId}@gmail.com`,
+          name: 'Anonymous',
+        }),
       )
       return {
         secret: response.data.otp,
         device_id: response.data.deviceId,
+        account_id: userResponse.data.id,
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in createDevice()')
