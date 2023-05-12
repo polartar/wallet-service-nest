@@ -16,7 +16,6 @@ export interface IOnboardingSigningResponse {
 export interface IDeviceCreateResponse {
   secret: string
   device_id: string
-  access_token: string
 }
 
 export interface IDeviceRegisterResponse {

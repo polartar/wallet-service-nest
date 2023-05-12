@@ -48,18 +48,9 @@ export class OnboardingService {
       const response = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
-      const payload = {
-        deviceId: response.data.deviceId,
-      }
-      const accessToken = await this.jwtService.signAsync(payload, {
-        secret: process.env.JWT_M_SECRET,
-        expiresIn: '1d',
-      })
-
       return {
         secret: response.data.otp,
         device_id: response.data.deviceId,
-        access_token: accessToken,
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in createDevice()')
@@ -157,9 +148,7 @@ export class OnboardingService {
         category: 'signIn',
         message: 'signing access token',
       })
-      const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '1d',
-      })
+      const accessToken = await this.jwtService.signAsync(payload)
       Sentry.addBreadcrumb({
         category: 'signIn',
         message: 'access token signed',

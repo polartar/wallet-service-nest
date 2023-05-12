@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
-import { IS_MIDDLE_KEY, IS_PUBLIC_KEY } from './decorators/public.decorator'
+import { IS_PUBLIC_KEY } from './decorators/public.decorator'
 import { Reflector } from '@nestjs/core'
 // import { OnboardingService } from '../onboarding/onboarding.service'
 import { JwtService } from '@nestjs/jwt'
@@ -21,10 +21,6 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ])
-    const isMiddle = this.reflector.getAllAndOverride<boolean>(IS_MIDDLE_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
     if (isPublic) {
       return true
     }
@@ -33,16 +29,6 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request)
     if (!token) {
       throw new UnauthorizedException()
-    }
-    if (isMiddle) {
-      try {
-        await this.jwtService.verifyAsync(token, {
-          secret: process.env.JWT_M_SECRET,
-        })
-        return true
-      } catch {
-        // continue regardless of error
-      }
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
