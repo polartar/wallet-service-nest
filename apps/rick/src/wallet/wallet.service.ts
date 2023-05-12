@@ -643,4 +643,6 @@ export class WalletService {
       throw new BadRequestException(e.message)
     }
   }
+
+  async combineWallets(existingAccountId: number, anonymousId: number) {}
 }

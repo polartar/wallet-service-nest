@@ -161,6 +161,17 @@ export class OnboardingService {
           ),
         )
       } else {
+        // combine wallets
+        await firstValueFrom(
+          this.httpService.post(
+            `${this.rickApiUrl}/wallet/combine`,
+            {
+              existingAccountId: user.account.id,
+              anonymousId: accountId,
+            },
+            { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+          ),
+        )
       }
     } catch (err) {
       Sentry.captureException(err, {

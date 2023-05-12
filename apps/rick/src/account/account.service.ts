@@ -38,7 +38,7 @@ export class AccountService {
       account.name = data.name
       return this.accountRepository.save(account)
     } else {
-      throw new BadRequestException('Account not exists')
+      return this.create({ accountId, ...data })
     }
   }
 

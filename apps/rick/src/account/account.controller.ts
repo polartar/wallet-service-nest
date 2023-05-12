@@ -8,6 +8,7 @@ import {
   Post,
   Headers,
   UsePipes,
+  Put,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'
@@ -48,7 +49,7 @@ export class AccountController {
     }
   }
 
-  @Post(':/accountId')
+  @Put(':/accountId')
   async updateAccount(
     @Body() data: UpdateAccountDto,
     @Param('accountId') accountId: number,
