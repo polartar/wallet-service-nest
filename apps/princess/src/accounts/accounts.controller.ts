@@ -48,7 +48,6 @@ export class AccountsController {
     }
   }
 
-  // we should validate the xPub
   @Post(':accountId/wallet')
   @ApiOkResponse({ type: CreateWalletResponse })
   @ApiOperation({
