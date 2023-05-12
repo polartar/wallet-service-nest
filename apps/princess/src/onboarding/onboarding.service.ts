@@ -99,6 +99,7 @@ export class OnboardingService {
       op: 'onboarding_signIn',
       name: 'signIn method in princess',
     })
+    const accountId = this.getAccountIdFromRequest()
     try {
       const userResponse = await firstValueFrom(
         this.httpService.post(
@@ -106,6 +107,7 @@ export class OnboardingService {
           {
             idToken: token,
             type,
+            accountId,
           },
           { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
         ),
@@ -267,8 +269,12 @@ export class OnboardingService {
     return this.version
   }
 
+  getAccountIdFromRequest(): number {
+    return Number((this.request as IRequest).accountId)
+  }
+
   validateAccountId(accountId: number) {
-    if (Number(accountId) === Number((this.request as IRequest).accountId)) {
+    if (Number(accountId) === this.getAccountIdFromRequest()) {
       return true
     } else {
       throw new ForbiddenException('Account Id not matched')
