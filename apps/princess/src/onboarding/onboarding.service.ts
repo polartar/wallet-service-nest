@@ -144,15 +144,10 @@ export class OnboardingService {
       )
 
       const payload = { type: type, accountId: user.account.id, idToken: token }
-      Sentry.addBreadcrumb({
-        category: 'signIn',
-        message: 'signing access token',
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '1d',
       })
-      const accessToken = await this.jwtService.signAsync(payload)
-      Sentry.addBreadcrumb({
-        category: 'signIn',
-        message: 'access token signed',
-      })
+
       return {
         type: user.is_new ? 'new email' : 'existing email',
         account_id: user.account.id,
