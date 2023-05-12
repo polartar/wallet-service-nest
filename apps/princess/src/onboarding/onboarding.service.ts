@@ -48,6 +48,17 @@ export class OnboardingService {
       const response = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
+
+      const userResponse = await firstValueFrom(
+        this.httpService.post(
+          `${this.gandalfApiUrl}/auth`,
+          {
+            idToken: token,
+            type,
+          },
+          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+        ),
+      )
       return {
         secret: response.data.otp,
         device_id: response.data.deviceId,
