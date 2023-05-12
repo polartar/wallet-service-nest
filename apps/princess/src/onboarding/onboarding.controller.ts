@@ -1,31 +1,16 @@
 import { OnboardingService } from './onboarding.service'
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  UsePipes,
-  Request,
-} from '@nestjs/common'
+import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto, SyncUserResponse } from './dto/SyncUserDto'
 import { Public } from '../auth/decorators/public.decorator'
-import { REQUEST } from '@nestjs/core'
-// import { Request } from 'express'
-import { IRequest } from '../accounts/accounts.types'
 import { SignInDto, SignInResponse } from './dto/SigninDto'
 import { CreateDeviceResponse } from './dto/CreateDevice.dto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
 export class OnboardingController {
-  constructor(
-    @Inject(REQUEST) private readonly request: Request,
-    private readonly onboardingService: OnboardingService,
-  ) {}
+  constructor(private readonly onboardingService: OnboardingService) {}
 
   @Public()
   @Post('device')

@@ -50,17 +50,35 @@ export class OnboardingService {
   }
 
   async createDevice(): Promise<IDeviceCreateResponse> {
+    const sentry_txn = Sentry.startTransaction({
+      op: 'onboarding_device',
+      name: 'create device in princess',
+    })
     try {
       const deviceResponse = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
-
+      const tmpEmail = `any${deviceResponse.data.deviceId}@gmail.com`
+      const tmpName = 'Anonymous'
       // create anonymous user
       const userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/account`, {
-          email: `any${deviceResponse.data.deviceId}@gmail.com`,
-          name: 'Anonymous',
+          email: tmpEmail,
+          name: tmpName,
         }),
+      )
+
+      // create the anonymous user in rick
+      await firstValueFrom(
+        this.httpService.post(
+          `${this.rickApiUrl}/account`,
+          {
+            email: tmpEmail,
+            name: tmpName,
+            accountId: userResponse.data.id,
+          },
+          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+        ),
       )
 
       const payload = {
@@ -127,18 +145,23 @@ export class OnboardingService {
       category: 'signIn',
       message: 'gandalf api call done',
     })
+
     try {
-      await firstValueFrom(
-        this.httpService.post(
-          `${this.rickApiUrl}/account`,
-          {
-            email: user.account.email,
-            name: user.account.name,
-            accountId: user.account.id,
-          },
-          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-        ),
-      )
+      // if new user email, then register, then update the anonymous user with real info.
+      if (user.is_new) {
+        await firstValueFrom(
+          this.httpService.put(
+            `${this.rickApiUrl}/account/${user.account.id}`,
+            {
+              email: user.account.email,
+              name: user.account.name,
+              accountId: user.account.id,
+            },
+            { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
+          ),
+        )
+      } else {
+      }
     } catch (err) {
       Sentry.captureException(err, {
         extra: { message: err.message, src: 'rick api call of signIn()' },

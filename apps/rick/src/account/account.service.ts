@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { AccountEntity } from './account.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateAccountDto } from './dto/create-account.dto'
@@ -7,6 +7,7 @@ import {
   FindAccountByIdDto,
   FindAccountByEmailDto,
 } from './dto/find-account.dto'
+import { UpdateAccountDto } from './dto/update-account.dto'
 
 @Injectable()
 export class AccountService {
@@ -23,6 +24,22 @@ export class AccountService {
       return existingAccount
     }
     return this.accountRepository.save(createAccount)
+  }
+
+  async update(
+    accountId: number,
+    data: UpdateAccountDto,
+  ): Promise<AccountEntity> {
+    const account = await this.lookup({
+      accountId: accountId,
+    })
+    if (account) {
+      account.email = data.email
+      account.name = data.name
+      return this.accountRepository.save(account)
+    } else {
+      throw new BadRequestException('Account not exists')
+    }
   }
 
   lookup(
