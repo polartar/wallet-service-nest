@@ -53,16 +53,7 @@ export class AccountController {
   async updateAccount(
     @Body() data: UpdateAccountDto,
     @Param('accountId') accountId: number,
-    @Headers() headers: Headers,
   ) {
-    const sentry_trace_data = Sentry.extractTraceparentData(
-      headers['sentry-trace'],
-    )
-    const sentry_txn = Sentry.startTransaction({
-      op: 'updateAccount',
-      name: 'update account in rick',
-      ...sentry_trace_data,
-    })
     try {
       return await this.accountService.update(accountId, data)
     } catch (err) {
@@ -73,8 +64,6 @@ export class AccountController {
         },
       })
       throw new BadRequestException(err.message)
-    } finally {
-      sentry_txn.finish()
     }
   }
 

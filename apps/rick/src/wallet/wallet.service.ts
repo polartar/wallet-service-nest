@@ -644,5 +644,25 @@ export class WalletService {
     }
   }
 
-  async combineWallets(existingAccountId: number, anonymousId: number) {}
+  async combineWallets(existingAccountId: number, anonymousId: number) {
+    const existingAccount = await this.accountService.lookup({
+      accountId: existingAccountId,
+    })
+    const wallets = await this.walletRepository.find({
+      where: {
+        accounts: { accountId: anonymousId },
+      },
+      relations: {
+        accounts: true,
+      },
+    })
+    wallets.map((wallet) => {
+      wallet.accounts = wallet.accounts.filter(
+        (account) => account.id !== anonymousId,
+      )
+      wallet.accounts.push(existingAccount)
+    })
+
+    return this.updateWallets(wallets)
+  }
 }

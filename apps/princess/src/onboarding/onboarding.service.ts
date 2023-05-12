@@ -157,20 +157,15 @@ export class OnboardingService {
               name: user.account.name,
               accountId: user.account.id,
             },
-            { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
           ),
         )
       } else {
         // combine wallets
         await firstValueFrom(
-          this.httpService.post(
-            `${this.rickApiUrl}/wallet/combine`,
-            {
-              existingAccountId: user.account.id,
-              anonymousId: accountId,
-            },
-            { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-          ),
+          this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
+            existingAccountId: user.account.id,
+            anonymousId: accountId,
+          }),
         )
       }
     } catch (err) {
