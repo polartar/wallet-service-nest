@@ -15,4 +15,10 @@ export class CreateDeviceResponse {
     example: 1,
   })
   account_id: number
+
+  @ApiProperty({
+    example:
+      'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk2OTcxODA4Nzk2ODI5YTk3MmU3OWE5ZDFhOWZmZjExY2Q2MWIxZTMiLCJ0eXAiOiJKV1QifQ',
+  })
+  access_token: string
 }

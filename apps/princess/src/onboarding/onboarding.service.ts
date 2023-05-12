@@ -5,6 +5,9 @@ import {
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
+  Request,
+  Inject,
+  ForbiddenException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -19,6 +22,8 @@ import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import * as Sentry from '@sentry/node'
+import { REQUEST } from '@nestjs/core'
+import { IRequest } from '../accounts/accounts.types'
 
 @Injectable()
 export class OnboardingService {
@@ -32,6 +37,7 @@ export class OnboardingService {
     private readonly httpService: HttpService,
     private accountService: AccountsService,
     private jwtService: JwtService,
+    @Inject(REQUEST) private readonly request: Request,
   ) {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
@@ -45,21 +51,31 @@ export class OnboardingService {
 
   async createDevice(): Promise<IDeviceCreateResponse> {
     try {
-      const response = await firstValueFrom(
+      const deviceResponse = await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/device`),
       )
 
       // create anonymous user
       const userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/account`, {
-          email: `any${response.data.deviceId}@gmail.com`,
+          email: `any${deviceResponse.data.deviceId}@gmail.com`,
           name: 'Anonymous',
         }),
       )
+
+      const payload = {
+        accountId: userResponse.data.id,
+        idToken: deviceResponse.data.deviceId,
+        deviceId: deviceResponse.data.deviceId,
+      }
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '1d',
+      })
       return {
-        secret: response.data.otp,
-        device_id: response.data.deviceId,
+        secret: deviceResponse.data.otp,
+        device_id: deviceResponse.data.deviceId,
         account_id: userResponse.data.id,
+        access_token: accessToken,
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in createDevice()')
@@ -152,7 +168,12 @@ export class OnboardingService {
         ),
       )
 
-      const payload = { type: type, accountId: user.account.id, idToken: token }
+      const payload = {
+        type: type,
+        accountId: user.account.id,
+        idToken: token,
+        deviceId,
+      }
       const accessToken = await this.jwtService.signAsync(payload, {
         expiresIn: '1d',
       })
@@ -244,5 +265,21 @@ export class OnboardingService {
 
   getVersion(): string {
     return this.version
+  }
+
+  validateAccountId(accountId: number) {
+    if (Number(accountId) === Number((this.request as IRequest).accountId)) {
+      return true
+    } else {
+      throw new ForbiddenException('Account Id not matched')
+    }
+  }
+
+  validateDeviceId(deviceId: string) {
+    if (deviceId === (this.request as IRequest).deviceId) {
+      return true
+    } else {
+      throw new ForbiddenException('Device Id not matched')
+    }
   }
 }

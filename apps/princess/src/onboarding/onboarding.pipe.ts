@@ -17,6 +17,7 @@ export class SignInValidationPipe implements PipeTransform {
     own_proposed_shard: Joi.string().required(),
     passcode_key: Joi.string().required(),
     recovery_key: Joi.string().required(),
+    access_token: Joi.string().required(),
   })
 
   transform(value: SignInDto) {

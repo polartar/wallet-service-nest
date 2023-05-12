@@ -27,14 +27,6 @@ export class OnboardingController {
     private readonly onboardingService: OnboardingService,
   ) {}
 
-  validateAccountId(accountId: number) {
-    if (Number(accountId) === Number((this.request as IRequest).accountId)) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
-  }
-
   @Public()
   @Post('device')
   @ApiOkResponse({ type: CreateDeviceResponse })
@@ -47,6 +39,8 @@ export class OnboardingController {
   @ApiOkResponse({ type: SignInResponse })
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
+    this.onboardingService.validateDeviceId(data.device_id)
+
     return this.onboardingService.signIn(
       data.type,
       data.id_token,
@@ -71,7 +65,7 @@ export class OnboardingController {
     summary: 'Sync user',
   })
   async syncUser(@Body() data: SyncUserDto) {
-    this.validateAccountId(data.account_id)
+    this.onboardingService.validateAccountId(data.account_id)
 
     return this.onboardingService.syncUser(
       data.account_id,

@@ -37,6 +37,10 @@ export class SignInDto {
   @ApiProperty({ description: 'recovery code' })
   @IsNotEmpty()
   recovery_key: string
+
+  @ApiProperty({ description: 'access token' })
+  @IsNotEmpty()
+  access_token: string
 }
 
 export class SignInResponse {
