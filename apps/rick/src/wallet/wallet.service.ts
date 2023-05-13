@@ -169,7 +169,7 @@ export class WalletService {
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
     return await this.walletRepository.findOne({
       where: { xPub },
-      relations: { accounts: true },
+      relations: { accounts: true, addresses: { history: true } },
     })
   }
 
@@ -234,12 +234,12 @@ export class WalletService {
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
+        return await this.lookUpByXPub(xPub)
       } else {
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
       }
       this.runEthereumService()
-      return wallet
     }
   }
 

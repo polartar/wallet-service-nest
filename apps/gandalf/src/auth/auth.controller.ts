@@ -35,7 +35,7 @@ export class AuthController {
         }
       } else {
         account = await this.accountService.getAccount(data.accountId)
-        console.log({ account })
+
         await this.accountService.update(account, { name, email })
 
         return {
