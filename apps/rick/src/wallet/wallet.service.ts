@@ -274,6 +274,14 @@ export class WalletService {
         }),
       )
     } catch (err) {
+      Sentry.captureMessage(
+        `${this.liquidAPIUrl}/api/v1/currencies/${
+          coinType === ECoinType.ETHEREUM
+            ? EXPubCurrency.ETHEREUM
+            : EXPubCurrency.BITCOIN
+        }/accounts/discover?xpub=${xPub}`,
+      )
+      Sentry.captureMessage(`API key = ${this.liquidAPIKey}`)
       if (err.response) {
         Sentry.captureException(
           `${err.response.data.errors[0]}: ${xPub} in addAddressesFromXPub`,
