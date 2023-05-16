@@ -153,9 +153,21 @@ export class MarketService {
       )
 
       if (coin === ECoinType.BITCOIN) {
-        return { success: true, data: res.data.data[0]['quote']['USD'] }
+        return {
+          success: true,
+          data: {
+            ...res.data.data[0]['quote']['USD'],
+            total_supply: res.data.data[0].total_supply,
+          },
+        }
       } else {
-        return { success: true, data: res.data.data[1]['quote']['USD'] }
+        return {
+          success: true,
+          data: {
+            ...res.data.data[1]['quote']['USD'],
+            total_supply: res.data.data[1].total_supply,
+          },
+        }
       }
     } catch (err) {
       Sentry.captureException(
