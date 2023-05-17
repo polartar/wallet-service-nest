@@ -36,6 +36,8 @@ export enum EAuth {
   Apple = 'apple',
 }
 
-export function getTimestamp(date: string): number {
-  return Math.floor(new Date(date).getTime() / 1000)
+export function getTimestamp(date?: string): number {
+  return date
+    ? Math.floor(new Date(date).getTime() / 1000)
+    : Math.floor(new Date().getTime() / 1000)
 }

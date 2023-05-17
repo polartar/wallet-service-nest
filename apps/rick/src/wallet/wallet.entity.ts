@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,7 +11,7 @@ import {
 } from 'typeorm'
 import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
-import { EWalletType } from '@rana/core'
+import { EWalletType, getTimestamp } from '@rana/core'
 
 @Entity()
 export class WalletEntity {
@@ -34,6 +35,11 @@ export class WalletEntity {
   @Column('boolean', { default: true })
   isActive = true
 
-  @CreateDateColumn()
-  createdAt: Date
+  @Column()
+  createdAt: number
+
+  @BeforeInsert()
+  public setCreatedAt() {
+    this.createdAt = getTimestamp()
+  }
 }

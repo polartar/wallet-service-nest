@@ -1,5 +1,6 @@
 import { WalletEntity } from './../wallet/wallet.entity'
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { HistoryEntity } from './history.entity'
-import { ECoinType } from '@rana/core'
+import { ECoinType, getTimestamp } from '@rana/core'
 
 @Entity()
 export class AddressEntity {
@@ -19,8 +20,8 @@ export class AddressEntity {
   @Column()
   address: string
 
-  @CreateDateColumn()
-  createdAt: Date
+  @Column()
+  createdAt: number
 
   @Column('text')
   coinType: ECoinType
@@ -37,4 +38,9 @@ export class AddressEntity {
 
   @Column('boolean', { default: true })
   isActive = true
+
+  @BeforeInsert()
+  public setCreatedAt() {
+    this.createdAt = getTimestamp()
+  }
 }
