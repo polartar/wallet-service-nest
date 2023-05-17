@@ -96,7 +96,7 @@ describe('WalletController', () => {
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
     )
     expect(ethWallets[0].history.length).toBeGreaterThan(1)
-  }, 20000)
+  }, 40000)
 
   it('should add a fresh ETH wallet', async () => {
     const wallet = Wallet.createRandom()
@@ -106,7 +106,7 @@ describe('WalletController', () => {
     expect(ethWallets.length).toBe(2)
     expect(ethWallets[1].address).toBe(wallet.address)
     expect(ethWallets[1].history.length).toBe(0)
-  }, 20000)
+  }, 40000)
 
   it('should get wallet history for the account for 1 month', async () => {
     const provider = new ethers.providers.EtherscanProvider(
