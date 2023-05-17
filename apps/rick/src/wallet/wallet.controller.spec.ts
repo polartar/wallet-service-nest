@@ -95,7 +95,7 @@ describe('WalletController', () => {
     expect(ethWallets[0].address).toBe(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
     )
-  }, 20000)
+  }, 40000)
 
   it('should get wallet history for the account for 1 month', async () => {
     const provider = new ethers.providers.EtherscanProvider(
@@ -115,7 +115,7 @@ describe('WalletController', () => {
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       filteredHistory.length,
     )
-  }, 20000)
+  }, 40000)
 
   it('should add new BTC wallet', async () => {
     await accountService.create({
