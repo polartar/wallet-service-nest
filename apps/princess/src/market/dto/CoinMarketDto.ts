@@ -20,7 +20,8 @@ export class CoinMarketResponse {
         market_cap_dominance: 19.3108,
         fully_diluted_market_cap: 225727135614.24,
         tvl: null,
-        last_updated: '2023-04-23T14:19:00.000Z',
+        last_updated: 1684339948,
+        total_supply: 232323,
       },
     ],
   })

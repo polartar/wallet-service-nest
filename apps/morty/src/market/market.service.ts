@@ -6,7 +6,7 @@ import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { EPeriod, ECoinType } from '@rana/core'
+import { EPeriod, ECoinType, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -158,6 +158,9 @@ export class MarketService {
           data: {
             ...res.data.data[0]['quote']['USD'],
             total_supply: res.data.data[0].total_supply,
+            last_updated: getTimestamp(
+              res.data.data[0]['quote']['USD']['last_updated'],
+            ),
           },
         }
       } else {
@@ -166,6 +169,9 @@ export class MarketService {
           data: {
             ...res.data.data[1]['quote']['USD'],
             total_supply: res.data.data[1].total_supply,
+            last_updated: getTimestamp(
+              res.data.data[1]['quote']['USD']['last_updated'],
+            ),
           },
         }
       }
@@ -228,14 +234,18 @@ export class MarketService {
       }
 
       const res = await firstValueFrom(
-        this.httpService.get<AxiosResponse>(apiURL, {
+        this.httpService.get(apiURL, {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
         }),
       )
 
       return {
         success: true,
-        data: res.data,
+        data: res.data.map((item: any) => ({
+          ...item,
+          periodStart: getTimestamp(item.periodStart),
+          periodEnd: getTimestamp(item.periodEnd),
+        })),
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in getHistoricalData()')
