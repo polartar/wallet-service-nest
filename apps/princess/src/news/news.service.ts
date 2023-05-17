@@ -121,10 +121,12 @@ export class NewsService {
       return {
         success: true,
         data: {
-          news: (res.data as { news: [] }).news.map((item: any) => ({
-            timestamp: getTimestamp(item.pubDateUtc),
-            ...item,
-          })),
+          news: (res.data as { news: [] }).news.map(
+            (item: { pubDateUtc: string }) => ({
+              pubDateUtc: getTimestamp(item.pubDateUtc),
+              ...item,
+            }),
+          ),
           total: (res.data as { total: number }).total,
           currentPage: newQuery.pageNumber,
           countPerPage: newQuery.countPerPage,

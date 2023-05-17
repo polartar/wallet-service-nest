@@ -23,7 +23,7 @@ export class TopNewsResponse {
   @ApiProperty({
     example: [
       {
-        pubDateUtc: '2023-04-21T14:04:55.000Z',
+        pubDateUtc: 1684256400,
         title:
           'OP Erigon released as new client software for Optimism on testnet',
         author: 'Vishal Chawla',

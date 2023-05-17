@@ -241,11 +241,13 @@ export class MarketService {
 
       return {
         success: true,
-        data: res.data.map((item: any) => ({
-          ...item,
-          periodStart: getTimestamp(item.periodStart),
-          periodEnd: getTimestamp(item.periodEnd),
-        })),
+        data: res.data.map(
+          (item: { periodStart: string; periodEnd: string }) => ({
+            ...item,
+            periodStart: getTimestamp(item.periodStart),
+            periodEnd: getTimestamp(item.periodEnd),
+          }),
+        ),
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in getHistoricalData()')

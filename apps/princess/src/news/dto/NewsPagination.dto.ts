@@ -44,7 +44,7 @@ export class PaginationNewsResponse {
     example: {
       news: [
         {
-          pubDateUtc: '2023-04-21T14:04:55.000Z',
+          pubDateUtc: 1684256400,
           title:
             'OP Erigon released as new client software for Optimism on testnet',
           author: 'Vishal Chawla',
@@ -56,7 +56,7 @@ export class PaginationNewsResponse {
           assetList: ['ETH'],
         },
         {
-          pubDateUtc: '2023-04-21T14:04:55.000Z',
+          pubDateUtc: 1684266400,
           title:
             'OP Erigon released as new client software for Optimism on testnet',
           author: 'Vishal Chawla',
