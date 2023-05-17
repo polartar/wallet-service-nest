@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Put, Headers } from '@nestjs/common'
+import { Body, Controller, Param, Post, Put } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
 import { IDeviceUpdate } from './totp.types'
@@ -9,8 +9,8 @@ export class TotpController {
   constructor(private readonly service: TotpService) {}
 
   @Post('pair')
-  pair(@Body() data: CreateDeviceDto, @Headers() headers: Headers) {
-    return this.service.pair(data, headers)
+  pair(@Body() data: CreateDeviceDto) {
+    return this.service.pair(data)
   }
 
   @Post('device')

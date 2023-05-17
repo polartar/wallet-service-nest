@@ -177,19 +177,15 @@ export class OnboardingService {
     })
     try {
       await firstValueFrom(
-        this.httpService.post(
-          `${this.fluffyApiUrl}/pair`,
-          {
-            userId: user.account.id,
-            deviceId,
-            otp,
-            serverProposedShard,
-            ownProposedShard,
-            passCodeKey,
-            recoveryKey,
-          },
-          { headers: { 'sentry-trace': sentry_txn.toTraceparent() } },
-        ),
+        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
+          userId: user.account.id,
+          deviceId,
+          otp,
+          serverProposedShard,
+          ownProposedShard,
+          passCodeKey,
+          recoveryKey,
+        }),
       )
 
       const payload = {

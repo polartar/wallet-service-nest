@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { TotpService } from './totp.service'
 import { DeviceEntity } from './device.entity'
 import { authenticator } from 'otplib'
+import { BadRequestException } from '@nestjs/common'
 
 describe('TotpService', () => {
   let service: TotpService
@@ -58,5 +59,38 @@ describe('TotpService', () => {
         })
       ).deviceId,
     ).toBe(device.deviceId)
+  })
+
+  it('should throw error when deviceId not exists', async () => {
+    try {
+      await service.pair({
+        userId: 1,
+        deviceId: 'device.deviceId',
+        serverProposedShard: 'server shard',
+        ownProposedShard: 'own shard',
+        passCodeKey: 'pass code',
+        recoveryKey: 'recovery key',
+        otp: 'token',
+      })
+    } catch (err) {
+      expect(err).toBeInstanceOf(BadRequestException)
+    }
+  })
+
+  it('should throw error when invalid otp token', async () => {
+    const device = await service.createDevice()
+    try {
+      await service.pair({
+        userId: 1,
+        deviceId: device.deviceId,
+        serverProposedShard: 'server shard',
+        ownProposedShard: 'own shard',
+        passCodeKey: 'pass code',
+        recoveryKey: 'recovery key',
+        otp: 'token',
+      })
+    } catch (err) {
+      expect(err).toBeInstanceOf(BadRequestException)
+    }
   })
 })
