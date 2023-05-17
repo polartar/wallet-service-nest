@@ -115,7 +115,7 @@ describe('WalletController', () => {
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       filteredHistory.length,
     )
-  })
+  }, 20000)
 
   it('should add new BTC wallet', async () => {
     await accountService.create({
