@@ -35,3 +35,7 @@ export enum EAuth {
   Google = 'google',
   Apple = 'apple',
 }
+
+export function getTimestamp(date: string): number {
+  return Math.floor(new Date(date).getTime() / 1000)
+}
