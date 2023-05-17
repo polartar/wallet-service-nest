@@ -91,20 +91,20 @@ describe('TransactionController', () => {
     expect(finalTx.data.tx.outputs[0].value).toBe(1)
   })
 
-  // it('should not publish the transaction with invalid signature', async () => {
-  //   const newTx = await getRawTransaction()
+  it('should not publish the transaction with invalid signature', async () => {
+    const newTx = await getRawTransaction()
 
-  //   // invalid private key
-  //   const tmpTx = signTransaction(invalidPrivKey, newTx.data)
+    // invalid private key
+    const tmpTx = signTransaction(invalidPrivKey, newTx.data)
 
-  //   const finalTx = await controller.publishTransaction({
-  //     coinType: ECoinType.BITCOIN,
-  //     transaction: tmpTx,
-  //   })
+    const finalTx = await controller.publishTransaction({
+      coinType: ECoinType.BITCOIN,
+      transaction: tmpTx,
+    })
 
-  //   expect(finalTx.success).toBeFalsy()
-  //   expect(finalTx.error).toBeDefined()
-  // })
+    expect(finalTx.success).toBeFalsy()
+    expect(finalTx.error).toBeDefined()
+  }, 20000)
 
   it('should generate the raw nft transfer transaction', async () => {
     const tx = {
@@ -119,28 +119,28 @@ describe('TransactionController', () => {
     expect(response.success).toBeTruthy()
   }, 10000)
 
-  // it('should transfer the nft', async () => {
-  //   const tx = {
-  //     from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-  //     to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-  //     tokenId: 52852,
-  //     type: ENFTTypes.ERC721,
-  //     contractAddress: '0xc36442b4a4522e871399cd717abdd847ab11fe88',
-  //   }
+  it('should transfer the nft', async () => {
+    const tx = {
+      from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+      to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+      tokenId: 52852,
+      type: ENFTTypes.ERC721,
+      contractAddress: '0xc36442b4a4522e871399cd717abdd847ab11fe88',
+    }
 
-  //   const unsignedTxResponse = await controller.generateNFTRawTransaction(tx)
+    const unsignedTxResponse = await controller.generateNFTRawTransaction(tx)
 
-  //   const infura_key = configService.get<string>(EEnvironment.infuraAPIKey)
-  //   const provider = new ethers.providers.InfuraProvider('goerli', infura_key)
-  //   const signer = new ethers.Wallet(nftOwnerKey, provider)
+    const infura_key = configService.get<string>(EEnvironment.infuraAPIKey)
+    const provider = new ethers.providers.InfuraProvider('goerli', infura_key)
+    const signer = new ethers.Wallet(nftOwnerKey, provider)
 
-  //   const unsignedTx = parseTransaction(unsignedTxResponse.data as string)
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   const { type, r, v, s, ...newTx } = unsignedTx
+    const unsignedTx = parseTransaction(unsignedTxResponse.data as string)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { type, r, v, s, ...newTx } = unsignedTx
 
-  //   const signedTx = await signer.signTransaction(newTx)
-  //   const response = await controller.sendNFTTransaction(signedTx)
-  //   console.log(response)
-  //   expect(response.success).toBeTruthy()
-  // }, 40000)
+    const signedTx = await signer.signTransaction(newTx)
+    const response = await controller.sendNFTTransaction(signedTx)
+
+    expect(response.success).toBeTruthy()
+  }, 40000)
 })
