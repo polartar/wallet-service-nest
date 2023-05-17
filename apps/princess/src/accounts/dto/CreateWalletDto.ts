@@ -71,7 +71,7 @@ export class CreateWalletResponse {
   id: number
 
   @ApiProperty({
-    example: '2023-04-23T23:18:40.347Z',
+    example: 1684343715,
   })
-  createdAt: string
+  createdAt: number
 }

@@ -17,13 +17,13 @@ export interface IWallet {
   addresses: IAddress[]
   isActive: boolean
   path: string
-  createdAt: Date
+  createdAt: number
 }
 
 export interface IAddress {
   id: number
   address: string
-  createdAt: Date
+  createdAt: number
   path: string
   wallet: IWallet
   history: IBalanceHistory[]
