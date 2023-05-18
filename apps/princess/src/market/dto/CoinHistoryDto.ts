@@ -8,8 +8,8 @@ export class CoinHistoryResponse {
     example: [
       {
         exchange: 'Summary',
-        periodStart: '2023-04-22T15:00:00.000Z',
-        periodEnd: '2023-04-22T16:00:00.000Z',
+        periodStart: 1684339948,
+        periodEnd: 1694339948,
         priceOpen: 1865.428849181794,
         priceClose: 1866.87385906316,
         priceLow: 1859.37032859723,
@@ -19,8 +19,8 @@ export class CoinHistoryResponse {
       },
       {
         exchange: 'Summary',
-        periodStart: '2023-04-22T16:00:00.000Z',
-        periodEnd: '2023-04-22T17:00:00.000Z',
+        periodStart: 1684339948,
+        periodEnd: 1694339948,
         priceOpen: 1866.918342663015,
         priceClose: 1875.151480801537,
         priceLow: 1865.983269876373,
@@ -30,8 +30,8 @@ export class CoinHistoryResponse {
       },
       {
         exchange: 'Summary',
-        periodStart: '2023-04-22T17:00:00.000Z',
-        periodEnd: '2023-04-22T18:00:00.000Z',
+        periodStart: 1684339948,
+        periodEnd: 1694339948,
         priceOpen: 1875.167500993446,
         priceClose: 1881.762449742041,
         priceLow: 1874.018960248871,

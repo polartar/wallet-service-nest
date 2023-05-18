@@ -55,7 +55,7 @@ export class GetPortfolioResponse {
         isActive: true,
         id: 1,
         address: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-        createdAt: '2023-04-23T23:18:40.356Z',
+        createdAt: 1684343715,
         path: '/0/5',
         history: [
           {
@@ -96,7 +96,7 @@ export class GetPortfolioResponse {
   id: number
 
   @ApiProperty({
-    example: '2023-04-23T23:18:40.347Z',
+    example: 1684343715,
   })
-  createdAt: string
+  createdAt: number
 }

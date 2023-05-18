@@ -14,7 +14,7 @@ export interface INFTAssetResponse {
   error?: string
 }
 
-interface INFTInfo {
+export interface INFTInfo {
   token_address: string
   token_id: string
   contract_type: string
@@ -23,4 +23,6 @@ interface INFTInfo {
   block_number_minted: string
   token_uri?: string
   metadata?: string
+  last_metadata_sync?: string | number
+  last_token_uri_sync?: string | number
 }
