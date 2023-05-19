@@ -373,8 +373,8 @@ export class WalletService {
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.accounts', 'accounts')
       .leftJoinAndSelect('wallet.addresses', 'addresses')
-      .leftJoin('addresses.history', 'addresses.history')
-      .where('accounts.id IN (:...accounts)', { accounts: [accountId] })
+      .leftJoinAndSelect('addresses.history', 'addresses.history')
+      .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
       .orderBy('addresses.history.timestamp', 'DESC')
 
     if (periodAsNumber) {

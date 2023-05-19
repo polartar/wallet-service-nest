@@ -2,7 +2,6 @@ import { WalletEntity } from './../wallet/wallet.entity'
 import {
   BeforeInsert,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
