@@ -367,21 +367,26 @@ export class WalletService {
     walletId?: number,
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
-    const timeInPast = this.getCurrentTimeBySeconds() - periodAsNumber || 0
+    const timeInPast =
+      period === EPeriod.All
+        ? 0
+        : this.getCurrentTimeBySeconds() - periodAsNumber || 0
 
     const queryBuilder = this.walletRepository
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.accounts', 'accounts')
       .leftJoinAndSelect('wallet.addresses', 'addresses')
-      .leftJoinAndSelect('addresses.history', 'addresses.history')
+      .leftJoinAndSelect(
+        'addresses.history',
+        'addresses.history',
+        'addresses.history.timestamp >= :start_at',
+        {
+          start_at: timeInPast,
+        },
+      )
       .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
       .orderBy('addresses.history.timestamp', 'DESC')
 
-    if (periodAsNumber) {
-      queryBuilder.andWhere('addresses.history.timestamp >= :start_at', {
-        start_at: timeInPast,
-      })
-    }
     if (walletId) {
       queryBuilder.andWhere('wallet.id = :id', { id: walletId })
     }

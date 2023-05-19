@@ -45,11 +45,6 @@ export class GetPortfolioResponse {
   type: string
 
   @ApiProperty({
-    example: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-  })
-  address: string
-
-  @ApiProperty({
     example: [
       {
         isActive: true,
