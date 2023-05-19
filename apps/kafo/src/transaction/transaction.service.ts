@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
   ENFTTypes,
   IFeeResponse,

@@ -6,7 +6,6 @@ import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/FindPairingDto'
 import { CreateDeviceDto } from './dto/CreateDeviceDto'
 import * as Sentry from '@sentry/node'
-import * as SentryTracing from '@sentry/tracing'
 
 @Injectable()
 export class TotpService {
@@ -31,16 +30,7 @@ export class TotpService {
     })
   }
 
-  async pair(createDeviceDto: CreateDeviceDto, headers?: Headers) {
-    SentryTracing && true // This is to ensure bundler won't optimise the sentry/tracing import (https://github.com/getsentry/sentry-javascript/issues/4731#issuecomment-1098530656)
-    const sentry_trace_data = Sentry.extractTraceparentData(
-      headers ? headers['sentry-trace'] : '',
-    )
-    const sentry_txn = Sentry.startTransaction({
-      op: 'pair',
-      name: 'pair fn in fluffy',
-      ...sentry_trace_data,
-    })
+  async pair(createDeviceDto: CreateDeviceDto) {
     const device = await this.lookup({
       deviceId: createDeviceDto.deviceId,
     })
@@ -50,10 +40,7 @@ export class TotpService {
       )
       throw new BadRequestException('Not found matched deviceId')
     }
-    Sentry.addBreadcrumb({
-      category: 'pair',
-      message: 'checking otp',
-    })
+
     if (!authenticator.check(createDeviceDto.otp, device.secret)) {
       Sentry.captureMessage(`Invalid otp token(${createDeviceDto.otp}) in pair`)
       throw new BadRequestException('Invalid token')
@@ -64,16 +51,9 @@ export class TotpService {
     device.ownProposedShard = createDeviceDto.ownProposedShard
     device.passCodeKey = createDeviceDto.passCodeKey
     device.recoveryKey = createDeviceDto.recoveryKey
-    Sentry.addBreadcrumb({
-      category: 'pair',
-      message: 'saving device to db',
-    })
+
     await this.deviceRepository.save(device)
-    Sentry.addBreadcrumb({
-      category: 'pair',
-      message: 'save done',
-    })
-    sentry_txn.finish()
+
     return device
   }
 

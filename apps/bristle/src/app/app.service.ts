@@ -10,6 +10,9 @@ export class AppService {
   }
 
   verifyPayload(parts: string[]) {
+    if (!Array.isArray(parts)) {
+      throw new BadRequestException('Parts should be array')
+    }
     const decoder = new URDecoder()
     let i = 0
     do {

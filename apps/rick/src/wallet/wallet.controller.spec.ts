@@ -13,7 +13,7 @@ import { HttpModule, HttpService } from '@nestjs/axios'
 import { WalletController } from './wallet.controller'
 import { WalletService } from './wallet.service'
 import { PortfolioModule } from '../portfolio/portfolio.module'
-import { ethers } from 'ethers'
+import { Wallet, ethers } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
 import { SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
@@ -82,12 +82,11 @@ describe('WalletController', () => {
     expect(account.email).toBe('test@gmail.com')
   })
 
-  it('should add new ETH wallet', async () => {
+  it('should add a ETH wallet', async () => {
     await controller.createPortfolio(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
       EWalletType.METAMASK,
-      // ECoinType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
@@ -95,6 +94,17 @@ describe('WalletController', () => {
     expect(ethWallets[0].address).toBe(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
     )
+    expect(ethWallets[0].history.length).toBeGreaterThan(1)
+  }, 40000)
+
+  it('should add a fresh ETH wallet', async () => {
+    const wallet = Wallet.createRandom()
+    await controller.createPortfolio(wallet.address, 1, EWalletType.METAMASK)
+
+    const ethWallets = await portfolioService.getEthWallets()
+    expect(ethWallets.length).toBe(2)
+    expect(ethWallets[1].address).toBe(wallet.address)
+    expect(ethWallets[1].history.length).toBe(0)
   }, 40000)
 
   it('should get wallet history for the account for 1 month', async () => {
@@ -151,13 +161,13 @@ describe('WalletController', () => {
 
   it('should inactive the wallets', async () => {
     let ethWallets = await portfolioService.getEthWallets()
-    expect(ethWallets.length).toBe(1)
+    expect(ethWallets.length).toBe(2)
     await controller.activeWallet({
       accountId: 1,
       isActive: false,
     })
     ethWallets = await portfolioService.getEthWallets()
-    expect(ethWallets.length).toBe(0)
+    expect(ethWallets.length).toBe(1)
   })
 
   it('should active the wallet', async () => {
@@ -166,6 +176,44 @@ describe('WalletController', () => {
       isActive: true,
     })
     const ethWallets = await portfolioService.getEthWallets()
-    expect(ethWallets.length).toBe(1)
+    expect(ethWallets.length).toBe(2)
   })
+
+  it('should add Ethereum xpubs', async () => {
+    const xpub =
+      'xpub6BzwKCWVs4F9cpmYundX3PjbqcPqERCXKCAw8SRKQgXd1ybTxi338A2Ep6EbGhFp7up4L7PDWivUtnYNC79MWo6wN5SqzrhksQVJupArUxD'
+    const response = await controller.AddXPubs({
+      accountId: 1,
+      xpubs: [
+        {
+          BIP44: 714,
+          xpub: xpub,
+        },
+      ],
+    })
+    expect(response.length).toBe(1)
+    expect(response[0].xPub).toBe(xpub)
+    expect(response[0].addresses.length).toBe(1)
+    expect(response[0].addresses[0].address).toBe(
+      '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
+    )
+    expect(response[0].addresses[0].history.length).toBeGreaterThan(1)
+  }, 20000)
+
+  it('should add Bitcoin xpubs that has no addresses', async () => {
+    const xpub =
+      'vpub5YrRyVwDdS4ME6Jyy4qYSgu14JyAzh4B3s9uXfitjdCoFffGeC9iSxCf722LmJ9y5v1SvN4F25Hukw8XYj2vZC1xchB8BsRsXLmm8NNEp5e'
+    const response = await controller.AddXPubs({
+      accountId: 1,
+      xpubs: [
+        {
+          BIP44: 714,
+          xpub: xpub,
+        },
+      ],
+    })
+    expect(response.length).toBe(1)
+    expect(response[0].xPub).toBe(xpub)
+    expect(response[0].addresses.length).toBe(0)
+  }, 20000)
 })
