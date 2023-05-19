@@ -1,4 +1,4 @@
-import { In, MoreThanOrEqual, Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -367,36 +367,31 @@ export class WalletService {
     walletId?: number,
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
-    const timeInPast = this.getCurrentTimeBySeconds() - periodAsNumber || 0
+    const timeInPast =
+      period === EPeriod.All
+        ? 0
+        : this.getCurrentTimeBySeconds() - periodAsNumber || 0
 
-    return this.walletRepository.find({
-      where: {
-        isActive: true,
-        accounts: { accountId },
-        id: walletId,
-        addresses: {
-          history:
-            periodAsNumber === null
-              ? null
-              : {
-                  timestamp: MoreThanOrEqual(timeInPast),
-                },
+    const queryBuilder = this.walletRepository
+      .createQueryBuilder('wallet')
+      .leftJoinAndSelect('wallet.accounts', 'accounts')
+      .leftJoinAndSelect('wallet.addresses', 'addresses')
+      .leftJoinAndSelect(
+        'addresses.history',
+        'addresses.history',
+        'addresses.history.timestamp >= :start_at',
+        {
+          start_at: timeInPast,
         },
-      },
-      order: {
-        addresses: {
-          history: {
-            timestamp: 'DESC',
-          },
-        },
-      },
-      relations: {
-        accounts: true,
-        addresses: {
-          history: true,
-        },
-      },
-    })
+      )
+      .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
+      .orderBy('addresses.history.timestamp', 'DESC')
+
+    if (walletId) {
+      queryBuilder.andWhere('wallet.id = :id', { id: walletId })
+    }
+
+    return await queryBuilder.getMany()
   }
 
   async getUserHistory(accountId: number, period: EPeriod) {
