@@ -3,8 +3,9 @@ import { ConfigService } from '@nestjs/config'
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
 import { EEnvironment } from '../environments/environment.types'
-import { INFTAssetResponse, INTAssetInput } from './nft.types'
+import { INFTAssetResponse, INFTInfo, INTAssetInput } from './nft.types'
 import * as Sentry from '@sentry/node'
+import { getTimestamp } from '@rana/core'
 
 @Injectable()
 export class NftService {
@@ -55,7 +56,13 @@ export class NftService {
           pageNumber: obj.page,
           countPerPage: obj.page_size,
           hasNextPage: response.hasNext(),
-          nfts: obj.result,
+          nfts: obj.result.map((item: INFTInfo) => ({
+            ...item,
+            last_token_uri_sync: getTimestamp(
+              item.last_token_uri_sync as string,
+            ),
+            last_metadata_sync: getTimestamp(item.last_metadata_sync as string),
+          })),
         },
       }
     } catch (err) {

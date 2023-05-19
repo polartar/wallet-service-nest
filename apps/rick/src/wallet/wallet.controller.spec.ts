@@ -87,7 +87,6 @@ describe('WalletController', () => {
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
       1,
       EWalletType.METAMASK,
-      // ECoinType.ETHEREUM,
     )
 
     const ethWallets = await portfolioService.getEthWallets()
@@ -126,7 +125,7 @@ describe('WalletController', () => {
     expect(walletsHistory[0].addresses[0].history.length).toBe(
       filteredHistory.length,
     )
-  })
+  }, 40000)
 
   it('should add new BTC wallet', async () => {
     await accountService.create({

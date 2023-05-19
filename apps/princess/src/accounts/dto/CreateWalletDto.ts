@@ -5,10 +5,14 @@ export class CreateWalletDto {
   @ApiProperty({
     description: 'wallet type',
     enum: [EWalletType.HOTWALLET, EWalletType.METAMASK, EWalletType.VAULT],
+    example: EWalletType.METAMASK,
   })
   wallet_type: EWalletType
 
-  @ApiProperty({ description: 'xPub or Ethereum wallet address' })
+  @ApiProperty({
+    description: 'xPub, Bitcoin or Ethereum wallet address',
+    example: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+  })
   @IsNotEmpty()
   x_pub: string
 }
@@ -67,7 +71,7 @@ export class CreateWalletResponse {
   id: number
 
   @ApiProperty({
-    example: '2023-04-23T23:18:40.347Z',
+    example: 1684343715,
   })
-  createdAt: string
+  createdAt: number
 }

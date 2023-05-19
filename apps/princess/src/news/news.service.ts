@@ -5,7 +5,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { ESort, INewsQuery, INewsResponse } from './news.types'
-import { ECoinType } from '@rana/core'
+import { ECoinType, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -121,7 +121,12 @@ export class NewsService {
       return {
         success: true,
         data: {
-          news: (res.data as { news: [] }).news,
+          news: (res.data as { news: [] }).news.map(
+            (item: { pubDateUtc: string }) => ({
+              pubDateUtc: getTimestamp(item.pubDateUtc),
+              ...item,
+            }),
+          ),
           total: (res.data as { total: number }).total,
           currentPage: newQuery.pageNumber,
           countPerPage: newQuery.countPerPage,
