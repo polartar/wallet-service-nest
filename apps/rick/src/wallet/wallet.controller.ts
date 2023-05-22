@@ -45,9 +45,9 @@ export class WalletController {
     }
   }
 
-  @Post(':xPub')
+  @Post('')
   async createPortfolio(
-    @Param('xPub') xPub: string,
+    @Body('xPub') xPub: string,
     @Body('account_id', ParseIntPipe) account_id: number,
     @Body('wallet_type', new ParseEnumPipe(EWalletType))
     walletType: EWalletType,

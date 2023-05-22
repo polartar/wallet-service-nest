@@ -58,9 +58,10 @@ export class AccountsService {
   }
 
   async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
-    return this.rickAPICall(EAPIMethod.POST, `wallet/${xPub}`, {
+    return this.rickAPICall(EAPIMethod.POST, `wallet`, {
       account_id: accountId,
       wallet_type: walletType,
+      xPub: xPub,
     })
   }
 
