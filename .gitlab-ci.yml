@@ -42,10 +42,14 @@ lint:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=lint --parallel=3
 
-sast:
-  stage: test
 include:
-- template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE/princess_prod:main
+
 
 test:
   stage: test
