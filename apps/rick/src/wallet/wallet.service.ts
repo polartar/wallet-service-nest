@@ -234,12 +234,12 @@ export class WalletService {
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
-        return await this.lookUpByXPub(xPub)
       } else {
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
       }
       this.runEthereumService()
+      return await this.lookUpByXPub(xPub)
     }
   }
 
