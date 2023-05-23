@@ -56,10 +56,8 @@ upload SBOM:
     - deploy to testnet k8s cluster
     # - deploy to mainnet k8s cluster
     - container_scanning
-    - dependency_scanning
   dependencies:
     - container_scanning
-    - dependency_scanning
   stage: post deploy
   script:
     - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project=$DTRACK_PROJECT_UUID https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
