@@ -5,6 +5,7 @@ stages:
   - test
   - build
   - deploy
+  - post deploy
 
 .distributed:
   interruptible: true
@@ -50,6 +51,18 @@ container_scanning:
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE/princess_prod:main
 
+upload SBOM:
+  needs:
+    - deploy to testnet k8s cluster
+    # - deploy to mainnet k8s cluster
+    - container_scanning
+    - dependency_scanning
+  dependencies:
+    - container_scanning
+    - dependency_scanning
+  stage: post deploy
+  script:
+    - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project=$DTRACK_PROJECT_UUID https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
 
 test:
   stage: test
