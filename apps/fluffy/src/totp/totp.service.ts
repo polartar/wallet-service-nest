@@ -3,7 +3,7 @@ import { authenticator } from 'otplib'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
-import { FindPairingDto } from './dto/FindPairingDto'
+import { FindPairingDto } from './dto/find-paring-dto'
 import * as Sentry from '@sentry/node'
 import { IPair } from './totp.types'
 

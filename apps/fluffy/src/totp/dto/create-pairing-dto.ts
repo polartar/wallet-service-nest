@@ -1,4 +1,4 @@
-export class CreatePairDto {
+export class CreatePairingDto {
   userId: number
   deviceId: string
   serverProposedShard: string
