@@ -137,7 +137,6 @@ describe('WalletController', () => {
       'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       2,
       EWalletType.HOTWALLET,
-      // ECoinType.ETHEREUM,
     )
 
     const btcWallets = await portfolioService.getBtcWallets()
@@ -216,4 +215,29 @@ describe('WalletController', () => {
     expect(response[0].xPub).toBe(xpub)
     expect(response[0].addresses.length).toBe(0)
   }, 20000)
+
+  it('should add a xpub', async () => {
+    await accountService.create({
+      email: 'test3@gmail.com',
+      name: 'test3',
+      accountId: 3,
+    })
+    const xpub =
+      'xprvA3aS7dVyPgPjHsr4kAjv3Zx5uGdZFqysQDKSso9k34e5KWZauaDZutpxeFXhPKcjGqukZUV8vbhhw8RorRFcU8Zs3EpFyDB2RPxTZUT8DZv'
+    const response = await controller.createPortfolio(
+      xpub,
+      3,
+      EWalletType.VAULT,
+    )
+
+    expect(response.addresses[0].address).toBe(
+      '0x1771A0FF2ed62529Fb9801e84d134e502358647A',
+    )
+
+    const history = await controller.getHistory(3, EPeriod.Day)
+    expect(history[0].xPub).toBe(xpub)
+    expect(history[0].addresses[0].address).toBe(
+      '0x1771A0FF2ed62529Fb9801e84d134e502358647A',
+    )
+  }, 40000)
 })
