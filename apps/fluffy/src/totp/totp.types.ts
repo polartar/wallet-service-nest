@@ -1,7 +1,7 @@
 export interface IPair {
-  userId: string
+  userId: number
   deviceId: string
-  otp: string
+  otp?: string
   serverProposedShard: string
   ownProposedShard: string
   passCodeKey: string

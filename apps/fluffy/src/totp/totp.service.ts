@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/FindPairingDto'
-import { CreateDeviceDto } from './dto/CreateDeviceDto'
 import * as Sentry from '@sentry/node'
+import { IPair } from './totp.types'
 
 @Injectable()
 export class TotpService {
@@ -30,27 +30,27 @@ export class TotpService {
     })
   }
 
-  async pair(createDeviceDto: CreateDeviceDto) {
+  async createPair(pair: IPair) {
     const device = await this.lookup({
-      deviceId: createDeviceDto.deviceId,
+      deviceId: pair.deviceId,
     })
     if (!device) {
       Sentry.captureMessage(
-        `Not found matched deviceId(${createDeviceDto.deviceId}) in pair`,
+        `pair(): No found the matched entity with deviceId(${pair.deviceId})`,
       )
-      throw new BadRequestException('Not found matched deviceId')
+      throw new BadRequestException('No found matched deviceId')
     }
 
-    if (!authenticator.check(createDeviceDto.otp, device.secret)) {
-      Sentry.captureMessage(`Invalid otp token(${createDeviceDto.otp}) in pair`)
+    if (!authenticator.check(pair.otp, device.secret)) {
+      Sentry.captureMessage(`Invalid otp token(${pair.otp}) in pair()`)
       throw new BadRequestException('Invalid token')
     }
 
-    device.userId = createDeviceDto.userId
-    device.serverProposedShard = createDeviceDto.serverProposedShard
-    device.ownProposedShard = createDeviceDto.ownProposedShard
-    device.passCodeKey = createDeviceDto.passCodeKey
-    device.recoveryKey = createDeviceDto.recoveryKey
+    device.userId = pair.userId
+    device.serverProposedShard = pair.serverProposedShard
+    device.ownProposedShard = pair.ownProposedShard
+    device.passCodeKey = pair.passCodeKey
+    device.recoveryKey = pair.recoveryKey
 
     await this.deviceRepository.save(device)
 
@@ -64,9 +64,11 @@ export class TotpService {
       return await this.deviceRepository.save(deviceEntity)
     } else {
       Sentry.captureMessage(
-        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+        `updatePassCode(): No found matched entity with userId(${userId}) and deviceId(${deviceId})`,
       )
-      throw new BadRequestException('Not found matched userId and deviceId')
+      throw new BadRequestException(
+        'No found the matched entity with userId and deviceId',
+      )
     }
   }
 
@@ -77,7 +79,7 @@ export class TotpService {
       return await this.deviceRepository.save(deviceEntity)
     } else {
       Sentry.captureMessage(
-        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+        `updateIsCloud(): Not found matched userId(${userId}) and deviceId(${deviceId})`,
       )
       throw new BadRequestException('Not found matched userId and deviceId')
     }
@@ -90,9 +92,11 @@ export class TotpService {
     })
     if (!device) {
       Sentry.captureMessage(
-        `Not found matched userId(${userId}) and deviceId(${deviceId}) in updatePassCode`,
+        `verify(): No found the matched entity with userId(${userId}) and deviceId(${deviceId})`,
       )
-      throw new BadRequestException('Not found matched userId and deviceId')
+      throw new BadRequestException(
+        'No found the matched entity with userId and deviceId',
+      )
     }
 
     return authenticator.check(otp, device.secret)
