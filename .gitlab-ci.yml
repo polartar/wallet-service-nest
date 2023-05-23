@@ -5,6 +5,7 @@ stages:
   - test
   - build
   - deploy
+  - post deploy
 
 .distributed:
   interruptible: true
@@ -42,10 +43,26 @@ lint:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=lint --parallel=3
 
-sast:
-  stage: test
 include:
-- template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE/princess_prod:main
+
+upload SBOM:
+  needs:
+    - deploy to testnet k8s cluster
+    # - deploy to mainnet k8s cluster
+    - container_scanning
+    - dependency_scanning
+  dependencies:
+    - container_scanning
+    - dependency_scanning
+  stage: post deploy
+  script:
+    - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project=$DTRACK_PROJECT_UUID https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
 
 test:
   stage: test
