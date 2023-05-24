@@ -6,7 +6,7 @@ export class SwitchToCloudShardDto {
   device_id: string
 }
 
-export class SwitchCloudResponse {
+export class SwitchCloudSwaggerResponse {
   @ApiProperty({
     example: 1,
   })
@@ -48,7 +48,7 @@ export class SwitchCloudResponse {
   isCloud: boolean
 }
 
-export class SwitchAccountResponse {
+export class SwitchAccountSwaggerResponse {
   @ApiProperty({
     example: 1,
   })

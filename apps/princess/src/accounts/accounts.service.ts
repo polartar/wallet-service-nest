@@ -1,8 +1,11 @@
 import { HttpService } from '@nestjs/axios'
 import {
   BadGatewayException,
+  BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  Request,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -14,6 +17,8 @@ import { EAPIMethod, IMarketData, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { MarketService } from '../market/market.service'
 import { formatUnits } from 'ethers/lib/utils'
+import { REQUEST } from '@nestjs/core'
+import { IRequest } from './accounts.types'
 
 @Injectable()
 export class AccountsService {
@@ -22,6 +27,7 @@ export class AccountsService {
   gandalfApiUrl: string
 
   constructor(
+    @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly marketService: MarketService,
@@ -35,6 +41,18 @@ export class AccountsService {
     )
   }
 
+  getAccountIdFromRequest(): number {
+    return Number((this.request as IRequest).accountId)
+  }
+
+  validateAccountId(accountId: number) {
+    if (Number(accountId) === this.getAccountIdFromRequest()) {
+      return true
+    } else {
+      throw new BadRequestException('Account Id  not matched')
+    }
+  }
+
   async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
     try {
       const url = `${this.rickApiUrl}/${path}`
@@ -45,19 +63,19 @@ export class AccountsService {
       )
       return res.data
     } catch (err) {
-      if (err.response) {
-        Sentry.captureException(err.response.data.message + ' in rickAPICall()')
+      const message = err.response ? err.response.data.message : err.message
+      Sentry.captureException(`rickAPICall(): ${message}`)
 
-        throw new InternalServerErrorException(
-          'Something went wrong in Rick API',
-        )
+      if (err.response) {
+        throw new InternalServerErrorException(message)
       }
-      Sentry.captureException(err.message + ' in rickAPICall()')
-      throw new BadGatewayException('Rick server connection error')
+      throw new BadGatewayException(`Rick server connection error: ${message}`)
     }
   }
 
   async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
+    this.validateAccountId(accountId)
+
     return this.rickAPICall(EAPIMethod.POST, `wallet`, {
       account_id: accountId,
       wallet_type: walletType,
@@ -70,8 +88,10 @@ export class AccountsService {
     walletId: string,
     data: UpdateWalletDto,
   ) {
+    this.validateAccountId(accountId)
+
     return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
-      account_id: accountId, // depending on the authorization flow between princess and rick
+      account_id: accountId,
       accountId: walletId,
       is_active: data.is_active,
     })
@@ -124,6 +144,8 @@ export class AccountsService {
   }
 
   async getPortfolio(accountId: number, period?: EPeriod) {
+    this.validateAccountId(accountId)
+
     const wallets: IWallet[] = await this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}?period=${period}`,
@@ -133,6 +155,8 @@ export class AccountsService {
   }
 
   async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
+    this.validateAccountId(accountId)
+
     const wallets: IWallet[] = await this.rickAPICall(
       EAPIMethod.GET,
       `wallet/${accountId}/wallet/${walletId}?period=${period}`,
@@ -149,15 +173,17 @@ export class AccountsService {
       )
       return res.data
     } catch (err) {
+      const message = err.response ? err.response.data.message : err.message
+
+      Sentry.captureException(`fluffyAPICall(): ${message}`)
+
       if (err.response) {
-        Sentry.captureException(
-          err.response.data.message + ' in fluffyAPICall()',
-        )
-        throw new InternalServerErrorException(err.response.data.message)
+        throw new InternalServerErrorException(message)
       }
 
-      Sentry.captureException(err.message + ' in fluffyAPICall()')
-      throw new BadGatewayException('Fluffy server connection error')
+      throw new BadGatewayException(
+        `Fluffy server connection error: ${message}`,
+      )
     }
   }
 
@@ -166,11 +192,15 @@ export class AccountsService {
     deviceId: string,
     passCodeKey: string,
   ) {
+    this.validateAccountId(accountId)
+
     const path = `${deviceId}/accounts/${accountId}`
     return this.fluffyAPICall(path, { passCodeKey })
   }
 
   async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
+    this.validateAccountId(accountId)
+
     const path = `${deviceId}/accounts/${accountId}`
     return this.fluffyAPICall(path, { isCloud })
   }
@@ -182,7 +212,7 @@ export class AccountsService {
       )
       return accountResponse.data
     } catch (err) {
-      Sentry.captureException(err.message + ' in getAccount()')
+      Sentry.captureException(`getAccount(): ${err.message}`)
       throw new BadGatewayException(err.message)
     }
   }
