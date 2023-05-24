@@ -44,27 +44,25 @@ export class TransactionService {
     } catch (err) {
       if (err.response) {
         if (err.response.statusCode === 500) {
-          Sentry.captureException(err.message + ': Kafo internal error')
+          Sentry.captureException(`Kafo internal error: ${err.message}`)
 
-          throw new InternalServerErrorException(err.message)
+          throw new InternalServerErrorException('Something went wrong')
         } else if (err.response.data?.statusCode === 500) {
           Sentry.captureException(
-            err.response.data.message + ': Kafo API error',
+            `Kafo API error: ${err.response.data.message}`,
           )
 
-          throw new InternalServerErrorException(
-            'Something went wrong in Kafo API',
-          )
+          throw new InternalServerErrorException(err.response.data.message)
         }
 
-        Sentry.captureException(err.response.data.message)
+        Sentry.captureException(`Kafo api: ${err.response.data.message}`)
 
         throw new BadRequestException(err.response.data.message)
       }
 
-      Sentry.captureException(err.message + ': Kafo API call error')
+      Sentry.captureException(`Kafo API call error: ${err.message}`)
 
-      throw new BadGatewayException('Kafo API call error')
+      throw new BadGatewayException('Something went wrong')
     }
   }
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-export class CreateDeviceResponse {
+export class CreateDeviceSwaggerResponse {
   @ApiProperty({
     example: '56733357XXX37PPPX6667P55HDX37PPPX6667P55NI======',
   })

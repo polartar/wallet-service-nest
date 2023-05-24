@@ -39,7 +39,7 @@ export class SignInDto {
   recovery_key: string
 }
 
-export class SignInResponse {
+export class SignInSwaggerResponse {
   @ApiProperty({
     example: '1',
   })

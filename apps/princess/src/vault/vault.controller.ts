@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
-import { VaultSync, VaultSyncSwaggerResponse } from './dto/SigninDto'
+import { VaultSync, VaultSyncSwaggerResponse } from './dto/signin.dto'
 import { VaultService } from './vault.service'
 
 @Controller('vault')

@@ -32,7 +32,7 @@ export class GenerateTransactionDto {
   coin_type: ECoinType
 }
 
-export class GenerateTransactionResponse {
+export class GenerateTransactionSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 
@@ -93,7 +93,7 @@ export class GenerateTransactionResponse {
   data: string
 }
 
-export class PublishTransactionResponse {
+export class PublishTransactionSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 

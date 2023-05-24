@@ -21,7 +21,7 @@ export class SyncUserDto {
   otp: string
 }
 
-export class SyncUserResponse {
+export class SyncUserSwaggerResponse {
   @ApiProperty({
     example: true,
   })

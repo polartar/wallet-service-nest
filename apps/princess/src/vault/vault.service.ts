@@ -18,6 +18,7 @@ import zlib = require('zlib')
 export class VaultService {
   bristleApiUrl: string
   rickApiUrl: string
+
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     private readonly httpService: HttpService,
@@ -94,13 +95,15 @@ export class VaultService {
     try {
       coins = await this.Gunzip(obj.data)
     } catch (err) {
-      Sentry.captureException(`${err.message}: ${obj.data} in Sync`)
+      Sentry.captureException(`Sync(): ${err.message}: ${obj.data}`)
+
       throw new BadRequestException(err.message)
     }
 
-    const xpubs = coins
-      // .filter((coin) => coin.BIP44 === 0 || coin.BIP44 === 714)
-      .map((coin) => ({ BIP44: coin.BIP44, xpub: coin.wallets[0].xpub }))
+    const xpubs = coins.map((coin) => ({
+      BIP44: coin.BIP44,
+      xpub: coin.wallets[0].xpub,
+    }))
     try {
       const addresses = await this.apiCall(
         EAPIMethod.POST,
@@ -110,7 +113,9 @@ export class VaultService {
       )
       return addresses
     } catch (err) {
-      throw new BadRequestException(`${err.message}: Rick/wallet/xpubs`)
+      Sentry.captureException(`Sync()/xpub: ${err.message}: ${obj.data}`)
+
+      throw new BadRequestException(`${err.message}`)
     }
   }
 }

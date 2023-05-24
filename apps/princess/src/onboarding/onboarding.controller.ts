@@ -2,10 +2,10 @@ import { OnboardingService } from './onboarding.service'
 import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
 import { SignInValidationPipe } from './onboarding.pipe'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { SyncUserDto, SyncUserResponse } from './dto/SyncUserDto'
+import { SyncUserDto, SyncUserSwaggerResponse } from './dto/sync-user.dto'
 import { Public } from '../auth/decorators/public.decorator'
-import { SignInDto, SignInResponse } from './dto/SigninDto'
-import { CreateDeviceResponse } from './dto/CreateDevice.dto'
+import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
+import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
 
 @Controller('onboarding')
 @ApiTags('onboarding')
@@ -14,13 +14,13 @@ export class OnboardingController {
 
   @Public()
   @Post('device')
-  @ApiOkResponse({ type: CreateDeviceResponse })
+  @ApiOkResponse({ type: CreateDeviceSwaggerResponse })
   async createDevice() {
     return this.onboardingService.createDevice()
   }
 
   @Post('login')
-  @ApiOkResponse({ type: SignInResponse })
+  @ApiOkResponse({ type: SignInSwaggerResponse })
   @UsePipes(new SignInValidationPipe())
   async login(@Body() data: SignInDto) {
     this.onboardingService.validateDeviceId(data.device_id)
@@ -44,7 +44,7 @@ export class OnboardingController {
   }
 
   @Post('sync')
-  @ApiOkResponse({ type: SyncUserResponse })
+  @ApiOkResponse({ type: SyncUserSwaggerResponse })
   @ApiOperation({
     summary: 'Sync user',
   })

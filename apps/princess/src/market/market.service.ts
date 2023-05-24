@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/node'
 export class MarketService {
   server: Server
   mortyApiUrl: string
+
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,

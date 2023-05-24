@@ -46,7 +46,7 @@ export class GenerateNFTTransactionDto {
   type: ENFTTypes
 }
 
-export class GenerateNFTTransactionResponse {
+export class GenerateNFTTransactionSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 

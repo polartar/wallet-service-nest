@@ -204,9 +204,9 @@ export class PortfolioService {
       .get<AxiosResponse>(`${this.rickApiUrl}/account/${accountId}`)
       .pipe(
         catchError((error: AxiosError) => {
-          Sentry.captureException(error.message + ' in getAccount')
+          Sentry.captureException(`getAccount(): ${error.message}`)
 
-          throw 'An error happened!' + error.message
+          throw 'An error happened: ' + error.message
         }),
       )
   }
@@ -223,8 +223,9 @@ export class PortfolioService {
 
       return response.data
     } catch (err) {
-      Sentry.captureException(err.message + 'in getNFTAssets')
-      throw new BadRequestException(err.message + ' in Rick API call')
+      Sentry.captureException(`getNFTAssets(): ${err.message}`)
+
+      throw new BadRequestException(`Rick API call: ${err.message}`)
     }
   }
 }
