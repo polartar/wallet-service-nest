@@ -276,11 +276,11 @@ export class WalletService {
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
-          `${err.response.data.errors[0]}: ${xPub} in addAddressesFromXPub`,
+          `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
         )
       } else {
         Sentry.captureException(
-          `${err.message}: ${xPub} in addAddressesFromXPub`,
+          `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
     }
@@ -318,7 +318,7 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
-      Sentry.captureException(err.message + ' in addNewAddress')
+      Sentry.captureException(`addNewAddress(): ${err.message}`)
     }
 
     return await this.addressRepository.save(address)
