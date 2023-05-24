@@ -104,7 +104,7 @@ export class TransactionService {
     type: ENFTTypes,
     amount?: number,
   ): Promise<IResponse> {
-    return this.apiCall(EAPIMethod.POST, `transaction/nft/raw-transaction`, {
+    return this.apiCall(EAPIMethod.POST, `transaction/nft/generate`, {
       from,
       to,
       contractAddress,
@@ -115,7 +115,7 @@ export class TransactionService {
   }
 
   async publishNFTTransaction(signedHash: string): Promise<IResponse> {
-    return this.apiCall(EAPIMethod.POST, `transaction/nft/send-transaction`, {
+    return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
       signedHash,
     })
   }
