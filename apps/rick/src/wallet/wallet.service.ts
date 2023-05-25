@@ -100,7 +100,7 @@ export class WalletService {
     })
   }
 
-  async generateBTCHistories(
+  async getBtcHistory(
     transactions: IBTCTransaction[],
     address: AddressEntity,
     balance: number,
@@ -130,7 +130,7 @@ export class WalletService {
     return allHistories
   }
 
-  async generateEthHistories(
+  async getEthHistory(
     transactions: ethers.providers.TransactionResponse[],
     address: AddressEntity,
   ): Promise<HistoryEntity[]> {
@@ -225,7 +225,7 @@ export class WalletService {
       const wallet = await this.walletRepository.save(prototype)
 
       if (walletType !== EWalletType.VAULT) {
-        await this.addNewAddress({
+        await this.createAddress({
           wallet,
           address: xPub,
           coinType: coinType,
@@ -238,7 +238,7 @@ export class WalletService {
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
         await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
       }
-      this.runEthereumService()
+      this.fetchEthereumTransactions()
       return await this.lookUpByXPub(xPub)
     }
   }
@@ -260,7 +260,7 @@ export class WalletService {
       return Promise.all(
         discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
           try {
-            return this.addNewAddress({
+            return this.createAddress({
               wallet,
               address: addressInfo.address,
               path: addressInfo.path,
@@ -268,7 +268,7 @@ export class WalletService {
             })
           } catch (err) {
             Sentry.captureException(
-              `${err.message}: ${addressInfo.address} in addNewAddress`,
+              `${err.message}: ${addressInfo.address} in createAddress()`,
             )
           }
         }),
@@ -286,7 +286,7 @@ export class WalletService {
     }
   }
 
-  async addNewAddress(data: AddAddressDto): Promise<AddressEntity> {
+  async createAddress(data: AddAddressDto): Promise<AddressEntity> {
     const prototype = new AddressEntity()
     prototype.wallet = data.wallet
     prototype.address = data.address
@@ -300,7 +300,7 @@ export class WalletService {
     try {
       if (data.coinType === ECoinType.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
-        allHistories = await this.generateEthHistories(trxHistory, address)
+        allHistories = await this.getEthHistory(trxHistory, address)
       } else {
         const txResponse: { data: IBTCTransactionResponse } =
           await firstValueFrom(
@@ -310,7 +310,7 @@ export class WalletService {
               }/addrs/${address.address}`,
             ),
           )
-        allHistories = await this.generateBTCHistories(
+        allHistories = await this.getBtcHistory(
           txResponse.data.txrefs,
           address,
           txResponse.data.balance,
@@ -318,7 +318,7 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
-      Sentry.captureException(`addNewAddress(): ${err.message}`)
+      Sentry.captureException(`createAddress(): ${err.message}`)
     }
 
     return await this.addressRepository.save(address)
@@ -334,7 +334,7 @@ export class WalletService {
     return this.addressRepository.save(address)
   }
 
-  async updateWalletsActive(data: IWalletActiveData): Promise<WalletEntity> {
+  async updateWalletActive(data: IWalletActiveData): Promise<WalletEntity> {
     const wallet = await this.walletRepository.findOne({
       where: {
         accounts: { accountId: data.accountId },
@@ -409,7 +409,7 @@ export class WalletService {
     const trxHistory = await this.provider.getHistory(address.address)
 
     if (trxHistory.length > address.history.length) {
-      address.history = await this.generateEthHistories(
+      address.history = await this.getEthHistory(
         trxHistory.slice(address.history.length, trxHistory.length),
         address,
       )
@@ -429,7 +429,7 @@ export class WalletService {
 
     const trxHistory = txResponse.data.txrefs
     if (trxHistory.length > address.history.length) {
-      address.history = await this.generateBTCHistories(
+      address.history = await this.getBtcHistory(
         trxHistory.slice(address.history.length, trxHistory.length),
         address,
         txResponse.data.balance,
@@ -508,7 +508,7 @@ export class WalletService {
       }),
     ).catch(() => {
       Sentry.captureException(
-        'Princess portfolio/updated api error in runEthereumService()',
+        'Princess portfolio/updated api error in fetchEthereumTransactions()',
       )
     })
   }
@@ -571,7 +571,7 @@ export class WalletService {
     )
   }
 
-  async runEthereumService() {
+  async fetchEthereumTransactions() {
     let addresses = await this.getAllAddresses()
     addresses = addresses.filter((address) => address.wallet.isActive)
 
@@ -626,7 +626,7 @@ export class WalletService {
           return this.addXPub(account, xpub.xpub, EWalletType.VAULT)
         }),
       )
-      this.runEthereumService()
+      this.fetchEthereumTransactions()
 
       const newWallets = await this.lookUpByXPubs(
         xpubs.map((xpub) => xpub.xpub),

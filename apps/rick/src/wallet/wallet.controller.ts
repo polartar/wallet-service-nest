@@ -68,12 +68,12 @@ export class WalletController {
   @Post('activate')
   async activeWallet(@Body() data: IWalletActiveData) {
     try {
-      const res = await this.walletService.updateWalletsActive(data)
+      const res = await this.walletService.updateWalletActive(data)
 
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
-      Sentry.captureException(e.message + ' in updateWalletsActive()')
+      Sentry.captureException(e.message + ' in updateWalletActive()')
 
       throw new NotFoundException(e?.message)
     }
