@@ -7,12 +7,12 @@ export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
   @Get('eth')
-  getEthMarketDat() {
+  getEthMarketData() {
     return this.marketService.getMarketData(ECoinType.ETHEREUM)
   }
 
   @Get('btc')
-  getBtcMarketDat() {
+  getBtcMarketData() {
     return this.marketService.getMarketData(ECoinType.BITCOIN)
   }
 

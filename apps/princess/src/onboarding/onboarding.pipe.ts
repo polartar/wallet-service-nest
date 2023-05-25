@@ -2,7 +2,7 @@ import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 
 import { EAuth } from '@rana/core'
-import { SignInDto } from './dto/SigninDto'
+import { SignInDto } from './dto/signin.dto'
 
 @Injectable()
 export class SignInValidationPipe implements PipeTransform {

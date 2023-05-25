@@ -66,7 +66,7 @@ export class NftService {
         },
       }
     } catch (err) {
-      Sentry.captureException(err.mesage + 'in getNFTAssets()')
+      Sentry.captureException(`getNFTAssets(): ${err.mesage}`)
 
       return {
         success: false,

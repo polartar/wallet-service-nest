@@ -16,7 +16,7 @@ export class NewsTopDto {
   symbol: ECoinType
 }
 
-export class TopNewsResponse {
+export class TopNewsSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 

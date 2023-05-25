@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/node'
 @Injectable()
 export class AppService {
   static welcomeMessage = 'Bristle is up and running'
+
   get welcomeMessage() {
     return AppService.welcomeMessage
   }

@@ -18,8 +18,11 @@ export class MarketService {
   private fidelityClientId: string
   private fidelityClientSecret: string
   private expiredAt: number
-  private retryInterval = 10 * 1000 // retry to connect socket time
+  private retryInterval = 10 * 1000 // retry to connect socket time, 10s
   princessAPIUrl: string
+  private marketApiUrl =
+    'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+  private historyApiUrl = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot`
 
   constructor(
     private readonly httpService: HttpService,
@@ -65,7 +68,7 @@ export class MarketService {
 
       this.fidelityAccessToken = response.data.access_token
     } catch (err) {
-      Sentry.captureException(err.message + 'in getAuthToken()')
+      Sentry.captureException(`getAuthToken(): ${err.message}`)
     }
   }
 
@@ -104,7 +107,7 @@ export class MarketService {
         this.httpService.post(`${this.princessAPIUrl}/market/ethereum`, res),
       ).catch(() => {
         Sentry.captureException(
-          'Princess market/ethereum api error in subscribeETHPrice()',
+          'subscribeETHPrice(): Princess market/ethereum api error',
         )
       })
     })
@@ -120,7 +123,7 @@ export class MarketService {
         this.httpService.post(`${this.princessAPIUrl}/market/bitcoin`, res),
       ).catch(() => {
         Sentry.captureException(
-          'Princess market/bitcoin api error in subscribeBTCPrice()',
+          'subscribeBTCPrice(): Princess market/bitcoin api error',
         )
       })
     })
@@ -135,12 +138,9 @@ export class MarketService {
   }
 
   async getMarketData(coin: ECoinType): Promise<IResponse> {
-    const apiURL =
-      'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-
     try {
       const res = await firstValueFrom(
-        this.httpService.get<AxiosResponse>(apiURL, {
+        this.httpService.get<AxiosResponse>(this.marketApiUrl, {
           params: {
             limit: 2,
           },
@@ -177,7 +177,7 @@ export class MarketService {
       }
     } catch (err) {
       Sentry.captureException(
-        err.response.data.status.error_message + ' in getMarketData()',
+        `getMarketData(): ${err.response.data.status.error_message}`,
       )
       return {
         success: false,
@@ -186,7 +186,7 @@ export class MarketService {
     }
   }
 
-  getPeriodTime(period: EPeriod): Date {
+  getPeriodTime(period: EPeriod): number {
     const day = 3600 * 24 * 1000
     const now = Date.now()
     let newTimestamp
@@ -207,7 +207,7 @@ export class MarketService {
     return newTimestamp
   }
 
-  getInterval(period: EPeriod) {
+  getTimeFrame(period: EPeriod) {
     if (
       period === EPeriod.Day ||
       period === EPeriod.Week ||
@@ -224,9 +224,9 @@ export class MarketService {
     period: EPeriod,
   ): Promise<IResponse> {
     const startDate = new Date(this.getPeriodTime(period))
-    const interval = this.getInterval(period)
+    const timeFrame = this.getTimeFrame(period)
 
-    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/market/spot/${coin}/price?startTime=${startDate}&timeFrame=${interval}`
+    const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${startDate}&timeFrame=${timeFrame}`
 
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
@@ -250,7 +250,7 @@ export class MarketService {
         ),
       }
     } catch (err) {
-      Sentry.captureException(err.message + ' in getHistoricalData()')
+      Sentry.captureException(`getHistoricalData: ${err.message}`)
 
       return {
         success: false,

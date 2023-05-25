@@ -51,7 +51,7 @@ export class TransactionController {
     return await this.service.getFee(coin)
   }
 
-  @Post('nft/raw-transaction')
+  @Post('nft/generate')
   @UsePipes(new NFTTransactionRawPipe())
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
@@ -59,11 +59,11 @@ export class TransactionController {
     return this.service.generateNFTRawTransaction(data)
   }
 
-  @Post('nft/send-transaction')
+  @Post('nft/publish')
   @UsePipes(new NFTTransactionSendPipe())
-  sendNFTTransaction(
+  publishNFTTransaction(
     @Body() signedHash: string,
   ): Promise<INFTTransactionResponse> {
-    return this.service.sendNFTTransaction(signedHash)
+    return this.service.publishNFTTransaction(signedHash)
   }
 }

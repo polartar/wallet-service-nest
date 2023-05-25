@@ -139,7 +139,7 @@ describe('TransactionController', () => {
     const { type, r, v, s, ...newTx } = unsignedTx
 
     const signedTx = await signer.signTransaction(newTx)
-    const response = await controller.sendNFTTransaction(signedTx)
+    const response = await controller.publishNFTTransaction(signedTx)
 
     expect(response.success).toBeTruthy()
   }, 40000)

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-export class TransactionFeeResponse {
+export class TransactionFeeSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 

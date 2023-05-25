@@ -41,7 +41,7 @@ describe('TotpService', () => {
   it('should create pair', async () => {
     const device = await service.createDevice()
     const token = authenticator.generate(device.otp)
-    await service.pair({
+    await service.createPair({
       userId: 1,
       deviceId: device.deviceId,
       serverProposedShard: 'server shard',
@@ -63,7 +63,7 @@ describe('TotpService', () => {
 
   it('should throw error when deviceId not exists', async () => {
     try {
-      await service.pair({
+      await service.createPair({
         userId: 1,
         deviceId: 'device.deviceId',
         serverProposedShard: 'server shard',
@@ -80,7 +80,7 @@ describe('TotpService', () => {
   it('should throw error when invalid otp token', async () => {
     const device = await service.createDevice()
     try {
-      await service.pair({
+      await service.createPair({
         userId: 1,
         deviceId: device.deviceId,
         serverProposedShard: 'server shard',

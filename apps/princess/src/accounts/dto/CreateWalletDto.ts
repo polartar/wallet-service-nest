@@ -17,7 +17,7 @@ export class CreateWalletDto {
   x_pub: string
 }
 
-export class CreateWalletResponse {
+export class WalletSwaggerResponse {
   @ApiProperty({
     example: true,
   })

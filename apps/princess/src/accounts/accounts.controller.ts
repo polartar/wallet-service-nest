@@ -1,55 +1,29 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Param,
-  Post,
-  Put,
-  Query,
-  Request,
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
-import { CreateWalletDto, CreateWalletResponse } from './dto/CreateWalletDto'
+import { CreateWalletDto, WalletSwaggerResponse } from './dto/CreateWalletDto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { GetPortfolioDto, GetPortfolioResponse } from './dto/GetPortfolioDto'
+import {
+  GetPortfolioDto,
+  PortfolioSwaggerResponse,
+} from './dto/GetPortfolioDto'
 import {
   UpdatePassCodeDto,
-  UpdatePassCodeResponse,
+  UpdatePassCodeSwaggerResponse,
 } from './dto/UpdatePassCodeDto'
 import {
-  SwitchAccountResponse,
-  SwitchCloudResponse,
+  SwitchAccountSwaggerResponse,
+  SwitchCloudSwaggerResponse,
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
-import { REQUEST } from '@nestjs/core'
-// import { Request } from 'express'
-import { IRequest } from './accounts.types'
 
 @Controller('accounts')
 @ApiTags('accounts')
 export class AccountsController {
-  constructor(
-    @Inject(REQUEST) private readonly request: Request,
-    private readonly accountService: AccountsService,
-  ) {}
-
-  getAccountIdFromRequest(): number {
-    return Number((this.request as IRequest).accountId)
-  }
-
-  validateAccountId(accountId: number) {
-    if (Number(accountId) === this.getAccountIdFromRequest()) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
-  }
+  constructor(private readonly accountService: AccountsService) {}
 
   @Post(':accountId/wallet')
-  @ApiOkResponse({ type: CreateWalletResponse })
+  @ApiOkResponse({ type: WalletSwaggerResponse })
   @ApiOperation({
     summary: 'Add the wallet to the account',
   })
@@ -57,8 +31,6 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: CreateWalletDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.createWallet(
       accountId,
       data.wallet_type,
@@ -75,39 +47,33 @@ export class AccountsController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.updateWallet(accountId, walletId, data)
   }
 
   @Get(':accountId/portfolio')
-  @ApiOkResponse({ type: GetPortfolioResponse })
+  @ApiOkResponse({ type: PortfolioSwaggerResponse })
   @ApiOperation({
     summary:
-      'Timeseries data, where date is timestamp (number), and the value of that date.',
+      'Time series data, where date is timestamp (number), and the value of that date.',
   })
   async getPortfolio(
     @Param('accountId') accountId: number,
     @Query() query: GetPortfolioDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.getPortfolio(accountId, query.period)
   }
 
   @Get(':accountId/wallets/:walletId/portfolio')
-  @ApiOkResponse({ type: GetPortfolioResponse })
+  @ApiOkResponse({ type: PortfolioSwaggerResponse })
   @ApiOperation({
     summary:
-      'Timeseries data, where date is timestamp (number), and the value of that date.',
+      'Time series data, where date is timestamp (number), and the value of that date.',
   })
   async getWalletPortfolio(
     @Param('accountId') accountId: number,
     @Param('walletId') walletId: number,
     @Query() query: GetPortfolioDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.getWalletPortfolio(
       accountId,
       walletId,
@@ -116,16 +82,14 @@ export class AccountsController {
   }
 
   @Put(':accountId')
-  @ApiOkResponse({ type: UpdatePassCodeResponse })
+  @ApiOkResponse({ type: UpdatePassCodeSwaggerResponse })
   @ApiOperation({
-    summary: 'Update pass code key',
+    summary: 'Update the passCodeKey',
   })
   async updatePassCode(
     @Param('accountId') accountId: number,
     @Body() data: UpdatePassCodeDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.updatePassCode(
       accountId,
       data.device_id,
@@ -134,7 +98,7 @@ export class AccountsController {
   }
 
   @Put(':accountId/switchToiCloudShard')
-  @ApiOkResponse({ type: SwitchCloudResponse })
+  @ApiOkResponse({ type: SwitchCloudSwaggerResponse })
   @ApiOperation({
     summary: 'Switch to Cloud',
   })
@@ -142,8 +106,6 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Body() data: SwitchToCloudShardDto,
   ) {
-    this.validateAccountId(accountId)
-
     return await this.accountService.updateIsCloud(
       accountId,
       data.device_id,
@@ -152,15 +114,14 @@ export class AccountsController {
   }
 
   @Put(':accountId/switchToAccountShard')
-  @ApiOkResponse({ type: SwitchAccountResponse })
+  @ApiOkResponse({ type: SwitchAccountSwaggerResponse })
   @ApiOperation({
-    summary: 'Switch to Cloud',
+    summary: 'Switch to Account',
   })
   async switchToAccount(
     @Param('accountId') accountId: number,
     @Body() data: SwitchToCloudShardDto,
   ) {
-    this.validateAccountId(accountId)
     return await this.accountService.updateIsCloud(
       accountId,
       data.device_id,

@@ -14,7 +14,6 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
-import { AccountService } from '../account/account.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import { EPeriod, EWalletType } from '@rana/core'
@@ -26,7 +25,6 @@ import { CombineWalletDto } from './dto/combine-wallet.dto'
 export class WalletController {
   constructor(
     private readonly walletService: WalletService,
-    private readonly accountService: AccountService,
     @Inject(forwardRef(() => PortfolioService))
     private readonly portfolioService: PortfolioService,
   ) {}
@@ -70,12 +68,12 @@ export class WalletController {
   @Post('activate')
   async activeWallet(@Body() data: IWalletActiveData) {
     try {
-      const res = await this.walletService.updateWalletsActive(data)
+      const res = await this.walletService.updateWalletActive(data)
 
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {
-      Sentry.captureException(e.message + ' in updateWalletsActive()')
+      Sentry.captureException(e.message + ' in updateWalletActive()')
 
       throw new NotFoundException(e?.message)
     }

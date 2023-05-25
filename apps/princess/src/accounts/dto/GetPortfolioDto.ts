@@ -16,7 +16,7 @@ export class GetPortfolioDto {
   period: EPeriod
 }
 
-export class GetPortfolioResponse {
+export class PortfolioSwaggerResponse {
   @ApiProperty({
     example: true,
   })

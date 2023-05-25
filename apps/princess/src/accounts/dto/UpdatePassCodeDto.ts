@@ -10,7 +10,7 @@ export class UpdatePassCodeDto {
   device_id: string
 }
 
-export class UpdatePassCodeResponse {
+export class UpdatePassCodeSwaggerResponse {
   @ApiProperty({
     example: 1,
   })

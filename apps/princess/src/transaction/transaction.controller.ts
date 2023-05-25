@@ -11,16 +11,16 @@ import { ECoinType } from '@rana/core'
 import { TransactionService } from './transaction.service'
 import {
   GenerateTransactionDto,
-  GenerateTransactionResponse,
-  PublishTransactionResponse,
-} from './dto/GenerateTransactionDto'
+  GenerateTransactionSwaggerResponse,
+  PublishTransactionSwaggerResponse,
+} from './dto/generate-transaction.dto'
 import { ITransaction } from './transaction.types'
 import {
   GenerateNFTTransactionDto,
-  GenerateNFTTransactionResponse,
-} from './dto/GenerateNFTTransactionDto'
-import { PublishNFTTransactionDto } from './dto/PublishNFTTransactionDto'
-import { TransactionFeeResponse } from './dto/TransactionFeeResponse'
+  GenerateNFTTransactionSwaggerResponse,
+} from './dto/generate-nft-transaction.dto'
+import { PublishNFTTransactionDto } from './dto/publish-nft-transaction.dto'
+import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -28,7 +28,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Get(':coin/fee')
-  @ApiOkResponse({ type: TransactionFeeResponse })
+  @ApiOkResponse({ type: TransactionFeeSwaggerResponse })
   @ApiOperation({
     summary: 'Get the current network fee of the selected chain',
   })
@@ -38,7 +38,7 @@ export class TransactionController {
   }
 
   @Post()
-  @ApiOkResponse({ type: GenerateTransactionResponse })
+  @ApiOkResponse({ type: GenerateTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Generate transaction object',
   })
@@ -52,7 +52,7 @@ export class TransactionController {
   }
 
   @Post('publish')
-  @ApiOkResponse({ type: PublishTransactionResponse })
+  @ApiOkResponse({ type: PublishTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Publish the signed transaction',
   })
@@ -64,7 +64,7 @@ export class TransactionController {
   }
 
   @Post('nft')
-  @ApiOkResponse({ type: GenerateNFTTransactionResponse })
+  @ApiOkResponse({ type: GenerateNFTTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Generate NFT transfer transaction hash',
   })

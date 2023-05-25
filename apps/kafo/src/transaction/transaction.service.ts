@@ -83,7 +83,7 @@ export class TransactionService {
     } catch (err) {
       const message =
         err.response.data.errors[0].error || err.response.data.error
-      Sentry.captureException(message + ' in generate()')
+      Sentry.captureException(`generate(): ${message}`)
 
       return {
         success: false,
@@ -119,7 +119,7 @@ export class TransactionService {
     } catch (err) {
       const message =
         err.response.data.errors[0].error || err.response.data.error
-      Sentry.captureException(message + 'in publish()')
+      Sentry.captureException(`publish(): ${message}`)
 
       return {
         success: false,
@@ -165,7 +165,7 @@ export class TransactionService {
         },
       }
     } catch (err) {
-      Sentry.captureException(err.message + ' in getFee()')
+      Sentry.captureException(`getFee(): ${err.message}`)
       return {
         success: false,
       }
@@ -198,11 +198,10 @@ export class TransactionService {
         nonce: txCount,
         gasPrice: hexlify(await this.provider.getGasPrice()),
         gasLimit: '0x156AB',
-        // gasLimit: '0x55F0',
         chainId: this.isProduction ? 1 : 5,
         to: tx.contractAddress,
         value: 0,
-        data: data, // my encoded ABI for the transfer method
+        data: data, // encoded ABI for the transfer method
       }
 
       const serializedTx = serializeTransaction(unsignedTx)
@@ -212,13 +211,13 @@ export class TransactionService {
         data: serializedTx,
       }
     } catch (err) {
-      Sentry.captureException(err.message + 'in generateNFTRawTransaction()')
+      Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)
 
       throw new BadRequestException(err.message)
     }
   }
 
-  async sendNFTTransaction(signedHash: string) {
+  async publishNFTTransaction(signedHash: string) {
     try {
       const response = await this.provider.sendTransaction(signedHash)
 
@@ -227,7 +226,7 @@ export class TransactionService {
         data: response,
       }
     } catch (err) {
-      Sentry.captureException(err.message + 'in sendNFTTransaction()')
+      Sentry.captureException(`publishNFTTransaction(): ${err.message}`)
 
       throw new BadRequestException(err.message)
     }

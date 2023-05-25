@@ -36,7 +36,7 @@ export class NewsPaginationDto {
   symbol: ECoinType
 }
 
-export class PaginationNewsResponse {
+export class PaginationNewsSwaggerResponse {
   @ApiProperty({ example: true })
   success: boolean
 

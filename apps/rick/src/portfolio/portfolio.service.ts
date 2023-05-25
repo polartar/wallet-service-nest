@@ -162,16 +162,14 @@ export class PortfolioService {
             type: EPortfolioType.TRANSACTION,
             data: postUpdatedAddresses,
           }),
-        ).catch(() => {
-          Sentry.captureException(
-            'Princess portfolio/updated api error in onBTCTransaction()',
-          )
+        ).catch((err) => {
+          Sentry.captureException(`Princess portfolio/updated: ${err.message}`)
         })
 
         return this.walletService.updateWallets(updatedAddresses)
       }
     } catch (err) {
-      Sentry.captureException(err.message + ' in onBTCTransaction()')
+      Sentry.captureException(`onBTCTransaction(): ${err.message}`)
     }
   }
 
@@ -213,10 +211,8 @@ export class PortfolioService {
           },
         ],
       }),
-    ).catch(() => {
-      Sentry.captureException(
-        'Princess portfolio/updated api error in notifyNFTUpdate()',
-      )
+    ).catch((err) => {
+      Sentry.captureException(`notifyNFTUpdate(): ${err.message}`)
     })
   }
 
