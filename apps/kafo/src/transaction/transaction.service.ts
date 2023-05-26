@@ -28,6 +28,7 @@ export class TransactionService {
   ERC1155ABI = [
     'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
   ]
+  payloadVerificationRSA: string
 
   constructor(
     private readonly httpService: HttpService,
@@ -38,6 +39,9 @@ export class TransactionService {
     )
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
+    )
+    this.payloadVerificationRSA = this.configService.get<string>(
+      EEnvironment.payloadVerificationRSA,
     )
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
