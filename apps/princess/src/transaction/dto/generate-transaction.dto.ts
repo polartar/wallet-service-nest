@@ -123,4 +123,10 @@ export class PublishTransactionSwaggerResponse {
     },
   })
   data: string
+
+  @ApiProperty({
+    example:
+      'XNOtOD+CiVeLse5sD7h7KIZGcp7oXYDvkkoxPLPEp7ytr5ZMTmk5E7J0n37wWhqLoniCKl0BPhEQtLmlpduWrAiKJ9KiZq8K3QELXFSyCAWm7rWU/mv6qWu6whfN425lgmDDoIk+rAM0Nlm4BrIpWzlGxbaioi3o+g+HftQnX4M=',
+  })
+  signature: string
 }

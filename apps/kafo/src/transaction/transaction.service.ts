@@ -1,7 +1,11 @@
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import {
   ENFTTypes,
   IFeeResponse,
@@ -16,6 +20,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
 import { hexlify, serializeTransaction } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
+import * as crypto from 'crypto'
 
 @Injectable()
 export class TransactionService {
@@ -28,7 +33,7 @@ export class TransactionService {
   ERC1155ABI = [
     'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
   ]
-  payloadVerificationRSA: string
+  payloadPrivateKey: string
 
   constructor(
     private readonly httpService: HttpService,
@@ -40,8 +45,8 @@ export class TransactionService {
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
     )
-    this.payloadVerificationRSA = this.configService.get<string>(
-      EEnvironment.payloadVerificationRSA,
+    this.payloadPrivateKey = this.formatPrivateKey(
+      this.configService.get<string>(EEnvironment.payloadPrivateKey),
     )
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
@@ -51,6 +56,26 @@ export class TransactionService {
       infura_key,
     )
   }
+
+  formatPrivateKey(key: string) {
+    return key?.replace(/\\n/g, '\n')
+  }
+
+  signPayload(data: string): string {
+    try {
+      const signature = crypto.sign(
+        'RSA-SHA256',
+        Buffer.from(data),
+        this.payloadPrivateKey,
+      )
+
+      return signature.toString('base64')
+    } catch (err) {
+      console.log(err)
+      throw new InternalServerErrorException('Invalid private key')
+    }
+  }
+
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
     const newTx = {
       inputs: [{ addresses: [data.from] }],
@@ -80,9 +105,12 @@ export class TransactionService {
           JSON.stringify(newTx),
         ),
       )
+
+      const signature = this.signPayload(JSON.stringify(response.data))
       return {
         success: true,
         data: response.data,
+        signature,
       }
     } catch (err) {
       const message =
@@ -209,10 +237,11 @@ export class TransactionService {
       }
 
       const serializedTx = serializeTransaction(unsignedTx)
-
+      const signature = this.signPayload(serializedTx)
       return {
         success: true,
         data: serializedTx,
+        signature,
       }
     } catch (err) {
       Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)

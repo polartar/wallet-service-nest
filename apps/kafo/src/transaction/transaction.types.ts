@@ -4,6 +4,7 @@ export interface ITransactionResponse {
   success: boolean
   error?: string
   data?: ITransaction
+  signature?: string
 }
 export interface IFeeResponse {
   success: boolean
@@ -79,4 +80,5 @@ export interface INFTTransactionResponse {
   success: boolean
   error?: string
   data?: string | object
+  signature?: string
 }
