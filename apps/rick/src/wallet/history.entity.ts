@@ -37,7 +37,7 @@ export class HistoryEntity {
   toJSON() {
     return {
       balance: this.balance,
-      timestamp: this.timestamp,
+      timestamp: +this.timestamp,
     }
   }
 }

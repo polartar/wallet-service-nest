@@ -87,6 +87,7 @@ describe('TransactionController', () => {
       coinType: ECoinType.BITCOIN,
       transaction: tmpTx,
     })
+
     expect(finalTx.success).toBeTruthy()
     expect(finalTx.data.tx.outputs[0].value).toBe(1)
   })

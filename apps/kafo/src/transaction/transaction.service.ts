@@ -76,13 +76,16 @@ export class TransactionService {
           JSON.stringify(newTx),
         ),
       )
+
+      const data = response.data
+
       return {
         success: true,
-        data: response.data,
+        data,
       }
     } catch (err) {
       const message =
-        err.response.data.errors[0].error || err.response.data.error
+        err.response.data.error || err.response.data.errors[0].error
       Sentry.captureException(`generate(): ${message}`)
 
       return {
@@ -118,7 +121,7 @@ export class TransactionService {
       }
     } catch (err) {
       const message =
-        err.response.data.errors[0].error || err.response.data.error
+        err.response.data.error || err.response.data.errors[0].error
       Sentry.captureException(`publish(): ${message}`)
 
       return {

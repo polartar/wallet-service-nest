@@ -159,7 +159,7 @@ export class WalletService {
           hash: record.hash,
           amount: record.value.toString(),
           balance: prevBalance.toString(),
-          timestamp: record.timestamp,
+          timestamp: +record.timestamp,
         })
       }),
     )
@@ -167,10 +167,12 @@ export class WalletService {
   }
 
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
-    return await this.walletRepository.findOne({
+    const response = await this.walletRepository.findOne({
       where: { xPub },
       relations: { accounts: true, addresses: { history: true } },
     })
+
+    return response
   }
 
   async lookUpByXPubs(xPubs: string[]): Promise<WalletEntity[]> {
