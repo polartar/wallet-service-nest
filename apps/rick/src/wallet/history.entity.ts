@@ -36,4 +36,15 @@ export class HistoryEntity {
 
   @Column('bigint')
   timestamp: number
+
+  toJSON() {
+    return {
+      from: this.from,
+      to: this.to,
+      balance: this.balance,
+      amount: this.amount,
+      tokenId: this.tokenId,
+      timestamp: +this.timestamp,
+    }
+  }
 }

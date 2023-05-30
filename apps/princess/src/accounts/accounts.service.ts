@@ -101,7 +101,7 @@ export class AccountsService {
     })
   }
 
-  getPrice(source: IMarketData[], timestamp: string) {
+  getPrice(source: IMarketData[], timestamp: number) {
     const index = source.findIndex(
       (market) =>
         new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
@@ -144,9 +144,11 @@ export class AccountsService {
         const history = address.history.map((item) => {
           const price = this.getPrice(source, item.timestamp)
           const value = formatUnits(item.balance, decimal)
+          const amount = formatUnits(item.amount, decimal)
           return {
             ...item,
-            usdPrice: (+value * price).toString(),
+            usdBalance: (+value * price).toString(),
+            usdAmount: (+amount * price).toString(),
           }
         })
 
