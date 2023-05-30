@@ -5,7 +5,8 @@ export class AddHistoryDto {
   balance: string
   from: string
   to: string
-  amount: string
+  amount?: string
+  tokenId?: number
   hash: string
   timestamp: number
 }

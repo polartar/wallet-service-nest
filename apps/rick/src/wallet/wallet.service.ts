@@ -26,6 +26,8 @@ import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
 import { IXPub } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
 import { AccountEntity } from '../account/account.entity'
+import ERC721ABI from './abis/erc721'
+import ERC1155ABI from './abis/erc1155'
 
 @Injectable()
 export class WalletService {
@@ -35,6 +37,8 @@ export class WalletService {
   princessAPIUrl: string
   liquidAPIKey: string
   liquidAPIUrl: string
+  etherscanAPIUrl: string
+  etherscanAPIKey: string
 
   constructor(
     private configService: ConfigService,
@@ -69,6 +73,13 @@ export class WalletService {
     )
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
+    )
+
+    this.etherscanAPIUrl = `https://${
+      this.isProduction ? 'api' : 'api-goerli'
+    }.etherscan.io/api?module=contract&action=getabi`
+    this.etherscanAPIKey = this.configService.get<string>(
+      EEnvironment.etherscanAPIKey,
     )
   }
   alchemyConfigure(isProd: boolean, alchemyKey: string) {
@@ -138,7 +149,7 @@ export class WalletService {
 
     let currentBalance = balance
     const histories = await Promise.all(
-      transactions.reverse().map((record) => {
+      transactions.reverse().map(async (record) => {
         const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
         const walletAddress = address.address.toLowerCase()
@@ -152,7 +163,7 @@ export class WalletService {
           currentBalance = currentBalance.sub(record.value)
         }
 
-        return this.addHistory({
+        const newHistory: AddHistoryDto = {
           address,
           from: record.from || '',
           to: record.to || '',
@@ -160,7 +171,30 @@ export class WalletService {
           amount: record.value.toString(),
           balance: prevBalance.toString(),
           timestamp: +record.timestamp,
-        })
+        }
+        // parse the transaction
+        if (record.value.isZero()) {
+          let iface = new ethers.utils.Interface(ERC721ABI)
+          let response
+          try {
+            response = iface.parseTransaction({ data: record.data })
+          } catch (err) {
+            iface = new ethers.utils.Interface(ERC1155ABI)
+            try {
+              response = iface.parseTransaction({ data: record.data })
+              // eslint-disable-next-line no-empty
+            } catch (err) {}
+          }
+          // only track the transfer functions
+          if (response && response.name.toLowerCase().includes('transfer')) {
+            const { from, to, tokenId } = response.args
+            newHistory.from = from || record.from
+            newHistory.to = to
+            newHistory.tokenId = tokenId.toNumber()
+          }
+        }
+
+        return this.addHistory(newHistory)
       }),
     )
     return histories
@@ -184,6 +218,22 @@ export class WalletService {
         },
       },
     })
+  }
+
+  async getABI(contractAddress: string): Promise<[]> {
+    const apiUrl = `${this.etherscanAPIUrl}&address=${contractAddress}&apikey=${this.etherscanAPIKey}`
+
+    try {
+      const apiResponse = await firstValueFrom(this.httpService.get(apiUrl))
+      if (apiResponse.data.status === '1') {
+        return apiResponse.data.result
+      } else {
+        return []
+      }
+    } catch (err) {
+      Sentry.captureException(`Etherscan API call error: ${err.message}`)
+      throw new Error(err.message)
+    }
   }
 
   async addNewWallet(
@@ -320,6 +370,7 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
+      console.log(err)
       Sentry.captureException(`createAddress(): ${err.message}`)
     }
 
@@ -470,7 +521,7 @@ export class WalletService {
     const newHistoryData = {
       from: tx.transaction.from,
       to: tx.transaction.to,
-      amount: tx.transaction.value.toString(),
+      value: tx.transaction.value.toString(),
       hash: tx.transaction.hash,
       balance: history.length
         ? BigNumber.from(history[0].balance).sub(amount).toString()
