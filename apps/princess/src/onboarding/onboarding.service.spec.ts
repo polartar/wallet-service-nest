@@ -6,6 +6,7 @@ import { Environment } from '../environments/environment.dev'
 import { AccountsService } from '../accounts/accounts.service'
 import { JwtService } from '@nestjs/jwt'
 import { MarketService } from '../market/market.service'
+import { TransactionService } from '../transaction/transaction.service'
 
 describe('OnboardingService', () => {
   let service: OnboardingService
@@ -21,6 +22,7 @@ describe('OnboardingService', () => {
         AccountsService,
         JwtService,
         MarketService,
+        TransactionService,
       ],
     }).compile()
 
