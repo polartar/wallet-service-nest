@@ -60,7 +60,7 @@ upload SBOM:
     - container_scanning
   stage: post deploy
   script:
-    - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project=$DTRACK_PROJECT_UUID https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
+    - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project='$DTRACK_PROJECT_UUID' -vf https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
 
 test:
   stage: test
