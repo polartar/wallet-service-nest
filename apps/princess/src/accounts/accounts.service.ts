@@ -152,8 +152,8 @@ export class AccountsService {
 
         return {
           ...address,
-          history,
           fee: isEthereum ? ethFee.data.convert : btcFee.data.convert,
+          history,
         }
       })
       return wallet
