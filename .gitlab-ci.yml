@@ -5,7 +5,6 @@ stages:
   - test
   - build
   - deploy
-  - post deploy
 
 .distributed:
   interruptible: true
@@ -58,7 +57,7 @@ upload SBOM:
     - container_scanning
   dependencies:
     - container_scanning
-  stage: post deploy
+  stage: .post
   script:
     - "curl -H 'X-Api-Key: $DTRACK_API_KEY' -F bom=@gl-sbom-report.cdx.json -F project='$DTRACK_PROJECT_UUID' -vf https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
 
