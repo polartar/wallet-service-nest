@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { MarketService } from '../market/market.service'
+import { TransactionService } from '../transaction/transaction.service'
 
 describe('AccountsService', () => {
   let service: AccountsService
@@ -14,7 +15,7 @@ describe('AccountsService', () => {
         HttpModule, //
         ConfigModule.forRoot({ load: [Environment] }),
       ],
-      providers: [AccountsService, MarketService],
+      providers: [AccountsService, MarketService, TransactionService],
     }).compile()
 
     service = module.get<AccountsService>(AccountsService)

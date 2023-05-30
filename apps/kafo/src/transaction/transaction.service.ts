@@ -84,8 +84,9 @@ export class TransactionService {
         data,
       }
     } catch (err) {
-      const message =
-        err.response.data.error || err.response.data.errors[0].error
+      const message = err.response
+        ? err.response.data.error || err.response.data.errors[0].error
+        : err.message
       Sentry.captureException(`generate(): ${message}`)
 
       return {
@@ -120,8 +121,9 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
-      const message =
-        err.response.data.error || err.response.data.errors[0].error
+      const message = err.response
+        ? err.response.data.error || err.response.data.errors[0].error
+        : err.message
       Sentry.captureException(`publish(): ${message}`)
 
       return {

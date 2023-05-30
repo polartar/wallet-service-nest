@@ -4,6 +4,7 @@ import { OnboardingService } from './onboarding.service'
 import { HttpModule } from '@nestjs/axios'
 import { AccountsService } from '../accounts/accounts.service'
 import { MarketService } from '../market/market.service'
+import { TransactionService } from '../transaction/transaction.service'
 
 @Module({
   imports: [
@@ -12,6 +13,11 @@ import { MarketService } from '../market/market.service'
     }),
   ],
   controllers: [OnboardingController],
-  providers: [OnboardingService, AccountsService, MarketService],
+  providers: [
+    OnboardingService,
+    AccountsService,
+    MarketService,
+    TransactionService,
+  ],
 })
 export class OnboardingModule {}

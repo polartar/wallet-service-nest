@@ -52,22 +52,31 @@ export class PortfolioSwaggerResponse {
         address: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
         createdAt: 1684343715,
         path: '/0/5',
+        fee: {
+          high_fee: '0.000000281316227971',
+          medium_fee: '0.000000058461980841',
+          low_fee: '0.000000005',
+        },
         history: [
           {
             balance: '664635670753339226',
             timestamp: '1681263972',
+            usdPrice: '241.5287244717692',
           },
           {
             balance: '667691852859614926',
             timestamp: '1681238280',
+            usdPrice: '241.5287244717692',
           },
           {
             balance: '673156203487535272',
             timestamp: '1681237800',
+            usdPrice: '241.5287244717692',
           },
           {
             balance: '675950233163566481',
             timestamp: '1681237776',
+            usdPrice: '241.5287244923296',
           },
         ],
       },

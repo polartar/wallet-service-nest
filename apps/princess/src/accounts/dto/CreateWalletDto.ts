@@ -51,7 +51,33 @@ export class WalletSwaggerResponse {
   address: string
 
   @ApiProperty({
-    example: [],
+    example: [
+      {
+        isActive: true,
+        id: 1,
+        address: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+        createdAt: 1685445893,
+        coinType: 'eth',
+        path: 'm/44/60/0/0/5',
+        fee: {
+          high_fee: '0.000000281316227971',
+          medium_fee: '0.000000058461980841',
+          low_fee: '0.000000005',
+        },
+        history: [
+          {
+            balance: '127782619500856524',
+            timestamp: 1685116644,
+            usdPrice: '241.5287244717692',
+          },
+          {
+            balance: '141566669468131272',
+            timestamp: 1684329144,
+            usdPrice: '267.5826903370462',
+          },
+        ],
+      },
+    ],
   })
   addresses: []
 
