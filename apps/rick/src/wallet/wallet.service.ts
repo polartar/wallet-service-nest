@@ -370,7 +370,6 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
-      console.log(err)
       Sentry.captureException(`createAddress(): ${err.message}`)
     }
 
