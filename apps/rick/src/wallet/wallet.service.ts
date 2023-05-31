@@ -37,8 +37,6 @@ export class WalletService {
   princessAPIUrl: string
   liquidAPIKey: string
   liquidAPIUrl: string
-  etherscanAPIUrl: string
-  etherscanAPIKey: string
 
   constructor(
     private configService: ConfigService,
@@ -73,13 +71,6 @@ export class WalletService {
     )
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
-    )
-
-    this.etherscanAPIUrl = `https://${
-      this.isProduction ? 'api' : 'api-goerli'
-    }.etherscan.io/api?module=contract&action=getabi`
-    this.etherscanAPIKey = this.configService.get<string>(
-      EEnvironment.etherscanAPIKey,
     )
   }
   alchemyConfigure(isProd: boolean, alchemyKey: string) {
@@ -218,22 +209,6 @@ export class WalletService {
         },
       },
     })
-  }
-
-  async getABI(contractAddress: string): Promise<[]> {
-    const apiUrl = `${this.etherscanAPIUrl}&address=${contractAddress}&apikey=${this.etherscanAPIKey}`
-
-    try {
-      const apiResponse = await firstValueFrom(this.httpService.get(apiUrl))
-      if (apiResponse.data.status === '1') {
-        return apiResponse.data.result
-      } else {
-        return []
-      }
-    } catch (err) {
-      Sentry.captureException(`Etherscan API call error: ${err.message}`)
-      throw new Error(err.message)
-    }
   }
 
   async addNewWallet(
