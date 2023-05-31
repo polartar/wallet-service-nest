@@ -52,13 +52,21 @@ export class MarketService {
 
   setEthPrice(price: string) {
     if (this.server) {
-      this.server.emit('ethereum_price', price)
+      try {
+        this.server.emit('ethereum_price', price)
+      } catch (err) {
+        Sentry.captureException(`setEthPrice: ${err.message}`)
+      }
     }
   }
 
   setBtcPrice(price: string) {
     if (this.server) {
-      this.server.emit('bitcoin_price', price)
+      try {
+        this.server.emit('bitcoin_price', price)
+      } catch (err) {
+        Sentry.captureException(`setBtcPrice: ${err.message}`)
+      }
     }
   }
 }
