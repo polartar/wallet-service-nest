@@ -63,7 +63,7 @@ export class PortfolioSwaggerResponse {
             from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
             to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
             amount: '0',
-            tokenId: 52852,
+            tokenId: '52852',
             timestamp: '1685463120',
             usdBalance: '239.94809743123068',
             usdAmount: '0',

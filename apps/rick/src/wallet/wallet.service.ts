@@ -187,14 +187,14 @@ export class WalletService {
           }
           // only track the transfer functions
           if (response && response.name.toLowerCase().includes('transfer')) {
-            const { from, to, tokenId } = response.args
+            const { from, to, tokenId, id } = response.args
             newHistory.from = from || record.from
             newHistory.to = to
-            newHistory.tokenId = tokenId.toNumber()
+            newHistory.tokenId = tokenId?.toString() || id?.toString()
           }
         }
 
-        return this.addHistory(newHistory)
+        return await this.addHistory(newHistory)
       }),
     )
     return histories
@@ -370,6 +370,7 @@ export class WalletService {
       }
       address.history = allHistories
     } catch (err) {
+      console.error(err)
       Sentry.captureException(`createAddress(): ${err.message}`)
     }
 

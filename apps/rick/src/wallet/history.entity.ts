@@ -32,7 +32,7 @@ export class HistoryEntity {
   amount: string
 
   @Column({ nullable: true })
-  tokenId: number
+  tokenId: string
 
   @Column('bigint')
   timestamp: number

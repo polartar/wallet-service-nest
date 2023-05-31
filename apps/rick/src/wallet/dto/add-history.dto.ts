@@ -6,7 +6,7 @@ export class AddHistoryDto {
   from: string
   to: string
   amount?: string
-  tokenId?: number
+  tokenId?: string
   hash: string
   timestamp: number
 }
