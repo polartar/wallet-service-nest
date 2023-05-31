@@ -22,8 +22,10 @@ export interface IWallet {
     coinType: ECoinType
     history: {
       balance: string
-      timestamp: string
-      usdPrice?: string
+      amount: string
+      timestamp: number
+      usdBalance?: string
+      usdAmount: string
     }[]
   }[]
 }

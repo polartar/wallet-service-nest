@@ -28,15 +28,22 @@ export class HistoryEntity {
   @Column()
   hash: string
 
-  @Column()
+  @Column({ nullable: true })
   amount: string
+
+  @Column({ nullable: true })
+  tokenId: string
 
   @Column('bigint')
   timestamp: number
 
   toJSON() {
     return {
+      from: this.from,
+      to: this.to,
       balance: this.balance,
+      amount: this.amount,
+      tokenId: this.tokenId,
       timestamp: +this.timestamp,
     }
   }
