@@ -75,12 +75,14 @@ export class TransactionService {
     to: string,
     amount: number,
     coinType: ECoinType,
+    publicKey: string,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/generate`, {
       from,
       to,
       amount,
       coinType,
+      publicKey,
     })
   }
 

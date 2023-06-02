@@ -11,6 +11,14 @@ export class GenerateTransactionDto {
   from: string
 
   @ApiProperty({
+    description: 'public key of the from address',
+    default:
+      '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+  })
+  @IsNotEmpty()
+  public_key: string
+
+  @ApiProperty({
     description: 'to address of the transaction',
     default: '2Mwd9FHUSVH2VgEZqvPfd7ikXsBLdW2suW5',
   })
@@ -38,56 +46,36 @@ export class GenerateTransactionSwaggerResponse {
 
   @ApiProperty({
     example: {
-      tx: {
-        block_height: -1,
-        block_index: -1,
-        hash: 'bd5190d55d1079677f63cb5a2ee73c81ad673ec33aa2c508978a851bae55103b',
-        addresses: [
-          'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-          '2Mwd9FHUSVH2VgEZqvPfd7ikXsBLdW2suW5',
-        ],
-        total: 1571624,
-        fees: 10100,
-        size: 224,
-        vsize: 224,
-        preference: 'low',
-        relayed_by: '102.129.146.73',
-        received: '2023-04-23T15:58:45.741031066Z',
-        ver: 1,
-        double_spend: false,
-        vin_sz: 1,
-        vout_sz: 2,
-        confirmations: 0,
-        inputs: [
-          {
-            prev_hash:
-              '25ca41c54247284260833d6727ca21c7055f3c96950c5237df639f9b24140453',
-            output_index: 0,
-            output_value: 1581724,
-            sequence: 4294967295,
-            addresses: ['myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx'],
-            script_type: 'pay-to-pubkey-hash',
-            age: 2416144,
-          },
-        ],
-        outputs: [
-          {
-            value: 1,
-            script: 'a9143005b247787fed18cce12be358d03b65545d6ff787',
-            addresses: ['2Mwd9FHUSVH2VgEZqvPfd7ikXsBLdW2suW5'],
-            script_type: 'pay-to-script-hash',
-          },
-          {
-            value: 1571623,
-            script: '76a914c6f335344041776a20279eb9ae9395127cace9d088ac',
-            addresses: ['myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx'],
-            script_type: 'pay-to-pubkey-hash',
-          },
-        ],
+      type: 2,
+      from: 'tb1q4sy9u2c489wxxmh8gev2500s3l0lgjszq2jkhw',
+      to: 'tb1qf7ztvkcxsul4xhp2zqw6cau52mm3vmkdh5uyzz',
+      value: {
+        value: '0.000001',
+        factor: 0,
       },
-      tosign: [
-        '4501ab245d117b0071f6de18bedc7ade219650b1d509894023bae1f778e90f1c',
+      extra: {
+        publicKey:
+          '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+      },
+      fee: {
+        fee: {
+          value: '0.0000035',
+          factor: 0,
+        },
+      },
+      nativeTransaction:
+        '70736274ff0100710200000001ecec349ad1c01e5af1c100d1c045717ef1e5c7c8751b631e495dcffe7669f8160100000000ffffffff0264000000000000001600144f84b65b06873f535c2a101dac779456f7166ecd25771e0000000000160014ac085e2b15395c636ee74658aa3df08fdff44a02000000000001011fe7781e0000000000160014ac085e2b15395c636ee74658aa3df08fdff44a02000000',
+      signingPayloads: [
+        {
+          address: 'tb1q4sy9u2c489wxxmh8gev2500s3l0lgjszq2jkhw',
+          publickey:
+            '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+          tosign:
+            'b4470cde5e4efd25c2dbc65d7a9cabf646a64ec152ab5e30551e7d4dfde01eb3',
+        },
       ],
+      signedPayload:
+        'c7c8751b631e495dcffe7669f8160100000000ffffffff0264000000000000001600144f84b65b06873f535c2a101dac779456f7166ecd25771e0000000000160014ac085e2b15395c636ee74658aa3df08fdff44a02000000000001011fe7781e0000000000160014ac085e2b15395',
     },
   })
   data: string

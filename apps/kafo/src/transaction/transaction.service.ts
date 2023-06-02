@@ -153,8 +153,7 @@ export class TransactionService {
       const signedPayload = this.signPayload(JSON.stringify(vaultTransaction))
       return {
         success: true,
-        data: response.data,
-        signedPayload,
+        data: { ...response.data, signedPayload },
       }
     } catch (err) {
       Sentry.captureException(`generate(): ${err.message}`)
@@ -277,11 +276,10 @@ export class TransactionService {
       }
 
       const serializedTx = serializeTransaction(unsignedTx)
-      const signature = this.signPayload(serializedTx)
+      // const signedPayload = this.signPayload(serializedTx)
       return {
         success: true,
         data: serializedTx,
-        signature,
       }
     } catch (err) {
       Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)

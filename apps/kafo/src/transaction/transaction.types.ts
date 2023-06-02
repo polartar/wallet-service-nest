@@ -4,7 +4,6 @@ export interface ITransactionResponse {
   success: boolean
   error?: string
   data?: ITransaction
-  signedPayload?: string
 }
 export interface IFeeResponse {
   success: boolean
@@ -62,6 +61,7 @@ export interface ITransaction {
   tosign_tx?: string[]
   pubkeys?: string[]
   signatures?: string[]
+  signedPayload?: string
 }
 
 export interface INFTTransactionInput {

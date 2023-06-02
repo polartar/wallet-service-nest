@@ -48,6 +48,7 @@ export class TransactionController {
       data.to,
       data.amount,
       data.coin_type,
+      data.public_key,
     )
   }
 
