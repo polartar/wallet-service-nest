@@ -11,14 +11,16 @@ import {
   IFeeResponse,
   INFTTransactionInput,
   INFTTransactionResponse,
+  ITransaction,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
+  IVaultTransaction,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
-import { hexlify, serializeTransaction } from 'ethers/lib/utils'
+import { formatUnits, hexlify, serializeTransaction } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 
@@ -76,6 +78,42 @@ export class TransactionService {
     }
   }
 
+  generateVaultTransaction(
+    coinType: ECoinType,
+    outputTx: ITransaction,
+    publicKey: string,
+  ): IVaultTransaction {
+    const decimal = coinType === ECoinType.BITCOIN ? 8 : 18
+    const transaction: IVaultTransaction = {
+      type: 2,
+      from: outputTx.tx.addresses[0],
+      to: outputTx.tx.addresses[1],
+      value: {
+        value: formatUnits(outputTx.tx.total, decimal),
+        factor: 0,
+      },
+      extra: {
+        publicKey: publicKey,
+      },
+      fee: {
+        fee: {
+          value: formatUnits(outputTx.tx.fees, decimal),
+          factor: 0,
+        },
+      },
+      nativeTransaction: outputTx.tosign_tx[0],
+      signingPayloads: [
+        {
+          address: outputTx.tx.addresses[0],
+          publickey: publicKey,
+          tosign: outputTx.tosign[0],
+        },
+      ],
+    }
+
+    return transaction
+  }
+
   async generate(data: ITransactionInput): Promise<ITransactionResponse> {
     const newTx = {
       inputs: [{ addresses: [data.from] }],
@@ -90,39 +128,40 @@ export class TransactionService {
     if (this.isProduction) {
       params =
         data.coinType === ECoinType.BITCOIN
-          ? 'btc/main/txs/new'
-          : `eth/main/txs/new?token=${this.blockcypherToken}`
+          ? 'btc/main/txs/new?includeToSignTx=true'
+          : `eth/main/txs/new?token=${this.blockcypherToken}&includeToSignTx=true`
     } else {
       params =
         data.coinType === ECoinType.BITCOIN
-          ? 'btc/test3/txs/new'
-          : `beth/test/txs/new?token=${this.blockcypherToken}`
+          ? 'btc/test3/txs/new?includeToSignTx=true'
+          : `beth/test/txs/new?token=${this.blockcypherToken}includeToSignTx=true`
     }
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${params}&includeToSignTx=true`,
+          `https://api.blockcypher.com/v1/${params}`,
           JSON.stringify(newTx),
         ),
       )
 
-      console.log(response.data)
+      const vaultTransaction = this.generateVaultTransaction(
+        data.coinType,
+        response.data as ITransaction,
+        data.publicKey,
+      )
 
-      const signature = this.signPayload(JSON.stringify(response.data))
+      const signedPayload = this.signPayload(JSON.stringify(vaultTransaction))
       return {
         success: true,
         data: response.data,
-        signature,
+        signedPayload,
       }
     } catch (err) {
-      console.log({ err })
-      const message =
-        err.response.data.error || err.response.data.errors[0].error
-      Sentry.captureException(`generate(): ${message}`)
+      Sentry.captureException(`generate(): ${err.message}`)
 
       return {
         success: false,
-        error: message,
+        error: err.message,
         data: err.response.data,
       }
     }
@@ -152,14 +191,11 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
-      const message = err.response
-        ? err.response.data.error || err.response.data.errors[0].error
-        : err.message
-      Sentry.captureException(`publish(): ${message}`)
+      Sentry.captureException(`publish(): ${err.message}`)
 
       return {
         success: false,
-        error: message,
+        error: err.message,
         data: err.response.data,
       }
     }

@@ -4,7 +4,7 @@ export interface ITransactionResponse {
   success: boolean
   error?: string
   data?: ITransaction
-  signature?: string
+  signedPayload?: string
 }
 export interface IFeeResponse {
   success: boolean
@@ -27,6 +27,7 @@ export interface ITransactionInput {
   to: string
   amount: number
   coinType: ECoinType
+  publicKey: string
 }
 
 export interface ITransactionPush {
@@ -58,6 +59,7 @@ export interface ITx {
 export interface ITransaction {
   tx: ITx
   tosign: string[]
+  tosign_tx?: string[]
   pubkeys?: string[]
   signatures?: string[]
 }
@@ -81,4 +83,31 @@ export interface INFTTransactionResponse {
   error?: string
   data?: string | object
   signature?: string
+}
+
+export interface IVaultTransaction {
+  type: number
+  from: string
+  to: string
+  value: {
+    value: string
+    factor: number
+  }
+  extra: {
+    publicKey: string
+  }
+  fee: {
+    fee: {
+      value: string
+      factor: number
+    }
+  }
+  nativeTransaction: string
+  signingPayloads: [
+    {
+      address: string
+      publickey: string
+      tosign: string
+    },
+  ]
 }
