@@ -101,10 +101,12 @@ export class TransactionService {
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${params}`,
+          `https://api.blockcypher.com/v1/${params}&includeToSignTx=true`,
           JSON.stringify(newTx),
         ),
       )
+
+      console.log(response.data)
 
       const signature = this.signPayload(JSON.stringify(response.data))
       return {
@@ -113,6 +115,7 @@ export class TransactionService {
         signature,
       }
     } catch (err) {
+      console.log({ err })
       const message =
         err.response.data.errors[0].error || err.response.data.error
       Sentry.captureException(`generate(): ${message}`)
