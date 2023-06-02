@@ -56,6 +56,7 @@ export class WalletController {
         xPub,
         walletType,
       )
+
       await this.portfolioService.initializeWallets()
       return res
     } catch (e) {

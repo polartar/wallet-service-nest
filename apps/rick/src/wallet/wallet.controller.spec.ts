@@ -190,12 +190,14 @@ describe('WalletController', () => {
         },
       ],
     })
+
     expect(response.length).toBe(1)
     expect(response[0].xPub).toBe(xpub)
     expect(response[0].addresses.length).toBe(1)
     expect(response[0].addresses[0].address).toBe(
       '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
     )
+
     expect(response[0].addresses[0].history.length).toBeGreaterThan(1)
   }, 20000)
 

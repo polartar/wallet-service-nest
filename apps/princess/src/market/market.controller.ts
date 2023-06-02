@@ -26,7 +26,7 @@ export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
   @ApiOperation({ summary: "This api can't be called directly" })
-  @Post('ethereum')
+  @Post('price/eth')
   @Public()
   async setEthPrice(@Body() data: { ethereum: string }) {
     this.marketService.setEthPrice(data.ethereum)
@@ -34,7 +34,7 @@ export class MarketController {
   }
 
   @ApiOperation({ summary: "This api can't be called directly" })
-  @Post('bitcoin')
+  @Post('price/btc')
   @Public()
   async setBtcPrice(@Body() data: { bitcoin: string }) {
     this.marketService.setBtcPrice(data.bitcoin)

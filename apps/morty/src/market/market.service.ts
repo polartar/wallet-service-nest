@@ -104,11 +104,9 @@ export class MarketService {
       const res = JSON.parse(response)
 
       firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/market/ethereum`, res),
-      ).catch(() => {
-        Sentry.captureException(
-          'subscribeETHPrice(): Princess market/ethereum api error',
-        )
+        this.httpService.post(`${this.princessAPIUrl}/market/price/eth`, res),
+      ).catch((err) => {
+        Sentry.captureException(`subscribeETHPrice(): ${err.message}`)
       })
     })
   }
@@ -120,11 +118,9 @@ export class MarketService {
     this.btcClient.on('message', (response) => {
       const res = JSON.parse(response)
       firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/market/bitcoin`, res),
-      ).catch(() => {
-        Sentry.captureException(
-          'subscribeBTCPrice(): Princess market/bitcoin api error',
-        )
+        this.httpService.post(`${this.princessAPIUrl}/market/price/btc`, res),
+      ).catch((err) => {
+        Sentry.captureException(`subscribeBTCPrice(): ${err.message}`)
       })
     })
   }

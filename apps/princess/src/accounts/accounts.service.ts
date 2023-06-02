@@ -19,6 +19,7 @@ import { MarketService } from '../market/market.service'
 import { formatUnits } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
+import { TransactionService } from '../transaction/transaction.service'
 
 @Injectable()
 export class AccountsService {
@@ -31,6 +32,7 @@ export class AccountsService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly marketService: MarketService,
+    private readonly transactionService: TransactionService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
@@ -76,11 +78,13 @@ export class AccountsService {
   async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
     this.validateAccountId(accountId)
 
-    return this.rickAPICall(EAPIMethod.POST, `wallet`, {
+    const wallet = await this.rickAPICall(EAPIMethod.POST, `wallet`, {
       account_id: accountId,
       wallet_type: walletType,
       xPub: xPub,
     })
+
+    return this.addUSDPrice([wallet], EPeriod.All)
   }
 
   async updateWallet(
@@ -97,7 +101,7 @@ export class AccountsService {
     })
   }
 
-  getPrice(source: IMarketData[], timestamp: string) {
+  getPrice(source: IMarketData[], timestamp: number) {
     const index = source.findIndex(
       (market) =>
         new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
@@ -117,25 +121,40 @@ export class AccountsService {
       ECoinType.BITCOIN,
       period,
     )
+    const ethFee = await this.transactionService.getFee(ECoinType.ETHEREUM)
+    const btcFee = await this.transactionService.getFee(ECoinType.BITCOIN)
+
+    if (!ethMarketHistories.success || !btcMarketHistories.success) {
+      Sentry.captureException('Something went wrong in Morty service')
+      return wallets
+    }
+
+    if (!ethFee.success || !btcFee.success) {
+      Sentry.captureException('Something went wrong in Transaction service')
+      return wallets
+    }
 
     return wallets.map((wallet) => {
       wallet.addresses = wallet.addresses.map((address) => {
-        const source =
-          address.coinType === ECoinType.ETHEREUM
-            ? ethMarketHistories.data
-            : btcMarketHistories.data
-        const decimal = address.coinType === ECoinType.ETHEREUM ? 18 : 8
+        const isEthereum = address.coinType === ECoinType.ETHEREUM
+        const source = isEthereum
+          ? ethMarketHistories.data
+          : btcMarketHistories.data
+        const decimal = isEthereum ? 18 : 8
         const history = address.history.map((item) => {
           const price = this.getPrice(source, item.timestamp)
           const value = formatUnits(item.balance, decimal)
+          const amount = formatUnits(item.amount, decimal)
           return {
             ...item,
-            usdPrice: (+value * price).toString(),
+            usdBalance: (+value * price).toString(),
+            usdAmount: (+amount * price).toString(),
           }
         })
 
         return {
           ...address,
+          fee: isEthereum ? ethFee.data.convert : btcFee.data.convert,
           history,
         }
       })

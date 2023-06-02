@@ -3,12 +3,13 @@ import { AccountsController } from './accounts.controller'
 import { HttpModule } from '@nestjs/axios'
 import { AccountsService } from './accounts.service'
 import { MarketService } from '../market/market.service'
+import { TransactionService } from '../transaction/transaction.service'
 
 @Module({
   imports: [
     HttpModule, //
   ],
   controllers: [AccountsController],
-  providers: [AccountsService, MarketService],
+  providers: [AccountsService, MarketService, TransactionService],
 })
 export class AccountsModule {}
