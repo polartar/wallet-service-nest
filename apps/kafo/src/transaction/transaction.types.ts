@@ -3,7 +3,7 @@ import { ECoinType } from '@rana/core'
 export interface ITransactionResponse {
   success: boolean
   error?: string
-  data?: ITransaction
+  data?: IVaultTransactionResponse
 }
 export interface IFeeResponse {
   success: boolean
@@ -109,4 +109,8 @@ export interface IVaultTransaction {
       tosign: string
     },
   ]
+}
+
+interface IVaultTransactionResponse extends IVaultTransaction {
+  signedPayload: string
 }

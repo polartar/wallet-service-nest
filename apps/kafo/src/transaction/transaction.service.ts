@@ -152,7 +152,7 @@ export class TransactionService {
       const signedPayload = this.signPayload(JSON.stringify(vaultTransaction))
       return {
         success: true,
-        data: { ...response.data, signedPayload },
+        data: { ...vaultTransaction, signedPayload },
       }
     } catch (err) {
       Sentry.captureException(`generate(): ${err.message}`)
