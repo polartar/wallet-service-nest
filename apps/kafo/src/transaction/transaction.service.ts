@@ -101,7 +101,6 @@ export class TransactionService {
           factor: 0,
         },
       },
-      nativeTransaction: '',
       signingPayloads: [
         {
           address: outputTx.tx.addresses[0],

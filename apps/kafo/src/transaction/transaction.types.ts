@@ -102,7 +102,6 @@ export interface IVaultTransaction {
       factor: number
     }
   }
-  nativeTransaction: string
   signingPayloads: [
     {
       address: string

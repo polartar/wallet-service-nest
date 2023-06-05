@@ -63,8 +63,6 @@ export class GenerateTransactionSwaggerResponse {
           factor: 0,
         },
       },
-      nativeTransaction:
-        '70736274ff0100710200000001ecec349ad1c01e5af1c100d1c045717ef1e5c7c8751b631e495dcffe7669f8160100000000ffffffff0264000000000000001600144f84b65b06873f535c2a101dac779456f7166ecd25771e0000000000160014ac085e2b15395c636ee74658aa3df08fdff44a02000000000001011fe7781e0000000000160014ac085e2b15395c636ee74658aa3df08fdff44a02000000',
       signingPayloads: [
         {
           address: 'tb1q4sy9u2c489wxxmh8gev2500s3l0lgjszq2jkhw',
