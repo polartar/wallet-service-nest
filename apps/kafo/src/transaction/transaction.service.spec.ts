@@ -31,9 +31,11 @@ describe('TransactionService', () => {
       to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
       amount: 1,
       coinType: ECoinType.BITCOIN,
+      publicKey: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
     }
 
     const response = await service.generate(transactionData)
+
     expect(response.success).toBeTruthy()
   }, 30000)
 })

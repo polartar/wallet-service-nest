@@ -28,6 +28,7 @@ export class TransactionInputPipe implements PipeTransform {
       }
     }),
     amount: Joi.number().integer().options({ convert: false }).required(),
+    publicKey: Joi.string().required(),
     coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
   })
 

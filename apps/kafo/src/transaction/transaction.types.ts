@@ -3,7 +3,7 @@ import { ECoinType } from '@rana/core'
 export interface ITransactionResponse {
   success: boolean
   error?: string
-  data?: ITransaction
+  data?: IVaultTransactionResponse
 }
 export interface IFeeResponse {
   success: boolean
@@ -26,6 +26,7 @@ export interface ITransactionInput {
   to: string
   amount: number
   coinType: ECoinType
+  publicKey: string
 }
 
 export interface ITransactionPush {
@@ -57,8 +58,10 @@ export interface ITx {
 export interface ITransaction {
   tx: ITx
   tosign: string[]
+  tosign_tx?: string[]
   pubkeys?: string[]
   signatures?: string[]
+  signedPayload?: string
 }
 
 export interface INFTTransactionInput {
@@ -79,4 +82,35 @@ export interface INFTTransactionResponse {
   success: boolean
   error?: string
   data?: string | object
+  signature?: string
+}
+
+export interface IVaultTransaction {
+  type: number
+  from: string
+  to: string
+  value: {
+    value: string
+    factor: number
+  }
+  extra: {
+    publicKey: string
+  }
+  fee: {
+    fee: {
+      value: string
+      factor: number
+    }
+  }
+  signingPayloads: [
+    {
+      address: string
+      publickey: string
+      tosign: string
+    },
+  ]
+}
+
+interface IVaultTransactionResponse extends IVaultTransaction {
+  signedPayload: string
 }
