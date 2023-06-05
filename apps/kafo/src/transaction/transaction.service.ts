@@ -73,7 +73,6 @@ export class TransactionService {
 
       return signature.toString('base64')
     } catch (err) {
-      console.log(err)
       throw new InternalServerErrorException('Invalid private key')
     }
   }
