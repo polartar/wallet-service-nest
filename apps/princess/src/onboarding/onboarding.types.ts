@@ -31,4 +31,5 @@ export interface IAccessTokenPayload {
   idToken: string
   deviceId: string
   type: string
+  otp: string
 }

@@ -1,4 +1,4 @@
-import { ApiBody, ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
 import { IsNotEmpty, IsUUID } from 'class-validator'
 

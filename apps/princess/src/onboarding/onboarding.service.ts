@@ -80,6 +80,7 @@ export class OnboardingService {
         accountId: userResponse.data.id,
         idToken: deviceResponse.data.deviceId,
         deviceId: deviceResponse.data.deviceId,
+        otp: deviceResponse.data.otp,
       }
       const accessToken = await this.generateAccessToken(payload)
 
@@ -199,6 +200,7 @@ export class OnboardingService {
         accountId: user.account.id,
         idToken: token,
         deviceId,
+        otp,
       }
 
       const accessToken = await this.generateAccessToken(payload)
@@ -326,19 +328,38 @@ export class OnboardingService {
     })
   }
 
-  async regenerateAccessToken(refreshToken: string) {
+  async regenerateAccessToken(
+    accountId: number,
+    deviceId: string,
+    otp: string,
+    refreshToken: string,
+  ) {
+    let payload: IAccessTokenPayload
     try {
-      const payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get<string>(
-          EEnvironment.jwtRefreshTokenSecret,
-        ),
-      })
-
-      const accessToken = this.generateAccessToken(payload)
-
-      return accessToken
+      payload = await this.jwtService.verifyAsync<IAccessTokenPayload>(
+        refreshToken,
+        {
+          secret: this.configService.get<string>(
+            EEnvironment.jwtRefreshTokenSecret,
+          ),
+        },
+      )
     } catch (err) {
       throw new ForbiddenException('Invalid refresh token')
     }
+
+    if (
+      +payload.accountId !== accountId ||
+      payload.deviceId !== deviceId ||
+      payload.otp !== otp
+    ) {
+      throw new BadRequestException(
+        "Wrong refresh token. The payload isn't matched",
+      )
+    }
+
+    const accessToken = this.generateAccessToken(payload)
+
+    return accessToken
   }
 }

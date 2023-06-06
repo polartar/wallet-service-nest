@@ -6,6 +6,7 @@ import { SyncUserDto, SyncUserSwaggerResponse } from './dto/sync-user.dto'
 import { Public } from '../auth/decorators/public.decorator'
 import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
+import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
 
 @Controller('auth')
 @ApiTags('auth')
@@ -64,8 +65,13 @@ export class OnboardingController {
     summary: 'Generate new access token from the refresh token',
   })
   @Public()
-  async generateAccessToken(@Body() data: { refresh_token: string }) {
-    return this.onboardingService.regenerateAccessToken(data.refresh_token)
+  async generateAccessToken(@Body() data: UpdateAccessTokenDto) {
+    return this.onboardingService.regenerateAccessToken(
+      data.account_id,
+      data.device_id,
+      data.otp,
+      data.refresh_token,
+    )
   }
 
   // @Post('check_hash')
