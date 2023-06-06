@@ -4,7 +4,7 @@ import * as bjs from 'bitcoinjs-lib'
 import BIP32Factory from 'bip32'
 import * as ecc from 'tiny-secp256k1'
 import b58 = require('bs58check')
-import { Network } from 'bitcoinjs-lib/src/types'
+import { hdkey } from 'ethereumjs-wallet'
 
 @Injectable()
 export class XpubService {
@@ -30,5 +30,24 @@ export class XpubService {
       network: bjs.networks.testnet,
     })
     console.log({ address })
+  }
+  async discoverEthAddresses() {
+    // const extPubKey =
+    //   'xpub6BzwKCWVs4F9cpmYundX3PjbqcPqERCXKCAw8SRKQgXd1ybTxi338A2Ep6EbGhFp7up4L7PDWivUtnYNC79MWo6wN5SqzrhksQVJupArUxD'
+
+    // const hdwallet = hdkey.fromExtendedKey(extPubKey)
+    // const wallet = hdwallet.getWallet()
+    // const address = wallet.getAddress()
+
+    // console.log(`Address: 0x${address.toString('hex')}`)
+
+    const hdWallet = hdkey.fromExtendedKey(
+      'xpub6BzwKCWVs4F9cpmYundX3PjbqcPqERCXKCAw8SRKQgXd1ybTxi338A2Ep6EbGhFp7up4L7PDWivUtnYNC79MWo6wN5SqzrhksQVJupArUxD',
+    )
+    const hdPath = 'm/44/60/0/0/0'
+    const node = hdWallet.derivePath(hdPath)
+    const nodeWallet = node.getWallet()
+    const address = nodeWallet.getAddressString()
+    console.log(address)
   }
 }

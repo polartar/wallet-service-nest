@@ -7,6 +7,6 @@ export class XpubController {
 
   @Get()
   getData() {
-    return this.xpubService.discoverAddresses()
+    return this.xpubService.discoverEthAddresses()
   }
 }
