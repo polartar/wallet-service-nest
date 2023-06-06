@@ -14,6 +14,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import {
+  IAccessTokenPayload,
   IAccount,
   IDeviceCreateResponse,
   IOnboardingSigningResponse,
@@ -75,16 +76,21 @@ export class OnboardingService {
       )
 
       const payload = {
+        type: 'anonymous',
         accountId: userResponse.data.id,
         idToken: deviceResponse.data.deviceId,
         deviceId: deviceResponse.data.deviceId,
       }
-      const accessToken = await this.jwtService.signAsync(payload)
+      const accessToken = await this.generateAccessToken(payload)
+
+      const refreshToken = await this.generateRefreshToken(payload)
+
       return {
         secret: deviceResponse.data.otp,
         device_id: deviceResponse.data.deviceId,
         account_id: userResponse.data.id,
         access_token: accessToken,
+        refresh_token: refreshToken,
       }
     } catch (err) {
       Sentry.captureException(err.message + ' in createDevice()')
@@ -194,15 +200,16 @@ export class OnboardingService {
         idToken: token,
         deviceId,
       }
-      const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '1d',
-      })
+
+      const accessToken = await this.generateAccessToken(payload)
+      const refreshToken = await this.generateRefreshToken(payload)
 
       return {
         type: user.is_new ? 'new email' : 'existing email',
         account_id: user.account.id,
         account: user.is_new ? user.account : {},
         access_token: accessToken,
+        refresh_token: refreshToken,
         server_shard: serverProposedShard,
         passcode_key: passCodeKey,
         recovery_key: recoveryKey,
@@ -304,6 +311,34 @@ export class OnboardingService {
       return true
     } else {
       throw new ForbiddenException('Device Id not matched')
+    }
+  }
+
+  async generateAccessToken(payload: IAccessTokenPayload) {
+    return await this.jwtService.signAsync(payload, { expiresIn: '4h' })
+  }
+  async generateRefreshToken(payload: IAccessTokenPayload) {
+    return await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>(
+        EEnvironment.jwtRefreshTokenSecret,
+      ),
+      expiresIn: '365 days',
+    })
+  }
+
+  async regenerateAccessToken(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>(
+          EEnvironment.jwtRefreshTokenSecret,
+        ),
+      })
+
+      const accessToken = this.generateAccessToken(payload)
+
+      return accessToken
+    } catch (err) {
+      throw new ForbiddenException('Invalid refresh token')
     }
   }
 }

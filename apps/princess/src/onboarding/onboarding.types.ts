@@ -8,6 +8,7 @@ export interface IOnboardingSigningResponse {
   account_id: string
   account: IAccount
   access_token: string
+  refresh_token: string
   server_shard: string
   passcode_key: string
   recovery_key: string
@@ -18,8 +19,16 @@ export interface IDeviceCreateResponse {
   device_id: string
   account_id: number
   access_token: string
+  refresh_token: string
 }
 
 export interface IDeviceRegisterResponse {
   account: IAccount
+}
+
+export interface IAccessTokenPayload {
+  accountId: string
+  idToken: string
+  deviceId: string
+  type: string
 }

@@ -7,8 +7,8 @@ import { Public } from '../auth/decorators/public.decorator'
 import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
 
-@Controller('onboarding')
-@ApiTags('onboarding')
+@Controller('auth')
+@ApiTags('auth')
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
@@ -57,6 +57,15 @@ export class OnboardingController {
       data.account_hash,
       data.otp,
     )
+  }
+
+  @Post('update')
+  @ApiOperation({
+    summary: 'Generate new access token from the refresh token',
+  })
+  @Public()
+  async generateAccessToken(@Body() data: { refresh_token: string }) {
+    return this.onboardingService.regenerateAccessToken(data.refresh_token)
   }
 
   // @Post('check_hash')
