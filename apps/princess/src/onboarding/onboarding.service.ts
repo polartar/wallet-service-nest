@@ -227,56 +227,6 @@ export class OnboardingService {
 
     const user = await this.getUserFromIdToken(token, type, accountId)
     await this.syncRick(user.is_new, user.account, accountId)
-    // try {
-    //   const userResponse = await firstValueFrom(
-    //     this.httpService.post(`${this.gandalfApiUrl}/auth`, {
-    //       idToken: token,
-    //       type,
-    //       accountId,
-    //     }),
-    //   )
-    //   user = userResponse.data
-    // } catch (err) {
-    //   Sentry.captureMessage(`SignIn(Gandalf): ${err.message} with ${accountId}`)
-    //   if (err.response) {
-    //     throw new UnauthorizedException(err.response.data.message)
-    //   } else {
-    //     throw new BadGatewayException('Gandalf API call error')
-    //   }
-    // }
-
-    // try {
-    //   // if new user email, then register, then update the anonymous user with real info.
-    //   if (user.is_new) {
-    //     await firstValueFrom(
-    //       this.httpService.put(
-    //         `${this.rickApiUrl}/account/${user.account.id}`,
-    //         {
-    //           email: user.account.email,
-    //           name: user.account.name,
-    //           accountId: user.account.id,
-    //         },
-    //       ),
-    //     )
-    //   } else {
-    //     // combine wallets
-    //     if (user.account.id !== accountId) {
-    //       await firstValueFrom(
-    //         this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
-    //           existingAccountId: user.account.id,
-    //           anonymousId: accountId,
-    //         }),
-    //       )
-    //     }
-    //   }
-    // } catch (err) {
-    //   Sentry.captureMessage(`SignIn(Rick): ${err.message} with ${accountId}`)
-    //   if (err.response) {
-    //     throw new InternalServerErrorException(err.response.data.message)
-    //   } else {
-    //     throw new BadGatewayException('Rick API call error')
-    //   }
-    // }
 
     return await this.checkPair(
       user.account.id,
@@ -291,49 +241,6 @@ export class OnboardingService {
       passCodeKey,
       recoveryKey,
     )
-
-    // try {
-    //   await firstValueFrom(
-    //     this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-    //       userId: user.account.id,
-    //       deviceId,
-    //       otp,
-    //       serverProposedShard,
-    //       ownProposedShard,
-    //       passCodeKey,
-    //       recoveryKey,
-    //     }),
-    //   )
-
-    //   const payload = {
-    //     type: type,
-    //     accountId: user.account.id,
-    //     idToken: token,
-    //     deviceId,
-    //     otp,
-    //   }
-
-    //   const accessToken = await this.generateAccessToken(payload)
-    //   const refreshToken = await this.generateRefreshToken(payload)
-
-    //   return {
-    //     type: user.is_new ? 'new email' : 'existing email',
-    //     account_id: user.account.id,
-    //     account: user.is_new ? user.account : {},
-    //     access_token: accessToken,
-    //     refresh_token: refreshToken,
-    //     server_shard: serverProposedShard,
-    //     passcode_key: passCodeKey,
-    //     recovery_key: recoveryKey,
-    //   }
-    // } catch (err) {
-    //   Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
-    //   if (err.response) {
-    //     throw new BadRequestException(err.response.data.message)
-    //   } else {
-    //     throw new BadGatewayException('Fluffy API call error')
-    //   }
-    // }
   }
 
   async getAccountHash(accountId: number): Promise<number> {
