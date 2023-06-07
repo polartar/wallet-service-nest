@@ -132,10 +132,10 @@ export class OnboardingService {
     token: string,
     deviceId: string,
     otp: string,
-    serverProposedShard: string,
-    ownProposedShard: string,
-    passCodeKey: string,
-    recoveryKey: string,
+    serverProposedShard?: string,
+    ownProposedShard?: string,
+    passCodeKey?: string,
+    recoveryKey?: string,
   ) {
     try {
       await firstValueFrom(
@@ -395,10 +395,6 @@ export class OnboardingService {
       idToken,
       deviceId,
       otp,
-      '',
-      '',
-      '',
-      '',
     )
     return pair.refresh_token
   }
