@@ -1,11 +1,11 @@
 export interface IAccount {
-  id: string
-  email: string
-  name: string
+  id?: number
+  email?: string
+  name?: string
 }
 export interface IOnboardingSigningResponse {
   type: string
-  account_id: string
+  account_id: number
   account: IAccount
   access_token: string
   refresh_token: string
@@ -27,7 +27,7 @@ export interface IDeviceRegisterResponse {
 }
 
 export interface IAccessTokenPayload {
-  accountId: string
+  accountId: number
   idToken: string
   deviceId: string
   type: string

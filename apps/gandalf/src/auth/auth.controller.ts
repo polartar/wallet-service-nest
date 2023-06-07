@@ -4,7 +4,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   InternalServerErrorException,
   Param,
   Post,
@@ -13,6 +12,7 @@ import {
 import { IAuthData } from './auth.types'
 import { LoginValidationPipe } from './auth.pipe'
 import { AccountService } from '../account/account.service'
+import * as Sentry from '@sentry/node'
 
 @Controller('auth')
 export class AuthController {
@@ -23,9 +23,9 @@ export class AuthController {
 
   @Post()
   @UsePipes(new LoginValidationPipe())
-  async auth(@Body() data: IAuthData, @Headers() headers: Headers) {
+  async auth(@Body() data: IAuthData) {
     try {
-      const { name, email } = await this.authService.authorize(data, headers)
+      const { name, email } = await this.authService.authorize(data)
       let account = await this.accountService.lookup({ email })
 
       if (account) {
@@ -33,7 +33,7 @@ export class AuthController {
           is_new: false,
           account,
         }
-      } else {
+      } else if (data.accountId) {
         account = await this.accountService.getAccount(data.accountId)
 
         await this.accountService.update(account, { name, email })
@@ -42,8 +42,11 @@ export class AuthController {
           is_new: true,
           account: account,
         }
+      } else {
+        throw new Error('User not exists')
       }
     } catch (e) {
+      Sentry.captureMessage(`Auth(): ${e.message}`)
       throw new BadRequestException(e?.message)
     }
   }

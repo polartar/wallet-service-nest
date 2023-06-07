@@ -7,6 +7,7 @@ import { Public } from '../auth/decorators/public.decorator'
 import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
 import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 
 @Controller('auth')
 @ApiTags('auth')
@@ -71,6 +72,18 @@ export class OnboardingController {
       data.device_id,
       data.otp,
       data.refresh_token,
+    )
+  }
+
+  @Post('refresh')
+  @UsePipes(new SignInValidationPipe())
+  async refresh(@Body() data: RefreshTokenDto) {
+    return this.onboardingService.refresh(
+      data.type,
+      data.id_token,
+      data.account_id,
+      data.device_id,
+      data.otp,
     )
   }
 
