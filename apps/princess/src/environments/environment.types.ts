@@ -9,4 +9,5 @@ export enum EEnvironment {
   kafoAPIUrl = 'kafo_api_url',
   version = 'version',
   bristleAPIUrl = 'bristle_api_url',
+  jwtRefreshTokenSecret = 'jwt_refresh_token_secret',
 }

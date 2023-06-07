@@ -1,14 +1,19 @@
 import { OnboardingService } from './onboarding.service'
 import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
-import { SignInValidationPipe } from './onboarding.pipe'
+import {
+  RefreshTokenValidationPipe,
+  SignInValidationPipe,
+} from './onboarding.pipe'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto, SyncUserSwaggerResponse } from './dto/sync-user.dto'
 import { Public } from '../auth/decorators/public.decorator'
 import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
+import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 
-@Controller('onboarding')
-@ApiTags('onboarding')
+@Controller('auth')
+@ApiTags('auth')
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
@@ -55,6 +60,33 @@ export class OnboardingController {
       data.account_id,
       data.device_id,
       data.account_hash,
+      data.otp,
+    )
+  }
+
+  @Post('update')
+  @ApiOperation({
+    summary: 'Generate new access token from the refresh token',
+  })
+  @Public()
+  async generateAccessToken(@Body() data: UpdateAccessTokenDto) {
+    return this.onboardingService.regenerateAccessToken(
+      data.account_id,
+      data.device_id,
+      data.otp,
+      data.refresh_token,
+    )
+  }
+
+  @Post('refresh')
+  @Public()
+  @UsePipes(new RefreshTokenValidationPipe())
+  async refresh(@Body() data: RefreshTokenDto) {
+    return this.onboardingService.refresh(
+      data.type,
+      data.id_token,
+      data.account_id,
+      data.device_id,
       data.otp,
     )
   }

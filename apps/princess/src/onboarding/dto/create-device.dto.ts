@@ -21,4 +21,10 @@ export class CreateDeviceSwaggerResponse {
       'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk2OTcxODA4Nzk2ODI5YTk3MmU3OWE5ZDFhOWZmZjExY2Q2MWIxZTMiLCJ0eXAiOiJKV1QifQ',
   })
   access_token: string
+
+  @ApiProperty({
+    example:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjE1NiwiaWRUb2tlbiI6Ijc0YWZhMDUwLTYxNGEtNGFhYy1iYTUzLWEwYmFmNDBjMjljYyIsImRldmljZUlkIjoiNzRhZmEwNTAtNjE0YS00YWFjLWJhNTMtYTBiYWY0MGMyOWNjIiwiaWF0IjoxNjg1NDQwMjI0LCJleHAiOjE2ODU1MjY2MjR9.mMv5f1Tje6kvYDQw2xzTKe9yD_p2UCvLjacx4Ba4Ee8',
+  })
+  refresh_token: string
 }

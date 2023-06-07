@@ -6,7 +6,6 @@ import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import * as Sentry from '@sentry/node'
-import * as SentryTracing from '@sentry/tracing'
 
 @Injectable()
 export class AuthService {
@@ -21,16 +20,7 @@ export class AuthService {
     )
   }
 
-  async authorize(data: IAuthData, headers?: Headers): Promise<IAuthResponse> {
-    SentryTracing && true // This is to ensure bundler won't optimise the sentry/tracing import (https://github.com/getsentry/sentry-javascript/issues/4731#issuecomment-1098530656)
-    const sentry_trace_data = Sentry.extractTraceparentData(
-      headers ? headers['sentry-trace'] : '',
-    )
-    const sentry_txn = Sentry.startTransaction({
-      op: 'authorize',
-      name: 'authorize fn in gandalf',
-      ...sentry_trace_data,
-    })
+  async authorize(data: IAuthData): Promise<IAuthResponse> {
     if (data.type === EAuth.Google) {
       const client = new OAuth2Client(this.googleClientId)
       try {
@@ -56,8 +46,6 @@ export class AuthService {
           extra: { message: err.message, src: 'gandalf authorize api' },
         })
         throw new Error(err.message)
-      } finally {
-        sentry_txn.finish()
       }
     } else if (data.type === EAuth.Apple) {
       try {
@@ -75,11 +63,8 @@ export class AuthService {
           extra: { message: err.message, src: 'gandalf authorize api' },
         })
         throw new Error(err.message)
-      } finally {
-        sentry_txn.finish()
       }
     } else {
-      sentry_txn.finish()
       throw new Error('Unsupported type')
     }
   }

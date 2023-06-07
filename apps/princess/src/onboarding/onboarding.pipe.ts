@@ -27,3 +27,21 @@ export class SignInValidationPipe implements PipeTransform {
     return value
   }
 }
+
+export class RefreshTokenValidationPipe implements PipeTransform {
+  private schema = Joi.object().keys({
+    id_token: Joi.string().optional().allow(''),
+    type: Joi.string().valid(EAuth.Google, EAuth.Apple, 'Anonymous'),
+    device_id: Joi.string().required(),
+    account_id: Joi.number().required(),
+    otp: Joi.string().required(),
+  })
+
+  transform(value: SignInDto) {
+    const { error } = this.schema.validate(value)
+    if (error) {
+      throw new BadRequestException('Validation failed: ' + error.message)
+    }
+    return value
+  }
+}
