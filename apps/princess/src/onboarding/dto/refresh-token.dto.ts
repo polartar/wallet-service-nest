@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
-import { IsNotEmpty, IsUUID } from 'class-validator'
+import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 
 export class RefreshTokenDto {
   @ApiProperty({
@@ -13,6 +13,7 @@ export class RefreshTokenDto {
     description:
       'token of Google or Apple login. When anonymous, it will be empty',
   })
+  @IsOptional()
   id_token: string
 
   @ApiProperty({ description: 'device id' })

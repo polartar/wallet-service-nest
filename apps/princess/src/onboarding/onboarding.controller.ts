@@ -1,6 +1,9 @@
 import { OnboardingService } from './onboarding.service'
 import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common'
-import { SignInValidationPipe } from './onboarding.pipe'
+import {
+  RefreshTokenValidationPipe,
+  SignInValidationPipe,
+} from './onboarding.pipe'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SyncUserDto, SyncUserSwaggerResponse } from './dto/sync-user.dto'
 import { Public } from '../auth/decorators/public.decorator'
@@ -76,7 +79,8 @@ export class OnboardingController {
   }
 
   @Post('refresh')
-  @UsePipes(new SignInValidationPipe())
+  @Public()
+  @UsePipes(new RefreshTokenValidationPipe())
   async refresh(@Body() data: RefreshTokenDto) {
     return this.onboardingService.refresh(
       data.type,

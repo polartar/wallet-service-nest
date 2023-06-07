@@ -333,7 +333,7 @@ export class OnboardingService {
       secret: this.configService.get<string>(
         EEnvironment.jwtRefreshTokenSecret,
       ),
-      expiresIn: '365 days',
+      expiresIn: '180 days',
     })
   }
 
@@ -379,17 +379,18 @@ export class OnboardingService {
     deviceId: string,
     otp: string,
   ): Promise<string> {
-    const userResponse = await this.getUserFromIdToken(idToken, type)
-    if (accountId !== userResponse.account.id) {
-      throw new ForbiddenException(`Wrong account Id: ${accountId}`)
+    if (type === EAuth.Google || type === EAuth.Apple) {
+      const userResponse = await this.getUserFromIdToken(idToken, type)
+      if (accountId !== userResponse.account.id) {
+        throw new ForbiddenException(`Wrong account Id: ${accountId}`)
+      }
+      await this.syncRick(userResponse.is_new, userResponse.account, accountId)
     }
-
-    await this.syncRick(userResponse.is_new, userResponse.account, accountId)
 
     const pair = await this.checkPair(
       accountId,
-      userResponse.is_new,
-      userResponse.account,
+      false,
+      {},
       type,
       idToken,
       deviceId,
