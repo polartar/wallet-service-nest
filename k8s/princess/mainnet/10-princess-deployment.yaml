@@ -27,6 +27,11 @@ spec:
               secretKeyRef:
                 name: princess-env-secrets
                 key: JWT_SECRET
+          - name: JWT_REFRESH_TOKEN_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: princess-env-secrets
+                key: JWT_M_SECRET
           - name: RICK_API_URL
             value: "http://rick.mainnet.svc.cluster.local"
           - name: MORTY_API_URL
