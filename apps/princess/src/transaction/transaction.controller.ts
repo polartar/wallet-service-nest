@@ -71,6 +71,7 @@ export class TransactionController {
       data.from,
       data.to,
       data.contract_address,
+      data.public_key,
       data.tokenId,
       data.type,
       data.amount,
