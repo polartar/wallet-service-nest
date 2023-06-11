@@ -71,6 +71,7 @@ export interface INFTTransactionInput {
   tokenId: number
   amount?: number
   type: ENFTTypes
+  publicKey: string
 }
 
 export enum ENFTTypes {

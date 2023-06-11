@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import {
@@ -10,7 +10,6 @@ import {
   ENFTTypes,
   IFeeResponse,
   INFTTransactionInput,
-  INFTTransactionResponse,
   ITransaction,
   ITransactionInput,
   ITransactionPush,
@@ -20,9 +19,11 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
-import { formatUnits, hexlify, serializeTransaction } from 'ethers/lib/utils'
+import { formatUnits, hexlify } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
+import { Transaction } from '@ethereumjs/tx'
+import { Common } from '@ethereumjs/common'
 
 @Injectable()
 export class TransactionService {
@@ -243,7 +244,7 @@ export class TransactionService {
 
   async generateNFTRawTransaction(
     tx: INFTTransactionInput,
-  ): Promise<INFTTransactionResponse> {
+  ): Promise<ITransactionResponse> {
     const iface = new ethers.utils.Interface(
       tx.type === ENFTTypes.ERC1155 ? this.ERC1155ABI : this.ERC721ABI,
     )
@@ -263,21 +264,54 @@ export class TransactionService {
           ])
     try {
       const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-      const unsignedTx = {
+      const gasPrice = await this.provider.getGasPrice()
+      const txParams = {
         nonce: txCount,
-        gasPrice: hexlify(await this.provider.getGasPrice()),
+        gasPrice: hexlify(gasPrice),
         gasLimit: '0x156AB',
-        chainId: this.isProduction ? 1 : 5,
         to: tx.contractAddress,
         value: 0,
-        data: data, // encoded ABI for the transfer method
+        data: data,
       }
 
-      const serializedTx = serializeTransaction(unsignedTx)
-      // const signedPayload = this.signPayload(serializedTx)
+      const common = new Common({ chain: Number(this.isProduction ? 1 : 5) })
+
+      const nativeTransaction = new Transaction(txParams, {
+        common,
+      })
+
+      const fee = BigNumber.from('0x156AB').mul(gasPrice)
+
+      const transaction: IVaultTransaction = {
+        type: 2,
+        from: tx.from,
+        to: tx.to,
+        value: {
+          value: '0',
+          factor: 0,
+        },
+        extra: {
+          publicKey: tx.publicKey,
+        },
+        fee: {
+          fee: {
+            value: fee.toString(),
+            factor: 0,
+          },
+        },
+        signingPayloads: [
+          {
+            address: tx.from,
+            publickey: tx.publicKey,
+            tosign: nativeTransaction.getMessageToSign().toString('hex'),
+          },
+        ],
+      }
+
+      const signedPayload = this.signPayload(JSON.stringify(transaction))
       return {
         success: true,
-        data: serializedTx,
+        data: { ...transaction, signedPayload },
       }
     } catch (err) {
       Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)

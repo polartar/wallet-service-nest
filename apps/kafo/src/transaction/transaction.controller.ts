@@ -55,7 +55,7 @@ export class TransactionController {
   @UsePipes(new NFTTransactionRawPipe())
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
-  ): Promise<INFTTransactionResponse> {
+  ): Promise<ITransactionResponse> {
     return this.service.generateNFTRawTransaction(data)
   }
 

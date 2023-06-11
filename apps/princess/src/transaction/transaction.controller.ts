@@ -15,10 +15,7 @@ import {
   PublishTransactionSwaggerResponse,
 } from './dto/generate-transaction.dto'
 import { ITransaction } from './transaction.types'
-import {
-  GenerateNFTTransactionDto,
-  GenerateNFTTransactionSwaggerResponse,
-} from './dto/generate-nft-transaction.dto'
+import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { PublishNFTTransactionDto } from './dto/publish-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 
@@ -65,7 +62,7 @@ export class TransactionController {
   }
 
   @Post('nft')
-  @ApiOkResponse({ type: GenerateNFTTransactionSwaggerResponse })
+  @ApiOkResponse({ type: GenerateTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Generate NFT transfer transaction hash',
   })
@@ -74,6 +71,7 @@ export class TransactionController {
       data.from,
       data.to,
       data.contract_address,
+      data.public_key,
       data.tokenId,
       data.type,
       data.amount,

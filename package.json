@@ -5,6 +5,7 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@ethereumjs/tx": "^4.1.2",
     "@fastify/static": "^6.10.0",
     "@moralisweb3/common-evm-utils": "^2.16.1",
     "@nestjs/axios": "^2.0.0",

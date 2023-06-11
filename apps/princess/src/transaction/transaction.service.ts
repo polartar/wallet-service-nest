@@ -100,6 +100,7 @@ export class TransactionService {
     from: string,
     to: string,
     contractAddress: string,
+    publicKey: string,
     tokenId: number,
     type: ENFTTypes,
     amount?: number,
@@ -111,6 +112,7 @@ export class TransactionService {
       tokenId,
       type,
       amount,
+      publicKey,
     })
   }
 
