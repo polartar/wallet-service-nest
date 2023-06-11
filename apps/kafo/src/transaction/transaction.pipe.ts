@@ -93,6 +93,7 @@ export class NFTTransactionRawPipe implements PipeTransform {
       }
     }),
     tokenId: Joi.number().integer().options({ convert: false }).required(),
+    publicKey: Joi.string().required(),
     type: Joi.string().valid(ENFTTypes.ERC1155, ENFTTypes.ERC721).required(),
     amount: Joi.number().integer().options({ convert: false }),
   })
