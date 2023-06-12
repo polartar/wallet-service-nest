@@ -216,18 +216,33 @@ deploy to mainnet k8s cluster:
   when: on_success
   needs: ["push to registry", "build source maps"]
   image:
-    name: bitnami/kubectl:latest
+    name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
     entrypoint: [""]
+  variables:
+    SENTRY_URL: https://sentry.nscribe.xyz
   script:
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
+    - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - kubectl config use-context ngrave/rana/app/be:gke-agent && kubectl config set-context --current --namespace=mainnet
-    - "kubectl set image deployment/anton-deployment anton-prod=${CI_REGISTRY_IMAGE}/anton_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/bristle-deployment bristle-prod=${CI_REGISTRY_IMAGE}/bristle:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/fluffy-deployment fluffy-prod=${CI_REGISTRY_IMAGE}/fluffy_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/gandalf-deployment gandalf-prod=${CI_REGISTRY_IMAGE}/gandalf_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/kafo-deployment kafo-prod=${CI_REGISTRY_IMAGE}/kafo_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/morty-deployment morty-prod=${CI_REGISTRY_IMAGE}/morty_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/princess-deployment princess-prod=${CI_REGISTRY_IMAGE}/princess_prod:${CI_COMMIT_REF_SLUG}"
-    - "kubectl set image deployment/rick-deployment rick-prod=${CI_REGISTRY_IMAGE}/rick_prod:${CI_COMMIT_REF_SLUG}"
+    - deploy_k8s() {
+      local project=$1;
+      kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+      kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
+      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave;
+      pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
+      now=$(date +%s);
+      echo $pipeline_start;
+      echo $now;
+      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e mainnet_staging -t $((now-pipeline_start)) --org ngrave;
+      }
+    - deploy_k8s anton
+    - deploy_k8s bristle
+    - deploy_k8s fluffy
+    - deploy_k8s gandalf
+    - deploy_k8s kafo
+    - deploy_k8s morty
+    - deploy_k8s princess
+    - deploy_k8s rick
     - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
   environment:
     name: mainnet gke cluster

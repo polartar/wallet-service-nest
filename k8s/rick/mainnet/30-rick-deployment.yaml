@@ -47,7 +47,7 @@ spec:
                 name: rick-env-secrets
                 key: MORALIS_API_KEY
           - name: NODE_ENV
-            value: ""
+            value: "production"
           - name: PRINCESS_API_URL
             value: "http://princess.default.svc.cluster.local"
           - name: RICK_DB_HOST

@@ -49,6 +49,11 @@ spec:
               configMapKeyRef:
                 name: kafo-sentry-config
                 key: sentry_environment
+          - name: PAYLOAD_VERIFICATION_RSA
+            valueFrom:
+              secretKeyRef:
+                name: kafo-env-secrets
+                key: PAYLOAD_VERIFICATION_RSA
         resources:
           requests:
             cpu: "20m"
