@@ -7,11 +7,6 @@ export interface IResponse {
   error?: [string]
 }
 
-export interface ITransaction {
-  transaction: any
-  coin_type: ECoinType
-}
-
 export enum EAPIMethod {
   POST = 'post',
   GET = 'get',
