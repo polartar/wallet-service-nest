@@ -25,7 +25,7 @@ spec:
           - name: GOOGLE_CLIENT_ID
             value: "141910175763-86aa4fnrfmqb0gnlf0bu5gkk923jlai8.apps.googleusercontent.com"
           - name: APPLE_CLIENT_ID
-            value: ""
+            value: "changethis"
           - name: GANDALF_DB_HOST
             value: "gandalf-db-service.mainnet.svc.cluster.local"
           - name: GANDALF_DB_PORT
