@@ -8,9 +8,6 @@ export class AppService {
 
   constructor(private configService: ConfigService) {
     this.checkEnvs()
-    // this.isProduction = this.configService.get<boolean>(
-    //   EEnvironment.isProduction,
-    // )
   }
   get welcome() {
     return AppService.welcomeMessage
