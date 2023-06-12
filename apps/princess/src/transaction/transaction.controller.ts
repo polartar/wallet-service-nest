@@ -14,10 +14,10 @@ import {
   GenerateTransactionSwaggerResponse,
   PublishTransactionSwaggerResponse,
 } from './dto/generate-transaction.dto'
-import { ITransaction } from './transaction.types'
 import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { PublishNFTTransactionDto } from './dto/publish-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
+import { PublishTransactionDto } from './dto/publish-transaction.dto'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -54,7 +54,7 @@ export class TransactionController {
   @ApiOperation({
     summary: 'Publish the signed transaction',
   })
-  async publishTransaction(@Body() data: ITransaction) {
+  async publishTransaction(@Body() data: PublishTransactionDto) {
     return this.transactionService.publishTransaction(
       data.transaction,
       data.coin_type,
