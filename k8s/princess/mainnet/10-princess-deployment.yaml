@@ -69,6 +69,11 @@ spec:
               configMapKeyRef:
                 name: princess-sentry-config
                 key: sentry_environment
+          - name: INFURA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: INFURA_API_KEY
         resources:
           requests:
             cpu: "20m"
