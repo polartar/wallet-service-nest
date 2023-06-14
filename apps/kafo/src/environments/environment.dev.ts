@@ -13,6 +13,8 @@ export const Environment = () => {
     [EEnvironment.isProduction]: process.env['NODE' + '_ENV'] === 'production',
     [EEnvironment.infuraAPIKey]: process.env.INFURA_API_KEY,
     [EEnvironment.payloadPrivateKey]: process.env.PAYLOAD_VERIFICATION_RSA,
+    [EEnvironment.liquidAPIKey]: process.env.LIQUID_API_KEY,
+    [EEnvironment.liquidAPIUrl]: process.env.LIQUID_API_URL,
   }
   return env
 }

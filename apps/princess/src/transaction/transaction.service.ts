@@ -73,7 +73,7 @@ export class TransactionService {
   async generateTransaction(
     from: string,
     to: string,
-    amount: number,
+    amount: string,
     coinType: ECoinType,
     publicKey: string,
   ): Promise<IResponse> {

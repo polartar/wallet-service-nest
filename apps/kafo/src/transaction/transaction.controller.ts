@@ -33,7 +33,11 @@ export class TransactionController {
   generateTransaction(
     @Body() data: ITransactionInput,
   ): Promise<ITransactionResponse> {
-    return this.service.generate(data)
+    if (data.coinType === ECoinType.ETHEREUM) {
+      return this.service.generateEthereumTransaction(data, false)
+    } else {
+      return this.service.generateBTCTransaction(data)
+    }
   }
 
   @Post('publish')
@@ -56,7 +60,7 @@ export class TransactionController {
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
   ): Promise<ITransactionResponse> {
-    return this.service.generateNFTRawTransaction(data)
+    return this.service.generateEthereumTransaction(data, true)
   }
 
   @Post('nft/publish')

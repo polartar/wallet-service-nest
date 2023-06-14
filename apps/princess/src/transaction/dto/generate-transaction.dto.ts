@@ -26,11 +26,12 @@ export class GenerateTransactionDto {
   to: string
 
   @ApiProperty({
-    description: 'amount that will be involved in the transaction',
-    default: 1,
+    description:
+      'amount that will be involved in the transaction, this will be ETH/BTC',
+    default: '0.000001',
   })
   @IsNotEmpty()
-  amount: number
+  amount: string
 
   @ApiProperty({
     description: 'coin type',

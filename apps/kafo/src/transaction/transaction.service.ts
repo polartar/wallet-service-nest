@@ -10,7 +10,6 @@ import {
   ENFTTypes,
   IFeeResponse,
   INFTTransactionInput,
-  ITransaction,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
@@ -19,11 +18,12 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
-import { formatUnits, hexlify } from 'ethers/lib/utils'
+import { hexlify } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
+import * as BJSON from 'buffer-json'
 
 @Injectable()
 export class TransactionService {
@@ -37,6 +37,8 @@ export class TransactionService {
     'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
   ]
   payloadPrivateKey: string
+  liquidApiUrl: string
+  liquidApiKey: string
 
   constructor(
     private readonly httpService: HttpService,
@@ -53,6 +55,12 @@ export class TransactionService {
     )
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
+    this.liquidApiUrl = this.configService.get<string>(
+      EEnvironment.liquidAPIUrl,
+    )
+    this.liquidApiKey = this.configService.get<string>(
+      EEnvironment.liquidAPIKey,
+    )
 
     this.provider = new ethers.providers.InfuraProvider(
       this.isProduction ? 'mainnet' : 'goerli',
@@ -78,81 +86,65 @@ export class TransactionService {
     }
   }
 
-  generateVaultTransaction(
-    coinType: ECoinType,
-    outputTx: ITransaction,
-    publicKey: string,
-  ): IVaultTransaction {
-    const decimal = coinType === ECoinType.BITCOIN ? 8 : 18
-    const transaction: IVaultTransaction = {
-      type: 2,
-      from: outputTx.tx.addresses[0],
-      to: outputTx.tx.addresses[1],
+  async generateBTCTransaction(
+    data: ITransactionInput,
+  ): Promise<ITransactionResponse> {
+    const newTx = {
+      from: data.from,
+      to: data.to,
       value: {
-        value: formatUnits(outputTx.tx.total, decimal),
-        factor: 0,
+        value: data.amount,
+        factor: 1,
       },
       extra: {
-        publicKey: publicKey,
+        transferMessage: 'merhaba',
       },
-      fee: {
-        fee: {
-          value: formatUnits(outputTx.tx.fees, decimal),
-          factor: 0,
-        },
-      },
-      signingPayloads: [
-        {
-          address: outputTx.tx.addresses[0],
-          publickey: publicKey,
-          tosign: outputTx.tosign[0],
-        },
-      ],
     }
 
-    return transaction
-  }
-
-  async generate(data: ITransactionInput): Promise<ITransactionResponse> {
-    const newTx = {
-      inputs: [{ addresses: [data.from] }],
-      outputs: [
-        {
-          addresses: [data.to],
-          value: data.amount,
-        },
-      ],
-    }
-    let params = ''
-    if (this.isProduction) {
-      params =
-        data.coinType === ECoinType.BITCOIN
-          ? 'btc/main/txs/new?includeToSignTx=true'
-          : `eth/main/txs/new?token=${this.blockcypherToken}&includeToSignTx=true`
-    } else {
-      params =
-        data.coinType === ECoinType.BITCOIN
-          ? 'btc/test3/txs/new?includeToSignTx=true'
-          : `beth/test/txs/new?token=${this.blockcypherToken}includeToSignTx=true`
-    }
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${params}`,
+          `${this.liquidApiUrl}/currencies/segwit.bitcoin.secp256k1/transactions`,
           JSON.stringify(newTx),
+          {
+            headers: { 'api-secret': this.liquidApiKey },
+          },
         ),
       )
 
-      const vaultTransaction = this.generateVaultTransaction(
-        data.coinType,
-        response.data as ITransaction,
-        data.publicKey,
-      )
+      const tx = BJSON.parse(response.data.serializedTransaction)
 
-      const signedPayload = this.signPayload(JSON.stringify(vaultTransaction))
+      const transaction: IVaultTransaction = {
+        type: 1,
+        from: data.from,
+        to: data.to,
+        value: {
+          value: data.amount,
+          factor: 0,
+        },
+        extra: {
+          publicKey: data.publicKey,
+        },
+        fee: {
+          fee: {
+            value: tx.fee,
+            factor: 0,
+          },
+        },
+        signingPayloads: [
+          {
+            address: data.from,
+            publickey: data.publicKey,
+            tosign: tx.nativeTransaction.getMessageToSign().toString('hex'),
+          },
+        ],
+        nativeTransaction: tx.nativeTransaction,
+      }
+
+      const signedPayload = this.signPayload(JSON.stringify(transaction))
       return {
         success: true,
-        data: { ...vaultTransaction, signedPayload },
+        data: { ...transaction, signedPayload },
       }
     } catch (err) {
       Sentry.captureException(`generate(): ${err.message}`)
@@ -242,26 +234,36 @@ export class TransactionService {
     }
   }
 
-  async generateNFTRawTransaction(
-    tx: INFTTransactionInput,
+  async generateEthereumTransaction(
+    tx: INFTTransactionInput | ITransactionInput,
+    isNFT: boolean,
   ): Promise<ITransactionResponse> {
-    const iface = new ethers.utils.Interface(
-      tx.type === ENFTTypes.ERC1155 ? this.ERC1155ABI : this.ERC721ABI,
-    )
-    const data =
-      tx.type === ENFTTypes.ERC1155
-        ? iface.encodeFunctionData('safeTransferFrom', [
-            tx.from,
-            tx.to,
-            tx.tokenId,
-            tx.amount,
-            '0x',
-          ])
-        : iface.encodeFunctionData('safeTransferFrom', [
-            tx.from,
-            tx.to,
-            tx.tokenId,
-          ])
+    let data
+
+    if (isNFT) {
+      const nftTransaction = tx as INFTTransactionInput
+      const iface = new ethers.utils.Interface(
+        nftTransaction.type === ENFTTypes.ERC1155
+          ? this.ERC1155ABI
+          : this.ERC721ABI,
+      )
+      data =
+        nftTransaction.type === ENFTTypes.ERC1155
+          ? iface.encodeFunctionData('safeTransferFrom', [
+              nftTransaction.from,
+              nftTransaction.to,
+              nftTransaction.tokenId,
+              nftTransaction.amount,
+              '0x',
+            ])
+          : iface.encodeFunctionData('safeTransferFrom', [
+              nftTransaction.from,
+              nftTransaction.to,
+              nftTransaction.tokenId,
+            ])
+    } else {
+      data = '0x'
+    }
     try {
       const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
       const gasPrice = await this.provider.getGasPrice()
@@ -269,8 +271,8 @@ export class TransactionService {
         nonce: txCount,
         gasPrice: hexlify(gasPrice),
         gasLimit: '0x156AB',
-        to: tx.contractAddress,
-        value: 0,
+        to: isNFT ? (tx as INFTTransactionInput).contractAddress : tx.from,
+        value: isNFT ? 0 : tx.amount,
         data: data,
       }
 
@@ -287,7 +289,7 @@ export class TransactionService {
         from: tx.from,
         to: tx.to,
         value: {
-          value: '0',
+          value: isNFT ? '0' : (tx.amount as string),
           factor: 0,
         },
         extra: {
@@ -306,6 +308,7 @@ export class TransactionService {
             tosign: nativeTransaction.getMessageToSign().toString('hex'),
           },
         ],
+        nativeTransaction,
       }
 
       const signedPayload = this.signPayload(JSON.stringify(transaction))

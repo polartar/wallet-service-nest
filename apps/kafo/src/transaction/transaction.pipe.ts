@@ -27,7 +27,7 @@ export class TransactionInputPipe implements PipeTransform {
         return helper.message({ custom: 'To is invalid address' })
       }
     }),
-    amount: Joi.number().integer().options({ convert: false }).required(),
+    amount: Joi.string().required(),
     publicKey: Joi.string().required(),
     coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
   })
