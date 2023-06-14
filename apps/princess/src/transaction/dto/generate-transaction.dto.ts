@@ -86,34 +86,15 @@ export class PublishTransactionSwaggerResponse {
 
   @ApiProperty({
     example: {
-      tx: {
-        block_height: -1,
-        block_index: -1,
-        hash: '2a6e33c75b50be445606cee80aa3b2e9f280e9b5524d2cea4ca4ea69fa4910c9',
-        addresses: [],
-        total: 1858918,
-        fees: 10200,
-        size: 225,
-        vsize: 225,
-        preference: 'low',
-        relayed_by: '102.129.146.73',
-        received: '2023-04-23T16:02:30.840688368Z',
-        ver: 1,
-        double_spend: false,
-        vin_sz: 1,
-        vout_sz: 2,
-        confirmations: 0,
-        inputs: [],
-        outputs: [],
-      },
-      tosign: [''],
+      type: 'string',
     },
   })
-  data: string
+  meta: object
 
   @ApiProperty({
-    example:
-      'XNOtOD+CiVeLse5sD7h7KIZGcp7oXYDvkkoxPLPEp7ytr5ZMTmk5E7J0n37wWhqLoniCKl0BPhEQtLmlpduWrAiKJ9KiZq8K3QELXFSyCAWm7rWU/mv6qWu6whfN425lgmDDoIk+rAM0Nlm4BrIpWzlGxbaioi3o+g+HftQnX4M=',
+    example: {
+      txhash: 'string',
+    },
   })
-  signature: string
+  data: object
 }

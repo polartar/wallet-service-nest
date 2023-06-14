@@ -56,7 +56,8 @@ export class TransactionController {
   })
   async publishTransaction(@Body() data: PublishTransactionDto) {
     return this.transactionService.publishTransaction(
-      data.transaction,
+      data.serializedTransaction,
+      data.signature,
       data.coin_type,
     )
   }
@@ -79,10 +80,14 @@ export class TransactionController {
   }
 
   @Post('nft/publish')
+  @ApiOkResponse({ type: PublishTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Publish the transaction',
   })
-  async publishNFTTransaction(@Body() data: PublishNFTTransactionDto) {
-    return this.transactionService.publishNFTTransaction(data.signed_hash)
+  async publishNFTTransaction(@Body() data: PublishTransactionDto) {
+    return this.transactionService.publishNFTTransaction(
+      data.serializedTransaction,
+      data.signature,
+    )
   }
 }

@@ -105,7 +105,7 @@ export class TransactionService {
       const response = await firstValueFrom(
         this.httpService.post(
           `${this.liquidApiUrl}/currencies/segwit.bitcoin.secp256k1/transactions`,
-          JSON.stringify(newTx),
+          newTx,
           {
             headers: { 'api-secret': this.liquidApiKey },
           },
@@ -156,24 +156,27 @@ export class TransactionService {
       }
     }
   }
-  async publish(data: ITransactionPush): Promise<ITransactionResponse> {
-    let params
-    if (this.isProduction) {
-      params =
-        data.coinType === ECoinType.BITCOIN
-          ? 'btc/main/txs/send'
-          : `eth/main/txs/send?token=${this.blockcypherToken}`
-    } else {
-      params =
-        data.coinType === ECoinType.BITCOIN
-          ? 'btc/test3/txs/send'
-          : `beth/test/txs/send?token=${this.blockcypherToken}`
-    }
+  async publish(
+    serializedTransaction: string,
+    signature: string,
+    type: ECoinType,
+  ): Promise<ITransactionResponse> {
     try {
+      const currency =
+        type === ECoinType.ETHEREUM
+          ? 'ethereum.secp256k1'
+          : 'segwit.bitcoin.secp256k1'
+
       const response = await firstValueFrom(
         this.httpService.post(
-          `https://api.blockcypher.com/v1/${params}`,
-          data.transaction,
+          `${this.liquidApiUrl}/currencies/${currency}/send`,
+          {
+            serializedTransaction,
+            signature,
+          },
+          {
+            headers: { 'api-secret': this.liquidApiKey },
+          },
         ),
       )
       return {

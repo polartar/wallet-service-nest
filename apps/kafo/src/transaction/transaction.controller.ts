@@ -11,18 +11,12 @@ import { TransactionService } from './transaction.service'
 import {
   IFeeResponse,
   INFTTransactionInput,
-  INFTTransactionResponse,
   ITransactionInput,
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
 import { ECoinType } from '@rana/core'
-import {
-  NFTTransactionRawPipe,
-  NFTTransactionSendPipe,
-  TransactionInputPipe,
-  TransactionPushPipe,
-} from './transaction.pipe'
+import { NFTTransactionRawPipe, TransactionInputPipe } from './transaction.pipe'
 
 @Controller('transaction')
 export class TransactionController {
@@ -41,11 +35,12 @@ export class TransactionController {
   }
 
   @Post('publish')
-  @UsePipes(new TransactionPushPipe())
-  publishTransaction(
-    @Body() data: ITransactionPush,
-  ): Promise<ITransactionResponse> {
-    return this.service.publish(data)
+  publishTransaction(@Body() data: ITransactionPush) {
+    return this.service.publish(
+      data.serializedTransaction,
+      data.signature,
+      data.coinType,
+    )
   }
 
   @Get('fee/:coin')
@@ -64,10 +59,11 @@ export class TransactionController {
   }
 
   @Post('nft/publish')
-  @UsePipes(new NFTTransactionSendPipe())
-  publishNFTTransaction(
-    @Body() signedHash: string,
-  ): Promise<INFTTransactionResponse> {
-    return this.service.publishNFTTransaction(signedHash)
+  publishNFTTransaction(@Body() data: ITransactionPush) {
+    return this.service.publish(
+      data.serializedTransaction,
+      data.signature,
+      ECoinType.ETHEREUM,
+    )
   }
 }

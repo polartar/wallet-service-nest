@@ -31,30 +31,9 @@ export interface ITransactionInput {
 }
 
 export interface ITransactionPush {
-  transaction: IVaultTransaction
+  serializedTransaction: string
+  signature: string
   coinType: ECoinType
-}
-
-export interface ITx {
-  block_height: number
-  block_index: number
-  hash: string
-  addresses: string[]
-  total: number
-  fees: number
-  size: number
-  vsize: number
-  preference: string
-  relayed_by: string
-  received: Date
-  ver: number
-  double_spend: boolean
-  vin_sz: number
-  vout_sz: number
-  confirmations: 0
-  inputs: []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  outputs: [any, any]
 }
 
 export interface INFTTransactionInput {
@@ -70,13 +49,6 @@ export interface INFTTransactionInput {
 export enum ENFTTypes {
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',
-}
-
-export interface INFTTransactionResponse {
-  success: boolean
-  error?: string
-  data?: string | object
-  signature?: string
 }
 
 export interface IVaultTransaction {
