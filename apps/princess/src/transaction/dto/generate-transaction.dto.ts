@@ -5,7 +5,7 @@ import { IsNotEmpty } from 'class-validator'
 export class GenerateTransactionDto {
   @ApiProperty({
     description: 'from address of the transaction',
-    default: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
+    default: '1LxbXpKe63qUJuEozUFNG2aHHCMbYBxoTV',
   })
   @IsNotEmpty()
   from: string
@@ -13,14 +13,14 @@ export class GenerateTransactionDto {
   @ApiProperty({
     description: 'public key of the from address',
     default:
-      '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+      '03adc2e9b0397d3c72f50cf8fb6ffc579076c783ebd081083ac1c4efe3e24d388e',
   })
   @IsNotEmpty()
   public_key: string
 
   @ApiProperty({
     description: 'to address of the transaction',
-    default: '2Mwd9FHUSVH2VgEZqvPfd7ikXsBLdW2suW5',
+    default: '1LxbXpKe63qUJuEozUFNG2aHHCMbYBxoTV',
   })
   @IsNotEmpty()
   to: string
@@ -52,16 +52,16 @@ export class GenerateTransactionSwaggerResponse {
       to: 'tb1qf7ztvkcxsul4xhp2zqw6cau52mm3vmkdh5uyzz',
       value: {
         value: '0.000001',
-        factor: 0,
+        factor: 1,
       },
       extra: {
         publicKey:
-          '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+          '03adc2e9b0397d3c72f50cf8fb6ffc579076c783ebd081083ac1c4efe3e24d388e',
       },
       fee: {
         fee: {
           value: '0.0000035',
-          factor: 0,
+          factor: 1,
         },
       },
       signingPayloads: [
