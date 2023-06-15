@@ -1,10 +1,6 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 // import Joi = require('joi')
-import {
-  ENFTTypes,
-  ITransactionInput,
-  ITransactionPush,
-} from './transaction.types'
+import { ENFTTypes, ITransactionInput } from './transaction.types'
 import { isAddress } from 'ethers/lib/utils'
 import * as Joi from 'joi'
 import { validate } from 'bitcoin-address-validation'

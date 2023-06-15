@@ -15,7 +15,6 @@ import {
   PublishTransactionSwaggerResponse,
 } from './dto/generate-transaction.dto'
 import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
-import { PublishNFTTransactionDto } from './dto/publish-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
 
