@@ -80,4 +80,5 @@ export interface IVaultTransaction {
 
 interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
+  serializedTransaction: string
 }

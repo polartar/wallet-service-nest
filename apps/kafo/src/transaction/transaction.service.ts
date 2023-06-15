@@ -11,7 +11,6 @@ import {
   IFeeResponse,
   INFTTransactionInput,
   ITransactionInput,
-  ITransactionPush,
   ITransactionResponse,
   IVaultTransaction,
 } from './transaction.types'
@@ -144,7 +143,11 @@ export class TransactionService {
       const signedPayload = this.signPayload(JSON.stringify(transaction))
       return {
         success: true,
-        data: { ...transaction, signedPayload },
+        data: {
+          ...transaction,
+          signedPayload,
+          serializedTransaction: this.serializeTransaction(transaction),
+        },
       }
     } catch (err) {
       Sentry.captureException(`generate(): ${err.message}`)
@@ -317,7 +320,11 @@ export class TransactionService {
       const signedPayload = this.signPayload(JSON.stringify(transaction))
       return {
         success: true,
-        data: { ...transaction, signedPayload },
+        data: {
+          ...transaction,
+          signedPayload,
+          serializedTransaction: this.serializeTransaction(transaction),
+        },
       }
     } catch (err) {
       Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)
@@ -339,5 +346,20 @@ export class TransactionService {
 
       throw new BadRequestException(err.message)
     }
+  }
+
+  serializeTransaction(transaction: IVaultTransaction): string {
+    const tx = {
+      ...transaction,
+      nativeTransaction: transaction?.nativeTransaction
+        ? { ...transaction.nativeTransaction }
+        : '',
+    }
+    if (tx.nativeTransaction) {
+      tx.nativeTransaction = transaction.nativeTransaction
+        .serialize()
+        .toString('hex')
+    }
+    return BJSON.stringify(tx)
   }
 }
