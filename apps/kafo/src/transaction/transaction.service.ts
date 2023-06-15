@@ -17,7 +17,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ECoinType } from '@rana/core'
-import { hexlify } from 'ethers/lib/utils'
+import { formatEther, hexlify, parseEther } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
@@ -97,13 +97,14 @@ export class TransactionService {
       },
       extra: {
         transferMessage: 'merhaba',
+        publicKey: data.publicKey,
       },
     }
 
     try {
       const response = await firstValueFrom(
         this.httpService.post(
-          `${this.liquidApiUrl}/currencies/segwit.bitcoin.secp256k1/transactions`,
+          `${this.liquidApiUrl}/api/v1/currencies/segwit.bitcoin.secp256k1/transactions`,
           newTx,
           {
             headers: { 'api-secret': this.liquidApiKey },
@@ -278,33 +279,33 @@ export class TransactionService {
         gasPrice: hexlify(gasPrice),
         gasLimit: '0x156AB',
         to: isNFT ? (tx as INFTTransactionInput).contractAddress : tx.from,
-        value: isNFT ? 0 : tx.amount,
+        value: isNFT
+          ? '0x0'
+          : ethers.utils.hexlify(parseEther(tx.amount as string)),
         data: data,
       }
 
       const common = new Common({ chain: Number(this.isProduction ? 1 : 5) })
-
       const nativeTransaction = new Transaction(txParams, {
         common,
       })
 
       const fee = BigNumber.from('0x156AB').mul(gasPrice)
-
       const transaction: IVaultTransaction = {
         type: 2,
         from: tx.from,
         to: tx.to,
         value: {
           value: isNFT ? '0' : (tx.amount as string),
-          factor: 0,
+          factor: isNFT ? 0 : 1,
         },
         extra: {
           publicKey: tx.publicKey,
         },
         fee: {
           fee: {
-            value: fee.toString(),
-            factor: 0,
+            value: formatEther(fee),
+            factor: isNFT ? 0 : 1,
           },
         },
         signingPayloads: [

@@ -9,20 +9,8 @@ import { ECoinType } from '@rana/core'
 @Injectable()
 export class TransactionInputPipe implements PipeTransform {
   private schema = Joi.object().keys({
-    from: Joi.string().custom((value, helper) => {
-      if (isAddress(value) || validate(value)) {
-        return true
-      } else {
-        return helper.message({ custom: 'From is invalid address' })
-      }
-    }),
-    to: Joi.string().custom((value, helper) => {
-      if (isAddress(value) || validate(value)) {
-        return true
-      } else {
-        return helper.message({ custom: 'To is invalid address' })
-      }
-    }),
+    from: Joi.string().required(),
+    to: Joi.string().required(),
     amount: Joi.string().required(),
     publicKey: Joi.string().required(),
     coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
