@@ -21,6 +21,10 @@ spec:
         ports:
         - containerPort: 3333
         env:
+          - name: LIQUID_API_KEY
+            value: a
+          - name: LIQUID_API_URL
+            value: "https://development.mainnet.liquid-debug.ngrave.io"
           - name: BLOCKCYPHER_TOKEN
             valueFrom:
               secretKeyRef:
