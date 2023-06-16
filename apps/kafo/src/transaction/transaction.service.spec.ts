@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { TransactionService } from './transaction.service'
-import { ITransactionInput } from './transaction.types'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from './../environments/environment.dev'
-import { ECoinType } from '@rana/core'
 
 describe('TransactionService', () => {
   let service: TransactionService
