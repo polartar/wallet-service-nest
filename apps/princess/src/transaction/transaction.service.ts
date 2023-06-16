@@ -73,7 +73,7 @@ export class TransactionService {
   async generateTransaction(
     from: string,
     to: string,
-    amount: number,
+    amount: string,
     coinType: ECoinType,
     publicKey: string,
   ): Promise<IResponse> {
@@ -87,11 +87,13 @@ export class TransactionService {
   }
 
   async publishTransaction(
-    transaction: unknown,
+    serializedTransaction: string,
+    signature: string,
     coinType: ECoinType,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
-      transaction,
+      serializedTransaction,
+      signature,
       coinType,
     })
   }
@@ -116,9 +118,13 @@ export class TransactionService {
     })
   }
 
-  async publishNFTTransaction(signedHash: string): Promise<IResponse> {
+  async publishNFTTransaction(
+    serializedTransaction: string,
+    signature: string,
+  ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
-      signedHash,
+      serializedTransaction,
+      signature,
     })
   }
 }

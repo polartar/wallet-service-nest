@@ -1,3 +1,4 @@
+import { Transaction } from '@ethereumjs/tx'
 import { ECoinType } from '@rana/core'
 
 export interface ITransactionResponse {
@@ -24,44 +25,15 @@ export interface IFeeResponse {
 export interface ITransactionInput {
   from: string
   to: string
-  amount: number
+  amount: string
   coinType: ECoinType
   publicKey: string
 }
 
 export interface ITransactionPush {
-  transaction: ITransaction
+  serializedTransaction: string
+  signature: string
   coinType: ECoinType
-}
-
-export interface ITx {
-  block_height: number
-  block_index: number
-  hash: string
-  addresses: string[]
-  total: number
-  fees: number
-  size: number
-  vsize: number
-  preference: string
-  relayed_by: string
-  received: Date
-  ver: number
-  double_spend: boolean
-  vin_sz: number
-  vout_sz: number
-  confirmations: 0
-  inputs: []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  outputs: [any, any]
-}
-export interface ITransaction {
-  tx: ITx
-  tosign: string[]
-  tosign_tx?: string[]
-  pubkeys?: string[]
-  signatures?: string[]
-  signedPayload?: string
 }
 
 export interface INFTTransactionInput {
@@ -77,13 +49,6 @@ export interface INFTTransactionInput {
 export enum ENFTTypes {
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',
-}
-
-export interface INFTTransactionResponse {
-  success: boolean
-  error?: string
-  data?: string | object
-  signature?: string
 }
 
 export interface IVaultTransaction {
@@ -110,8 +75,10 @@ export interface IVaultTransaction {
       tosign: string
     },
   ]
+  nativeTransaction: Transaction
 }
 
 interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
+  serializedTransaction: string
 }

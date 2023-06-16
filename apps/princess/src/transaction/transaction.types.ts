@@ -1,5 +1,3 @@
-import { ECoinType } from '@rana/core'
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface IResponse {
   success?: boolean
