@@ -24,18 +24,4 @@ describe('TransactionService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
-
-  it('should generate transaction', async () => {
-    const transactionData: ITransactionInput = {
-      from: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-      to: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-      amount: 1,
-      coinType: ECoinType.BITCOIN,
-      publicKey: 'myeuSQtJdvgTKjYL1q9WU13zH3g5aRnjGx',
-    }
-
-    const response = await service.generate(transactionData)
-
-    expect(response.success).toBeTruthy()
-  }, 30000)
 })

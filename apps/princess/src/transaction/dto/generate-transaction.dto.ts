@@ -48,15 +48,15 @@ export class GenerateTransactionSwaggerResponse {
   @ApiProperty({
     example: {
       type: 2,
-      from: 'tb1q4sy9u2c489wxxmh8gev2500s3l0lgjszq2jkhw',
-      to: 'tb1qf7ztvkcxsul4xhp2zqw6cau52mm3vmkdh5uyzz',
+      from: 'bc1q5s27084850yzghuer59l5e8mm66t3n2rufevyn',
+      to: 'bc1q5s27084850yzghuer59l5e8mm66t3n2rufevyn',
       value: {
         value: '0.000001',
         factor: 1,
       },
       extra: {
         publicKey:
-          '03adc2e9b0397d3c72f50cf8fb6ffc579076c783ebd081083ac1c4efe3e24d388e',
+          '02b807681562fedc919ceb74b2a10b2b0362afe31f23ac6ac2ab7dbb97adfbdb8a',
       },
       fee: {
         fee: {
@@ -66,9 +66,9 @@ export class GenerateTransactionSwaggerResponse {
       },
       signingPayloads: [
         {
-          address: 'tb1q4sy9u2c489wxxmh8gev2500s3l0lgjszq2jkhw',
+          address: 'bc1q5s27084850yzghuer59l5e8mm66t3n2rufevyn',
           publickey:
-            '0314a259e3e0a781e928033f3bcab3c25f2e382417d7464cbefb9c9bb83d5a770d',
+            '02b807681562fedc919ceb74b2a10b2b0362afe31f23ac6ac2ab7dbb97adfbdb8a',
           tosign:
             'b4470cde5e4efd25c2dbc65d7a9cabf646a64ec152ab5e30551e7d4dfde01eb3',
         },

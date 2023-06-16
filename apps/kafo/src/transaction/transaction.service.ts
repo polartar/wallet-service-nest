@@ -159,7 +159,7 @@ export class TransactionService {
 
       return {
         success: false,
-        error: err.message,
+        error: msg,
         data: err.response.data,
       }
     }
@@ -205,7 +205,7 @@ export class TransactionService {
 
       return {
         success: false,
-        error: err.message,
+        error: msg,
         data: err.response.data,
       }
     }
