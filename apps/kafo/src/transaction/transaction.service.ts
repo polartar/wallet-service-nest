@@ -26,7 +26,6 @@ import * as BJSON from 'buffer-json'
 
 @Injectable()
 export class TransactionService {
-  blockcypherToken: string
   isProduction: boolean
   provider: ethers.providers.JsonRpcProvider
   ERC721ABI = [
@@ -43,9 +42,6 @@ export class TransactionService {
     private readonly httpService: HttpService,
     private configService: ConfigService,
   ) {
-    this.blockcypherToken = this.configService.get<string>(
-      EEnvironment.blockcypherToken,
-    )
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
     )
@@ -151,7 +147,15 @@ export class TransactionService {
         },
       }
     } catch (err) {
-      Sentry.captureException(`generate(): ${err.message}`)
+      let msg
+      if (err.response && err.response.data) {
+        if (err.response.data.errors) {
+          msg = err.response.data.errors[0].title
+        } else msg = JSON.stringify(err.response.data)
+      } else {
+        msg = err.message
+      }
+      Sentry.captureException(`generate(): ${msg}`)
 
       return {
         success: false,
@@ -173,7 +177,7 @@ export class TransactionService {
 
       const response = await firstValueFrom(
         this.httpService.post(
-          `${this.liquidApiUrl}/currencies/${currency}/send`,
+          `${this.liquidApiUrl}/api/v1/currencies/${currency}/transactions/send`,
           {
             serializedTransaction,
             signature,
@@ -188,7 +192,16 @@ export class TransactionService {
         data: response.data,
       }
     } catch (err) {
-      Sentry.captureException(`publish(): ${err.message}`)
+      let msg
+      if (err.response && err.response.data) {
+        if (err.response.data.errors) {
+          msg = err.response.data.errors[0].title
+        } else msg = JSON.stringify(err.response.data)
+      } else {
+        msg = err.message
+      }
+
+      Sentry.captureException(`publish(): ${msg}`)
 
       return {
         success: false,

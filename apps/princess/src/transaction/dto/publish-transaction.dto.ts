@@ -4,7 +4,7 @@ import { ECoinType } from '@rana/core'
 
 export class PublishTransactionDto {
   @ApiProperty({
-    description: 'signed hash',
+    description: 'signed transaction hash',
     example:
       '555b9f751ac096d2d64b2e6915e23c9af60b1d4ab5e0e7e791f5945215cbeb6901335dc8371ceea290ae74469554875a2a152ac868b14f7582e3ab82b9296d3e',
   })
