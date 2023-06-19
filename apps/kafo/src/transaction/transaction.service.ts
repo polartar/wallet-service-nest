@@ -26,8 +26,8 @@ import * as BJSON from 'buffer-json'
 
 @Injectable()
 export class TransactionService {
-  isProduction: boolean
-  provider: ethers.providers.JsonRpcProvider
+  mainnetProvider: ethers.providers.JsonRpcProvider
+  testnetProvider: ethers.providers.JsonRpcProvider
   ERC721ABI = [
     'function safeTransferFrom(address to, address from, uint256 tokenId)',
   ]
@@ -42,9 +42,6 @@ export class TransactionService {
     private readonly httpService: HttpService,
     private configService: ConfigService,
   ) {
-    this.isProduction = this.configService.get<boolean>(
-      EEnvironment.isProduction,
-    )
     this.payloadPrivateKey = this.formatPrivateKey(
       this.configService.get<string>(EEnvironment.payloadPrivateKey),
     )
@@ -57,8 +54,12 @@ export class TransactionService {
       EEnvironment.liquidAPIKey,
     )
 
-    this.provider = new ethers.providers.InfuraProvider(
-      this.isProduction ? 'mainnet' : 'goerli',
+    this.testnetProvider = new ethers.providers.InfuraProvider(
+      'goerli',
+      infura_key,
+    )
+    this.mainnetProvider = new ethers.providers.InfuraProvider(
+      'mainnet',
       infura_key,
     )
   }
@@ -211,9 +212,9 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ECoinType): Promise<IFeeResponse> {
+  async getFee(coin: ECoinType, isMainnet: boolean): Promise<IFeeResponse> {
     let params
-    if (this.isProduction) {
+    if (isMainnet) {
       params = coin === ECoinType.BITCOIN ? 'btc/main' : `eth/main`
     } else {
       params = coin === ECoinType.BITCOIN ? 'btc/test3' : `beth/test`
@@ -285,8 +286,9 @@ export class TransactionService {
       data = '0x'
     }
     try {
-      const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-      const gasPrice = await this.provider.getGasPrice()
+      const provider = this.mainnetProvider
+      const txCount = await provider.getTransactionCount(tx.from, 'latest')
+      const gasPrice = await provider.getGasPrice()
       const txParams = {
         nonce: txCount,
         gasPrice: hexlify(gasPrice),
@@ -298,7 +300,7 @@ export class TransactionService {
         data: data,
       }
 
-      const common = new Common({ chain: Number(this.isProduction ? 1 : 5) })
+      const common = new Common({ chain: Number(1) })
       const nativeTransaction = new Transaction(txParams, {
         common,
       })
@@ -342,21 +344,6 @@ export class TransactionService {
       }
     } catch (err) {
       Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)
-
-      throw new BadRequestException(err.message)
-    }
-  }
-
-  async publishNFTTransaction(signedHash: string) {
-    try {
-      const response = await this.provider.sendTransaction(signedHash)
-
-      return {
-        success: true,
-        data: response,
-      }
-    } catch (err) {
-      Sentry.captureException(`publishNFTTransaction(): ${err.message}`)
 
       throw new BadRequestException(err.message)
     }

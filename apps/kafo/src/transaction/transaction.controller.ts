@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   ParseEnumPipe,
   Post,
@@ -15,7 +16,7 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { ECoinType } from '@rana/core'
+import { ECoinType, ENetworks } from '@rana/core'
 import { NFTTransactionRawPipe, TransactionInputPipe } from './transaction.pipe'
 
 @Controller('transaction')
@@ -46,8 +47,12 @@ export class TransactionController {
   @Get('fee/:coin')
   async getFee(
     @Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType,
+    @Headers() headers,
   ): Promise<IFeeResponse> {
-    return await this.service.getFee(coin)
+    return await this.service.getFee(
+      coin,
+      headers['X-NETWORK'] === ENetworks.MAINNET,
+    )
   }
 
   @Post('nft/generate')
