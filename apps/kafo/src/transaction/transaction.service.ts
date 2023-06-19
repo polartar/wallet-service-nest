@@ -195,7 +195,7 @@ export class TransactionService {
       let msg
       if (err.response && err.response.data) {
         if (err.response.data.errors) {
-          msg = err.response.data.errors[0].title
+          msg = JSON.stringify(err.response.data.errors[0].detail)
         } else msg = JSON.stringify(err.response.data)
       } else {
         msg = err.message
@@ -205,7 +205,7 @@ export class TransactionService {
 
       return {
         success: false,
-        error: msg,
+        error: err.message,
         data: err.response.data,
       }
     }
