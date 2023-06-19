@@ -436,7 +436,7 @@ export class WalletService {
   async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
     const trxHistory = await this.provider.getHistory(address.address)
 
-    if (trxHistory.length > address.history.length) {
+    if (trxHistory && trxHistory.length > address.history.length) {
       address.history = await this.getEthHistory(
         trxHistory.slice(address.history.length, trxHistory.length),
         address,
@@ -456,7 +456,7 @@ export class WalletService {
     )
 
     const trxHistory = txResponse.data.txrefs
-    if (trxHistory.length > address.history.length) {
+    if (trxHistory && trxHistory.length > address.history.length) {
       address.history = await this.getBtcHistory(
         trxHistory.slice(address.history.length, trxHistory.length),
         address,
