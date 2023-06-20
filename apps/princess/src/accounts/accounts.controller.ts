@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { CreateWalletDto, WalletSwaggerResponse } from './dto/CreateWalletDto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
@@ -16,6 +25,7 @@ import {
   SwitchCloudSwaggerResponse,
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
+import { NETWORK_HEADER } from '@rana/core'
 
 @Controller('accounts')
 @ApiTags('accounts')
@@ -30,11 +40,13 @@ export class AccountsController {
   async createWallet(
     @Param('accountId') accountId: number,
     @Body() data: CreateWalletDto,
+    @Headers() headers,
   ) {
     return await this.accountService.createWallet(
       accountId,
       data.wallet_type,
       data.x_pub,
+      headers[NETWORK_HEADER],
     )
   }
 
@@ -59,8 +71,13 @@ export class AccountsController {
   async getPortfolio(
     @Param('accountId') accountId: number,
     @Query() query: GetPortfolioDto,
+    @Headers() headers,
   ) {
-    return await this.accountService.getPortfolio(accountId, query.period)
+    return await this.accountService.getPortfolio(
+      accountId,
+      headers[NETWORK_HEADER],
+      query.period,
+    )
   }
 
   @Get(':accountId/wallets/:walletId/portfolio')
@@ -73,10 +90,12 @@ export class AccountsController {
     @Param('accountId') accountId: number,
     @Param('walletId') walletId: number,
     @Query() query: GetPortfolioDto,
+    @Headers() headers,
   ) {
     return await this.accountService.getWalletPortfolio(
       accountId,
       walletId,
+      headers[NETWORK_HEADER],
       query.period,
     )
   }

@@ -46,3 +46,5 @@ export enum ENetworks {
   MAINNET = 'mainnet',
   TESTNET = 'testnet',
 }
+
+export const NETWORK_HEADER = 'x-network'

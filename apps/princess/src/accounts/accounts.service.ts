@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { ECoinType, EPeriod, EWalletType } from '@rana/core'
+import { ECoinType, ENetworks, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
@@ -75,7 +75,12 @@ export class AccountsService {
     }
   }
 
-  async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
+  async createWallet(
+    accountId: number,
+    walletType: EWalletType,
+    xPub: string,
+    network: ENetworks,
+  ) {
     this.validateAccountId(accountId)
 
     const wallet = await this.rickAPICall(EAPIMethod.POST, `wallet`, {
@@ -84,7 +89,7 @@ export class AccountsService {
       xPub: xPub,
     })
 
-    return this.addUSDPrice([wallet], EPeriod.All)
+    return this.addUSDPrice([wallet], network, EPeriod.All)
   }
 
   async updateWallet(
@@ -111,7 +116,7 @@ export class AccountsService {
     return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
   }
 
-  async addUSDPrice(wallets: IWallet[], period: EPeriod) {
+  async addUSDPrice(wallets: IWallet[], network: ENetworks, period: EPeriod) {
     const ethMarketHistories = await this.marketService.getHistoricalData(
       ECoinType.ETHEREUM,
       period,
@@ -121,8 +126,14 @@ export class AccountsService {
       ECoinType.BITCOIN,
       period,
     )
-    const ethFee = await this.transactionService.getFee(ECoinType.ETHEREUM)
-    const btcFee = await this.transactionService.getFee(ECoinType.BITCOIN)
+    const ethFee = await this.transactionService.getFee(
+      ECoinType.ETHEREUM,
+      network,
+    )
+    const btcFee = await this.transactionService.getFee(
+      ECoinType.BITCOIN,
+      network,
+    )
 
     if (!ethMarketHistories.success || !btcMarketHistories.success) {
       Sentry.captureException('Something went wrong in Morty service')
@@ -162,7 +173,7 @@ export class AccountsService {
     })
   }
 
-  async getPortfolio(accountId: number, period?: EPeriod) {
+  async getPortfolio(accountId: number, network: ENetworks, period: EPeriod) {
     this.validateAccountId(accountId)
 
     const wallets: IWallet[] = await this.rickAPICall(
@@ -170,10 +181,15 @@ export class AccountsService {
       `wallet/${accountId}?period=${period}`,
     )
 
-    return this.addUSDPrice(wallets, period)
+    return this.addUSDPrice(wallets, network, period)
   }
 
-  async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
+  async getWalletPortfolio(
+    accountId: number,
+    walletId,
+    network: ENetworks,
+    period?: EPeriod,
+  ) {
     this.validateAccountId(accountId)
 
     const wallets: IWallet[] = await this.rickAPICall(
@@ -181,7 +197,7 @@ export class AccountsService {
       `wallet/${accountId}/wallet/${walletId}?period=${period}`,
     )
 
-    return this.addUSDPrice(wallets, period)
+    return this.addUSDPrice(wallets, network, period)
   }
 
   async fluffyAPICall(path, body) {

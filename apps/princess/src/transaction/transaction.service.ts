@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { ECoinType } from '@rana/core'
+import { ECoinType, ENetworks, NETWORK_HEADER } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { AxiosResponse } from 'axios'
@@ -27,14 +27,19 @@ export class TransactionService {
   async apiCall(
     method: EAPIMethod,
     path: string,
-    body?: unknown,
+    body: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    headers?: any,
   ): Promise<IResponse> {
     try {
       const url = `${this.kafoAPIUrl}/${path}`
+      console.log('calling')
       const res = await firstValueFrom(
         method === EAPIMethod.POST
           ? this.httpService.post<AxiosResponse>(url, body)
-          : this.httpService.get<AxiosResponse>(url),
+          : this.httpService.get<AxiosResponse>(url, {
+              headers: headers,
+            }),
       )
       if ((res.data as IResponse).success) {
         return res.data
@@ -66,8 +71,13 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ECoinType): Promise<IResponse> {
-    return this.apiCall(EAPIMethod.GET, `transaction/fee/${coin}`)
+  async getFee(coin: ECoinType, network: ENetworks): Promise<IResponse> {
+    return this.apiCall(
+      EAPIMethod.GET,
+      `transaction/fee/${coin}`,
+      {},
+      { [NETWORK_HEADER]: network },
+    )
   }
 
   async generateTransaction(

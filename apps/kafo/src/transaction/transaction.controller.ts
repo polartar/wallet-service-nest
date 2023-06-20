@@ -49,6 +49,7 @@ export class TransactionController {
     @Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType,
     @Headers() headers,
   ): Promise<IFeeResponse> {
+    console.log(headers)
     return await this.service.getFee(
       coin,
       headers['X-NETWORK'] === ENetworks.MAINNET,
