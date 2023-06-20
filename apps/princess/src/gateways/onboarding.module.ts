@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { OnboardingGateway } from './onboarding.gateway'
-import { OnboardingService } from '../onboarding/onboarding.service'
+import { OnboardingService } from '../auth/auth.service'
 
 @Module({
   providers: [

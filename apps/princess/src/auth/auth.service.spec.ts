@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { OnboardingService } from './onboarding.service'
+import { AuthService } from './auth.service'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
@@ -7,9 +7,10 @@ import { AccountsService } from '../accounts/accounts.service'
 import { JwtService } from '@nestjs/jwt'
 import { MarketService } from '../market/market.service'
 import { TransactionService } from '../transaction/transaction.service'
+import { BootstrapService } from '../bootstrap/bootstrap.service'
 
-describe('OnboardingService', () => {
-  let service: OnboardingService
+describe('AuthService', () => {
+  let service: AuthService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,15 +19,16 @@ describe('OnboardingService', () => {
         ConfigModule.forRoot({ load: [Environment] }),
       ],
       providers: [
-        OnboardingService,
+        AuthService,
         AccountsService,
         JwtService,
         MarketService,
         TransactionService,
+        BootstrapService,
       ],
     }).compile()
 
-    service = module.get<OnboardingService>(OnboardingService)
+    service = module.get<AuthService>(AuthService)
   })
 
   it('should be defined', () => {

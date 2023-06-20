@@ -1,7 +1,7 @@
 import { BootstrapService } from './bootstrap.service'
 import { Controller, Get, Post, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
-import { Public } from '../auth/decorators/public.decorator'
+import { Public } from '../gateway/decorators/public.decorator'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
 
 @Controller('bootstrap')

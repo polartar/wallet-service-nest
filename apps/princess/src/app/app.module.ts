@@ -7,24 +7,26 @@ import { MarketModule } from '../market/market.module'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
-import { OnboardingModule } from '../onboarding/onboarding.module'
 import { AccountsModule } from '../accounts/accounts.module'
 import { TransactionModule } from '../transaction/transaction.module'
-import { AuthModule } from '../auth/auth.module'
+import { GateWayModule } from '../gateway/gateway.module'
 import { VaultModule } from '../vault/vault.module'
+import { BootstrapModule } from '../bootstrap/bootstrap.module'
+import { AuthModule } from '../auth/auth.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [Environment] }),
-    AuthModule,
+    GateWayModule,
     RickModule,
     NewsModule,
     MarketModule,
     PortfolioModule,
-    OnboardingModule,
+    AuthModule,
     AccountsModule,
     TransactionModule,
     VaultModule,
+    BootstrapModule,
   ],
   controllers: [AppController],
   providers: [AppService],

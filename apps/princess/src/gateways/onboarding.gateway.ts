@@ -4,7 +4,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets'
-import { OnboardingService } from '../onboarding/onboarding.service'
+import { OnboardingService } from '../auth/auth.service'
 import { Socket } from 'socket.io'
 
 @WebSocketGateway()

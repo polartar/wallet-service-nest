@@ -1,21 +1,25 @@
 import { Module } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
-import { AuthGuard } from './auth.guard'
-import { JwtModule } from '@nestjs/jwt'
+import { AuthController } from './auth.controller'
+import { AuthService } from './auth.service'
+import { HttpModule } from '@nestjs/axios'
+import { AccountsService } from '../accounts/accounts.service'
+import { MarketService } from '../market/market.service'
+import { TransactionService } from '../transaction/transaction.service'
+import { BootstrapService } from '../bootstrap/bootstrap.service'
 
 @Module({
   imports: [
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
+    HttpModule.register({
+      timeout: parseInt(process.env.httptimeout) || 0,
     }),
   ],
+  controllers: [AuthController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
+    AuthService,
+    AccountsService,
+    MarketService,
+    TransactionService,
+    BootstrapService,
   ],
 })
 export class AuthModule {}

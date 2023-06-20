@@ -3,7 +3,7 @@ export interface IAccount {
   email?: string
   name?: string
 }
-export interface IOnboardingSigningResponse {
+export interface IAuthSigningResponse {
   type: string
   account_id: number
   account: IAccount
@@ -12,14 +12,6 @@ export interface IOnboardingSigningResponse {
   server_shard: string
   passcode_key: string
   recovery_key: string
-}
-
-export interface IDeviceCreateResponse {
-  secret: string
-  device_id: string
-  account_id: number
-  access_token: string
-  refresh_token: string
 }
 
 export interface IDeviceRegisterResponse {

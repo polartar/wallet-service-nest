@@ -16,18 +16,18 @@ import { firstValueFrom } from 'rxjs'
 import {
   IAccessTokenPayload,
   IAccount,
-  IDeviceCreateResponse,
-  IOnboardingSigningResponse,
-} from './onboarding.types'
+  IAuthSigningResponse,
+} from './auth.types'
 import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from '../accounts/accounts.types'
+import { BootstrapService } from '../bootstrap/bootstrap.service'
 
 @Injectable()
-export class OnboardingService {
+export class AuthService {
   gandalfApiUrl: string
   fluffyApiUrl: string
   rickApiUrl: string
@@ -37,6 +37,7 @@ export class OnboardingService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private accountService: AccountsService,
+    private bootstrapService: BootstrapService,
     private jwtService: JwtService,
     @Inject(REQUEST) private readonly request: Request,
   ) {
@@ -48,56 +49,6 @@ export class OnboardingService {
     )
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.version = this.configService.get<string>(EEnvironment.version)
-  }
-
-  async createDevice(): Promise<IDeviceCreateResponse> {
-    try {
-      const deviceResponse = await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/device`),
-      )
-
-      const tmpEmail = `any${deviceResponse.data.deviceId}@gmail.com`
-      const tmpName = 'Anonymous'
-      // create anonymous user
-      const userResponse = await firstValueFrom(
-        this.httpService.post(`${this.gandalfApiUrl}/account`, {
-          email: tmpEmail,
-          name: tmpName,
-        }),
-      )
-
-      // create the anonymous user in rick
-      await firstValueFrom(
-        this.httpService.post(`${this.rickApiUrl}/account`, {
-          email: tmpEmail,
-          name: tmpName,
-          accountId: userResponse.data.id,
-        }),
-      )
-
-      const payload = {
-        type: 'anonymous',
-        accountId: userResponse.data.id,
-        idToken: deviceResponse.data.deviceId,
-        deviceId: deviceResponse.data.deviceId,
-        otp: deviceResponse.data.otp,
-      }
-      const accessToken = await this.generateAccessToken(payload)
-
-      const refreshToken = await this.generateRefreshToken(payload)
-
-      return {
-        secret: deviceResponse.data.otp,
-        device_id: deviceResponse.data.deviceId,
-        account_id: userResponse.data.id,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      }
-    } catch (err) {
-      Sentry.captureException(err.message + ' in createDevice()')
-
-      throw new BadRequestException(err.message)
-    }
   }
 
   async getUserFromIdToken(
@@ -158,8 +109,12 @@ export class OnboardingService {
         otp,
       }
 
-      const accessToken = await this.generateAccessToken(payload)
-      const refreshToken = await this.generateRefreshToken(payload)
+      const accessToken = await this.bootstrapService.generateAccessToken(
+        payload,
+      )
+      const refreshToken = await this.bootstrapService.generateRefreshToken(
+        payload,
+      )
 
       return {
         type: isNewUser ? 'new email' : 'existing email',
@@ -222,7 +177,7 @@ export class OnboardingService {
     ownProposedShard: string,
     passCodeKey: string,
     recoveryKey: string,
-  ): Promise<IOnboardingSigningResponse> {
+  ): Promise<IAuthSigningResponse> {
     const accountId = this.getAccountIdFromRequest()
 
     const user = await this.getUserFromIdToken(token, type, accountId)
@@ -301,10 +256,6 @@ export class OnboardingService {
     }
   }
 
-  getVersion(): string {
-    return this.version
-  }
-
   getAccountIdFromRequest(): number {
     return Number((this.request as IRequest).accountId)
   }
@@ -323,18 +274,6 @@ export class OnboardingService {
     } else {
       throw new ForbiddenException('Device Id not matched')
     }
-  }
-
-  async generateAccessToken(payload: IAccessTokenPayload) {
-    return await this.jwtService.signAsync(payload, { expiresIn: '4h' })
-  }
-  async generateRefreshToken(payload: IAccessTokenPayload) {
-    return await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>(
-        EEnvironment.jwtRefreshTokenSecret,
-      ),
-      expiresIn: '180 days',
-    })
   }
 
   async regenerateAccessToken(
@@ -367,7 +306,7 @@ export class OnboardingService {
       )
     }
 
-    const accessToken = this.generateAccessToken(payload)
+    const accessToken = this.bootstrapService.generateAccessToken(payload)
 
     return accessToken
   }

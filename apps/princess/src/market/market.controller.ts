@@ -16,7 +16,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger'
-import { Public } from '../auth/decorators/public.decorator'
+import { Public } from '../gateway/decorators/public.decorator'
 import { CoinMarketSwaggerResponse } from './dto/coin-market.dto'
 import { CoinHistorySwaggerResponse } from './dto/coin-history.dto'
 
