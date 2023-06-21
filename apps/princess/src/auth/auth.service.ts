@@ -173,10 +173,10 @@ export class AuthService {
     token: string,
     deviceId: string,
     otp: string,
-    serverProposedShard: string,
-    ownProposedShard: string,
-    passCodeKey: string,
-    recoveryKey: string,
+    serverProposedShard?: string,
+    ownProposedShard?: string,
+    passCodeKey?: string,
+    recoveryKey?: string,
   ): Promise<IAuthSigningResponse> {
     const accountId = this.getAccountIdFromRequest()
 

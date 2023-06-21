@@ -16,6 +16,7 @@ import {
   SwitchCloudSwaggerResponse,
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
+import { CreateAccountDto } from './dto/create-account.dto'
 
 @Controller('account')
 @ApiTags('account')
@@ -26,6 +27,16 @@ export class AccountsController {
   @ApiOkResponse({ type: PortfolioSwaggerResponse })
   async sync(@Query('hash') hash?: string) {
     return await this.accountService.syncAccount(hash)
+  }
+
+  @Post('')
+  @ApiOkResponse({ type: PortfolioSwaggerResponse })
+  async createAccount(@Body() data: CreateAccountDto) {
+    return await this.accountService.createAccount(
+      data.provider,
+      data.providerToken,
+      data.otp,
+    )
   }
 
   @Post(':accountId/wallet')

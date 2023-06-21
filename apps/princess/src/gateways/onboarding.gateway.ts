@@ -4,12 +4,12 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets'
-import { OnboardingService } from '../auth/auth.service'
 import { Socket } from 'socket.io'
+import { AuthService } from '../auth/auth.service'
 
 @WebSocketGateway()
 export class OnboardingGateway {
-  constructor(private readonly onboardingService: OnboardingService) {}
+  constructor(private readonly onboardingService: AuthService) {}
 
   @SubscribeMessage('bootstrap')
   async handleBootstrap(

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { ECoinType, EPeriod, EWalletType } from '@rana/core'
+import { EAuth, ECoinType, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
@@ -20,6 +20,7 @@ import { formatUnits } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
 import { TransactionService } from '../transaction/transaction.service'
+import { AuthService } from '../auth/auth.service'
 
 @Injectable()
 export class AccountsService {
@@ -33,6 +34,7 @@ export class AccountsService {
     private readonly httpService: HttpService,
     private readonly marketService: MarketService,
     private readonly transactionService: TransactionService,
+    private readonly authService: AuthService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
@@ -45,6 +47,10 @@ export class AccountsService {
 
   getAccountIdFromRequest(): number {
     return Number((this.request as IRequest).accountId)
+  }
+
+  getDeviceIdFromRequest(): string {
+    return (this.request as IRequest).deviceId
   }
 
   validateAccountId(accountId: number) {
@@ -255,5 +261,10 @@ export class AccountsService {
     } else {
       return wallets
     }
+  }
+
+  async createAccount(provider: EAuth, providerToken: string, otp: string) {
+    const deviceId = this.getDeviceIdFromRequest()
+    this.authService.signIn(provider, providerToken, deviceId, otp)
   }
 }
