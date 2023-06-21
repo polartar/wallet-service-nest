@@ -15,7 +15,7 @@ import {
   ITransactionPush,
   ITransactionResponse,
 } from './transaction.types'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 import { NFTTransactionRawPipe, TransactionInputPipe } from './transaction.pipe'
 
 @Controller('transaction')
@@ -27,7 +27,7 @@ export class TransactionController {
   generateTransaction(
     @Body() data: ITransactionInput,
   ): Promise<ITransactionResponse> {
-    if (data.coinType === ECoinType.ETHEREUM) {
+    if (data.coinType === ENetworks.ETHEREUM) {
       return this.service.generateEthereumTransaction(data, false)
     } else {
       return this.service.generateBTCTransaction(data)
@@ -45,7 +45,7 @@ export class TransactionController {
 
   @Get('fee/:coin')
   async getFee(
-    @Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType,
+    @Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks,
   ): Promise<IFeeResponse> {
     return await this.service.getFee(coin)
   }
@@ -63,7 +63,7 @@ export class TransactionController {
     return this.service.publish(
       data.serializedTransaction,
       data.signature,
-      ECoinType.ETHEREUM,
+      ENetworks.ETHEREUM,
     )
   }
 }

@@ -49,12 +49,14 @@ export class WalletController {
     @Body('account_id', ParseIntPipe) account_id: number,
     @Body('wallet_type', new ParseEnumPipe(EWalletType))
     walletType: EWalletType,
+    @Body('title') title?: string,
   ) {
     try {
       const res = await this.walletService.addNewWallet(
         account_id,
         xPub,
         walletType,
+        title,
       )
 
       await this.portfolioService.initializeWallets()

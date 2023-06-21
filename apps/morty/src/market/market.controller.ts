@@ -1,6 +1,6 @@
 import { Controller, Get, ParseEnumPipe, Query } from '@nestjs/common'
 import { MarketService } from './market.service'
-import { EPeriod, ECoinType } from '@rana/core'
+import { EPeriod, ENetworks } from '@rana/core'
 
 @Controller('market')
 export class MarketController {
@@ -8,25 +8,25 @@ export class MarketController {
 
   @Get('eth')
   getEthMarketData() {
-    return this.marketService.getMarketData(ECoinType.ETHEREUM)
+    return this.marketService.getMarketData(ENetworks.ETHEREUM)
   }
 
   @Get('btc')
   getBtcMarketData() {
-    return this.marketService.getMarketData(ECoinType.BITCOIN)
+    return this.marketService.getMarketData(ENetworks.BITCOIN)
   }
 
   @Get('eth/history')
   getEthHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.marketService.getHistoricalData(ECoinType.ETHEREUM, period)
+    return this.marketService.getHistoricalData(ENetworks.ETHEREUM, period)
   }
 
   @Get('btc/history')
   getBtcHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.marketService.getHistoricalData(ECoinType.BITCOIN, period)
+    return this.marketService.getHistoricalData(ENetworks.BITCOIN, period)
   }
 }

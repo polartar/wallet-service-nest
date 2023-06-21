@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
-import { EPeriod, ECoinType } from '@rana/core'
+import { EPeriod, ENetworks } from '@rana/core'
 import { EEnvironment } from '../environments/environment.types'
 import * as Sentry from '@sentry/node'
 
@@ -20,7 +20,7 @@ export class MarketService {
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
   }
 
-  async getMarketData(coin: ECoinType) {
+  async getMarketData(coin: ENetworks) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
@@ -35,7 +35,7 @@ export class MarketService {
     }
   }
 
-  async getHistoricalData(coin: ECoinType, period: EPeriod) {
+  async getHistoricalData(coin: ENetworks, period: EPeriod) {
     try {
       const res = await firstValueFrom(
         this.httpService.get(

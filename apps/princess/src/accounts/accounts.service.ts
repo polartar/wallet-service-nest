@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, ECoinType, EPeriod, EWalletType } from '@rana/core'
+import { EAuth, ENetworks, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
@@ -119,16 +119,16 @@ export class AccountsService {
 
   async addUSDPrice(wallets: IWallet[], period: EPeriod) {
     const ethMarketHistories = await this.marketService.getHistoricalData(
-      ECoinType.ETHEREUM,
+      ENetworks.ETHEREUM,
       period,
     )
 
     const btcMarketHistories = await this.marketService.getHistoricalData(
-      ECoinType.BITCOIN,
+      ENetworks.BITCOIN,
       period,
     )
-    const ethFee = await this.transactionService.getFee(ECoinType.ETHEREUM)
-    const btcFee = await this.transactionService.getFee(ECoinType.BITCOIN)
+    const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
+    const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
 
     if (!ethMarketHistories.success || !btcMarketHistories.success) {
       Sentry.captureException('Something went wrong in Morty service')
@@ -142,7 +142,7 @@ export class AccountsService {
 
     return wallets.map((wallet) => {
       wallet.addresses = wallet.addresses.map((address) => {
-        const isEthereum = address.coinType === ECoinType.ETHEREUM
+        const isEthereum = address.coinType === ENetworks.ETHEREUM
         const source = isEthereum
           ? ethMarketHistories.data
           : btcMarketHistories.data

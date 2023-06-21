@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth, EWalletType } from '@rana/core'
+import { EAuth } from '@rana/core'
 import { IsNotEmpty } from 'class-validator'
 export class CreateAccountDto {
   @ApiProperty({

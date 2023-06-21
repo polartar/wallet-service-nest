@@ -5,16 +5,16 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { AddressEntity } from './address.entity'
+import { AssetEntity } from './asset.entity'
 
 @Entity()
 export class HistoryEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @ManyToOne(() => AddressEntity, (address) => address.history)
+  @ManyToOne(() => AssetEntity, (address) => address.history)
   @JoinColumn()
-  address: AddressEntity
+  asset: AssetEntity
 
   @Column()
   balance: string

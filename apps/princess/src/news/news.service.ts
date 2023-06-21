@@ -5,7 +5,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { ESort, INewsQuery, INewsResponse } from './news.types'
-import { ECoinType, getTimestamp } from '@rana/core'
+import { ENetworks, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -60,7 +60,7 @@ export class NewsService {
 
   async getLatestNews(
     count?: number,
-    symbol?: ECoinType,
+    symbol?: ENetworks,
   ): Promise<INewsResponse> {
     const news = await this.getNews({
       sort: ESort.DESC,
@@ -95,7 +95,7 @@ export class NewsService {
     if (query.symbol) {
       params += `&symbols=${query.symbol}`
     } else {
-      params += `&symbols=${ECoinType.BITCOIN},${ECoinType.ETHEREUM}`
+      params += `&symbols=${ENetworks.BITCOIN},${ENetworks.ETHEREUM}`
     }
     return params
   }

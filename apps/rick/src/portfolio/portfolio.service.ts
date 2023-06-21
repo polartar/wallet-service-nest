@@ -1,5 +1,4 @@
 import { EPortfolioType } from '@rana/core'
-import { AddressEntity } from './../wallet/address.entity'
 import { Injectable } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -7,16 +6,17 @@ import { EEnvironment } from '../environments/environment.types'
 import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { Alchemy, Network } from 'alchemy-sdk'
 import { ethers } from 'ethers'
 import * as Sentry from '@sentry/node'
+import { AssetEntity } from '../wallet/asset.entity'
 
 @Injectable()
 export class PortfolioService {
-  activeEthAddresses: AddressEntity[]
-  activeBtcAddresses: AddressEntity[]
+  activeEthAddresses: AssetEntity[]
+  activeBtcAddresses: AssetEntity[]
   provider: Ethers.providers.JsonRpcProvider
   princessAPIUrl: string
   btcSocket
@@ -178,19 +178,19 @@ export class PortfolioService {
     addresses = addresses.filter((address) => address.wallet.isActive)
 
     this.activeEthAddresses = addresses.filter(
-      (address) => address.coinType === ECoinType.ETHEREUM,
+      (address) => address.network === ENetworks.ETHEREUM,
     )
 
     this.activeBtcAddresses = addresses.filter(
-      (address) => address.coinType === ECoinType.BITCOIN,
+      (address) => address.network === ENetworks.BITCOIN,
     )
   }
 
-  async getEthWallets(): Promise<AddressEntity[]> {
+  async getEthWallets(): Promise<AssetEntity[]> {
     return this.activeEthAddresses
   }
 
-  async getBtcWallets(): Promise<AddressEntity[]> {
+  async getBtcWallets(): Promise<AssetEntity[]> {
     return this.activeBtcAddresses
   }
 

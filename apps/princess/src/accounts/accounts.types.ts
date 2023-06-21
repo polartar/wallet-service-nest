@@ -1,5 +1,5 @@
 import { Request } from '@nestjs/common'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 
 export enum EAPIMethod {
   POST = 'post',
@@ -23,7 +23,7 @@ export interface IWallet {
 }
 
 export interface IAddress {
-  coinType: ECoinType
+  coinType: ENetworks
   address: string
   history: {
     balance: string

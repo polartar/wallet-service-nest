@@ -6,7 +6,7 @@ import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { TransactionService } from './transaction.service'
-// import { ECoinType } from '@rana/core'
+// import { ENetworks } from '@rana/core'
 // import { ENFTTypes } from './transaction.types'
 // import * as bitcoin from 'bitcoinjs-lib'
 // import * as secp from 'tiny-secp256k1'
@@ -39,7 +39,7 @@ describe('TransactionController', () => {
   //     from: address,
   //     to: 'mvGvyL7wiueCNfkKrFPN6FfBWwbJPFQ3NL',
   //     amount: 1,
-  //     coinType: ECoinType.BITCOIN,
+  //     coinType: ENetworks.BITCOIN,
   //     publicKey:
   //       '5ecb74da30aa5afc085813d49d3f57b3c8df459a62e3712114bb90305f7fde97',
   //   }
@@ -86,7 +86,7 @@ describe('TransactionController', () => {
   //   const tmpTx = signTransaction(privKey, newTx.data)
 
   //   const finalTx = await controller.publishTransaction({
-  //     coinType: ECoinType.BITCOIN,
+  //     coinType: ENetworks.BITCOIN,
   //     transaction: tmpTx,
   //   })
 
@@ -101,7 +101,7 @@ describe('TransactionController', () => {
   //   const tmpTx = signTransaction(invalidPrivKey, newTx.data)
 
   //   const finalTx = await controller.publishTransaction({
-  //     coinType: ECoinType.BITCOIN,
+  //     coinType: ENetworks.BITCOIN,
   //     transaction: tmpTx,
   //   })
 

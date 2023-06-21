@@ -1,4 +1,4 @@
-import { WalletEntity } from './../wallet/wallet.entity'
+import { WalletEntity } from './wallet.entity'
 import {
   BeforeInsert,
   Column,
@@ -9,10 +9,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { HistoryEntity } from './history.entity'
-import { ECoinType, getTimestamp } from '@rana/core'
+import { ENetworks, getTimestamp } from '@rana/core'
 
 @Entity()
-export class AddressEntity {
+export class AssetEntity {
   @PrimaryGeneratedColumn()
   id: number
 
@@ -23,15 +23,15 @@ export class AddressEntity {
   createdAt: number
 
   @Column('text')
-  coinType: ECoinType
+  network: ENetworks
 
   @Column()
   path: string
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.addresses)
+  @ManyToOne(() => WalletEntity, (wallet) => wallet.assets)
   wallet: WalletEntity
 
-  @OneToMany(() => HistoryEntity, (history) => history.address)
+  @OneToMany(() => HistoryEntity, (history) => history.asset)
   @JoinColumn()
   history: HistoryEntity[]
 

@@ -8,7 +8,7 @@ import { PortfolioModule } from '../portfolio/portfolio.module'
 import { AccountModule } from '../account/account.module'
 import { HttpModule } from '@nestjs/axios'
 import { HistoryEntity } from './history.entity'
-import { AddressEntity } from './address.entity'
+import { AddressEntity } from './asset.entity'
 
 @Module({
   imports: [

@@ -16,9 +16,11 @@ export enum EPeriod {
   All = 'All',
 }
 
-export enum ECoinType {
+export enum ENetworks {
   ETHEREUM = 'eth',
   BITCOIN = 'btc',
+  BITCOIN_TEST = 'btc_testnet3',
+  ETHEREUM_TEST = 'eth_goerli',
 }
 
 export enum EWalletType {

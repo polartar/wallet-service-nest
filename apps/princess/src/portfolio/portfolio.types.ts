@@ -1,4 +1,4 @@
-import { ECoinType, EWalletType } from '@rana/core'
+import { ENetworks, EWalletType } from '@rana/core'
 import { Socket } from 'socket.io'
 
 export interface IAccount {
@@ -9,7 +9,7 @@ export interface IAccount {
 
 export interface IWallet {
   id: number
-  coinType: ECoinType
+  coinType: ENetworks
   xPub: string
   type: EWalletType
   address: string

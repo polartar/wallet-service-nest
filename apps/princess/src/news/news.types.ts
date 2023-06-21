@@ -1,4 +1,4 @@
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 
 export interface INewsResponse {
   success: boolean
@@ -18,5 +18,5 @@ export interface INewsQuery {
   pageNumber?: number
   startTime?: Date
   endTime?: Date
-  symbol?: ECoinType
+  symbol?: ENetworks
 }

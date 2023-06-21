@@ -18,8 +18,8 @@ import { EEnvironment } from '../environments/environment.types'
 import { SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
 import { HistoryEntity } from './history.entity'
-import { AddressEntity } from './address.entity'
 import { EPeriod, EWalletType } from '@rana/core'
+import { AssetEntity } from './asset.entity'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -41,14 +41,14 @@ describe('WalletController', () => {
           entities: [
             WalletEntity, //
             AccountEntity,
-            AddressEntity,
+            AssetEntity,
             HistoryEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           WalletEntity, //
           AccountEntity,
-          AddressEntity,
+          AssetEntity,
           HistoryEntity,
         ]),
         AppModule,
@@ -122,7 +122,7 @@ describe('WalletController', () => {
         walletService.getCurrentTimeBySeconds() - periodAsNumber,
     )
     const walletsHistory = await controller.getHistory(1, EPeriod.Month)
-    expect(walletsHistory[0].addresses[0].history.length).toBe(
+    expect(walletsHistory[0].assets[0].history.length).toBe(
       filteredHistory.length,
     )
   }, 40000)
@@ -153,7 +153,7 @@ describe('WalletController', () => {
 
     const walletsHistory = await controller.getHistory(2, EPeriod.All)
 
-    expect(walletsHistory[0].addresses[0].history.length).toBe(
+    expect(walletsHistory[0].assets[0].history.length).toBe(
       txResponse.data.txrefs.length,
     )
   }, 20000)
@@ -193,15 +193,15 @@ describe('WalletController', () => {
 
     expect(response.length).toBe(1)
     expect(response[0].xPub).toBe(xpub)
-    expect(response[0].addresses.length).toBe(1)
-    expect(response[0].addresses[0].address).toBe(
+    expect(response[0].assets.length).toBe(1)
+    expect(response[0].assets[0].address).toBe(
       '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
     )
 
-    expect(response[0].addresses[0].history.length).toBeGreaterThan(1)
+    expect(response[0].assets[0].history.length).toBeGreaterThan(1)
   }, 20000)
 
-  it('should add Bitcoin xpubs that has no addresses', async () => {
+  it('should add Bitcoin xpubs that has no assets', async () => {
     const xpub =
       'vpub5YrRyVwDdS4ME6Jyy4qYSgu14JyAzh4B3s9uXfitjdCoFffGeC9iSxCf722LmJ9y5v1SvN4F25Hukw8XYj2vZC1xchB8BsRsXLmm8NNEp5e'
     const response = await controller.AddXPubs({
@@ -215,7 +215,7 @@ describe('WalletController', () => {
     })
     expect(response.length).toBe(1)
     expect(response[0].xPub).toBe(xpub)
-    expect(response[0].addresses.length).toBe(0)
+    expect(response[0].assets.length).toBe(0)
   }, 20000)
 
   it('should add a xpub', async () => {
@@ -232,13 +232,13 @@ describe('WalletController', () => {
       EWalletType.VAULT,
     )
 
-    expect(response.addresses[0].address).toBe(
+    expect(response.assets[0].address).toBe(
       '0x1771A0FF2ed62529Fb9801e84d134e502358647A',
     )
 
     const history = await controller.getHistory(3, EPeriod.Day)
     expect(history[0].xPub).toBe(xpub)
-    expect(history[0].addresses[0].address).toBe(
+    expect(history[0].assets[0].address).toBe(
       '0x1771A0FF2ed62529Fb9801e84d134e502358647A',
     )
   }, 40000)

@@ -17,9 +17,8 @@ import { HttpService } from '@nestjs/axios'
 import { firstValueFrom } from 'rxjs'
 import { HistoryEntity } from './history.entity'
 import { AddAddressDto } from './dto/add-address.dto'
-import { AddressEntity } from './address.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
-import { ECoinType, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
+import { ENetworks, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import * as Sentry from '@sentry/node'
 import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
@@ -28,6 +27,7 @@ import { AccountService } from '../account/account.service'
 import { AccountEntity } from '../account/account.entity'
 import ERC721ABI from './abis/erc721'
 import ERC1155ABI from './abis/erc1155'
+import { AssetEntity } from './asset.entity'
 
 @Injectable()
 export class WalletService {
@@ -43,8 +43,8 @@ export class WalletService {
     private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
-    @InjectRepository(AddressEntity)
-    private readonly addressRepository: Repository<AddressEntity>,
+    @InjectRepository(AssetEntity)
+    private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(HistoryEntity)
     private readonly historyRepository: Repository<HistoryEntity>,
     private readonly accountService: AccountService,
@@ -86,8 +86,8 @@ export class WalletService {
     return Math.floor(Date.now() / 1000)
   }
 
-  async getAllAddresses(): Promise<AddressEntity[]> {
-    return await this.addressRepository.find({
+  async getAllAddresses(): Promise<AssetEntity[]> {
+    return await this.assetRepository.find({
       order: {
         history: {
           timestamp: 'DESC',
@@ -104,7 +104,7 @@ export class WalletService {
 
   async getBtcHistory(
     transactions: IBTCTransaction[],
-    address: AddressEntity,
+    asset: AssetEntity,
     balance: number,
   ): Promise<HistoryEntity[]> {
     if (!transactions || transactions.length === 0) {
@@ -118,9 +118,9 @@ export class WalletService {
           ? currentBalance - record.value
           : currentBalance + record.value
         return this.addHistory({
-          address: address,
-          from: record.spent ? address.address : '',
-          to: record.spent ? '' : address.address,
+          asset: asset,
+          from: record.spent ? asset.address : '',
+          to: record.spent ? '' : asset.address,
           amount: record.value.toString(),
           hash: record.tx_hash,
           balance: prevBalance.toString(),
@@ -134,16 +134,16 @@ export class WalletService {
 
   async getEthHistory(
     transactions: ethers.providers.TransactionResponse[],
-    address: AddressEntity,
+    asset: AssetEntity,
   ): Promise<HistoryEntity[]> {
-    const balance = await this.provider.getBalance(address.address)
+    const balance = await this.provider.getBalance(asset.address)
 
     let currentBalance = balance
     const histories = await Promise.all(
       transactions.reverse().map(async (record) => {
         const prevBalance = currentBalance
         const fee = record.gasLimit.mul(record.gasPrice)
-        const walletAddress = address.address.toLowerCase()
+        const walletAddress = asset.address.toLowerCase()
 
         if (record.from?.toLowerCase() === walletAddress) {
           currentBalance = currentBalance.add(fee)
@@ -155,7 +155,7 @@ export class WalletService {
         }
 
         const newHistory: AddHistoryDto = {
-          address,
+          asset,
           from: record.from || '',
           to: record.to || '',
           hash: record.hash,
@@ -194,7 +194,7 @@ export class WalletService {
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
     const response = await this.walletRepository.findOne({
       where: { xPub },
-      relations: { accounts: true, addresses: { history: true } },
+      relations: { accounts: true, assets: { history: true } },
     })
 
     return response
@@ -204,7 +204,7 @@ export class WalletService {
     return await this.walletRepository.find({
       where: { xPub: In(xPubs) },
       relations: {
-        addresses: {
+        assets: {
           history: true,
         },
       },
@@ -215,6 +215,7 @@ export class WalletService {
     accountId: number,
     xPub: string,
     walletType: EWalletType,
+    title: string,
   ): Promise<WalletEntity> {
     const account = await this.accountService.lookup({
       accountId,
@@ -241,13 +242,14 @@ export class WalletService {
       prototype.xPub = xPub
       prototype.accounts = [account]
       prototype.type = walletType
-      prototype.addresses = []
+      prototype.assets = []
+      prototype.title = title
 
-      let coinType
+      let network
       if (walletType === EWalletType.METAMASK) {
-        coinType = ECoinType.ETHEREUM
+        network = ENetworks.ETHEREUM
       } else if (walletType === EWalletType.HOTWALLET) {
-        coinType = ECoinType.BITCOIN
+        network = ENetworks.BITCOIN
       }
       const wallet = await this.walletRepository.save(prototype)
 
@@ -255,27 +257,27 @@ export class WalletService {
         await this.createAddress({
           wallet,
           address: xPub,
-          coinType: coinType,
+          network: network,
           path:
             walletType === EWalletType.HOTWALLET
               ? IAddressPath.BTC
               : IAddressPath.ETH,
         })
       } else {
-        await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
-        await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
+        await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
+        await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
       }
       this.fetchEthereumTransactions()
       return await this.lookUpByXPub(xPub)
     }
   }
 
-  async addAddressesFromXPub(wallet, xPub, coinType: ECoinType) {
+  async addAddressesFromXPub(wallet, xPub, network: ENetworks) {
     try {
       const discoverResponse = await firstValueFrom(
         this.httpService.get(
           `${this.liquidAPIUrl}/api/v1/currencies/${
-            coinType === ECoinType.ETHEREUM
+            network === ENetworks.ETHEREUM
               ? EXPubCurrency.ETHEREUM
               : EXPubCurrency.BITCOIN
           }/accounts/discover?xpub=${xPub}`,
@@ -291,7 +293,7 @@ export class WalletService {
               wallet,
               address: addressInfo.address,
               path: addressInfo.path,
-              coinType,
+              network,
             })
           } catch (err) {
             Sentry.captureException(
@@ -313,19 +315,19 @@ export class WalletService {
     }
   }
 
-  async createAddress(data: AddAddressDto): Promise<AddressEntity> {
-    const prototype = new AddressEntity()
+  async createAddress(data: AddAddressDto): Promise<AssetEntity> {
+    const prototype = new AssetEntity()
     prototype.wallet = data.wallet
     prototype.address = data.address
     prototype.history = []
     prototype.path = data.path
-    prototype.coinType = data.coinType
+    prototype.network = data.network
 
-    const address = await this.addressRepository.save(prototype)
+    const address = await this.assetRepository.save(prototype)
 
     let allHistories
     try {
-      if (data.coinType === ECoinType.ETHEREUM) {
+      if (data.network === ENetworks.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
         allHistories = await this.getEthHistory(trxHistory, address)
       } else {
@@ -349,7 +351,7 @@ export class WalletService {
       Sentry.captureException(`createAddress(): ${err.message}`)
     }
 
-    return await this.addressRepository.save(address)
+    return await this.assetRepository.save(address)
   }
 
   updateWallets(wallets: WalletEntity[]) {
@@ -358,8 +360,8 @@ export class WalletService {
     )
   }
 
-  updateAddress(address: AddressEntity) {
-    return this.addressRepository.save(address)
+  updateAddress(address: AssetEntity) {
+    return this.assetRepository.save(address)
   }
 
   async updateWalletActive(data: IWalletActiveData): Promise<WalletEntity> {
@@ -377,7 +379,7 @@ export class WalletService {
 
     if (data.isActive) {
       // This wallet was inactive. so we need to add all missed transactions
-      const addresses = wallet.addresses
+      const addresses = wallet.assets
 
       this.confirmWalletBalances(addresses)
     }
@@ -435,7 +437,7 @@ export class WalletService {
   ) {
     return this._getWalletHistory(accountId, period, walletId)
   }
-  async confirmETHBalance(address: AddressEntity): Promise<AddressEntity> {
+  async confirmETHBalance(address: AssetEntity): Promise<AssetEntity> {
     const trxHistory = await this.provider.getHistory(address.address)
 
     if (trxHistory && trxHistory.length > address.history.length) {
@@ -448,7 +450,7 @@ export class WalletService {
       return null
     }
   }
-  async confirmBTCBalance(address: AddressEntity): Promise<AddressEntity> {
+  async confirmBTCBalance(address: AssetEntity): Promise<AssetEntity> {
     const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
       this.httpService.get(
         `https://api.blockcypher.com/v1/btc/${
@@ -471,12 +473,12 @@ export class WalletService {
   }
 
   // If there are missed transactions, they are added to history table
-  async confirmWalletBalances(addresses?: AddressEntity[]) {
+  async confirmWalletBalances(addresses?: AssetEntity[]) {
     if (!addresses) {
       addresses = await this.getAllAddresses()
     }
     const updatedAddresses = await Promise.all(
-      addresses.map((address: AddressEntity) => {
+      addresses.map((address: AssetEntity) => {
         if (address.path === IAddressPath.BTC) {
           return this.confirmBTCBalance(address)
         } else {
@@ -488,7 +490,7 @@ export class WalletService {
   }
 
   async updateHistory(
-    updatedAddress: AddressEntity,
+    updatedAddress: AssetEntity,
     tx: {
       transaction: { from: string; to: string; value: string; hash: string }
     },
@@ -509,7 +511,7 @@ export class WalletService {
     let newHistory
     try {
       newHistory = await this.addHistory({
-        address: updatedAddress,
+        asset: updatedAddress,
         ...newHistoryData,
       })
     } catch (err) {
@@ -543,7 +545,7 @@ export class WalletService {
     })
   }
 
-  subscribeEthereumTransactions(addresses: AddressEntity[]) {
+  subscribeEthereumTransactions(addresses: AssetEntity[]) {
     let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
       (address) => ({
         from: address.address,
@@ -606,7 +608,7 @@ export class WalletService {
     addresses = addresses.filter((address) => address.wallet.isActive)
 
     const activeEthAddresses = addresses.filter(
-      (address) => address.coinType === ECoinType.ETHEREUM,
+      (address) => address.network === ENetworks.ETHEREUM,
     )
     if (activeEthAddresses.length === 0) return
 
@@ -631,12 +633,12 @@ export class WalletService {
       prototype.xPub = xPub
       prototype.accounts = [account]
       prototype.type = walletType
-      prototype.addresses = []
+      prototype.assets = []
 
       const wallet = await this.walletRepository.save(prototype)
 
-      await this.addAddressesFromXPub(wallet, xPub, ECoinType.ETHEREUM)
-      await this.addAddressesFromXPub(wallet, xPub, ECoinType.BITCOIN)
+      await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
+      await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
 
       return wallet
     }

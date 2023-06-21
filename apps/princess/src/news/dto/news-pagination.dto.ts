@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ESort } from '../news.types'
 import { IsOptional } from 'class-validator'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 
 export class NewsPaginationDto {
   @ApiProperty({
@@ -29,11 +29,11 @@ export class NewsPaginationDto {
 
   @ApiProperty({
     description: 'symbol type',
-    enum: [ECoinType.BITCOIN, ECoinType.ETHEREUM],
+    enum: [ENetworks.BITCOIN, ENetworks.ETHEREUM],
     required: false,
   })
   @IsOptional()
-  symbol: ECoinType
+  symbol: ENetworks
 }
 
 export class PaginationNewsSwaggerResponse {

@@ -8,9 +8,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { AddressEntity } from './address.entity'
 import { AccountEntity } from '../account/account.entity'
 import { EWalletType, getTimestamp } from '@rana/core'
+import { AssetEntity } from './asset.entity'
 
 @Entity()
 export class WalletEntity {
@@ -21,15 +21,18 @@ export class WalletEntity {
   xPub: string
 
   @Column('text')
+  title: string
+
+  @Column('text')
   type: EWalletType
 
   @ManyToMany(() => AccountEntity, (account) => account.wallets)
   @JoinTable()
   accounts: AccountEntity[]
 
-  @OneToMany(() => AddressEntity, (address) => address.wallet)
+  @OneToMany(() => AssetEntity, (address) => address.wallet)
   @JoinColumn()
-  addresses: AddressEntity[]
+  assets: AssetEntity[]
 
   @Column('boolean', { default: true })
   isActive = true

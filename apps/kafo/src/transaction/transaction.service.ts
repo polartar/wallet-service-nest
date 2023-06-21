@@ -16,7 +16,7 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 import { formatEther, hexlify, parseEther } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
@@ -167,11 +167,11 @@ export class TransactionService {
   async publish(
     serializedTransaction: string,
     signature: string,
-    type: ECoinType,
+    type: ENetworks,
   ): Promise<ITransactionResponse> {
     try {
       const currency =
-        type === ECoinType.ETHEREUM
+        type === ENetworks.ETHEREUM
           ? 'ethereum.secp256k1'
           : 'segwit.bitcoin.secp256k1'
 
@@ -211,12 +211,12 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ECoinType): Promise<IFeeResponse> {
+  async getFee(coin: ENetworks): Promise<IFeeResponse> {
     let params
     if (this.isProduction) {
-      params = coin === ECoinType.BITCOIN ? 'btc/main' : `eth/main`
+      params = coin === ENetworks.BITCOIN ? 'btc/main' : `eth/main`
     } else {
-      params = coin === ECoinType.BITCOIN ? 'btc/test3' : `beth/test`
+      params = coin === ENetworks.BITCOIN ? 'btc/test3' : `beth/test`
     }
 
     try {
@@ -230,7 +230,7 @@ export class TransactionService {
         medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
         low_fee: data.low_fee_per_kb || data.low_gas_price,
       }
-      const unit = coin == ECoinType.BITCOIN ? 8 : 18
+      const unit = coin == ENetworks.BITCOIN ? 8 : 18
       const convertedObj = {
         high_fee: ethers.utils.formatUnits(feeObj.high_fee.toString(), unit),
         medium_fee: ethers.utils.formatUnits(

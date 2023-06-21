@@ -6,7 +6,7 @@ import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { EPeriod, ECoinType, getTimestamp } from '@rana/core'
+import { EPeriod, ENetworks, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -133,7 +133,7 @@ export class MarketService {
     this.btcClient.close()
   }
 
-  async getMarketData(coin: ECoinType): Promise<IResponse> {
+  async getMarketData(coin: ENetworks): Promise<IResponse> {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(this.marketApiUrl, {
@@ -148,7 +148,7 @@ export class MarketService {
         }),
       )
 
-      if (coin === ECoinType.BITCOIN) {
+      if (coin === ENetworks.BITCOIN) {
         return {
           success: true,
           data: {
@@ -216,7 +216,7 @@ export class MarketService {
   }
 
   async getHistoricalData(
-    coin: ECoinType,
+    coin: ENetworks,
     period: EPeriod,
   ): Promise<IResponse> {
     const startDate = new Date(this.getPeriodTime(period))

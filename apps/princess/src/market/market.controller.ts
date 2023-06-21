@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { MarketService } from './market.service'
-import { EPeriod, ECoinType } from '@rana/core'
+import { EPeriod, ENetworks } from '@rana/core'
 import {
   ApiOkResponse,
   ApiOperation,
@@ -44,9 +44,9 @@ export class MarketController {
   @Get(':coin')
   @ApiOkResponse({ type: CoinMarketSwaggerResponse })
   @ApiOperation({ summary: 'Get the current market data of the selected coin' })
-  @ApiParam({ name: 'coin', enum: ECoinType })
+  @ApiParam({ name: 'coin', enum: ENetworks })
   async getEthMarketData(
-    @Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType,
+    @Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks,
   ) {
     return this.marketService.getMarketData(coin)
   }
@@ -60,7 +60,7 @@ export class MarketController {
   getEthHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.marketService.getHistoricalData(ECoinType.ETHEREUM, period)
+    return this.marketService.getHistoricalData(ENetworks.ETHEREUM, period)
   }
 
   @Get('btc/history')
@@ -72,6 +72,6 @@ export class MarketController {
   getBtcHistoricalData(
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.marketService.getHistoricalData(ECoinType.BITCOIN, period)
+    return this.marketService.getHistoricalData(ENetworks.BITCOIN, period)
   }
 }
