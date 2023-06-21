@@ -17,7 +17,7 @@ import { Wallet, ethers } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
 import { SecondsIn } from './wallet.types'
 import { firstValueFrom } from 'rxjs'
-import { HistoryEntity } from './history.entity'
+import { TransactionEntity } from './transaction.entity'
 import { EPeriod, EWalletType } from '@rana/core'
 import { AssetEntity } from './asset.entity'
 
@@ -42,14 +42,14 @@ describe('WalletController', () => {
             WalletEntity, //
             AccountEntity,
             AssetEntity,
-            HistoryEntity,
+            TransactionEntity,
           ],
         }),
         TypeOrmModule.forFeature([
           WalletEntity, //
           AccountEntity,
           AssetEntity,
-          HistoryEntity,
+          TransactionEntity,
         ]),
         AppModule,
         PortfolioModule,
@@ -94,7 +94,7 @@ describe('WalletController', () => {
     expect(ethWallets[0].address).toBe(
       '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
     )
-    expect(ethWallets[0].history.length).toBeGreaterThan(1)
+    expect(ethWallets[0].transactions.length).toBeGreaterThan(1)
   }, 40000)
 
   it('should add a fresh ETH wallet', async () => {
@@ -104,7 +104,7 @@ describe('WalletController', () => {
     const ethWallets = await portfolioService.getEthWallets()
     expect(ethWallets.length).toBe(2)
     expect(ethWallets[1].address).toBe(wallet.address)
-    expect(ethWallets[1].history.length).toBe(0)
+    expect(ethWallets[1].transactions.length).toBe(0)
   }, 40000)
 
   it('should get wallet history for the account for 1 month', async () => {
@@ -122,7 +122,7 @@ describe('WalletController', () => {
         walletService.getCurrentTimeBySeconds() - periodAsNumber,
     )
     const walletsHistory = await controller.getHistory(1, EPeriod.Month)
-    expect(walletsHistory[0].assets[0].history.length).toBe(
+    expect(walletsHistory[0].assets[0].transactions.length).toBe(
       filteredHistory.length,
     )
   }, 40000)
@@ -153,7 +153,7 @@ describe('WalletController', () => {
 
     const walletsHistory = await controller.getHistory(2, EPeriod.All)
 
-    expect(walletsHistory[0].assets[0].history.length).toBe(
+    expect(walletsHistory[0].assets[0].transactions.length).toBe(
       txResponse.data.txrefs.length,
     )
   }, 20000)
@@ -198,7 +198,7 @@ describe('WalletController', () => {
       '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
     )
 
-    expect(response[0].assets[0].history.length).toBeGreaterThan(1)
+    expect(response[0].assets[0].transactions.length).toBeGreaterThan(1)
   }, 20000)
 
   it('should add Bitcoin xpubs that has no assets', async () => {

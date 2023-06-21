@@ -8,8 +8,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { HistoryEntity } from './history.entity'
 import { ENetworks, getTimestamp } from '@rana/core'
+import { TransactionEntity } from './transaction.entity'
 
 @Entity()
 export class AssetEntity {
@@ -31,9 +31,9 @@ export class AssetEntity {
   @ManyToOne(() => WalletEntity, (wallet) => wallet.assets)
   wallet: WalletEntity
 
-  @OneToMany(() => HistoryEntity, (history) => history.asset)
+  @OneToMany(() => TransactionEntity, (transaction) => transaction.asset)
   @JoinColumn()
-  history: HistoryEntity[]
+  transactions: TransactionEntity[]
 
   @Column('boolean', { default: true })
   isActive = true

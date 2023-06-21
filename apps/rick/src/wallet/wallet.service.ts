@@ -15,7 +15,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import { firstValueFrom } from 'rxjs'
-import { HistoryEntity } from './history.entity'
+import { TransactionEntity } from './transaction.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddHistoryDto } from './dto/add-history.dto'
 import { ENetworks, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
@@ -45,8 +45,8 @@ export class WalletService {
     private readonly walletRepository: Repository<WalletEntity>,
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
-    @InjectRepository(HistoryEntity)
-    private readonly historyRepository: Repository<HistoryEntity>,
+    @InjectRepository(TransactionEntity)
+    private readonly historyRepository: Repository<TransactionEntity>,
     private readonly accountService: AccountService,
   ) {
     this.isProduction = this.configService.get<boolean>(
@@ -89,7 +89,7 @@ export class WalletService {
   async getAllAddresses(): Promise<AssetEntity[]> {
     return await this.assetRepository.find({
       order: {
-        history: {
+        transactions: {
           timestamp: 'DESC',
         },
       },
@@ -97,7 +97,7 @@ export class WalletService {
         wallet: {
           accounts: true,
         },
-        history: true,
+        transactions: true,
       },
     })
   }
@@ -106,7 +106,7 @@ export class WalletService {
     transactions: IBTCTransaction[],
     asset: AssetEntity,
     balance: number,
-  ): Promise<HistoryEntity[]> {
+  ): Promise<TransactionEntity[]> {
     if (!transactions || transactions.length === 0) {
       return []
     }
@@ -135,7 +135,7 @@ export class WalletService {
   async getEthHistory(
     transactions: ethers.providers.TransactionResponse[],
     asset: AssetEntity,
-  ): Promise<HistoryEntity[]> {
+  ): Promise<TransactionEntity[]> {
     const balance = await this.provider.getBalance(asset.address)
 
     let currentBalance = balance
@@ -194,7 +194,7 @@ export class WalletService {
   async lookUpByXPub(xPub: string): Promise<WalletEntity> {
     const response = await this.walletRepository.findOne({
       where: { xPub },
-      relations: { accounts: true, assets: { history: true } },
+      relations: { accounts: true, assets: { transactions: true } },
     })
 
     return response
@@ -205,7 +205,7 @@ export class WalletService {
       where: { xPub: In(xPubs) },
       relations: {
         assets: {
-          history: true,
+          transactions: true,
         },
       },
     })
@@ -319,7 +319,7 @@ export class WalletService {
     const prototype = new AssetEntity()
     prototype.wallet = data.wallet
     prototype.address = data.address
-    prototype.history = []
+    prototype.transactions = []
     prototype.path = data.path
     prototype.network = data.network
 
@@ -345,7 +345,7 @@ export class WalletService {
           txResponse.data.balance,
         )
       }
-      address.history = allHistories
+      address.transactions = allHistories
     } catch (err) {
       console.error(err)
       Sentry.captureException(`createAddress(): ${err.message}`)
@@ -437,15 +437,15 @@ export class WalletService {
   ) {
     return this._getWalletHistory(accountId, period, walletId)
   }
-  async confirmETHBalance(address: AssetEntity): Promise<AssetEntity> {
-    const trxHistory = await this.provider.getHistory(address.address)
+  async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
+    const trxHistory = await this.provider.getHistory(asset.address)
 
-    if (trxHistory && trxHistory.length > address.history.length) {
-      address.history = await this.getEthHistory(
-        trxHistory.slice(address.history.length, trxHistory.length),
-        address,
+    if (trxHistory && trxHistory.length > asset.transactions.length) {
+      asset.transactions = await this.getEthHistory(
+        trxHistory.slice(asset.transactions.length, trxHistory.length),
+        asset,
       )
-      return address
+      return asset
     } else {
       return null
     }
@@ -460,9 +460,9 @@ export class WalletService {
     )
 
     const trxHistory = txResponse.data.txrefs
-    if (trxHistory && trxHistory.length > address.history.length) {
-      address.history = await this.getBtcHistory(
-        trxHistory.slice(address.history.length, trxHistory.length),
+    if (trxHistory && trxHistory.length > address.transactions.length) {
+      address.transactions = await this.getBtcHistory(
+        trxHistory.slice(address.transactions.length, trxHistory.length),
         address,
         txResponse.data.balance,
       )
@@ -490,20 +490,20 @@ export class WalletService {
   }
 
   async updateHistory(
-    updatedAddress: AssetEntity,
+    updatedAsset: AssetEntity,
     tx: {
       transaction: { from: string; to: string; value: string; hash: string }
     },
     amount: BigNumber,
   ) {
-    const history = updatedAddress.history
+    const transactions = updatedAsset.transactions
     const newHistoryData = {
       from: tx.transaction.from,
       to: tx.transaction.to,
       value: tx.transaction.value.toString(),
       hash: tx.transaction.hash,
-      balance: history.length
-        ? BigNumber.from(history[0].balance).sub(amount).toString()
+      balance: transactions.length
+        ? BigNumber.from(transactions[0].balance).sub(amount).toString()
         : BigNumber.from(tx.transaction.value).toString(),
       timestamp: this.getCurrentTimeBySeconds(),
     }
@@ -511,23 +511,23 @@ export class WalletService {
     let newHistory
     try {
       newHistory = await this.addHistory({
-        asset: updatedAddress,
+        asset: updatedAsset,
         ...newHistoryData,
       })
     } catch (err) {
       Sentry.captureException(
-        `${err.message} + " in updateHistory(address: ${updatedAddress.address}, hash: ${tx.transaction.hash}`,
+        `${err.message} + " in updateHistory(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
       )
       return
     }
 
-    history.push(newHistory)
-    updatedAddress.history = history
+    transactions.push(newHistory)
+    updatedAsset.transactions = transactions
 
     const postUpdatedAddress = {
-      addressId: updatedAddress.id,
-      walletId: updatedAddress.wallet.id,
-      accountIds: updatedAddress.wallet.accounts.map(
+      addressId: updatedAsset.id,
+      walletId: updatedAsset.wallet.id,
+      accountIds: updatedAsset.wallet.accounts.map(
         (account) => account.accountId,
       ),
       newHistory: newHistoryData,

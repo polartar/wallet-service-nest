@@ -66,20 +66,22 @@ export class PortfolioService {
 
     try {
       this.activeBtcAddresses = await Promise.all(
-        this.activeBtcAddresses.map(async (address) => {
-          const history = address.history || []
+        this.activeBtcAddresses.map(async (asset) => {
+          const transactions = asset.transactions || []
           const newHistoryData = []
-          if (senderAddresses.includes(address.address)) {
+          if (senderAddresses.includes(asset.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
             const index = inputs.findIndex(
-              (input) => input.prev_out.addr === address.address,
+              (input) => input.prev_out.addr === asset.address,
             )
             const senderInfo = inputs[index]
 
             inputs.splice(index, 1)
 
-            const currBalance = history.length ? Number(history[0].balance) : 0
+            const currBalance = transactions.length
+              ? Number(transactions[0].balance)
+              : 0
             newHistoryData.push({
               from: '',
               to: senderInfo.prev_out.addr,
@@ -89,17 +91,17 @@ export class PortfolioService {
               timestamp: this.walletService.getCurrentTimeBySeconds(),
             })
             const newHistory = await this.walletService.addHistory({
-              address: address,
+              asset,
               ...newHistoryData[0],
             })
-            history.push(newHistory)
+            transactions.push(newHistory)
 
-            address.history = history
+            asset.transactions = transactions
           }
-          if (receiverAddresses.includes(address.address)) {
+          if (receiverAddresses.includes(asset.address)) {
             // handle if sender transfer btc to same address more than twice
             const index = transaction.out.findIndex(
-              (out) => out.addr === address.address,
+              (out) => out.addr === asset.address,
             )
             const receiverInfo = transaction.out[index]
             transaction.out.splice(index, 1)
@@ -119,40 +121,40 @@ export class PortfolioService {
                 ? newHistoryData[0]
                 : newHistoryData[1]
             const newHistory = await this.walletService.addHistory({
-              address,
+              asset,
               ...historyData,
             })
 
-            history.push(newHistory)
+            transactions.push(newHistory)
 
-            address.history = history
+            asset.transactions = transactions
           }
 
           if (
-            senderAddresses.includes(address.address) ||
-            receiverAddresses.includes(address.address)
+            senderAddresses.includes(asset.address) ||
+            receiverAddresses.includes(asset.address)
           ) {
-            updatedAddresses.push(address)
+            updatedAddresses.push(asset)
             postUpdatedAddresses.push({
-              addressId: address.id,
-              walletId: address.wallet.id,
-              accountIds: address.wallet.accounts.map(
+              addressId: asset.id,
+              walletId: asset.wallet.id,
+              accountIds: asset.wallet.accounts.map(
                 (account) => account.accountId,
               ),
               newHistory: newHistoryData[0],
             })
             if (newHistoryData.length === 2) {
               postUpdatedAddresses.push({
-                addressId: address.id,
-                walletId: address.wallet.id,
-                accountIds: address.wallet.accounts.map(
+                addressId: asset.id,
+                walletId: asset.wallet.id,
+                accountIds: asset.wallet.accounts.map(
                   (account) => account.accountId,
                 ),
                 newHistory: newHistoryData[1],
               })
             }
           }
-          return address
+          return asset
         }),
       )
 

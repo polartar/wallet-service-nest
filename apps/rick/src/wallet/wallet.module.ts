@@ -7,16 +7,16 @@ import { WalletController } from './wallet.controller'
 import { PortfolioModule } from '../portfolio/portfolio.module'
 import { AccountModule } from '../account/account.module'
 import { HttpModule } from '@nestjs/axios'
-import { HistoryEntity } from './history.entity'
-import { AddressEntity } from './asset.entity'
+import { TransactionEntity } from './transaction.entity'
+import { AssetEntity } from './asset.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       WalletEntity, //
       AccountEntity,
-      AddressEntity,
-      HistoryEntity,
+      AssetEntity,
+      TransactionEntity,
     ]),
     forwardRef(() => PortfolioModule),
     AccountModule,

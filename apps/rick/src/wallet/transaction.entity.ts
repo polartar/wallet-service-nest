@@ -8,11 +8,11 @@ import {
 import { AssetEntity } from './asset.entity'
 
 @Entity()
-export class HistoryEntity {
+export class TransactionEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @ManyToOne(() => AssetEntity, (address) => address.history)
+  @ManyToOne(() => AssetEntity, (asset) => asset.transactions)
   @JoinColumn()
   asset: AssetEntity
 
