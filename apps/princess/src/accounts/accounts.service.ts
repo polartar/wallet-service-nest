@@ -13,7 +13,7 @@ import { ECoinType, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, IMarketData, IWallet } from './accounts.types'
+import { EAPIMethod, IAddress, IMarketData, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { MarketService } from '../market/market.service'
 import { formatUnits } from 'ethers/lib/utils'
@@ -233,6 +233,27 @@ export class AccountsService {
     } catch (err) {
       Sentry.captureException(`getAccount(): ${err.message}`)
       throw new BadGatewayException(err.message)
+    }
+  }
+
+  async syncAccount(hash: string): Promise<IWallet[]> {
+    const accountId = this.getAccountIdFromRequest()
+    const wallets: IWallet[] = await this.rickAPICall(
+      EAPIMethod.GET,
+      `wallet/${accountId}?period=${EPeriod.Day}`,
+    )
+
+    const addresses = wallets.reduce(
+      (allAddresses: IAddress[], wallet: IWallet) =>
+        allAddresses.concat(allAddresses, wallet.addresses),
+      [],
+    )
+
+    const walletHash = addresses.map((address) => address.address).join(',')
+    if (walletHash === hash) {
+      return []
+    } else {
+      return wallets
     }
   }
 }

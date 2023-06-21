@@ -18,14 +18,18 @@ export interface IMarketData {
 }
 
 export interface IWallet {
-  addresses: {
-    coinType: ECoinType
-    history: {
-      balance: string
-      amount: string
-      timestamp: number
-      usdBalance?: string
-      usdAmount: string
-    }[]
+  id: number
+  addresses: IAddress[]
+}
+
+export interface IAddress {
+  coinType: ECoinType
+  address: string
+  history: {
+    balance: string
+    amount: string
+    timestamp: number
+    usdBalance?: string
+    usdAmount: string
   }[]
 }

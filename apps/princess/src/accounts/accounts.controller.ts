@@ -17,10 +17,16 @@ import {
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
 
-@Controller('accounts')
-@ApiTags('accounts')
+@Controller('account')
+@ApiTags('account')
 export class AccountsController {
   constructor(private readonly accountService: AccountsService) {}
+
+  @Get('')
+  @ApiOkResponse({ type: PortfolioSwaggerResponse })
+  async sync(@Query('hash') hash?: string) {
+    return await this.accountService.syncAccount(hash)
+  }
 
   @Post(':accountId/wallet')
   @ApiOkResponse({ type: WalletSwaggerResponse })

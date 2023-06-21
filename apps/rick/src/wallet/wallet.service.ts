@@ -413,6 +413,8 @@ export class WalletService {
         },
       )
       .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
+      .orderBy('wallet.id', 'ASC')
+      .orderBy('addresses.address', 'ASC')
       .orderBy('addresses.history.timestamp', 'DESC')
 
     if (walletId) {
