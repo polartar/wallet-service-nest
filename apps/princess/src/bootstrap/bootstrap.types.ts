@@ -13,3 +13,17 @@ export interface IAccessTokenPayload {
   type: string
   otp: string
 }
+
+export interface IGetInfoResponse {
+  minAppVersion: string
+  latestAppVersion: string
+  serverVersion: string
+  self?: {
+    rick: string
+    morty: string
+  }
+  '3rdParty'?: {
+    'blockcypher.com': string
+    'etherscan.io': string
+  }
+}

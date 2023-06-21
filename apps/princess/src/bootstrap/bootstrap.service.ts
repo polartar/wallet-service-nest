@@ -3,7 +3,11 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
-import { IAccessTokenPayload, IDeviceCreateResponse } from './bootstrap.types'
+import {
+  IAccessTokenPayload,
+  IDeviceCreateResponse,
+  IGetInfoResponse,
+} from './bootstrap.types'
 import { JwtService } from '@nestjs/jwt'
 import * as Sentry from '@sentry/node'
 
@@ -76,8 +80,23 @@ export class BootstrapService {
       throw new BadRequestException(err.message)
     }
   }
-  getInfo(isIncludeHealthCheck = false) {
-    return {}
+  getInfo(isIncludeHealthCheck = false): IGetInfoResponse {
+    const info: IGetInfoResponse = {
+      minAppVersion: '1.0.15',
+      latestAppVersion: '1.0.16',
+      serverVersion: '2.0.1',
+    }
+    if (isIncludeHealthCheck) {
+      info.self = {
+        rick: 'up',
+        morty: 'down',
+      }
+      info['3rdParty'] = {
+        'blockcypher.com': 'up',
+        'etherscan.io': 'down',
+      }
+    }
+    return info
   }
 
   async generateAccessToken(payload: IAccessTokenPayload) {

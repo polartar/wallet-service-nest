@@ -3,6 +3,7 @@ import { Controller, Get, Post, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Public } from '../gateway/decorators/public.decorator'
 import { CreateDeviceSwaggerResponse } from './dto/create-device.dto'
+import { GetInfoSwaggerResponse } from './dto/get-info-swagger.dto'
 
 @Controller('bootstrap')
 @ApiTags('bootstrap')
@@ -18,9 +19,8 @@ export class BootstrapController {
 
   @Public()
   @Get('info')
-  async getInfo(
-    @Query('include-health-checks') isIncludeHealthCheck?: boolean,
-  ) {
+  @ApiOkResponse({ type: GetInfoSwaggerResponse })
+  getInfo(@Query('include-health-checks') isIncludeHealthCheck?: boolean) {
     return this.bootstrapService.getInfo(isIncludeHealthCheck)
   }
 }
