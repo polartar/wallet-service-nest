@@ -110,3 +110,20 @@ export class WalletSwaggerResponse {
   })
   createdAt: number
 }
+
+export class WalletsSwaggerResponse {
+  example: [
+    {
+      id: '{{wallet-with-1-asset}}'
+      title: 'Bla Blo'
+      mnemonic: 'You either achieve death, or die trying'
+      assets: ['{{asset-1-btc}}']
+    },
+    {
+      id: '{{wallet-with-2-asset}}'
+      title: 'x2'
+      mnemonic: 'Not gonna give you up'
+      assets: ['{{asset-2-btc}}', '{{asset-1-eth}}', '{{asset-2-eth}}']
+    },
+  ]
+}

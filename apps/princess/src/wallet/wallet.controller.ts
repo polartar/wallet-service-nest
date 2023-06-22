@@ -1,6 +1,10 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { WalletsService } from './wallet.service'
-import { CreateWalletDto, WalletSwaggerResponse } from './dto/create-wallet.dto'
+import {
+  CreateWalletDto,
+  WalletSwaggerResponse,
+  WalletsSwaggerResponse,
+} from './dto/create-wallet.dto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetWalletDto } from './dto/get-wallet.dto'
@@ -30,6 +34,16 @@ export class WalletsController {
     @Query() query: GetWalletDto,
   ) {
     return await this.walletService.getWallet(walletId, query.period)
+  }
+
+  @Get('')
+  @ApiOkResponse({ type: WalletsSwaggerResponse })
+  @ApiOperation({
+    summary:
+      'Time series data, where date is timestamp (number), and the value of that date.',
+  })
+  async getWallets() {
+    return await this.walletService.getWallets()
   }
 
   // @Post(':walletId/wallet')

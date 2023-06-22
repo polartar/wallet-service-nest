@@ -1,30 +1,18 @@
 import { HttpService } from '@nestjs/axios'
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
   Request,
   Inject,
   ForbiddenException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth } from '@rana/core'
-import { firstValueFrom } from 'rxjs'
-import {
-  IAccessTokenPayload,
-  IAccount,
-  IAuthSigningResponse,
-} from './auth.types'
-import * as hash from 'object-hash'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
-import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
-import { IRequest } from '../accounts/accounts.types'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
+import { IAccessTokenPayload } from '../bootstrap/bootstrap.types'
 
 @Injectable()
 export class AuthService {
@@ -50,153 +38,6 @@ export class AuthService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.version = this.configService.get<string>(EEnvironment.version)
   }
-
-  // async getUserFromIdToken(
-  //   token: string,
-  //   type: EAuth | 'Anonymous',
-  //   accountId?: number,
-  // ) {
-  //   try {
-  //     const userResponse = await firstValueFrom(
-  //       this.httpService.post(`${this.gandalfApiUrl}/auth`, {
-  //         idToken: token,
-  //         type,
-  //         accountId,
-  //       }),
-  //     )
-  //     return userResponse.data
-  //   } catch (err) {
-  //     Sentry.captureMessage(`SignIn(Gandalf): ${err.message} with ${accountId}`)
-  //     if (err.response) {
-  //       throw new UnauthorizedException(err.response.data.message)
-  //     } else {
-  //       throw new BadGatewayException('Gandalf API call error')
-  //     }
-  //   }
-  // }
-
-  // async checkPair(
-  //   accountId: number,
-  //   isNewUser: boolean,
-  //   account: IAccount,
-  //   type: EAuth | 'Anonymous',
-  //   token: string,
-  //   deviceId: string,
-  //   otp: string,
-  //   serverProposedShard?: string,
-  //   ownProposedShard?: string,
-  //   passCodeKey?: string,
-  //   recoveryKey?: string,
-  // ) {
-  //   try {
-  //     await firstValueFrom(
-  //       this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-  //         userId: accountId,
-  //         deviceId,
-  //         otp,
-  //         serverProposedShard,
-  //         ownProposedShard,
-  //         passCodeKey,
-  //         recoveryKey,
-  //       }),
-  //     )
-
-  //     const payload = {
-  //       type: type,
-  //       accountId: accountId,
-  //       idToken: token,
-  //       deviceId,
-  //       otp,
-  //     }
-
-  //     const accessToken = await this.bootstrapService.generateAccessToken(
-  //       payload,
-  //     )
-  //     const refreshToken = await this.bootstrapService.generateRefreshToken(
-  //       payload,
-  //     )
-
-  //     return {
-  //       type: isNewUser ? 'new email' : 'existing email',
-  //       account_id: accountId,
-  //       account: isNewUser ? account : {},
-  //       access_token: accessToken,
-  //       refresh_token: refreshToken,
-  //       server_shard: serverProposedShard,
-  //       passcode_key: passCodeKey,
-  //       recovery_key: recoveryKey,
-  //     }
-  //   } catch (err) {
-  //     Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
-  //     if (err.response) {
-  //       throw new BadRequestException(err.response.data.message)
-  //     } else {
-  //       throw new BadGatewayException('Fluffy API call error')
-  //     }
-  //   }
-  // }
-
-  // async syncRick(isNewUser: boolean, account: IAccount, accountId: number) {
-  //   try {
-  //     // if new user email, then register, then update the anonymous user with real info.
-  //     if (isNewUser) {
-  //       await firstValueFrom(
-  //         this.httpService.put(`${this.rickApiUrl}/account/${account.id}`, {
-  //           email: account.email,
-  //           name: account.name,
-  //           accountId: account.id,
-  //         }),
-  //       )
-  //     } else {
-  //       // combine wallets
-  //       if (+account.id !== +accountId) {
-  //         await firstValueFrom(
-  //           this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
-  //             existingAccountId: account.id,
-  //             anonymousId: accountId,
-  //           }),
-  //         )
-  //       }
-  //     }
-  //   } catch (err) {
-  //     Sentry.captureMessage(`SignIn(Rick): ${err.message} with ${accountId}`)
-  //     if (err.response) {
-  //       throw new InternalServerErrorException(err.response.data.message)
-  //     } else {
-  //       throw new BadGatewayException('Rick API call error')
-  //     }
-  //   }
-  // }
-
-  // async signIn(
-  //   type: EAuth,
-  //   token: string,
-  //   deviceId: string,
-  //   otp: string,
-  //   serverProposedShard?: string,
-  //   ownProposedShard?: string,
-  //   passCodeKey?: string,
-  //   recoveryKey?: string,
-  // ): Promise<IAuthSigningResponse> {
-  //   const accountId = this.getAccountIdFromRequest()
-
-  //   const user = await this.getUserFromIdToken(token, type, accountId)
-  //   await this.syncRick(user.is_new, user.account, accountId)
-
-  //   return await this.checkPair(
-  //     user.account.id,
-  //     user.is_new,
-  //     user.account,
-  //     type,
-  //     token,
-  //     deviceId,
-  //     otp,
-  //     serverProposedShard,
-  //     ownProposedShard,
-  //     passCodeKey,
-  //     recoveryKey,
-  //   )
-  // }
 
   // async getAccountHash(accountId: number): Promise<number> {
   //   const account = await this.accountService.getAccount(accountId)

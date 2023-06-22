@@ -1,15 +1,11 @@
 import { AuthService } from './auth.service'
-import { Body, Controller, Post, UsePipes } from '@nestjs/common'
-import { RefreshTokenValidationPipe, SignInValidationPipe } from './auth.pipe'
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { SyncUserDto, SyncUserSwaggerResponse } from './dto/sync-user.dto'
+import { Body, Controller, Post } from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Public } from '../gateway/decorators/public.decorator'
-import { SignInDto, SignInSwaggerResponse } from './dto/signin.dto'
 import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
-import { RefreshTokenDto } from './dto/refresh-token.dto'
 
-@Controller('auth')
-@ApiTags('auth')
+@Controller('token')
+@ApiTags('token')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -47,7 +43,7 @@ export class AuthController {
   //   )
   // }
 
-  @Post('update')
+  @Post('')
   @ApiOperation({
     summary: 'Generate new access token from the refresh token',
   })
