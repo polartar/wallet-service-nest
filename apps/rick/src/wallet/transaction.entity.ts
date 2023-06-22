@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { AssetEntity } from './asset.entity'
+import { ETransactionStatuses } from './wallet.types'
 
 @Entity()
 export class TransactionEntity {
@@ -36,6 +37,9 @@ export class TransactionEntity {
 
   @Column('bigint')
   timestamp: number
+
+  @Column('text')
+  network: ETransactionStatuses
 
   toJSON() {
     return {

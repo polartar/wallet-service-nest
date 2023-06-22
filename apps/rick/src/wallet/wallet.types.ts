@@ -44,3 +44,11 @@ export enum EXPubCurrency {
   ETHEREUM = 'ethereumclassic.secp256k1',
   BITCOIN = 'segwit.bitcoin.secp256k1',
 }
+
+export enum ETransactionStatuses {
+  RECEIVED = 'received',
+  SENT = 'sent',
+  RECEIVING = 'receiving',
+  FAILED = 'failed',
+  SENDING = 'sending',
+}

@@ -21,6 +21,9 @@ export class WalletEntity {
   xPub: string
 
   @Column('text')
+  mnemonic: string
+
+  @Column('text')
   title: string
 
   @Column('text')
