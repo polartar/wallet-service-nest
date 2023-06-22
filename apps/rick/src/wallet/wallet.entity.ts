@@ -18,9 +18,6 @@ export class WalletEntity {
   id: number
 
   @Column('text')
-  xPub: string
-
-  @Column('text')
   mnemonic: string
 
   @Column('text')
@@ -36,9 +33,6 @@ export class WalletEntity {
   @OneToMany(() => AssetEntity, (address) => address.wallet)
   @JoinColumn()
   assets: AssetEntity[]
-
-  @Column('boolean', { default: true })
-  isActive = true
 
   @Column()
   createdAt: number

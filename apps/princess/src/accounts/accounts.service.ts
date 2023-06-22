@@ -9,17 +9,13 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, ENetworks, EPeriod, EWalletType } from '@rana/core'
+import { EAuth, EPeriod } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, IAddress, IMarketData, IWallet } from './accounts.types'
+import { EAPIMethod, IAddress, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
-import { MarketService } from '../market/market.service'
-import { formatUnits } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
-import { TransactionService } from '../transaction/transaction.service'
 import { AuthService } from '../auth/auth.service'
 
 @Injectable()
@@ -32,8 +28,6 @@ export class AccountsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly marketService: MarketService,
-    private readonly transactionService: TransactionService,
     private readonly authService: AuthService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
@@ -79,115 +73,6 @@ export class AccountsService {
       }
       throw new BadGatewayException(`Rick server connection error: ${message}`)
     }
-  }
-
-  async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
-    this.validateAccountId(accountId)
-
-    const wallet = await this.rickAPICall(EAPIMethod.POST, `wallet`, {
-      account_id: accountId,
-      wallet_type: walletType,
-      xPub: xPub,
-    })
-
-    return this.addUSDPrice([wallet], EPeriod.All)
-  }
-
-  async updateWallet(
-    accountId: number,
-    walletId: string,
-    data: UpdateWalletDto,
-  ) {
-    this.validateAccountId(accountId)
-
-    return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
-      account_id: accountId,
-      accountId: walletId,
-      is_active: data.is_active,
-    })
-  }
-
-  getPrice(source: IMarketData[], timestamp: number) {
-    const index = source.findIndex(
-      (market) =>
-        new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
-        +timestamp >= new Date(market.periodStart).getTime() / 1000,
-    )
-
-    return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
-  }
-
-  async addUSDPrice(wallets: IWallet[], period: EPeriod) {
-    const ethMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.ETHEREUM,
-      period,
-    )
-
-    const btcMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.BITCOIN,
-      period,
-    )
-    const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
-    const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
-
-    if (!ethMarketHistories.success || !btcMarketHistories.success) {
-      Sentry.captureException('Something went wrong in Morty service')
-      return wallets
-    }
-
-    if (!ethFee.success || !btcFee.success) {
-      Sentry.captureException('Something went wrong in Transaction service')
-      return wallets
-    }
-
-    return wallets.map((wallet) => {
-      wallet.addresses = wallet.addresses.map((address) => {
-        const isEthereum = address.coinType === ENetworks.ETHEREUM
-        const source = isEthereum
-          ? ethMarketHistories.data
-          : btcMarketHistories.data
-        const decimal = isEthereum ? 18 : 8
-        const history = address.history.map((item) => {
-          const price = this.getPrice(source, item.timestamp)
-          const value = formatUnits(item.balance, decimal)
-          const amount = formatUnits(item.amount, decimal)
-          return {
-            ...item,
-            usdBalance: (+value * price).toString(),
-            usdAmount: (+amount * price).toString(),
-          }
-        })
-
-        return {
-          ...address,
-          fee: isEthereum ? ethFee.data.convert : btcFee.data.convert,
-          history,
-        }
-      })
-      return wallet
-    })
-  }
-
-  async getPortfolio(accountId: number, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
-    const wallets: IWallet[] = await this.rickAPICall(
-      EAPIMethod.GET,
-      `wallet/${accountId}?period=${period}`,
-    )
-
-    return this.addUSDPrice(wallets, period)
-  }
-
-  async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
-    const wallets: IWallet[] = await this.rickAPICall(
-      EAPIMethod.GET,
-      `wallet/${accountId}/wallet/${walletId}?period=${period}`,
-    )
-
-    return this.addUSDPrice(wallets, period)
   }
 
   async fluffyAPICall(path, body) {

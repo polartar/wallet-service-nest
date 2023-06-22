@@ -1,12 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
-import { CreateWalletDto, WalletSwaggerResponse } from './dto/CreateWalletDto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import {
-  GetPortfolioDto,
-  PortfolioSwaggerResponse,
-} from './dto/GetPortfolioDto'
 import {
   UpdatePassCodeDto,
   UpdatePassCodeSwaggerResponse,
@@ -16,7 +10,11 @@ import {
   SwitchCloudSwaggerResponse,
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
-import { CreateAccountDto } from './dto/create-account.dto'
+import {
+  AccountSwaggerResponse,
+  CreateAccountDto,
+} from './dto/create-account.dto'
+import { WalletSwaggerResponse } from '../wallet/dto/create-wallet.dto'
 
 @Controller('account')
 @ApiTags('account')
@@ -24,77 +22,18 @@ export class AccountsController {
   constructor(private readonly accountService: AccountsService) {}
 
   @Get('')
-  @ApiOkResponse({ type: PortfolioSwaggerResponse })
+  @ApiOkResponse({ type: WalletSwaggerResponse })
   async sync(@Query('hash') hash?: string) {
     return await this.accountService.syncAccount(hash)
   }
 
   @Post('')
-  @ApiOkResponse({ type: PortfolioSwaggerResponse })
+  @ApiOkResponse({ type: AccountSwaggerResponse })
   async createAccount(@Body() data: CreateAccountDto) {
     return await this.accountService.createAccount(
       data.provider,
       data.providerToken,
       data.otp,
-    )
-  }
-
-  @Post(':accountId/wallet')
-  @ApiOkResponse({ type: WalletSwaggerResponse })
-  @ApiOperation({
-    summary: 'Add the wallet to the account',
-  })
-  async createWallet(
-    @Param('accountId') accountId: number,
-    @Body() data: CreateWalletDto,
-  ) {
-    return await this.accountService.createWallet(
-      accountId,
-      data.wallet_type,
-      data.x_pub,
-    )
-  }
-
-  @Post(':accountId/wallets/:walletId')
-  @ApiOperation({
-    summary: 'Update the wallet object',
-  })
-  async updateWallet(
-    @Param('accountId') accountId: number,
-    @Param('walletId') walletId: string,
-    @Body() data: UpdateWalletDto,
-  ) {
-    return await this.accountService.updateWallet(accountId, walletId, data)
-  }
-
-  @Get(':accountId/portfolio')
-  @ApiOkResponse({ type: PortfolioSwaggerResponse })
-  @ApiOperation({
-    summary:
-      'Time series data, where date is timestamp (number), and the value of that date.',
-  })
-  async getPortfolio(
-    @Param('accountId') accountId: number,
-    @Query() query: GetPortfolioDto,
-  ) {
-    return await this.accountService.getPortfolio(accountId, query.period)
-  }
-
-  @Get(':accountId/wallets/:walletId/portfolio')
-  @ApiOkResponse({ type: PortfolioSwaggerResponse })
-  @ApiOperation({
-    summary:
-      'Time series data, where date is timestamp (number), and the value of that date.',
-  })
-  async getWalletPortfolio(
-    @Param('accountId') accountId: number,
-    @Param('walletId') walletId: number,
-    @Query() query: GetPortfolioDto,
-  ) {
-    return await this.accountService.getWalletPortfolio(
-      accountId,
-      walletId,
-      query.period,
     )
   }
 

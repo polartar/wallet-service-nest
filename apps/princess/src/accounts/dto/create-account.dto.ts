@@ -16,3 +16,15 @@ export class CreateAccountDto {
   @IsNotEmpty()
   otp: string
 }
+
+export class AccountSwaggerResponse {
+  @ApiProperty({
+    example: 'test@gmail.com',
+  })
+  email: string
+
+  @ApiProperty({
+    example: 'Michael',
+  })
+  name: string
+}

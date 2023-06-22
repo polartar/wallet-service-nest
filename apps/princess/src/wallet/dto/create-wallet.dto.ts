@@ -4,8 +4,12 @@ import { IsNotEmpty } from 'class-validator'
 export class CreateWalletDto {
   @ApiProperty({
     description: 'wallet type',
-    enum: [EWalletType.HOTWALLET, EWalletType.METAMASK, EWalletType.VAULT],
-    example: EWalletType.METAMASK,
+    enum: [
+      EWalletType.HOTWALLET,
+      EWalletType.LOCAL_HOTWALLET,
+      EWalletType.VAULT,
+    ],
+    example: EWalletType.LOCAL_HOTWALLET,
   })
   wallet_type: EWalletType
 
@@ -19,21 +23,21 @@ export class CreateWalletDto {
 
 export class WalletSwaggerResponse {
   @ApiProperty({
-    example: true,
+    example: 'My Wallet',
   })
-  isActive: boolean
+  name: string
 
   @ApiProperty({
-    example: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+    example: 'My mnemonic',
   })
-  xPub: string
+  mnemonic: string
 
   @ApiProperty({
     example: [
       {
         email: '',
         name: '',
-        accountId: 3,
+        walletId: 3,
         id: 2,
       },
     ],
@@ -41,14 +45,9 @@ export class WalletSwaggerResponse {
   accounts: string
 
   @ApiProperty({
-    example: 'metamask',
+    example: 'hot_wallet',
   })
   type: string
-
-  @ApiProperty({
-    example: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-  })
-  address: string
 
   @ApiProperty({
     example: [
@@ -89,7 +88,7 @@ export class WalletSwaggerResponse {
       },
     ],
   })
-  addresses: []
+  assets: []
 
   @ApiProperty({
     example: 'm/44/60/0',

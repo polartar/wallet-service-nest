@@ -24,9 +24,9 @@ export enum ENetworks {
 }
 
 export enum EWalletType {
-  HOTWALLET = 'hotwallet',
+  HOTWALLET = 'hot_wallet',
   VAULT = 'vault',
-  METAMASK = 'metamask',
+  LOCAL_HOTWALLET = 'local_hot_wallet',
 }
 
 export enum EPortfolioType {
