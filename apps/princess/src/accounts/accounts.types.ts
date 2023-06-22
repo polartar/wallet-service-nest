@@ -33,3 +33,21 @@ export interface IAddress {
     usdAmount: string
   }[]
 }
+
+export interface IAccount {
+  id?: number
+  email?: string
+  name?: string
+}
+
+export interface ICreateAccountResponse {
+  id: number
+  email: string
+  wallets: {
+    id: number
+    title: string
+    xPub: string
+    mnemonic: string
+    assets: []
+  }[]
+}

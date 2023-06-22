@@ -13,39 +13,39 @@ import { RefreshTokenDto } from './dto/refresh-token.dto'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  @ApiOkResponse({ type: SignInSwaggerResponse })
-  @UsePipes(new SignInValidationPipe())
-  async login(@Body() data: SignInDto) {
-    this.authService.validateDeviceId(data.device_id)
+  // @Post('login')
+  // @ApiOkResponse({ type: SignInSwaggerResponse })
+  // @UsePipes(new SignInValidationPipe())
+  // async login(@Body() data: SignInDto) {
+  //   this.authService.validateDeviceId(data.device_id)
 
-    return this.authService.signIn(
-      data.type,
-      data.id_token,
-      data.device_id,
-      data.otp,
-      data.server_proposed_shard,
-      data.own_proposed_shard,
-      data.passcode_key,
-      data.recovery_key,
-    )
-  }
+  //   return this.authService.signIn(
+  //     data.type,
+  //     data.id_token,
+  //     data.device_id,
+  //     data.otp,
+  //     data.server_proposed_shard,
+  //     data.own_proposed_shard,
+  //     data.passcode_key,
+  //     data.recovery_key,
+  //   )
+  // }
 
-  @Post('sync')
-  @ApiOkResponse({ type: SyncUserSwaggerResponse })
-  @ApiOperation({
-    summary: 'Sync user',
-  })
-  async syncUser(@Body() data: SyncUserDto) {
-    this.authService.validateAccountId(data.account_id)
+  // @Post('sync')
+  // @ApiOkResponse({ type: SyncUserSwaggerResponse })
+  // @ApiOperation({
+  //   summary: 'Sync user',
+  // })
+  // async syncUser(@Body() data: SyncUserDto) {
+  //   this.authService.validateAccountId(data.account_id)
 
-    return this.authService.syncUser(
-      data.account_id,
-      data.device_id,
-      data.account_hash,
-      data.otp,
-    )
-  }
+  //   return this.authService.syncUser(
+  //     data.account_id,
+  //     data.device_id,
+  //     data.account_hash,
+  //     data.otp,
+  //   )
+  // }
 
   @Post('update')
   @ApiOperation({
@@ -61,16 +61,16 @@ export class AuthController {
     )
   }
 
-  @Post('refresh')
-  @Public()
-  @UsePipes(new RefreshTokenValidationPipe())
-  async refresh(@Body() data: RefreshTokenDto) {
-    return this.authService.refresh(
-      data.type,
-      data.id_token,
-      data.account_id,
-      data.device_id,
-      data.otp,
-    )
-  }
+  // @Post('refresh')
+  // @Public()
+  // @UsePipes(new RefreshTokenValidationPipe())
+  // async refresh(@Body() data: RefreshTokenDto) {
+  //   return this.authService.refresh(
+  //     data.type,
+  //     data.id_token,
+  //     data.account_id,
+  //     data.device_id,
+  //     data.otp,
+  //   )
+  // }
 }

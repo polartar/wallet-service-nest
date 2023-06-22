@@ -37,51 +37,51 @@ export class AccountsController {
     )
   }
 
-  @Put(':accountId')
-  @ApiOkResponse({ type: UpdatePassCodeSwaggerResponse })
-  @ApiOperation({
-    summary: 'Update the passCodeKey',
-  })
-  async updatePassCode(
-    @Param('accountId') accountId: number,
-    @Body() data: UpdatePassCodeDto,
-  ) {
-    return await this.accountService.updatePassCode(
-      accountId,
-      data.device_id,
-      data.passcode_key,
-    )
-  }
+  // @Put(':accountId')
+  // @ApiOkResponse({ type: UpdatePassCodeSwaggerResponse })
+  // @ApiOperation({
+  //   summary: 'Update the passCodeKey',
+  // })
+  // async updatePassCode(
+  //   @Param('accountId') accountId: number,
+  //   @Body() data: UpdatePassCodeDto,
+  // ) {
+  //   return await this.accountService.updatePassCode(
+  //     accountId,
+  //     data.device_id,
+  //     data.passcode_key,
+  //   )
+  // }
 
-  @Put(':accountId/switchToiCloudShard')
-  @ApiOkResponse({ type: SwitchCloudSwaggerResponse })
-  @ApiOperation({
-    summary: 'Switch to Cloud',
-  })
-  async switchToCloud(
-    @Param('accountId') accountId: number,
-    @Body() data: SwitchToCloudShardDto,
-  ) {
-    return await this.accountService.updateIsCloud(
-      accountId,
-      data.device_id,
-      true,
-    )
-  }
+  // @Put(':accountId/switchToiCloudShard')
+  // @ApiOkResponse({ type: SwitchCloudSwaggerResponse })
+  // @ApiOperation({
+  //   summary: 'Switch to Cloud',
+  // })
+  // async switchToCloud(
+  //   @Param('accountId') accountId: number,
+  //   @Body() data: SwitchToCloudShardDto,
+  // ) {
+  //   return await this.accountService.updateIsCloud(
+  //     accountId,
+  //     data.device_id,
+  //     true,
+  //   )
+  // }
 
-  @Put(':accountId/switchToAccountShard')
-  @ApiOkResponse({ type: SwitchAccountSwaggerResponse })
-  @ApiOperation({
-    summary: 'Switch to Account',
-  })
-  async switchToAccount(
-    @Param('accountId') accountId: number,
-    @Body() data: SwitchToCloudShardDto,
-  ) {
-    return await this.accountService.updateIsCloud(
-      accountId,
-      data.device_id,
-      false,
-    )
-  }
+  // @Put(':accountId/switchToAccountShard')
+  // @ApiOkResponse({ type: SwitchAccountSwaggerResponse })
+  // @ApiOperation({
+  //   summary: 'Switch to Account',
+  // })
+  // async switchToAccount(
+  //   @Param('accountId') accountId: number,
+  //   @Body() data: SwitchToCloudShardDto,
+  // ) {
+  //   return await this.accountService.updateIsCloud(
+  //     accountId,
+  //     data.device_id,
+  //     false,
+  //   )
+  // }
 }
