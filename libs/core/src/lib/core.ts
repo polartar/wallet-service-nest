@@ -26,7 +26,7 @@ export enum ENetworks {
 export enum EWalletType {
   HOTWALLET = 'hot_wallet',
   VAULT = 'vault',
-  LOCAL_HOTWALLET = 'local_hot_wallet',
+  LOCALWALLET = 'local_wallet',
 }
 
 export enum EPortfolioType {

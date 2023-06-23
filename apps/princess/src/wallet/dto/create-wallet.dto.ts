@@ -1,24 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EWalletType } from '@rana/core'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 export class CreateWalletDto {
   @ApiProperty({
     description: 'wallet type',
-    enum: [
-      EWalletType.HOTWALLET,
-      EWalletType.LOCAL_HOTWALLET,
-      EWalletType.VAULT,
-    ],
-    example: EWalletType.LOCAL_HOTWALLET,
+    enum: [EWalletType.HOTWALLET, EWalletType.LOCALWALLET, EWalletType.VAULT],
+    example: EWalletType.LOCALWALLET,
   })
   wallet_type: EWalletType
 
   @ApiProperty({
-    description: 'xPub, Bitcoin or Ethereum wallet address',
-    example: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
+    description: 'The title of the wallet',
+    example: 'My wallet',
   })
   @IsNotEmpty()
-  x_pub: string
+  title: string
+
+  @ApiProperty({
+    description: 'The encrypted mnemonic of the wallet',
+  })
+  @IsOptional()
+  mnemonic?: string
+
+  @ApiProperty({
+    description: 'array of parts that are encoded',
+    default: ['UR:BYTES/GHCPGTKKCXJTHSJNIHCXINJKCXGAJKJNHSIHIHJZCPNYHLZTFR'],
+  })
+  @IsNotEmpty()
+  parts: string[]
+
+  @ApiProperty({
+    description: 'The ids of the assets',
+    example: [1, 2, 3],
+  })
+  assets: number[]
 }
 
 export class WalletSwaggerResponse {

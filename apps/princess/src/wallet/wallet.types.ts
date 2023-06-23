@@ -12,19 +12,33 @@ export interface IMarketData {
   vwap: number
 }
 
-export interface IWallet {
-  id: number
-  addresses: IAddress[]
+export interface ITransaction {
+  from: string
+
+  to: string
+
+  balance: string
+
+  amount: number
+
+  tokenId: number
+
+  timestamp: number
 }
 
-export interface IAddress {
-  coinType: ENetworks
-  address: string
-  history: {
-    balance: string
-    amount: string
-    timestamp: number
-    usdBalance?: string
-    usdAmount: string
-  }[]
-}
+// export interface IWallet {
+//   id: number
+//   assets: IAsset[]
+// }
+
+// export interface IAsset {
+//   network: ENetworks
+//   address: string
+//   transactions: {
+//     balance: string
+//     amount: string
+//     timestamp: number
+//     usdBalance?: string
+//     usdAmount: string
+//   }[]
+// }

@@ -66,7 +66,7 @@ export interface IWalletHistoryResponse {
 export interface IUpdatedAddress {
   addressId: number
   walletId: number
-  accountIds: number[]
+  accountId: number
   newHistory?: {
     from: string
     to: string

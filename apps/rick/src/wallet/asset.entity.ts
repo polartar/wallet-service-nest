@@ -4,6 +4,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -28,8 +29,8 @@ export class AssetEntity {
   @Column()
   path: string
 
-  @ManyToOne(() => WalletEntity, (wallet) => wallet.assets)
-  wallet: WalletEntity
+  @ManyToMany(() => WalletEntity, (wallet) => wallet.assets)
+  wallets: WalletEntity[]
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.asset)
   @JoinColumn()

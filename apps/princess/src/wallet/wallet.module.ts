@@ -4,13 +4,12 @@ import { HttpModule } from '@nestjs/axios'
 import { WalletsService } from './wallet.service'
 import { MarketService } from '../market/market.service'
 import { TransactionService } from '../transaction/transaction.service'
-import { AuthService } from '../auth/auth.service'
 
 @Module({
   imports: [
     HttpModule, //
   ],
   controllers: [WalletsController],
-  providers: [WalletsService, MarketService, TransactionService, AuthService],
+  providers: [WalletsService, MarketService, TransactionService],
 })
 export class WalletsModule {}

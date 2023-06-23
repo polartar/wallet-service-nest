@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseEnumPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { WalletsService } from './wallet.service'
 import {
   CreateWalletDto,
@@ -7,7 +16,7 @@ import {
 } from './dto/create-wallet.dto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { GetWalletDto } from './dto/get-wallet.dto'
+import { GetWalletPortfolioDto } from './dto/get-wallet-portfolio.dto'
 import {
   UpdatePassCodeDto,
   UpdatePassCodeSwaggerResponse,
@@ -17,11 +26,26 @@ import {
   SwitchCloudSwaggerResponse,
   SwitchToCloudShardDto,
 } from './dto/SwitchToCloudShardDto'
+import { EPeriod, EWalletType } from '@rana/core'
+import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
 
 @Controller('wallet')
 @ApiTags('wallet')
 export class WalletsController {
   constructor(private readonly walletService: WalletsService) {}
+
+  @Post('')
+  @ApiOkResponse({ type: WalletSwaggerResponse })
+  @ApiOperation({
+    summary: 'Add the wallet to the account',
+  })
+  async createWallet(@Body() data: CreateWalletDto) {
+    if (data.wallet_type !== EWalletType.VAULT) {
+      this.walletService.createWallet(data)
+    } else {
+      this.walletService.sync(data.title, data.parts)
+    }
+  }
 
   @Get(':walletId/transactions')
   @ApiOkResponse({ type: WalletSwaggerResponse })
@@ -29,11 +53,32 @@ export class WalletsController {
     summary:
       'Time series data, where date is timestamp (number), and the value of that date.',
   })
-  async getWallet(
+  async getWalletTransaction(
     @Param('walletId') walletId: number,
-    @Query() query: GetWalletDto,
+    @Query() query: GetWalletTransactionDto,
   ) {
-    return await this.walletService.getWallet(walletId, query.period)
+    return await this.walletService.getWalletTransaction(
+      walletId,
+      query.start,
+      query.count,
+    )
+  }
+
+  @Get(':walletId/portfolio')
+  @ApiOkResponse({ type: WalletSwaggerResponse })
+  @ApiOperation({
+    summary:
+      'Time series data, where date is timestamp (number), and the value of that date.',
+  })
+  async getWalletPortfolio(
+    @Param('walletId') walletId: number,
+    @Query() query?: GetWalletPortfolioDto,
+  ) {
+    if (query && query.period) {
+      return await this.walletService.getWalletPortfolio(walletId, query.period)
+    } else {
+      return await this.walletService.getWallet(walletId)
+    }
   }
 
   @Get('')
@@ -45,22 +90,6 @@ export class WalletsController {
   async getWallets() {
     return await this.walletService.getWallets()
   }
-
-  // @Post(':walletId/wallet')
-  // @ApiOkResponse({ type: WalletSwaggerResponse })
-  // @ApiOperation({
-  //   summary: 'Add the wallet to the wallet',
-  // })
-  // async createWallet(
-  //   @Param('walletId') walletId: number,
-  //   @Body() data: CreateWalletDto,
-  // ) {
-  //   return await this.walletService.createWallet(
-  //     walletId,
-  //     data.wallet_type,
-  //     data.x_pub,
-  //   )
-  // }
 
   // @Post(':walletId/wallets/:walletId')
   // @ApiOperation({

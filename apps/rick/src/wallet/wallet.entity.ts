@@ -5,6 +5,7 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -26,11 +27,11 @@ export class WalletEntity {
   @Column('text')
   type: EWalletType
 
-  @ManyToMany(() => AccountEntity, (account) => account.wallets)
+  @ManyToOne(() => AccountEntity, (account) => account.wallets)
   @JoinTable()
-  accounts: AccountEntity[]
+  account: AccountEntity
 
-  @OneToMany(() => AssetEntity, (address) => address.wallet)
+  @ManyToMany(() => AssetEntity, (address) => address.wallets)
   @JoinColumn()
   assets: AssetEntity[]
 

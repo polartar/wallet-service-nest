@@ -179,13 +179,12 @@ export class PortfolioService {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {
-      address.accountIds.forEach((accountId) => {
-        if (history[accountId]) {
-          history[accountId].push(address)
-        } else {
-          history[accountId] = [address]
-        }
-      })
+      const accountId = address.accountId
+      if (history[accountId]) {
+        history[accountId].push(address)
+      } else {
+        history[accountId] = [address]
+      }
     })
 
     if (type === EPortfolioType.TRANSACTION) {

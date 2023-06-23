@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EPeriod } from '@rana/core'
 
-export class GetWalletDto {
+export class GetWalletPortfolioDto {
   @ApiProperty({
     name: 'period',
     enum: [

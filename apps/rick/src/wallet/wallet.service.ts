@@ -1,5 +1,9 @@
 import { In, Repository } from 'typeorm'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -22,7 +26,7 @@ import { ENetworks, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
 import * as Sentry from '@sentry/node'
 import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
-import { IXPub } from './dto/add-xpubs'
+import { ExPubTypes, IXPub } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
 import { AccountEntity } from '../account/account.entity'
 import ERC721ABI from './abis/erc721'
@@ -46,7 +50,7 @@ export class WalletService {
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
-    private readonly historyRepository: Repository<TransactionEntity>,
+    private readonly transactionRepository: Repository<TransactionEntity>,
     private readonly accountService: AccountService,
   ) {
     this.isProduction = this.configService.get<boolean>(
@@ -94,8 +98,8 @@ export class WalletService {
         },
       },
       relations: {
-        wallet: {
-          accounts: true,
+        wallets: {
+          account: true,
         },
         transactions: true,
       },
@@ -191,31 +195,153 @@ export class WalletService {
     return histories
   }
 
-  async lookUpByXPub(xPub: string): Promise<WalletEntity> {
-    const response = await this.walletRepository.findOne({
-      where: { xPub },
-      relations: { accounts: true, assets: { transactions: true } },
+  async getUserWalletTransaction(
+    accountId: number,
+    walletId: number,
+    start: number,
+    count: number,
+  ) {
+    const transactions = await this.transactionRepository.find({
+      where: {
+        asset: {
+          wallets: {
+            id: walletId,
+            account: {
+              accountId: accountId,
+            },
+          },
+        },
+      },
+      relations: {
+        asset: {
+          wallets: {
+            account: true,
+          },
+        },
+      },
+      order: {
+        timestamp: 'DESC',
+      },
+      take: count,
+      skip: start,
     })
 
-    return response
+    return transactions
   }
 
-  async lookUpByXPubs(xPubs: string[]): Promise<WalletEntity[]> {
-    return await this.walletRepository.find({
-      where: { xPub: In(xPubs) },
-      relations: {
-        assets: {
-          transactions: true,
+  async getWallet(accountId: number, walletId: number) {
+    return this.walletRepository.find({
+      where: {
+        id: walletId,
+        account: {
+          accountId: accountId,
         },
+      },
+      relations: {
+        assets: true,
       },
     })
   }
 
+  async getWallets(accountId: number) {
+    return this.walletRepository.find({
+      where: {
+        account: {
+          accountId: accountId,
+        },
+      },
+      relations: {
+        assets: true,
+      },
+    })
+  }
+
+  // async lookUpByXPub(xPub: string): Promise<WalletEntity> {
+  //   const response = await this.walletRepository.findOne({
+  //     where: { xPub },
+  //     relations: { accounts: true, assets: { transactions: true } },
+  //   })
+
+  //   return response
+  // }
+
+  // async lookUpByXPubs(xPubs: string[]): Promise<WalletEntity[]> {
+  //   return await this.walletRepository.find({
+  //     where: { xPub: In(xPubs) },
+  //     relations: {
+  //       assets: {
+  //         transactions: true,
+  //       },
+  //     },
+  //   })
+  // }
+
+  // async addNewWallet(
+  //   accountId: number,
+  //   xPub: string,
+  //   walletType: EWalletType,
+  //   title: string,
+  // ): Promise<WalletEntity> {
+  //   const account = await this.accountService.lookup({
+  //     accountId,
+  //   })
+  //   if (!account) {
+  //     throw new BadRequestException(`${accountId} not exists`)
+  //   }
+
+  //   const wallet = await this.lookUpByXPub(xPub)
+
+  //   if (wallet) {
+  //     if (wallet.type === walletType) {
+  //       if (
+  //         !wallet.accounts.map((account) => account.id).includes(account.id)
+  //       ) {
+  //         wallet.accounts.push(account)
+  //       }
+  //       return this.walletRepository.save(wallet)
+  //     } else {
+  //       throw new Error('The parameters are not matched with existing one')
+  //     }
+  //   } else {
+  //     const prototype = new WalletEntity()
+  //     prototype.xPub = xPub
+  //     prototype.accounts = [account]
+  //     prototype.type = walletType
+  //     prototype.assets = []
+  //     prototype.title = title
+
+  //     let network
+  //     if (walletType === EWalletType.METAMASK) {
+  //       network = ENetworks.ETHEREUM
+  //     } else if (walletType === EWalletType.HOTWALLET) {
+  //       network = ENetworks.BITCOIN
+  //     }
+  //     const wallet = await this.walletRepository.save(prototype)
+
+  //     if (walletType !== EWalletType.VAULT) {
+  //       await this.createAsset({
+  //         wallet,
+  //         address: xPub,
+  //         network: network,
+  //         path:
+  //           walletType === EWalletType.HOTWALLET
+  //             ? IAddressPath.BTC
+  //             : IAddressPath.ETH,
+  //       })
+  //     } else {
+  //       await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
+  //       await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
+  //     }
+  //     this.fetchEthereumTransactions()
+  //     return await this.lookUpByXPub(xPub)
+  //   }
+  // }
   async addNewWallet(
     accountId: number,
-    xPub: string,
-    walletType: EWalletType,
     title: string,
+    mnemonic: string,
+    assetIds: number[],
+    walletType: EWalletType,
   ): Promise<WalletEntity> {
     const account = await this.accountService.lookup({
       accountId,
@@ -224,52 +350,68 @@ export class WalletService {
       throw new BadRequestException(`${accountId} not exists`)
     }
 
-    const wallet = await this.lookUpByXPub(xPub)
+    // const wallet = await this.lookUpByXPub(xPub)
 
-    if (wallet) {
-      if (wallet.type === walletType) {
-        if (
-          !wallet.accounts.map((account) => account.id).includes(account.id)
-        ) {
-          wallet.accounts.push(account)
-        }
-        return this.walletRepository.save(wallet)
-      } else {
-        throw new Error('The parameters are not matched with existing one')
-      }
-    } else {
-      const prototype = new WalletEntity()
-      prototype.xPub = xPub
-      prototype.accounts = [account]
-      prototype.type = walletType
-      prototype.assets = []
-      prototype.title = title
-
-      let network
-      if (walletType === EWalletType.METAMASK) {
-        network = ENetworks.ETHEREUM
-      } else if (walletType === EWalletType.HOTWALLET) {
-        network = ENetworks.BITCOIN
-      }
-      const wallet = await this.walletRepository.save(prototype)
-
-      if (walletType !== EWalletType.VAULT) {
-        await this.createAddress({
-          wallet,
-          address: xPub,
-          network: network,
-          path:
-            walletType === EWalletType.HOTWALLET
-              ? IAddressPath.BTC
-              : IAddressPath.ETH,
-        })
-      } else {
-        await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
-        await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
-      }
-      this.fetchEthereumTransactions()
-      return await this.lookUpByXPub(xPub)
+    // if (wallet) {
+    //   if (wallet.type === walletType) {
+    //     if (
+    //       !wallet.accounts.map((account) => account.id).includes(account.id)
+    //     ) {
+    //       wallet.accounts.push(account)
+    //     }
+    //     return this.walletRepository.save(wallet)
+    //   } else {
+    //     throw new Error('The parameters are not matched with existing one')
+    //   }
+    // } else {
+    let assets
+    try {
+      assets = await this.assetRepository.find({
+        where: { id: In(assetIds) },
+      })
+    } catch (err) {
+      Sentry.captureException(`Add new wallet(): ${err.message}`)
+      throw new BadRequestException('Invalid asset ids')
     }
+
+    try {
+      const prototype = new WalletEntity()
+      prototype.account = account
+      prototype.type = walletType
+      prototype.title = title
+      prototype.mnemonic = mnemonic
+      prototype.assets = assets
+
+      // let network
+      // if (walletType === EWalletType.METAMASK) {
+      //   network = ENetworks.ETHEREUM
+      // } else if (walletType === EWalletType.HOTWALLET) {
+      //   network = ENetworks.BITCOIN
+      // }
+      return await this.walletRepository.save(prototype)
+    } catch (err) {
+      throw new InternalServerErrorException(
+        'Something went wrong while saving wallet',
+      )
+    }
+
+    // if (walletType !== EWalletType.VAULT) {
+    //   await this.createAsset({
+    //     wallet,
+    //     address: xPub,
+    //     network: network,
+    //     path:
+    //       walletType === EWalletType.HOTWALLET
+    //         ? IAddressPath.BTC
+    //         : IAddressPath.ETH,
+    //   })
+    // } else {
+    //   await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
+    //   await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
+    // }
+    // this.fetchEthereumTransactions()
+    // return await this.lookUpByXPub(xPub)
+    // // }
   }
 
   async addAddressesFromXPub(wallet, xPub, network: ENetworks) {
@@ -289,7 +431,7 @@ export class WalletService {
       return Promise.all(
         discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
           try {
-            return this.createAddress({
+            return this.createAsset({
               wallet,
               address: addressInfo.address,
               path: addressInfo.path,
@@ -297,7 +439,7 @@ export class WalletService {
             })
           } catch (err) {
             Sentry.captureException(
-              `${err.message}: ${addressInfo.address} in createAddress()`,
+              `${err.message}: ${addressInfo.address} in createAsset()`,
             )
           }
         }),
@@ -315,9 +457,9 @@ export class WalletService {
     }
   }
 
-  async createAddress(data: AddAddressDto): Promise<AssetEntity> {
+  async createAsset(data: AddAddressDto): Promise<AssetEntity> {
     const prototype = new AssetEntity()
-    prototype.wallet = data.wallet
+    prototype.wallets = data.wallet
     prototype.address = data.address
     prototype.transactions = []
     prototype.path = data.path
@@ -325,11 +467,11 @@ export class WalletService {
 
     const address = await this.assetRepository.save(prototype)
 
-    let allHistories
+    let transactions
     try {
       if (data.network === ENetworks.ETHEREUM) {
         const trxHistory = await this.provider.getHistory(address.address)
-        allHistories = await this.getEthHistory(trxHistory, address)
+        transactions = await this.getEthHistory(trxHistory, address)
       } else {
         const txResponse: { data: IBTCTransactionResponse } =
           await firstValueFrom(
@@ -339,16 +481,16 @@ export class WalletService {
               }/addrs/${address.address}`,
             ),
           )
-        allHistories = await this.getBtcHistory(
+        transactions = await this.getBtcHistory(
           txResponse.data.txrefs,
           address,
           txResponse.data.balance,
         )
       }
-      address.transactions = allHistories
+      address.transactions = transactions
     } catch (err) {
       console.error(err)
-      Sentry.captureException(`createAddress(): ${err.message}`)
+      Sentry.captureException(`createAsset(): ${err.message}`)
     }
 
     return await this.assetRepository.save(address)
@@ -364,37 +506,37 @@ export class WalletService {
     return this.assetRepository.save(address)
   }
 
-  async updateWalletActive(data: IWalletActiveData): Promise<WalletEntity> {
-    const wallet = await this.walletRepository.findOne({
-      where: {
-        accounts: { accountId: data.accountId },
-      },
-      relations: {
-        accounts: true,
-      },
-    })
-    if (wallet.isActive === data.isActive) {
-      return wallet
-    }
+  // async updateWalletActive(data: IWalletActiveData): Promise<WalletEntity> {
+  //   const wallet = await this.walletRepository.findOne({
+  //     where: {
+  //       accounts: { accountId: data.accountId },
+  //     },
+  //     relations: {
+  //       accounts: true,
+  //     },
+  //   })
+  //   if (wallet.isActive === data.isActive) {
+  //     return wallet
+  //   }
 
-    if (data.isActive) {
-      // This wallet was inactive. so we need to add all missed transactions
-      const addresses = wallet.assets
+  //   if (data.isActive) {
+  //     // This wallet was inactive. so we need to add all missed transactions
+  //     const addresses = wallet.assets
 
-      this.confirmWalletBalances(addresses)
-    }
-    wallet.isActive = data.isActive
-    return await this.walletRepository.save(wallet)
-  }
+  //     this.confirmWalletBalances(addresses)
+  //   }
+  //   wallet.isActive = data.isActive
+  //   return await this.walletRepository.save(wallet)
+  // }
 
   addHistory(data: AddHistoryDto) {
-    return this.historyRepository.save(data)
+    return this.transactionRepository.save(data)
   }
 
-  async _getWalletHistory(
+  async getUserWalletPortfolio(
     accountId: number,
+    walletId: number,
     period: EPeriod,
-    walletId?: number,
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast =
@@ -426,17 +568,18 @@ export class WalletService {
     return await queryBuilder.getMany()
   }
 
-  async getUserHistory(accountId: number, period: EPeriod) {
-    return this._getWalletHistory(accountId, period)
-  }
+  // async getUserHistory(accountId: number, period: EPeriod) {
+  //   return this._getWalletHistory(accountId, period)
+  // }
 
-  async getUserWalletHistory(
-    accountId: number,
-    walletId: number,
-    period: EPeriod,
-  ) {
-    return this._getWalletHistory(accountId, period, walletId)
-  }
+  // async getUserWalletHistory(
+  //   accountId: number,
+  //   walletId: number,
+  //   period: EPeriod,
+  // ) {
+  //   return this._getWalletHistory(accountId, period, walletId)
+  // }
+
   async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
     const trxHistory = await this.provider.getHistory(asset.address)
 
@@ -527,9 +670,7 @@ export class WalletService {
     const postUpdatedAddress = {
       addressId: updatedAsset.id,
       walletId: updatedAsset.wallet.id,
-      accountIds: updatedAsset.wallet.accounts.map(
-        (account) => account.accountId,
-      ),
+      accountId: updatedAsset.wallet.account,
       newHistory: newHistoryData,
     }
 
@@ -604,8 +745,7 @@ export class WalletService {
   }
 
   async fetchEthereumTransactions() {
-    let addresses = await this.getAllAddresses()
-    addresses = addresses.filter((address) => address.wallet.isActive)
+    const addresses = await this.getAllAddresses()
 
     const activeEthAddresses = addresses.filter(
       (address) => address.network === ENetworks.ETHEREUM,
@@ -617,34 +757,34 @@ export class WalletService {
     this.subscribeEthereumTransactions(activeEthAddresses)
   }
 
-  async addXPub(
-    account: AccountEntity,
-    xPub: string,
-    walletType: EWalletType,
-  ): Promise<WalletEntity> {
-    const wallet = await this.lookUpByXPub(xPub)
-    if (wallet) {
-      if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
-        wallet.accounts.push(account)
-      }
-      return this.walletRepository.save(wallet)
-    } else {
-      const prototype = new WalletEntity()
-      prototype.xPub = xPub
-      prototype.accounts = [account]
-      prototype.type = walletType
-      prototype.assets = []
+  // async addAssetFromXPub(
+  //   wallet: WalletEntity,
+  //   xPub: string,
+  //   xpubType: ExPubTypes,
+  // ): Promise<WalletEntity> {
+  //   const wallet = await this.lookUpByXPub(xPub)
+  //   if (wallet) {
+  //     if (!wallet.accounts.map((account) => account.id).includes(account.id)) {
+  //       wallet.accounts.push(account)
+  //     }
+  //     return this.walletRepository.save(wallet)
+  //   } else {
+  //     const prototype = new WalletEntity()
+  //     prototype.xPub = xPub
+  //     prototype.accounts = [account]
+  //     prototype.type = walletType
+  //     prototype.assets = []
 
-      const wallet = await this.walletRepository.save(prototype)
+  //     const wallet = await this.walletRepository.save(prototype)
 
-      await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
-      await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
+  //     await this.addAddressesFromXPub(wallet, xPub, ENetworks.ETHEREUM)
+  //     await this.addAddressesFromXPub(wallet, xPub, ENetworks.BITCOIN)
 
-      return wallet
-    }
-  }
+  //     return wallet
+  //   }
+  // }
 
-  async addXPubs(accountId: number, xpubs: IXPub[]) {
+  async addXPubs(title: string, accountId: number, xpubs: IXPub[]) {
     const account = await this.accountService.lookup({
       accountId: accountId,
     })
@@ -653,17 +793,28 @@ export class WalletService {
     }
 
     try {
+      const prototype = new WalletEntity()
+      prototype.account = account
+      prototype.type = EWalletType.VAULT
+      prototype.title = title
+      prototype.assets = []
+      const wallet = await this.walletRepository.save(prototype)
+
       await Promise.all(
-        xpubs.map((xpub) => {
-          return this.addXPub(account, xpub.xpub, EWalletType.VAULT)
+        xpubs.map(async (xpub) => {
+          return await this.addAddressesFromXPub(
+            wallet,
+            xpub.xpub,
+            xpub.type === ExPubTypes.BIP44
+              ? ENetworks.ETHEREUM
+              : ENetworks.BITCOIN,
+          )
         }),
       )
       this.fetchEthereumTransactions()
 
-      const newWallets = await this.lookUpByXPubs(
-        xpubs.map((xpub) => xpub.xpub),
-      )
-      return newWallets
+      const newWallet = await this.getWallet(accountId, wallet.id)
+      return newWallet
     } catch (e) {
       Sentry.captureException(e.message + ' while addNewWallet')
 
@@ -677,17 +828,14 @@ export class WalletService {
     })
     const wallets = await this.walletRepository.find({
       where: {
-        accounts: { accountId: anonymousId },
+        account: { accountId: anonymousId },
       },
       relations: {
-        accounts: true,
+        account: true,
       },
     })
     wallets.map((wallet) => {
-      wallet.accounts = wallet.accounts.filter(
-        (account) => account.id !== anonymousId,
-      )
-      wallet.accounts.push(existingAccount)
+      wallet.account = existingAccount
     })
 
     return this.updateWallets(wallets)

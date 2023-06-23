@@ -20,6 +20,7 @@ import { firstValueFrom } from 'rxjs'
 import { TransactionEntity } from './transaction.entity'
 import { EPeriod, EWalletType } from '@rana/core'
 import { AssetEntity } from './asset.entity'
+import { ExPubTypes } from './dto/add-xpubs'
 
 describe('WalletController', () => {
   let controller: WalletController
@@ -182,17 +183,18 @@ describe('WalletController', () => {
     const xpub =
       'xpub6BzwKCWVs4F9cpmYundX3PjbqcPqERCXKCAw8SRKQgXd1ybTxi338A2Ep6EbGhFp7up4L7PDWivUtnYNC79MWo6wN5SqzrhksQVJupArUxD'
     const response = await controller.AddXPubs({
+      title: 'title',
       accountId: 1,
       xpubs: [
         {
-          BIP44: 714,
+          type: ExPubTypes.BIP44,
           xpub: xpub,
         },
       ],
     })
 
     expect(response.length).toBe(1)
-    expect(response[0].xPub).toBe(xpub)
+    expect(response[0].title).toBe(title)
     expect(response[0].assets.length).toBe(1)
     expect(response[0].assets[0].address).toBe(
       '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
