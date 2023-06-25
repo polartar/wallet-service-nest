@@ -14,15 +14,10 @@ export interface IMarketData {
 
 export interface ITransaction {
   from: string
-
   to: string
-
   balance: string
-
-  amount: number
-
+  amount: string
   tokenId: number
-
   timestamp: number
 }
 

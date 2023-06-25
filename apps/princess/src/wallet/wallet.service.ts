@@ -16,7 +16,7 @@ import { AxiosResponse } from 'axios'
 import { EAPIMethod, IMarketData, ITransaction } from './wallet.types'
 import * as Sentry from '@sentry/node'
 import { MarketService } from '../market/market.service'
-import { formatUnits } from 'ethers/lib/utils'
+import { formatUnits, isAddress } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { TransactionService } from '../transaction/transaction.service'
 import { IRequest } from '../accounts/accounts.types'
@@ -235,7 +235,7 @@ export class WalletsService {
     return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
   }
 
-  async addUSDPrice(transactions: ITransaction[], network: ENetworks) {
+  async addUSDPrice(transactions: ITransaction[]) {
     const ethMarketHistories = await this.marketService.getHistoricalData(
       ENetworks.ETHEREUM,
       EPeriod.All,
@@ -245,26 +245,25 @@ export class WalletsService {
       ENetworks.BITCOIN,
       EPeriod.All,
     )
-    const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
-    const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
+    // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
+    // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
 
     if (!ethMarketHistories.success || !btcMarketHistories.success) {
       Sentry.captureException('Something went wrong in Morty service')
       throw new InternalServerErrorException("Couldn't get market price ")
     }
 
-    if (!ethFee.success || !btcFee.success) {
-      Sentry.captureException('Something went wrong in Transaction service')
-      throw new InternalServerErrorException("Couldn't get fee price ")
-    }
-
-    const isEthereum = network === ENetworks.ETHEREUM
-    const source = isEthereum
-      ? ethMarketHistories.data
-      : btcMarketHistories.data
-    const decimal = isEthereum ? 18 : 8
+    // if (!ethFee.success || !btcFee.success) {
+    //   Sentry.captureException('Something went wrong in Transaction service')
+    //   throw new InternalServerErrorException("Couldn't get fee price ")
+    // }
 
     const newTransactions = transactions.map((transaction) => {
+      const isEthereum = isAddress(transaction.from)
+      const source = isEthereum
+        ? ethMarketHistories.data
+        : btcMarketHistories.data
+      const decimal = isEthereum ? 18 : 8
       const price = this.getPrice(source, transaction.timestamp)
       const value = formatUnits(transaction.balance, decimal)
       const amount = formatUnits(transaction.amount, decimal)
@@ -276,10 +275,7 @@ export class WalletsService {
       }
     })
 
-    return {
-      fee: isEthereum ? ethFee.data.convert : btcFee.data.convert,
-      newTransactions,
-    }
+    return newTransactions
   }
 
   // async fluffyAPICall(path, body) {

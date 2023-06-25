@@ -1,4 +1,4 @@
-import { In, Repository } from 'typeorm'
+import { In, MoreThan, Repository } from 'typeorm'
 import {
   BadRequestException,
   Injectable,
@@ -18,7 +18,7 @@ import { BigNumber, ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { firstValueFrom } from 'rxjs'
+import { firstValueFrom, timestamp } from 'rxjs'
 import { TransactionEntity } from './transaction.entity'
 import { AddAddressDto } from './dto/add-address.dto'
 import { AddHistoryDto } from './dto/add-history.dto'
@@ -431,12 +431,18 @@ export class WalletService {
       return Promise.all(
         discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
           try {
-            return this.createAsset({
-              wallet,
-              address: addressInfo.address,
-              path: addressInfo.path,
-              network,
+            const asset = this.assetRepository.findOne({
+              where: { address: addressInfo.address, network: network },
             })
+            if (!asset) {
+              this.createAsset({
+                wallet,
+                address: addressInfo.address,
+                path: addressInfo.path,
+                network,
+              })
+            }
+            return asset
           } catch (err) {
             Sentry.captureException(
               `${err.message}: ${addressInfo.address} in createAsset()`,
@@ -459,7 +465,7 @@ export class WalletService {
 
   async createAsset(data: AddAddressDto): Promise<AssetEntity> {
     const prototype = new AssetEntity()
-    prototype.wallets = data.wallet
+    prototype.wallets = [data.wallet]
     prototype.address = data.address
     prototype.transactions = []
     prototype.path = data.path
@@ -544,28 +550,47 @@ export class WalletService {
         ? 0
         : this.getCurrentTimeBySeconds() - periodAsNumber || 0
 
-    const queryBuilder = this.walletRepository
-      .createQueryBuilder('wallet')
-      .leftJoinAndSelect('wallet.accounts', 'accounts')
-      .leftJoinAndSelect('wallet.addresses', 'addresses')
-      .leftJoinAndSelect(
-        'addresses.history',
-        'addresses.history',
-        'addresses.history.timestamp >= :start_at',
-        {
-          start_at: timeInPast,
+    return this.walletRepository.find({
+      where: {
+        id: walletId,
+        account: {
+          accountId: accountId,
         },
-      )
-      .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
-      .orderBy('wallet.id', 'ASC')
-      .orderBy('addresses.address', 'ASC')
-      .orderBy('addresses.history.timestamp', 'DESC')
+        assets: {
+          transactions: {
+            timestamp: MoreThan(timeInPast),
+          },
+        },
+      },
+      relations: {
+        assets: {
+          transactions: true,
+        },
+      },
+    })
 
-    if (walletId) {
-      queryBuilder.andWhere('wallet.id = :id', { id: walletId })
-    }
+    // const queryBuilder = this.walletRepository
+    //   .createQueryBuilder('wallet')
+    //   .leftJoinAndSelect('wallet.accounts', 'accounts')
+    //   .leftJoinAndSelect('wallet.addresses', 'addresses')
+    //   .leftJoinAndSelect(
+    //     'addresses.history',
+    //     'addresses.history',
+    //     'addresses.history.timestamp >= :start_at',
+    //     {
+    //       start_at: timeInPast,
+    //     },
+    //   )
+    //   .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
+    //   .orderBy('wallet.id', 'ASC')
+    //   .orderBy('addresses.address', 'ASC')
+    //   .orderBy('addresses.history.timestamp', 'DESC')
 
-    return await queryBuilder.getMany()
+    // if (walletId) {
+    //   queryBuilder.andWhere('wallet.id = :id', { id: walletId })
+    // }
+
+    // return await queryBuilder.getMany()
   }
 
   // async getUserHistory(accountId: number, period: EPeriod) {
@@ -668,9 +693,9 @@ export class WalletService {
     updatedAsset.transactions = transactions
 
     const postUpdatedAddress = {
-      addressId: updatedAsset.id,
-      walletId: updatedAsset.wallet.id,
-      accountId: updatedAsset.wallet.account,
+      assetId: updatedAsset.id,
+      walletIds: updatedAsset.wallets.map((wallet) => wallet.id),
+      accountId: updatedAsset.wallets.map((wallet) => wallet.account.id),
       newHistory: newHistoryData,
     }
 

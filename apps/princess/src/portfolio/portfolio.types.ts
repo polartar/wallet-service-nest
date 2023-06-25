@@ -47,7 +47,7 @@ export interface IBalanceHistory {
 }
 
 export interface IUpdatedHistory {
-  [accountId: string]: IUpdatedAddress[]
+  [accountId: string]: IUpdatedAssets[]
 }
 
 export interface ISockets {
@@ -63,10 +63,10 @@ export interface IWalletHistoryResponse {
   error?: string
 }
 
-export interface IUpdatedAddress {
-  addressId: number
-  walletId: number
-  accountId: number
+export interface IUpdatedAssets {
+  assetId: number
+  walletIds: number[]
+  accountIds: number[]
   newHistory?: {
     from: string
     to: string

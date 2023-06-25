@@ -10,7 +10,7 @@ import { BigNumber } from 'ethers'
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
   ISockets,
-  IUpdatedAddress,
+  IUpdatedAssets,
   IUpdatedHistory,
   IWalletHistoryResponse,
 } from './portfolio.types'
@@ -156,7 +156,7 @@ export class PortfolioService {
 
   notifyTransactionCreation(
     accountId: string,
-    updatedAddresses: IUpdatedAddress[],
+    updatedAddresses: IUpdatedAssets[],
   ) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
@@ -166,7 +166,7 @@ export class PortfolioService {
     }
   }
 
-  notifyNFTUpdate(accountId: string, updatedAddresses: IUpdatedAddress[]) {
+  notifyNFTUpdate(accountId: string, updatedAddresses: IUpdatedAssets[]) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.NFT_UPDATE_CHANNEL,
@@ -175,16 +175,17 @@ export class PortfolioService {
     }
   }
 
-  handleUpdatedAddresses(type: EPortfolioType, addresses: IUpdatedAddress[]) {
+  handleUpdatedAddresses(type: EPortfolioType, addresses: IUpdatedAssets[]) {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {
-      const accountId = address.accountId
-      if (history[accountId]) {
-        history[accountId].push(address)
-      } else {
-        history[accountId] = [address]
-      }
+      address.accountIds.forEach((accountId) => {
+        if (history[accountId]) {
+          history[accountId].push(address)
+        } else {
+          history[accountId] = [address]
+        }
+      })
     })
 
     if (type === EPortfolioType.TRANSACTION) {
