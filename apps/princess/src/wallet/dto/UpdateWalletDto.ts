@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsOptional } from 'class-validator'
 
 export class UpdateWalletDto {
-  @ApiProperty({ description: 'Active status of the wallet' })
-  @IsNotEmpty()
-  is_active: boolean
+  @ApiProperty({ description: 'The title of the wallet' })
+  @IsOptional()
+  title: string
+
+  @ApiProperty({ description: 'The mnemonic of the wallet' })
+  @IsOptional()
+  mnemonic: string
 }

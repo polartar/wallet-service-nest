@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -254,6 +255,36 @@ export class WalletService {
         assets: true,
       },
     })
+  }
+
+  async updateWallet(
+    walletId: number,
+    accountId: number,
+    title: string,
+    mnemonic: string,
+  ) {
+    const wallet = await this.walletRepository.findOne({
+      where: {
+        id: walletId,
+        account: {
+          accountId: accountId,
+        },
+      },
+    })
+
+    if (wallet) {
+      if (title) {
+        wallet.title = title
+      } else {
+        wallet.mnemonic = mnemonic
+      }
+      return this.walletRepository.save(wallet)
+    } else {
+      Sentry.captureException(
+        `updateWallet(): walletId: ${walletId}, accountId: ${accountId}`,
+      )
+      throw new NotFoundException('Not found wallet')
+    }
   }
 
   // async lookUpByXPub(xPub: string): Promise<WalletEntity> {

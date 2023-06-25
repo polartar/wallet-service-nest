@@ -4,6 +4,8 @@ import { ENetworks } from '@rana/core'
 export enum EAPIMethod {
   POST = 'post',
   GET = 'get',
+  PATCH = 'patch',
+  DELETE = 'delete',
 }
 
 export interface IMarketData {

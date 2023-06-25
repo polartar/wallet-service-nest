@@ -211,19 +211,16 @@ export class WalletsService {
   //   return this.addUSDPrice([wallet], EPeriod.Day)
   // }
 
-  // async updateWallet(
-  //   walletId: number,
-  //   walletId: string,
-  //   data: UpdateWalletDto,
-  // ) {
-  //   this.validateAccountId(walletId)
+  async updateWallet(walletId: number, title: string, mnemonic: string) {
+    const accountId = this.getAccountIdFromRequest()
 
-  //   return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
-  //     wallet_id: walletId,
-  //     walletId: walletId,
-  //     is_active: data.is_active,
-  //   })
-  // }
+    return this.apiCall(EAPIMethod.PATCH, this.rickApiUrl, `wallet`, {
+      accountId,
+      walletId,
+      title,
+      mnemonic,
+    })
+  }
 
   getPrice(source: IMarketData[], timestamp: number) {
     const index = source.findIndex(

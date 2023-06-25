@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Param,
   ParseEnumPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -89,6 +91,27 @@ export class WalletsController {
   })
   async getWallets() {
     return await this.walletService.getWallets()
+  }
+
+  @Patch(':walletId')
+  @ApiOperation({
+    summary: 'Update the wallet object',
+  })
+  async updateWallet(
+    @Param('walletId') walletId: number,
+    @Body() data: UpdateWalletDto,
+  ) {
+    if (!data.mnemonic && !data.title) {
+      throw new BadRequestException('Should input at least title or mnemonic')
+    } else if (data.mnemonic && data.title) {
+      throw new BadRequestException('Should input one of title or mnemonic')
+    }
+
+    return await this.walletService.updateWallet(
+      walletId,
+      data.title,
+      data.mnemonic,
+    )
   }
 
   // @Post(':walletId/wallets/:walletId')

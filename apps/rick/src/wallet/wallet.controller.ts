@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   ParseEnumPipe,
   BadRequestException,
+  Patch,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
@@ -21,6 +22,7 @@ import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
 import { CreateWalletDto } from './dto/create-wallet.dto'
+import { UpdateWalletDto } from './dto/update-wallet.dto'
 
 @Controller('wallet')
 export class WalletController {
@@ -113,6 +115,25 @@ export class WalletController {
       Sentry.captureException(e.message + ' while addNewWallet')
 
       throw new BadRequestException(e.message)
+    }
+  }
+
+  @Patch(':walletId')
+  async updateWallet(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Body() data: UpdateWalletDto,
+  ) {
+    try {
+      return await this.walletService.updateWallet(
+        walletId,
+        data.accountId,
+        data.title,
+        data.mnemonic,
+      )
+    } catch (e) {
+      Sentry.captureException(e.message + ' in getHistory()')
+
+      throw new InternalServerErrorException(e?.message)
     }
   }
 
