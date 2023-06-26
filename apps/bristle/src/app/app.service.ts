@@ -2,7 +2,7 @@ import { URDecoder } from '@ngraveio/bc-ur'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import * as Sentry from '@sentry/node'
 import zlib = require('zlib')
-import { XPubTypes } from './app.types'
+import { ExPubTypes } from './app.types'
 
 @Injectable()
 export class AppService {
@@ -64,7 +64,7 @@ export class AppService {
       }
 
       const xpubs = coins.map((coin) => ({
-        BIP44: XPubTypes.BIP44,
+        BIP44: ExPubTypes.BIP44,
         xpub: coin.wallets[0].xpub,
       }))
 

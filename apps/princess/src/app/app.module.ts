@@ -10,7 +10,6 @@ import { PortfolioModule } from '../portfolio/portfolio.module'
 import { AccountsModule } from '../accounts/accounts.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { GateWayModule } from '../gateway/gateway.module'
-import { VaultModule } from '../vault/vault.module'
 import { BootstrapModule } from '../bootstrap/bootstrap.module'
 import { AuthModule } from '../auth/auth.module'
 
@@ -25,7 +24,6 @@ import { AuthModule } from '../auth/auth.module'
     AuthModule,
     AccountsModule,
     TransactionModule,
-    VaultModule,
     BootstrapModule,
   ],
   controllers: [AppController],

@@ -1,6 +1,3 @@
-import { Request } from '@nestjs/common'
-import { ENetworks } from '@rana/core'
-
 export enum EAPIMethod {
   POST = 'post',
   GET = 'get',

@@ -34,45 +34,41 @@ export class NewsPaginationDto {
   })
   @IsOptional()
   symbol: ENetworks
+
+  @ApiProperty({ description: 'highlights news', required: false })
+  @IsOptional()
+  highlights: number
 }
 
 export class PaginationNewsSwaggerResponse {
-  @ApiProperty({ example: true })
-  success: boolean
+  example: {
+    news: [
+      {
+        pubDateUtc: 1684256400
+        title: 'OP Erigon released as new client software for Optimism on testnet'
+        author: 'Vishal Chawla'
+        source: 'theblock'
+        description: "Optimism contributors emphasize that multiple clients can help prevent a single point of failure, bolstering the network's resilience."
+        link: 'https://www.theblock.co/post/227593/optimism-client-op-erigon-released?utm_source=fidelity&utm_medium=rss'
+        textCleaned: 'Test in'
+        assetList: ['ETH']
+      },
+      {
+        pubDateUtc: 1684266400
+        title: 'OP Erigon released as new client software for Optimism on testnet'
+        author: 'Vishal Chawla'
+        source: 'theblock'
+        description: "Optimism contributors emphasize that multiple clients can help prevent a single point of failure, bolstering the network's resilience."
+        link: 'https://www.theblock.co/post/227593/optimism-client-op-erigon-released?utm_source=fidelity&utm_medium=rss'
+        textCleaned: 'Test in'
+        assetList: ['ETH']
+      },
+    ]
+    total: 32728
+    currentPage: 1
+    countPerPage: 2
+  }
 
-  @ApiProperty({
-    example: {
-      news: [
-        {
-          pubDateUtc: 1684256400,
-          title:
-            'OP Erigon released as new client software for Optimism on testnet',
-          author: 'Vishal Chawla',
-          source: 'theblock',
-          description:
-            "Optimism contributors emphasize that multiple clients can help prevent a single point of failure, bolstering the network's resilience.",
-          link: 'https://www.theblock.co/post/227593/optimism-client-op-erigon-released?utm_source=fidelity&utm_medium=rss',
-          textCleaned: 'Test in',
-          assetList: ['ETH'],
-        },
-        {
-          pubDateUtc: 1684266400,
-          title:
-            'OP Erigon released as new client software for Optimism on testnet',
-          author: 'Vishal Chawla',
-          source: 'theblock',
-          description:
-            "Optimism contributors emphasize that multiple clients can help prevent a single point of failure, bolstering the network's resilience.",
-          link: 'https://www.theblock.co/post/227593/optimism-client-op-erigon-released?utm_source=fidelity&utm_medium=rss',
-          textCleaned: 'Test in',
-          assetList: ['ETH'],
-        },
-      ],
-      total: 32728,
-      currentPage: 1,
-      countPerPage: 2,
-    },
-  })
   data: {
     news: []
     total: number

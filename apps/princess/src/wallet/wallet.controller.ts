@@ -5,10 +5,8 @@ import {
   Delete,
   Get,
   Param,
-  ParseEnumPipe,
   Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common'
 import { WalletsService } from './wallet.service'
@@ -20,16 +18,16 @@ import {
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { GetWalletPortfolioDto } from './dto/get-wallet-portfolio.dto'
-import {
-  UpdatePassCodeDto,
-  UpdatePassCodeSwaggerResponse,
-} from './dto/UpdatePassCodeDto'
-import {
-  SwitchWalletSwaggerResponse,
-  SwitchCloudSwaggerResponse,
-  SwitchToCloudShardDto,
-} from './dto/SwitchToCloudShardDto'
-import { EPeriod, EWalletType } from '@rana/core'
+// import {
+//   UpdatePassCodeDto,
+//   UpdatePassCodeSwaggerResponse,
+// } from './dto/UpdatePassCodeDto'
+// import {
+//   SwitchWalletSwaggerResponse,
+//   SwitchCloudSwaggerResponse,
+//   SwitchToCloudShardDto,
+// } from './dto/SwitchToCloudShardDto'
+import { EWalletType } from '@rana/core'
 import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
 
 @Controller('wallet')

@@ -6,19 +6,12 @@ import {
   NewsPaginationDto,
   PaginationNewsSwaggerResponse,
 } from './dto/news-pagination.dto'
-import { NewsTopDto, TopNewsSwaggerResponse } from './dto/news-top.dto'
+// import { NewsTopDto, TopNewsSwaggerResponse } from './dto/news-top.dto'
 
 @Controller('news')
 @ApiTags('news')
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
-
-  @Get('top')
-  @ApiOkResponse({ type: TopNewsSwaggerResponse })
-  @ApiOperation({ summary: 'Get the top news' })
-  getLatestNews(@Query() query?: NewsTopDto) {
-    return this.newsService.getLatestNews(query.count, query.symbol)
-  }
 
   @Get()
   @ApiOperation({ summary: 'Get the news with pagination' })
