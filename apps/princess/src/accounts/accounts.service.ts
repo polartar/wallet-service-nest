@@ -10,19 +10,17 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, EPeriod } from '@rana/core'
+import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import {
   EAPIMethod,
   IAccount,
-  IAddress,
   ICreateAccountResponse,
   IWallet,
 } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
-import { AuthService } from '../auth/auth.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 
 @Injectable()
@@ -35,7 +33,6 @@ export class AccountsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly authService: AuthService,
     private bootstrapService: BootstrapService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
@@ -137,22 +134,16 @@ export class AccountsService {
 
   async syncAccount(hash: string): Promise<IWallet[]> {
     const accountId = this.getAccountIdFromRequest()
-    const wallets: IWallet[] = await this.rickAPICall(
+
+    const isSync = await this.rickAPICall(
       EAPIMethod.GET,
-      `wallet/${accountId}?period=${EPeriod.Day}`,
+      `account/hash?accountId=${accountId}&hash=${hash}`,
     )
 
-    const addresses = wallets.reduce(
-      (allAddresses: IAddress[], wallet: IWallet) =>
-        allAddresses.concat(allAddresses, wallet.addresses),
-      [],
-    )
-
-    const walletHash = addresses.map((address) => address.address).join(',')
-    if (walletHash === hash) {
+    if (isSync) {
       return []
     } else {
-      return wallets
+      return await this.rickAPICall(EAPIMethod.GET, `account/${accountId}`)
     }
   }
 

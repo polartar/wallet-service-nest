@@ -244,19 +244,6 @@ export class WalletService {
     })
   }
 
-  async getWallets(accountId: number) {
-    return this.walletRepository.find({
-      where: {
-        account: {
-          accountId: accountId,
-        },
-      },
-      relations: {
-        assets: true,
-      },
-    })
-  }
-
   async updateWallet(
     walletId: number,
     accountId: number,
@@ -285,6 +272,15 @@ export class WalletService {
       )
       throw new NotFoundException('Not found wallet')
     }
+  }
+
+  async deleteWallet(walletId: number, accountId: number) {
+    await this.walletRepository.delete({
+      id: walletId,
+      account: {
+        accountId: accountId,
+      },
+    })
   }
 
   // async lookUpByXPub(xPub: string): Promise<WalletEntity> {

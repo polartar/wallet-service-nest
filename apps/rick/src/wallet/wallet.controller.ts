@@ -13,6 +13,7 @@ import {
   ParseEnumPipe,
   BadRequestException,
   Patch,
+  Delete,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
@@ -32,9 +33,9 @@ export class WalletController {
     private readonly portfolioService: PortfolioService,
   ) {}
 
-  @Get(':accountId/wallet/:walletId')
+  @Get(':walletId')
   async getWallet(
-    @Param('accountId', ParseIntPipe) accountId: number,
+    @Query('accountId', ParseIntPipe) accountId: number,
     @Param('walletId', ParseIntPipe) walletId: number,
     // @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
@@ -47,10 +48,10 @@ export class WalletController {
     }
   }
 
-  @Get(':accountId/wallet/:walletId/transactions')
+  @Get(':walletId/transactions')
   async getWalletTransaction(
-    @Param('accountId', ParseIntPipe) accountId: number,
     @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId', ParseIntPipe) accountId: number,
     @Query('start') start?: number,
     @Query('count') count?: number,
   ) {
@@ -68,10 +69,10 @@ export class WalletController {
     }
   }
 
-  @Get(':accountId/wallet/:walletId/portfolio')
+  @Get(':walletId/portfolio')
   async getWalletPortfolio(
-    @Param('accountId', ParseIntPipe) accountId: number,
     @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId', ParseIntPipe) accountId: number,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
@@ -82,17 +83,6 @@ export class WalletController {
       )
     } catch (e) {
       Sentry.captureException(e.message + ' in getWalletHistory')
-
-      throw new InternalServerErrorException(e?.message)
-    }
-  }
-
-  @Get(':accountId')
-  async getWallets(@Param('accountId', ParseIntPipe) accountId: number) {
-    try {
-      return await this.walletService.getWallets(accountId)
-    } catch (e) {
-      Sentry.captureException(e.message + ' in getHistory()')
 
       throw new InternalServerErrorException(e?.message)
     }
@@ -130,6 +120,20 @@ export class WalletController {
         data.title,
         data.mnemonic,
       )
+    } catch (e) {
+      Sentry.captureException(e.message + ' in getHistory()')
+
+      throw new InternalServerErrorException(e?.message)
+    }
+  }
+
+  @Delete(':walletId')
+  async deleteWallet(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Body('accountId') accountId: number,
+  ) {
+    try {
+      return await this.walletService.deleteWallet(walletId, accountId)
     } catch (e) {
       Sentry.captureException(e.message + ' in getHistory()')
 

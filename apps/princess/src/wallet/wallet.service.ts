@@ -117,7 +117,7 @@ export class WalletsService {
     const transactions: ITransaction[] = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${accountId}/wallet/${walletId}/transactions?count=${count}&start=${start}`,
+      `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
 
     return this.addUSDPrice(transactions)
@@ -129,7 +129,7 @@ export class WalletsService {
     return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${accountId}/wallet/${walletId}`,
+      `wallet/${walletId}?accountId=${accountId}`,
     )
   }
 
@@ -139,7 +139,7 @@ export class WalletsService {
     return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${accountId}/wallet/${walletId}/portfolio?period=${period}`,
+      `wallet/${walletId}/portfolio?accountId=${accountId}&period=${period}`,
     )
 
     // return this.addUSDPrice(wallets, period)
@@ -151,7 +151,7 @@ export class WalletsService {
     return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${accountId}`,
+      `account/${accountId}`,
     )
 
     // return this.addUSDPrice(wallets, period)
@@ -214,12 +214,29 @@ export class WalletsService {
   async updateWallet(walletId: number, title: string, mnemonic: string) {
     const accountId = this.getAccountIdFromRequest()
 
-    return this.apiCall(EAPIMethod.PATCH, this.rickApiUrl, `wallet`, {
-      accountId,
-      walletId,
-      title,
-      mnemonic,
-    })
+    return this.apiCall(
+      EAPIMethod.PATCH,
+      this.rickApiUrl,
+      `wallet/${walletId}`,
+      {
+        accountId,
+        title,
+        mnemonic,
+      },
+    )
+  }
+
+  async deleteWallet(walletId: number) {
+    const accountId = this.getAccountIdFromRequest()
+
+    return this.apiCall(
+      EAPIMethod.DELETE,
+      this.rickApiUrl,
+      `wallet/${walletId}`,
+      {
+        accountId,
+      },
+    )
   }
 
   getPrice(source: IMarketData[], timestamp: number) {

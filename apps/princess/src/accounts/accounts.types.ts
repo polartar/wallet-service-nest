@@ -19,6 +19,7 @@ export interface IMarketData {
 
 export interface IWallet {
   id: number
+  title: string
   addresses: IAddress[]
 }
 

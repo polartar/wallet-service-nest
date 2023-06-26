@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseEnumPipe,
@@ -112,6 +113,14 @@ export class WalletsController {
       data.title,
       data.mnemonic,
     )
+  }
+
+  @Delete(':walletId')
+  @ApiOperation({
+    summary: 'Delete the wallet object',
+  })
+  async deleteWallet(@Param('walletId') walletId: number) {
+    return await this.walletService.deleteWallet(walletId)
   }
 
   // @Post(':walletId/wallets/:walletId')
