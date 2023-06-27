@@ -10,8 +10,9 @@ import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, ENFTTypes, IResponse } from './transaction.types'
+import { ENFTTypes, IResponse } from './transaction.types'
 import * as Sentry from '@sentry/node'
+import { EAPIMethod } from '../wallet/wallet.types'
 
 @Injectable()
 export class TransactionService {

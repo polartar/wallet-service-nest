@@ -57,14 +57,6 @@ export class WalletsService {
     return (this.request as IRequest).deviceId
   }
 
-  validateAccountId(accountId: number) {
-    if (Number(accountId) === this.getAccountIdFromRequest()) {
-      return true
-    } else {
-      throw new BadRequestException('Wallet Id  not matched')
-    }
-  }
-
   async apiCall(
     method: EAPIMethod,
     apiUrl: string,

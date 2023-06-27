@@ -30,9 +30,11 @@ import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
 import { ExPubTypes, IXPub } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
 import { AccountEntity } from '../account/account.entity'
-import ERC721ABI from './abis/erc721'
-import ERC1155ABI from './abis/erc1155'
+import ERC721ABI from '../asset/abis/erc721'
+import ERC1155ABI from '../asset/abis/erc1155'
 import { AssetEntity } from './asset.entity'
+import { AssetService } from '../asset/asset.service'
+import { PortfolioService } from '../portfolio/portfolio.service'
 
 @Injectable()
 export class WalletService {
@@ -53,6 +55,8 @@ export class WalletService {
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
     private readonly accountService: AccountService,
+    private readonly assetService: AssetService,
+    private readonly portfolioService: PortfolioService,
   ) {
     this.isProduction = this.configService.get<boolean>(
       EEnvironment.isProduction,
@@ -64,12 +68,12 @@ export class WalletService {
       this.isProduction ? 'mainnet' : 'goerli',
       this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
-    this.confirmWalletBalances()
+    // this.confirmWalletBalances()
 
-    const alchemyKey = this.configService.get<string>(
-      EEnvironment.alchemyAPIKey,
-    )
-    this.alchemyConfigure(this.isProduction, alchemyKey)
+    // const alchemyKey = this.configService.get<string>(
+    //   EEnvironment.alchemyAPIKey,
+    // )
+    // this.alchemyConfigure(this.isProduction, alchemyKey)
 
     this.liquidAPIKey = this.configService.get<string>(
       EEnvironment.liquidAPIKey,
@@ -78,34 +82,30 @@ export class WalletService {
       EEnvironment.liquidAPIUrl,
     )
   }
-  alchemyConfigure(isProd: boolean, alchemyKey: string) {
-    const settings = {
-      apiKey: alchemyKey,
-      network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
-    }
+  // alchemyConfigure(isProd: boolean, alchemyKey: string) {
+  //   const settings = {
+  //     apiKey: alchemyKey,
+  //     network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+  //   }
 
-    this.alchemyInstance = new Alchemy(settings)
-  }
+  //   this.alchemyInstance = new Alchemy(settings)
+  // }
 
-  getCurrentTimeBySeconds() {
-    return Math.floor(Date.now() / 1000)
-  }
-
-  async getAllAddresses(): Promise<AssetEntity[]> {
-    return await this.assetRepository.find({
-      order: {
-        transactions: {
-          timestamp: 'DESC',
-        },
-      },
-      relations: {
-        wallets: {
-          account: true,
-        },
-        transactions: true,
-      },
-    })
-  }
+  // async getAllAddresses(): Promise<AssetEntity[]> {
+  //   return await this.assetRepository.find({
+  //     order: {
+  //       transactions: {
+  //         timestamp: 'DESC',
+  //       },
+  //     },
+  //     relations: {
+  //       wallets: {
+  //         account: true,
+  //       },
+  //       transactions: true,
+  //     },
+  //   })
+  // }
 
   async getBtcHistory(
     transactions: IBTCTransaction[],
@@ -137,64 +137,64 @@ export class WalletService {
     return allHistories
   }
 
-  async getEthHistory(
-    transactions: ethers.providers.TransactionResponse[],
-    asset: AssetEntity,
-  ): Promise<TransactionEntity[]> {
-    const balance = await this.provider.getBalance(asset.address)
+  // async getEthHistory(
+  //   transactions: ethers.providers.TransactionResponse[],
+  //   asset: AssetEntity,
+  // ): Promise<TransactionEntity[]> {
+  //   const balance = await this.provider.getBalance(asset.address)
 
-    let currentBalance = balance
-    const histories = await Promise.all(
-      transactions.reverse().map(async (record) => {
-        const prevBalance = currentBalance
-        const fee = record.gasLimit.mul(record.gasPrice)
-        const walletAddress = asset.address.toLowerCase()
+  //   let currentBalance = balance
+  //   const histories = await Promise.all(
+  //     transactions.reverse().map(async (record) => {
+  //       const prevBalance = currentBalance
+  //       const fee = record.gasLimit.mul(record.gasPrice)
+  //       const walletAddress = asset.address.toLowerCase()
 
-        if (record.from?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.add(fee)
-          currentBalance = currentBalance.add(record.value)
-        }
-        //consider if transferred itself
-        if (record.to?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.sub(record.value)
-        }
+  //       if (record.from?.toLowerCase() === walletAddress) {
+  //         currentBalance = currentBalance.add(fee)
+  //         currentBalance = currentBalance.add(record.value)
+  //       }
+  //       //consider if transferred itself
+  //       if (record.to?.toLowerCase() === walletAddress) {
+  //         currentBalance = currentBalance.sub(record.value)
+  //       }
 
-        const newHistory: AddHistoryDto = {
-          asset,
-          from: record.from || '',
-          to: record.to || '',
-          hash: record.hash,
-          amount: record.value.toString(),
-          balance: prevBalance.toString(),
-          timestamp: +record.timestamp,
-        }
-        // parse the transaction
-        if (record.value.isZero()) {
-          let iface = new ethers.utils.Interface(ERC721ABI)
-          let response
-          try {
-            response = iface.parseTransaction({ data: record.data })
-          } catch (err) {
-            iface = new ethers.utils.Interface(ERC1155ABI)
-            try {
-              response = iface.parseTransaction({ data: record.data })
-              // eslint-disable-next-line no-empty
-            } catch (err) {}
-          }
-          // only track the transfer functions
-          if (response && response.name.toLowerCase().includes('transfer')) {
-            const { from, to, tokenId, id } = response.args
-            newHistory.from = from || record.from
-            newHistory.to = to
-            newHistory.tokenId = tokenId?.toString() || id?.toString()
-          }
-        }
+  //       const newHistory: AddHistoryDto = {
+  //         asset,
+  //         from: record.from || '',
+  //         to: record.to || '',
+  //         hash: record.hash,
+  //         amount: record.value.toString(),
+  //         balance: prevBalance.toString(),
+  //         timestamp: +record.timestamp,
+  //       }
+  //       // parse the transaction
+  //       if (record.value.isZero()) {
+  //         let iface = new ethers.utils.Interface(ERC721ABI)
+  //         let response
+  //         try {
+  //           response = iface.parseTransaction({ data: record.data })
+  //         } catch (err) {
+  //           iface = new ethers.utils.Interface(ERC1155ABI)
+  //           try {
+  //             response = iface.parseTransaction({ data: record.data })
+  //             // eslint-disable-next-line no-empty
+  //           } catch (err) {}
+  //         }
+  //         // only track the transfer functions
+  //         if (response && response.name.toLowerCase().includes('transfer')) {
+  //           const { from, to, tokenId, id } = response.args
+  //           newHistory.from = from || record.from
+  //           newHistory.to = to
+  //           newHistory.tokenId = tokenId?.toString() || id?.toString()
+  //         }
+  //       }
 
-        return await this.addHistory(newHistory)
-      }),
-    )
-    return histories
-  }
+  //       return await this.addHistory(newHistory)
+  //     }),
+  //   )
+  //   return histories
+  // }
 
   async getUserWalletTransaction(
     accountId: number,
@@ -462,12 +462,18 @@ export class WalletService {
               where: { address: addressInfo.address, network: network },
             })
             if (!asset) {
-              this.createAsset({
-                wallet,
-                address: addressInfo.address,
-                path: addressInfo.path,
+              this.assetService.createAsset(
+                addressInfo.address,
+                addressInfo.index,
                 network,
-              })
+                wallet,
+              )
+              // this.createAsset({
+              //   wallet,
+              //   address: addressInfo.address,
+              //   index: addressInfo.index,
+              //   network,
+              // })
             }
             return asset
           } catch (err) {
@@ -490,44 +496,44 @@ export class WalletService {
     }
   }
 
-  async createAsset(data: AddAddressDto): Promise<AssetEntity> {
-    const prototype = new AssetEntity()
-    prototype.wallets = [data.wallet]
-    prototype.address = data.address
-    prototype.transactions = []
-    prototype.path = data.path
-    prototype.network = data.network
+  // async createAsset(data: AddAddressDto): Promise<AssetEntity> {
+  //   const prototype = new AssetEntity()
+  //   prototype.wallets = [data.wallet]
+  //   prototype.address = data.address
+  //   prototype.transactions = []
+  //   prototype.index = data.index
+  //   prototype.network = data.network
 
-    const address = await this.assetRepository.save(prototype)
+  //   const address = await this.assetRepository.save(prototype)
 
-    let transactions
-    try {
-      if (data.network === ENetworks.ETHEREUM) {
-        const trxHistory = await this.provider.getHistory(address.address)
-        transactions = await this.getEthHistory(trxHistory, address)
-      } else {
-        const txResponse: { data: IBTCTransactionResponse } =
-          await firstValueFrom(
-            this.httpService.get(
-              `https://api.blockcypher.com/v1/btc/${
-                this.isProduction ? 'main' : 'test3'
-              }/addrs/${address.address}`,
-            ),
-          )
-        transactions = await this.getBtcHistory(
-          txResponse.data.txrefs,
-          address,
-          txResponse.data.balance,
-        )
-      }
-      address.transactions = transactions
-    } catch (err) {
-      console.error(err)
-      Sentry.captureException(`createAsset(): ${err.message}`)
-    }
+  //   let transactions
+  //   try {
+  //     if (data.network === ENetworks.ETHEREUM) {
+  //       const trxHistory = await this.provider.getHistory(address.address)
+  //       transactions = await this.getEthHistory(trxHistory, address)
+  //     } else {
+  //       const txResponse: { data: IBTCTransactionResponse } =
+  //         await firstValueFrom(
+  //           this.httpService.get(
+  //             `https://api.blockcypher.com/v1/btc/${
+  //               this.isProduction ? 'main' : 'test3'
+  //             }/addrs/${address.address}`,
+  //           ),
+  //         )
+  //       transactions = await this.getBtcHistory(
+  //         txResponse.data.txrefs,
+  //         address,
+  //         txResponse.data.balance,
+  //       )
+  //     }
+  //     address.transactions = transactions
+  //   } catch (err) {
+  //     console.error(err)
+  //     Sentry.captureException(`createAsset(): ${err.message}`)
+  //   }
 
-    return await this.assetRepository.save(address)
-  }
+  //   return await this.assetRepository.save(address)
+  // }
 
   updateWallets(wallets: WalletEntity[]) {
     return Promise.all(
@@ -575,7 +581,7 @@ export class WalletService {
     const timeInPast =
       period === EPeriod.All
         ? 0
-        : this.getCurrentTimeBySeconds() - periodAsNumber || 0
+        : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
 
     return this.walletRepository.find({
       where: {
@@ -632,182 +638,182 @@ export class WalletService {
   //   return this._getWalletHistory(accountId, period, walletId)
   // }
 
-  async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const trxHistory = await this.provider.getHistory(asset.address)
+  // async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
+  //   const trxHistory = await this.provider.getHistory(asset.address)
 
-    if (trxHistory && trxHistory.length > asset.transactions.length) {
-      asset.transactions = await this.getEthHistory(
-        trxHistory.slice(asset.transactions.length, trxHistory.length),
-        asset,
-      )
-      return asset
-    } else {
-      return null
-    }
-  }
-  async confirmBTCBalance(address: AssetEntity): Promise<AssetEntity> {
-    const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
-      this.httpService.get(
-        `https://api.blockcypher.com/v1/btc/${
-          this.isProduction ? 'main' : 'test3'
-        }/addrs/${address.address}`,
-      ),
-    )
+  //   if (trxHistory && trxHistory.length > asset.transactions.length) {
+  //     asset.transactions = await this.getEthHistory(
+  //       trxHistory.slice(asset.transactions.length, trxHistory.length),
+  //       asset,
+  //     )
+  //     return asset
+  //   } else {
+  //     return null
+  //   }
+  // }
+  // async confirmBTCBalance(address: AssetEntity): Promise<AssetEntity> {
+  //   const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
+  //     this.httpService.get(
+  //       `https://api.blockcypher.com/v1/btc/${
+  //         this.isProduction ? 'main' : 'test3'
+  //       }/addrs/${address.address}`,
+  //     ),
+  //   )
 
-    const trxHistory = txResponse.data.txrefs
-    if (trxHistory && trxHistory.length > address.transactions.length) {
-      address.transactions = await this.getBtcHistory(
-        trxHistory.slice(address.transactions.length, trxHistory.length),
-        address,
-        txResponse.data.balance,
-      )
-      return address
-    } else {
-      return null
-    }
-  }
+  //   const trxHistory = txResponse.data.txrefs
+  //   if (trxHistory && trxHistory.length > address.transactions.length) {
+  //     address.transactions = await this.getBtcHistory(
+  //       trxHistory.slice(address.transactions.length, trxHistory.length),
+  //       address,
+  //       txResponse.data.balance,
+  //     )
+  //     return address
+  //   } else {
+  //     return null
+  //   }
+  // }
 
-  // If there are missed transactions, they are added to history table
-  async confirmWalletBalances(addresses?: AssetEntity[]) {
-    if (!addresses) {
-      addresses = await this.getAllAddresses()
-    }
-    const updatedAddresses = await Promise.all(
-      addresses.map((address: AssetEntity) => {
-        if (address.path === IAddressPath.BTC) {
-          return this.confirmBTCBalance(address)
-        } else {
-          return this.confirmETHBalance(address)
-        }
-      }),
-    )
-    this.walletRepository.save(updatedAddresses.filter((address) => !!address))
-  }
+  // // If there are missed transactions, they are added to history table
+  // async confirmWalletBalances(addresses?: AssetEntity[]) {
+  //   if (!addresses) {
+  //     addresses = await this.getAllAddresses()
+  //   }
+  //   const updatedAddresses = await Promise.all(
+  //     addresses.map((address: AssetEntity) => {
+  //       if (address.network === ENetworks.BITCOIN) {
+  //         return this.confirmBTCBalance(address)
+  //       } else {
+  //         return this.confirmETHBalance(address)
+  //       }
+  //     }),
+  //   )
+  //   this.walletRepository.save(updatedAddresses.filter((address) => !!address))
+  // }
 
-  async updateHistory(
-    updatedAsset: AssetEntity,
-    tx: {
-      transaction: { from: string; to: string; value: string; hash: string }
-    },
-    amount: BigNumber,
-  ) {
-    const transactions = updatedAsset.transactions
-    const newHistoryData = {
-      from: tx.transaction.from,
-      to: tx.transaction.to,
-      value: tx.transaction.value.toString(),
-      hash: tx.transaction.hash,
-      balance: transactions.length
-        ? BigNumber.from(transactions[0].balance).sub(amount).toString()
-        : BigNumber.from(tx.transaction.value).toString(),
-      timestamp: this.getCurrentTimeBySeconds(),
-    }
+  // async updateHistory(
+  //   updatedAsset: AssetEntity,
+  //   tx: {
+  //     transaction: { from: string; to: string; value: string; hash: string }
+  //   },
+  //   amount: BigNumber,
+  // ) {
+  //   const transactions = updatedAsset.transactions
+  //   const newHistoryData = {
+  //     from: tx.transaction.from,
+  //     to: tx.transaction.to,
+  //     value: tx.transaction.value.toString(),
+  //     hash: tx.transaction.hash,
+  //     balance: transactions.length
+  //       ? BigNumber.from(transactions[0].balance).sub(amount).toString()
+  //       : BigNumber.from(tx.transaction.value).toString(),
+  //     timestamp: this.getCurrentTimeBySeconds(),
+  //   }
 
-    let newHistory
-    try {
-      newHistory = await this.addHistory({
-        asset: updatedAsset,
-        ...newHistoryData,
-      })
-    } catch (err) {
-      Sentry.captureException(
-        `${err.message} + " in updateHistory(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
-      )
-      return
-    }
+  //   let newHistory
+  //   try {
+  //     newHistory = await this.addHistory({
+  //       asset: updatedAsset,
+  //       ...newHistoryData,
+  //     })
+  //   } catch (err) {
+  //     Sentry.captureException(
+  //       `${err.message} + " in updateHistory(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
+  //     )
+  //     return
+  //   }
 
-    transactions.push(newHistory)
-    updatedAsset.transactions = transactions
+  //   transactions.push(newHistory)
+  //   updatedAsset.transactions = transactions
 
-    const postUpdatedAddress = {
-      assetId: updatedAsset.id,
-      walletIds: updatedAsset.wallets.map((wallet) => wallet.id),
-      accountId: updatedAsset.wallets.map((wallet) => wallet.account.id),
-      newHistory: newHistoryData,
-    }
+  //   const postUpdatedAddress = {
+  //     assetId: updatedAsset.id,
+  //     walletIds: updatedAsset.wallets.map((wallet) => wallet.id),
+  //     accountId: updatedAsset.wallets.map((wallet) => wallet.account.id),
+  //     newHistory: newHistoryData,
+  //   }
 
-    firstValueFrom(
-      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-        type: EPortfolioType.TRANSACTION,
-        data: [postUpdatedAddress],
-      }),
-    ).catch(() => {
-      Sentry.captureException(
-        'Princess portfolio/updated api error in fetchEthereumTransactions()',
-      )
-    })
-  }
+  //   firstValueFrom(
+  //     this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
+  //       type: EPortfolioType.TRANSACTION,
+  //       data: [postUpdatedAddress],
+  //     }),
+  //   ).catch(() => {
+  //     Sentry.captureException(
+  //       'Princess portfolio/updated api error in fetchEthereumTransactions()',
+  //     )
+  //   })
+  // }
 
-  subscribeEthereumTransactions(addresses: AssetEntity[]) {
-    let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
-      (address) => ({
-        from: address.address,
-      }),
-    )
+  // subscribeEthereumTransactions(addresses: AssetEntity[]) {
+  //   let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
+  //     (address) => ({
+  //       from: address.address,
+  //     }),
+  //   )
 
-    sourceAddresses = sourceAddresses.concat(
-      addresses.map((address) => ({
-        to: address.address,
-      })),
-    )
-    const currentAddresses = addresses.map((address) =>
-      address.address.toLowerCase(),
-    )
+  //   sourceAddresses = sourceAddresses.concat(
+  //     addresses.map((address) => ({
+  //       to: address.address,
+  //     })),
+  //   )
+  //   const currentAddresses = addresses.map((address) =>
+  //     address.address.toLowerCase(),
+  //   )
 
-    this.alchemyInstance.ws.on(
-      {
-        method: AlchemySubscription.MINED_TRANSACTIONS,
-        addresses: sourceAddresses,
-        includeRemoved: true,
-        hashesOnly: false,
-      },
-      (tx) => {
-        try {
-          if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
-            const fee = BigNumber.from(tx.transaction.gasPrice).mul(
-              BigNumber.from(tx.transaction.gas),
-            )
-            const amount = BigNumber.from(tx.transaction.value).add(fee)
-            const updatedAddress = addresses.find(
-              (address) =>
-                address.address.toLowerCase() ===
-                tx.transaction.from.toLowerCase(),
-            )
-            this.updateHistory(updatedAddress, tx, amount)
-          }
+  //   this.alchemyInstance.ws.on(
+  //     {
+  //       method: AlchemySubscription.MINED_TRANSACTIONS,
+  //       addresses: sourceAddresses,
+  //       includeRemoved: true,
+  //       hashesOnly: false,
+  //     },
+  //     (tx) => {
+  //       try {
+  //         if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
+  //           const fee = BigNumber.from(tx.transaction.gasPrice).mul(
+  //             BigNumber.from(tx.transaction.gas),
+  //           )
+  //           const amount = BigNumber.from(tx.transaction.value).add(fee)
+  //           const updatedAddress = addresses.find(
+  //             (address) =>
+  //               address.address.toLowerCase() ===
+  //               tx.transaction.from.toLowerCase(),
+  //           )
+  //           this.updateHistory(updatedAddress, tx, amount)
+  //         }
 
-          if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
-            const amount = BigNumber.from(0).sub(
-              BigNumber.from(tx.transaction.value),
-            )
-            const updatedAddress = addresses.find(
-              (address) =>
-                address.address.toLowerCase() ===
-                tx.transaction.to.toLowerCase(),
-            )
-            this.updateHistory(updatedAddress, tx, amount)
-          }
-        } catch (err) {
-          Sentry.captureException(
-            `${err.message} in subscribeEthereumTransactions: (${tx}) `,
-          )
-        }
-      },
-    )
-  }
+  //         if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
+  //           const amount = BigNumber.from(0).sub(
+  //             BigNumber.from(tx.transaction.value),
+  //           )
+  //           const updatedAddress = addresses.find(
+  //             (address) =>
+  //               address.address.toLowerCase() ===
+  //               tx.transaction.to.toLowerCase(),
+  //           )
+  //           this.updateHistory(updatedAddress, tx, amount)
+  //         }
+  //       } catch (err) {
+  //         Sentry.captureException(
+  //           `${err.message} in subscribeEthereumTransactions: (${tx}) `,
+  //         )
+  //       }
+  //     },
+  //   )
+  // }
 
-  async fetchEthereumTransactions() {
-    const addresses = await this.getAllAddresses()
+  // async fetchEthereumTransactions() {
+  //   const addresses = await this.getAllAddresses()
 
-    const activeEthAddresses = addresses.filter(
-      (address) => address.network === ENetworks.ETHEREUM,
-    )
-    if (activeEthAddresses.length === 0) return
+  //   const activeEthAddresses = addresses.filter(
+  //     (address) => address.network === ENetworks.ETHEREUM,
+  //   )
+  //   if (activeEthAddresses.length === 0) return
 
-    this.alchemyInstance.ws.removeAllListeners()
+  //   this.alchemyInstance.ws.removeAllListeners()
 
-    this.subscribeEthereumTransactions(activeEthAddresses)
-  }
+  //   this.subscribeEthereumTransactions(activeEthAddresses)
+  // }
 
   // async addAssetFromXPub(
   //   wallet: WalletEntity,
@@ -863,7 +869,7 @@ export class WalletService {
           )
         }),
       )
-      this.fetchEthereumTransactions()
+      this.portfolioService.fetchEthereumTransactions()
 
       const newWallet = await this.getWallet(accountId, wallet.id)
       return newWallet

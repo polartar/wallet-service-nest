@@ -9,6 +9,8 @@ import { AccountModule } from '../account/account.module'
 import { HttpModule } from '@nestjs/axios'
 import { TransactionEntity } from './transaction.entity'
 import { AssetEntity } from './asset.entity'
+import { AssetService } from '../asset/asset.service'
+import { PortfolioService } from '../portfolio/portfolio.service'
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { AssetEntity } from './asset.entity'
     HttpModule,
   ],
   controllers: [WalletController],
-  providers: [WalletService],
+  providers: [WalletService, AssetService, PortfolioService],
   exports: [WalletService],
 })
 export class WalletModule {}

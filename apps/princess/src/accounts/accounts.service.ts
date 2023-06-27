@@ -12,16 +12,12 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import {
-  EAPIMethod,
-  IAccount,
-  ICreateAccountResponse,
-  IWallet,
-} from './accounts.types'
+import { IAccount, ICreateAccountResponse, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
+import { EAPIMethod } from '../wallet/wallet.types'
 
 @Injectable()
 export class AccountsService {

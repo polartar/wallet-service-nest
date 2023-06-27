@@ -27,7 +27,7 @@ export class AssetEntity {
   network: ENetworks
 
   @Column()
-  path: string
+  index: number
 
   @ManyToMany(() => WalletEntity, (wallet) => wallet.assets)
   wallets: WalletEntity[]

@@ -12,6 +12,7 @@ import { TransactionModule } from '../transaction/transaction.module'
 import { GateWayModule } from '../gateway/gateway.module'
 import { BootstrapModule } from '../bootstrap/bootstrap.module'
 import { AuthModule } from '../auth/auth.module'
+import { AssetModule } from '../asset/asset.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from '../auth/auth.module'
     AccountsModule,
     TransactionModule,
     BootstrapModule,
+    AssetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
