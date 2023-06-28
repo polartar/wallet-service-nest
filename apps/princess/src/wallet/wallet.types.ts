@@ -5,12 +5,6 @@ export enum EAPIMethod {
   DELETE = 'delete',
 }
 
-export interface IMarketData {
-  periodStart: string
-  periodEnd: string
-  vwap: number
-}
-
 export interface ITransaction {
   from: string
   to: string

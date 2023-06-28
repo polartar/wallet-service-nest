@@ -1,7 +1,9 @@
 import { ENetworks } from '@rana/core'
 
-export class CreateAssetDto {
-  address: string
+export class DiscoverAssetDto {
+  xPub: string
+
   index: number
+
   network: ENetworks
 }

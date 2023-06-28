@@ -1,7 +1,16 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AssetService } from './asset.service'
 import { AssetSwaggerResponse, CreateAssetDto } from './dto/create-asset.dto'
+import { GetWalletTransactionDto } from '../wallet/dto/get-wallet-transaction.dto'
 
 @Controller('asset')
 @ApiTags('wallet')
@@ -18,6 +27,31 @@ export class AssetController {
       throw new BadRequestException('Require one of address or xpub')
     }
     this.assetService.createAsset(data)
+  }
+
+  @Get(':assetId')
+  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOperation({
+    summary: 'Get Asset',
+  })
+  async getAsset(@Param('assetId') assetId: number) {
+    return await this.assetService.getAsset(assetId)
+  }
+
+  @Get(':assetId/transactions')
+  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOperation({
+    summary: 'Get Asset',
+  })
+  async getAssetTransactions(
+    @Param('assetId') assetId: number,
+    @Query() query: GetWalletTransactionDto,
+  ) {
+    return await this.assetService.getAssetTransactions(
+      assetId,
+      query.start,
+      query.count,
+    )
   }
 
   //   @Get(':walletId/transactions')

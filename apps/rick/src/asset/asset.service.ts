@@ -1,20 +1,25 @@
 import { WalletEntity } from './../wallet/wallet.entity'
-import { Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { ENetworks, EPortfolioType } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
-import { IBTCTransactionResponse, ITransaction } from './asset.types'
+import { IBTCTransactionResponse, ITransaction, IXPubInfo } from './asset.types'
 import { TransactionEntity } from '../wallet/transaction.entity'
 import ERC721ABI from '../asset/abis/erc721'
 import ERC1155ABI from '../asset/abis/erc1155'
 import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
+import { EXPubCurrency } from '../wallet/wallet.types'
 
 @Injectable()
 export class AssetService {
@@ -22,13 +27,15 @@ export class AssetService {
   mainnetProvider: ethers.providers.EtherscanProvider
   alchemyInstance
   princessAPIUrl: string
+  liquidAPIKey: string
+  liquidTestAPIKey: string
+  liquidAPIUrl: string
+  liquidTestAPIUrl: string
 
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
     private portfolioService: PortfolioService,
-    // @InjectRepository(WalletEntity)
-    // private readonly walletRepository: Repository<WalletEntity>,
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
@@ -49,7 +56,18 @@ export class AssetService {
     )
     this.confirmWalletBalances()
 
-    // this.alchemyConfigure()
+    this.liquidAPIKey = this.configService.get<string>(
+      EEnvironment.liquidAPIKey,
+    )
+    this.liquidTestAPIKey = this.configService.get<string>(
+      EEnvironment.liquidTestAPIKey,
+    )
+    this.liquidAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidAPIUrl,
+    )
+    this.liquidTestAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidTestAPIUrl,
+    )
   }
 
   async getAllAssets(): Promise<AssetEntity[]> {
@@ -237,7 +255,15 @@ export class AssetService {
     this.assetRepository.save(updatedAssets.filter((asset) => !!asset))
   }
 
-  async createAsset(
+  async createAsset(address: string, index: number, network: ENetworks) {
+    const asset = this.addAsset(address, index, network)
+    await this.portfolioService.updateCurrentWallets()
+    this.portfolioService.fetchEthereumTransactions(network)
+
+    return asset
+  }
+
+  async addAsset(
     address: string,
     index: number,
     network: ENetworks,
@@ -251,8 +277,7 @@ export class AssetService {
     prototype.network = network
 
     const assetEntity = await this.assetRepository.save(prototype)
-    await this.portfolioService.updateCurrentWallets()
-    this.portfolioService.fetchEthereumTransactions(network)
+
     let transactions
     try {
       if (
@@ -265,8 +290,7 @@ export class AssetService {
       }
       assetEntity.transactions = transactions
     } catch (err) {
-      console.error(err)
-      Sentry.captureException(`createAsset(): ${err.message}`)
+      Sentry.captureException(`addAsset(): ${err.message}`)
     }
 
     return await this.assetRepository.save(assetEntity)
@@ -339,6 +363,144 @@ export class AssetService {
       Sentry.captureException(
         'Princess portfolio/updated api error in fetchEthereumTransactions()',
       )
+    })
+  }
+
+  async addAssetFromXPub(
+    xPub: string,
+    index: number,
+    network: ENetworks,
+    wallet?: WalletEntity,
+  ) {
+    try {
+      let apiURL, apiKey, currency
+      if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
+        apiURL = this.liquidAPIUrl
+        apiKey = this.liquidAPIKey
+      } else {
+        apiURL = this.liquidTestAPIUrl
+        apiKey = this.liquidAPIKey
+      }
+
+      if (
+        network === ENetworks.ETHEREUM ||
+        network === ENetworks.ETHEREUM_TEST
+      ) {
+        currency = EXPubCurrency.ETHEREUM
+      } else {
+        currency = EXPubCurrency.BITCOIN
+      }
+
+      const discoverResponse = await firstValueFrom(
+        this.httpService.get(
+          `${apiURL}}/api/v1/currencies/${currency}/accounts/discover?xpub=${xPub}`,
+          {
+            headers: { 'api-secret': apiKey },
+          },
+        ),
+      )
+      // return Promise.all(
+      //   discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+      const addressInfo = discoverResponse.data.data.find(
+        (item: IXPubInfo) => item.index === index,
+      )
+      if (addressInfo) {
+        Sentry.captureException(
+          `addAssetFromXPub(): not found xPub address for index ${index}`,
+        )
+        throw new NotFoundException(`Not found address for index: ${index}`)
+      }
+      try {
+        const asset = this.assetRepository.findOne({
+          where: { address: addressInfo.address, network: network },
+        })
+        if (!asset) {
+          this.addAsset(addressInfo.address, addressInfo.index, network, wallet)
+          // this.addAsset({
+          //   wallet,
+          //   address: addressInfo.address,
+          //   index: addressInfo.index,
+          //   network,
+          // })
+        }
+        return asset
+      } catch (err) {
+        Sentry.captureException(
+          `${err.message}: ${addressInfo.address} in addAsset()`,
+        )
+      }
+      //   }),
+      // )
+    } catch (err) {
+      if (err.response) {
+        Sentry.captureException(
+          `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
+        )
+      } else {
+        Sentry.captureException(
+          `addAddressesFromXPub(): ${err.message}: ${xPub}`,
+        )
+      }
+    }
+  }
+
+  getAsset(assetId: number) {
+    return this.assetRepository.find({
+      where: {
+        id: assetId,
+      },
+      order: {
+        transactions: {
+          timestamp: 'DESC',
+        },
+      },
+      relations: {
+        wallets: {
+          account: true,
+        },
+        transactions: true,
+      },
+      take: 1,
+    })
+  }
+
+  async getAssetTransactions(
+    assetId: number,
+    accountId: number,
+    start: number,
+    count: number,
+  ) {
+    const transactions = await this.transactionRepository.find({
+      where: {
+        asset: {
+          id: assetId,
+          wallets: {
+            account: {
+              accountId: accountId,
+            },
+          },
+        },
+      },
+      // relations: {
+      //   asset: {
+      //     wallets: {
+      //       account: true,
+      //     },
+      //   },
+      // },
+      order: {
+        timestamp: 'DESC',
+      },
+      take: count,
+      skip: start,
+    })
+
+    return transactions
+  }
+
+  async getAssetsByIds(assetIds: number[]) {
+    return await this.assetRepository.find({
+      where: { id: In(assetIds) },
     })
   }
 }

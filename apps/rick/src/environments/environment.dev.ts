@@ -12,6 +12,8 @@ export const Environment = () => {
     [EEnvironment.alchemyMainnetAPIKey]: process.env.ALCHEMY_MAINNET_API_KEY,
     [EEnvironment.liquidAPIKey]: process.env.LIQUID_API_KEY,
     [EEnvironment.liquidAPIUrl]: process.env.LIQUID_API_URL,
+    [EEnvironment.liquidTestAPIKey]: process.env.LIQUID_TEST_API_KEY,
+    [EEnvironment.liquidTestAPIUrl]: process.env.LIQUID_TEST_API_URL,
   }
 
   return env

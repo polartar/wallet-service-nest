@@ -33,6 +33,7 @@ export class WalletController {
     private readonly portfolioService: PortfolioService,
   ) {}
 
+  // Need to confirm if we need to verify account Id
   @Get(':walletId')
   async getWallet(
     @Query('accountId', ParseIntPipe) accountId: number,
@@ -52,8 +53,8 @@ export class WalletController {
   async getWalletTransaction(
     @Param('walletId', ParseIntPipe) walletId: number,
     @Query('accountId', ParseIntPipe) accountId: number,
-    @Query('start') start?: number,
-    @Query('count') count?: number,
+    @Query('start') start: number,
+    @Query('count') count: number,
   ) {
     try {
       return await this.walletService.getUserWalletTransaction(

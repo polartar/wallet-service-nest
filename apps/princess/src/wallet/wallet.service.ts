@@ -13,7 +13,7 @@ import { EAuth, ENetworks, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, IMarketData, ITransaction } from './wallet.types'
+import { EAPIMethod, ITransaction } from './wallet.types'
 import * as Sentry from '@sentry/node'
 import { MarketService } from '../market/market.service'
 import { formatUnits, isAddress } from 'ethers/lib/utils'
@@ -22,6 +22,7 @@ import { TransactionService } from '../transaction/transaction.service'
 import { IRequest } from '../accounts/accounts.types'
 import { CreateAccountDto } from '../accounts/dto/create-account.dto'
 import { CreateWalletDto } from './dto/create-wallet.dto'
+import { AssetService } from '../asset/asset.service'
 
 @Injectable()
 export class WalletsService {
@@ -34,7 +35,7 @@ export class WalletsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly marketService: MarketService,
+    private readonly assetService: AssetService,
     private readonly transactionService: TransactionService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
@@ -112,7 +113,7 @@ export class WalletsService {
       `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
 
-    return this.addUSDPrice(transactions)
+    return this.assetService.addUSDPrice(transactions)
   }
 
   async getWallet(walletId) {
@@ -231,58 +232,58 @@ export class WalletsService {
     )
   }
 
-  getPrice(source: IMarketData[], timestamp: number) {
-    const index = source.findIndex(
-      (market) =>
-        new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
-        +timestamp >= new Date(market.periodStart).getTime() / 1000,
-    )
+  // getPrice(source: IMarketData[], timestamp: number) {
+  //   const index = source.findIndex(
+  //     (market) =>
+  //       new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
+  //       +timestamp >= new Date(market.periodStart).getTime() / 1000,
+  //   )
 
-    return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
-  }
+  //   return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
+  // }
 
-  async addUSDPrice(transactions: ITransaction[]) {
-    const ethMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.ETHEREUM,
-      EPeriod.All,
-    )
+  // async addUSDPrice(transactions: ITransaction[]) {
+  //   const ethMarketHistories = await this.marketService.getHistoricalData(
+  //     ENetworks.ETHEREUM,
+  //     EPeriod.All,
+  //   )
 
-    const btcMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.BITCOIN,
-      EPeriod.All,
-    )
-    // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
-    // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
+  //   const btcMarketHistories = await this.marketService.getHistoricalData(
+  //     ENetworks.BITCOIN,
+  //     EPeriod.All,
+  //   )
+  //   // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
+  //   // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
 
-    if (!ethMarketHistories.success || !btcMarketHistories.success) {
-      Sentry.captureException('Something went wrong in Morty service')
-      throw new InternalServerErrorException("Couldn't get market price ")
-    }
+  //   if (!ethMarketHistories.success || !btcMarketHistories.success) {
+  //     Sentry.captureException('Something went wrong in Morty service')
+  //     throw new InternalServerErrorException("Couldn't get market price ")
+  //   }
 
-    // if (!ethFee.success || !btcFee.success) {
-    //   Sentry.captureException('Something went wrong in Transaction service')
-    //   throw new InternalServerErrorException("Couldn't get fee price ")
-    // }
+  //   // if (!ethFee.success || !btcFee.success) {
+  //   //   Sentry.captureException('Something went wrong in Transaction service')
+  //   //   throw new InternalServerErrorException("Couldn't get fee price ")
+  //   // }
 
-    const newTransactions = transactions.map((transaction) => {
-      const isEthereum = isAddress(transaction.from)
-      const source = isEthereum
-        ? ethMarketHistories.data
-        : btcMarketHistories.data
-      const decimal = isEthereum ? 18 : 8
-      const price = this.getPrice(source, transaction.timestamp)
-      const value = formatUnits(transaction.balance, decimal)
-      const amount = formatUnits(transaction.amount, decimal)
-      return {
-        ...transaction,
-        cryptoAmount: transaction.amount,
-        fiatBalance: (+value * price).toString(),
-        fiatAmount: (+amount * price).toString(),
-      }
-    })
+  //   const newTransactions = transactions.map((transaction) => {
+  //     const isEthereum = isAddress(transaction.from)
+  //     const source = isEthereum
+  //       ? ethMarketHistories.data
+  //       : btcMarketHistories.data
+  //     const decimal = isEthereum ? 18 : 8
+  //     const price = this.getPrice(source, transaction.timestamp)
+  //     const value = formatUnits(transaction.balance, decimal)
+  //     const amount = formatUnits(transaction.amount, decimal)
+  //     return {
+  //       ...transaction,
+  //       cryptoAmount: transaction.amount,
+  //       fiatBalance: (+value * price).toString(),
+  //       fiatAmount: (+amount * price).toString(),
+  //     }
+  //   })
 
-    return newTransactions
-  }
+  //   return newTransactions
+  // }
 
   // async fluffyAPICall(path, body) {
   //   try {

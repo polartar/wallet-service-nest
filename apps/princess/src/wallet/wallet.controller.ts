@@ -73,13 +73,19 @@ export class WalletsController {
   })
   async getWalletPortfolio(
     @Param('walletId') walletId: number,
-    @Query() query?: GetWalletPortfolioDto,
+    @Query() query: GetWalletPortfolioDto,
   ) {
-    if (query && query.period) {
-      return await this.walletService.getWalletPortfolio(walletId, query.period)
-    } else {
-      return await this.walletService.getWallet(walletId)
-    }
+    return await this.walletService.getWalletPortfolio(walletId, query.period)
+  }
+
+  @Get(':walletId')
+  @ApiOkResponse({ type: WalletSwaggerResponse })
+  @ApiOperation({
+    summary:
+      'Time series data, where date is timestamp (number), and the value of that date.',
+  })
+  async getWallet(@Param('walletId') walletId: number) {
+    return await this.walletService.getWallet(walletId)
   }
 
   @Get('')

@@ -6,12 +6,6 @@ export interface IRequest extends Request {
   deviceId: string
 }
 
-export interface IMarketData {
-  periodStart: string
-  periodEnd: string
-  vwap: number
-}
-
 export interface IWallet {
   id: number
   title: string

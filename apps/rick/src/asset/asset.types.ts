@@ -27,3 +27,10 @@ export class ITransaction {
   hash: string
   timestamp: number
 }
+
+export interface IXPubInfo {
+  path: string
+  address: string
+  publickey: string
+  index: 0
+}

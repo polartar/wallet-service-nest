@@ -33,12 +33,12 @@ export interface IBTCTransaction {
   confirmed: string
 }
 
-export interface IXPubInfo {
-  path: string
-  address: string
-  publickey: string
-  index: 0
-}
+// export interface IXPubInfo {
+//   path: string
+//   address: string
+//   publickey: string
+//   index: 0
+// }
 
 export enum EXPubCurrency {
   ETHEREUM = 'ethereumclassic.secp256k1',

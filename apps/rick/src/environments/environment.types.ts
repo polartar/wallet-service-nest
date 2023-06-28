@@ -6,5 +6,7 @@ export enum EEnvironment {
   alchemyMainnetAPIKey = 'alchemy_mainnet_api_key',
   alchemyGoerliAPIKey = 'alchemy_goerli_api_key',
   liquidAPIKey = 'liquid_api_key',
-  liquidAPIUrl = 'liquid_api_url',
+  liquidTestAPIKey = 'liquid_test_api_key',
+  liquidAPIUrl = 'liquid__api_url',
+  liquidTestAPIUrl = 'liquid_test_api_url',
 }

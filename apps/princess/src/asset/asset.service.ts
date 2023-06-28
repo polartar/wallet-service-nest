@@ -1,13 +1,22 @@
 import { HttpService } from '@nestjs/axios'
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { REQUEST } from '@nestjs/core'
 import { EEnvironment } from '../environments/environment.types'
 import { IRequest } from '../accounts/accounts.types'
 import { CreateAssetDto } from './dto/create-asset.dto'
-import { EAPIMethod } from '../wallet/wallet.types'
+import { EAPIMethod, ITransaction } from '../wallet/wallet.types'
 import { firstValueFrom } from 'rxjs'
 import * as Sentry from '@sentry/node'
+import { MarketService } from '../market/market.service'
+import { ENetworks, EPeriod } from '@rana/core'
+import { formatUnits, isAddress } from 'ethers/lib/utils'
+import { IMarketData } from './asset.types'
 
 @Injectable()
 export class AssetService {
@@ -17,6 +26,7 @@ export class AssetService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly marketService: MarketService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
@@ -59,5 +69,81 @@ export class AssetService {
     }
 
     return asset
+  }
+
+  getPrice(source: IMarketData[], timestamp: number) {
+    const index = source.findIndex(
+      (market) =>
+        new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
+        +timestamp >= new Date(market.periodStart).getTime() / 1000,
+    )
+
+    return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
+  }
+
+  async addUSDPrice(transactions: ITransaction[]) {
+    const ethMarketHistories = await this.marketService.getHistoricalData(
+      ENetworks.ETHEREUM,
+      EPeriod.All,
+    )
+
+    const btcMarketHistories = await this.marketService.getHistoricalData(
+      ENetworks.BITCOIN,
+      EPeriod.All,
+    )
+    // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
+    // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
+
+    if (!ethMarketHistories.success || !btcMarketHistories.success) {
+      Sentry.captureException('Something went wrong in Morty service')
+      throw new InternalServerErrorException("Couldn't get market price ")
+    }
+
+    // if (!ethFee.success || !btcFee.success) {
+    //   Sentry.captureException('Something went wrong in Transaction service')
+    //   throw new InternalServerErrorException("Couldn't get fee price ")
+    // }
+
+    const newTransactions = transactions.map((transaction) => {
+      const isEthereum = isAddress(transaction.from)
+      const source = isEthereum
+        ? ethMarketHistories.data
+        : btcMarketHistories.data
+      const decimal = isEthereum ? 18 : 8
+      const price = this.getPrice(source, transaction.timestamp)
+      const value = formatUnits(transaction.balance, decimal)
+      const amount = formatUnits(transaction.amount, decimal)
+      return {
+        ...transaction,
+        cryptoAmount: transaction.amount,
+        fiatBalance: (+value * price).toString(),
+        fiatAmount: (+amount * price).toString(),
+      }
+    })
+
+    return newTransactions
+  }
+
+  async getAsset(assetId: number) {
+    const accountId = this.getAccountIdFromRequest()
+    const asset = await this.rickApiCall(
+      EAPIMethod.GET,
+      `/asset${assetId}?accountId=${accountId}`,
+    )
+
+    const transactions = await this.addUSDPrice(asset.transactions)
+    asset.balance = {
+      fiat: transactions[0].fiatBalance,
+      crypto: transactions[0].balance,
+    }
+    return asset
+  }
+
+  async getAssetTransactions(assetId: number, count = 50, start = 0) {
+    const accountId = this.getAccountIdFromRequest()
+    return await this.rickApiCall(
+      EAPIMethod.GET,
+      `/asset${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+    )
   }
 }

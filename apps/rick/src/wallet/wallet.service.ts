@@ -12,7 +12,6 @@ import {
   IAddressPath,
   IBTCTransaction,
   IBTCTransactionResponse,
-  IXPubInfo,
   SecondsIn,
 } from './wallet.types'
 import { BigNumber, ethers } from 'ethers'
@@ -50,8 +49,8 @@ export class WalletService {
     private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
-    @InjectRepository(AssetEntity)
-    private readonly assetRepository: Repository<AssetEntity>,
+    // @InjectRepository(AssetEntity)
+    // private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
     private readonly accountService: AccountService,
@@ -393,9 +392,7 @@ export class WalletService {
     // } else {
     let assets
     try {
-      assets = await this.assetRepository.find({
-        where: { id: In(assetIds) },
-      })
+      assets = await this.assetService.getAssetsByIds(assetIds)
     } catch (err) {
       Sentry.captureException(`Add new wallet(): ${err.message}`)
       throw new BadRequestException('Invalid asset ids')
@@ -441,60 +438,60 @@ export class WalletService {
     // // }
   }
 
-  async addAddressesFromXPub(wallet, xPub, network: ENetworks) {
-    try {
-      const discoverResponse = await firstValueFrom(
-        this.httpService.get(
-          `${this.liquidAPIUrl}/api/v1/currencies/${
-            network === ENetworks.ETHEREUM
-              ? EXPubCurrency.ETHEREUM
-              : EXPubCurrency.BITCOIN
-          }/accounts/discover?xpub=${xPub}`,
-          {
-            headers: { 'api-secret': this.liquidAPIKey },
-          },
-        ),
-      )
-      return Promise.all(
-        discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
-          try {
-            const asset = this.assetRepository.findOne({
-              where: { address: addressInfo.address, network: network },
-            })
-            if (!asset) {
-              this.assetService.createAsset(
-                addressInfo.address,
-                addressInfo.index,
-                network,
-                wallet,
-              )
-              // this.createAsset({
-              //   wallet,
-              //   address: addressInfo.address,
-              //   index: addressInfo.index,
-              //   network,
-              // })
-            }
-            return asset
-          } catch (err) {
-            Sentry.captureException(
-              `${err.message}: ${addressInfo.address} in createAsset()`,
-            )
-          }
-        }),
-      )
-    } catch (err) {
-      if (err.response) {
-        Sentry.captureException(
-          `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
-        )
-      } else {
-        Sentry.captureException(
-          `addAddressesFromXPub(): ${err.message}: ${xPub}`,
-        )
-      }
-    }
-  }
+  // async addAddressesFromXPub(wallet, xPub, network: ENetworks) {
+  //   try {
+  //     const discoverResponse = await firstValueFrom(
+  //       this.httpService.get(
+  //         `${this.liquidAPIUrl}/api/v1/currencies/${
+  //           network === ENetworks.ETHEREUM
+  //             ? EXPubCurrency.ETHEREUM
+  //             : EXPubCurrency.BITCOIN
+  //         }/accounts/discover?xpub=${xPub}`,
+  //         {
+  //           headers: { 'api-secret': this.liquidAPIKey },
+  //         },
+  //       ),
+  //     )
+  //     return Promise.all(
+  //       discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+  //         try {
+  //           const asset = this.assetRepository.findOne({
+  //             where: { address: addressInfo.address, network: network },
+  //           })
+  //           if (!asset) {
+  //             this.assetService.createAsset(
+  //               addressInfo.address,
+  //               addressInfo.index,
+  //               network,
+  //               wallet,
+  //             )
+  //             // this.createAsset({
+  //             //   wallet,
+  //             //   address: addressInfo.address,
+  //             //   index: addressInfo.index,
+  //             //   network,
+  //             // })
+  //           }
+  //           return asset
+  //         } catch (err) {
+  //           Sentry.captureException(
+  //             `${err.message}: ${addressInfo.address} in createAsset()`,
+  //           )
+  //         }
+  //       }),
+  //     )
+  //   } catch (err) {
+  //     if (err.response) {
+  //       Sentry.captureException(
+  //         `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
+  //       )
+  //     } else {
+  //       Sentry.captureException(
+  //         `addAddressesFromXPub(): ${err.message}: ${xPub}`,
+  //       )
+  //     }
+  //   }
+  // }
 
   // async createAsset(data: AddAddressDto): Promise<AssetEntity> {
   //   const prototype = new AssetEntity()
@@ -541,9 +538,9 @@ export class WalletService {
     )
   }
 
-  updateAddress(address: AssetEntity) {
-    return this.assetRepository.save(address)
-  }
+  // updateAddress(address: AssetEntity) {
+  //   return this.assetRepository.save(address)
+  // }
 
   // async updateWalletActive(data: IWalletActiveData): Promise<WalletEntity> {
   //   const wallet = await this.walletRepository.findOne({
@@ -860,13 +857,17 @@ export class WalletService {
 
       await Promise.all(
         xpubs.map(async (xpub) => {
-          return await this.addAddressesFromXPub(
-            wallet,
-            xpub.xpub,
-            xpub.type === ExPubTypes.BIP44
-              ? ENetworks.ETHEREUM
-              : ENetworks.BITCOIN,
-          )
+          try {
+            return await this.assetService.addAssetFromXPub(
+              xpub.xpub,
+              0,
+              xpub.type === ExPubTypes.BIP44
+                ? ENetworks.ETHEREUM
+                : ENetworks.BITCOIN,
+              wallet,
+            )
+            // eslint-disable-next-line no-empty
+          } catch (err) {}
         }),
       )
       await this.portfolioService.updateCurrentWallets()
