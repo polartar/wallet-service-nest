@@ -869,7 +869,9 @@ export class WalletService {
           )
         }),
       )
-      this.portfolioService.fetchEthereumTransactions()
+      await this.portfolioService.updateCurrentWallets()
+      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
+      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
 
       const newWallet = await this.getWallet(accountId, wallet.id)
       return newWallet

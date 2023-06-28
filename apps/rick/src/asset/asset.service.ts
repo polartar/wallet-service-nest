@@ -251,8 +251,8 @@ export class AssetService {
     prototype.network = network
 
     const assetEntity = await this.assetRepository.save(prototype)
-
-    this.portfolioService.fetchEthereumTransactions()
+    await this.portfolioService.updateCurrentWallets()
+    this.portfolioService.fetchEthereumTransactions(network)
     let transactions
     try {
       if (

@@ -99,7 +99,7 @@ export class WalletController {
         data.walletType,
       )
 
-      await this.portfolioService.initializeWallets()
+      await this.portfolioService.updateCurrentWallets()
       return res
     } catch (e) {
       Sentry.captureException(e.message + ' while addNewWallet')
@@ -157,7 +157,7 @@ export class WalletController {
   //       title,
   //     )
 
-  //     await this.portfolioService.initializeWallets()
+  //     await this.portfolioService.updateCurrentWallets()
   //     return res
   //   } catch (e) {
   //     Sentry.captureException(e.message + ' while addNewWallet')
@@ -171,7 +171,7 @@ export class WalletController {
   //   try {
   //     const res = await this.walletService.updateWalletActive(data)
 
-  //     await this.portfolioService.initializeWallets()
+  //     await this.portfolioService.updateCurrentWallets()
   //     return res
   //   } catch (e) {
   //     Sentry.captureException(e.message + ' in updateWalletActive()')
@@ -188,7 +188,7 @@ export class WalletController {
       data.xpubs,
     )
 
-    await this.portfolioService.initializeWallets()
+    await this.portfolioService.updateCurrentWallets()
     return res
   }
 

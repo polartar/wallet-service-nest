@@ -19,6 +19,8 @@ import { AssetService } from '../asset/asset.service'
 export class PortfolioService {
   activeEthAssets: AssetEntity[]
   activeBtcAssets: AssetEntity[]
+  activeTestEthAssets: AssetEntity[]
+  activeTestBtcAssets: AssetEntity[]
   provider: Ethers.providers.JsonRpcProvider
   princessAPIUrl: string
   btcSocket
@@ -30,21 +32,17 @@ export class PortfolioService {
     private readonly assetService: AssetService,
     private readonly httpService: HttpService,
   ) {
-    this.initializeWallets()
+    // this.updateCurrentWallets()
     this.btcSocket = new BlockchainSocket()
 
     this.btcSocket.onTransaction((transaction) => {
       this.onBTCTransaction(transaction)
     })
 
-    // const isProd = this.configService.get<boolean>(EEnvironment.isProduction)
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
     )
 
-    // const alchemyKey = this.configService.get<string>(
-    //   EEnvironment.alchemyAPIKey,
-    // )
     this.alchemyConfigure()
   }
 
@@ -69,11 +67,43 @@ export class PortfolioService {
     this.subscribeNFTTransferEvents()
   }
 
+  async updateCurrentWallets() {
+    const assets = await this.assetService.getAllAssets()
+
+    this.activeEthAssets = assets.filter(
+      (address) => address.network === ENetworks.ETHEREUM,
+    )
+    this.activeTestEthAssets = assets.filter(
+      (address) => address.network === ENetworks.ETHEREUM_TEST,
+    )
+
+    this.activeBtcAssets = assets.filter(
+      (address) => address.network === ENetworks.BITCOIN,
+    )
+    this.activeTestBtcAssets = assets.filter(
+      (address) => address.network === ENetworks.BITCOIN_TEST,
+    )
+  }
+
+  // async getEthAssets(): Promise<AssetEntity[]> {
+  //   return this.activeEthAssets
+  // }
+  // async getTestEthAssets(): Promise<AssetEntity[]> {
+  //   return this.activeTestEthAssets
+  // }
+
+  // async getBtcAssets(): Promise<AssetEntity[]> {
+  //   return this.activeBtcAssets
+  // }
+  // async getTestBtcAssets(): Promise<AssetEntity[]> {
+  //   return this.activeTestBtcAssets
+  // }
+
   getCurrentTimeBySeconds() {
     return Math.floor(Date.now() / 1000)
   }
 
-  subscribeEthereumTransactions(addresses: AssetEntity[]) {
+  subscribeEthereumTransactions(addresses: AssetEntity[], network: ENetworks) {
     let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
       (address) => ({
         from: address.address,
@@ -89,59 +119,69 @@ export class PortfolioService {
       address.address.toLowerCase(),
     )
 
-    this.alchemyInstance.ws.on(
-      {
-        method: AlchemySubscription.MINED_TRANSACTIONS,
-        addresses: sourceAddresses,
-        includeRemoved: true,
-        hashesOnly: false,
-      },
-      (tx) => {
-        try {
-          if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
-            const fee = BigNumber.from(tx.transaction.gasPrice).mul(
-              BigNumber.from(tx.transaction.gas),
-            )
-            const amount = BigNumber.from(tx.transaction.value).add(fee)
-            const updatedAddress = addresses.find(
-              (address) =>
-                address.address.toLowerCase() ===
-                tx.transaction.from.toLowerCase(),
-            )
-            this.assetService.updateHistory(updatedAddress, tx, amount)
-          }
+    this.alchemyInstance
+      .forNetwork(
+        network === ENetworks.ETHEREUM
+          ? Network.MATIC_MAINNET
+          : Network.ETH_GOERLI,
+      )
+      .ws.on(
+        {
+          method: AlchemySubscription.MINED_TRANSACTIONS,
+          addresses: sourceAddresses,
+          includeRemoved: true,
+          hashesOnly: false,
+        },
+        (tx) => {
+          try {
+            if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
+              const fee = BigNumber.from(tx.transaction.gasPrice).mul(
+                BigNumber.from(tx.transaction.gas),
+              )
+              const amount = BigNumber.from(tx.transaction.value).add(fee)
+              const updatedAddress = addresses.find(
+                (address) =>
+                  address.address.toLowerCase() ===
+                  tx.transaction.from.toLowerCase(),
+              )
+              this.assetService.updateHistory(updatedAddress, tx, amount)
+            }
 
-          if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
-            const amount = BigNumber.from(0).sub(
-              BigNumber.from(tx.transaction.value),
+            if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
+              const amount = BigNumber.from(0).sub(
+                BigNumber.from(tx.transaction.value),
+              )
+              const updatedAddress = addresses.find(
+                (address) =>
+                  address.address.toLowerCase() ===
+                  tx.transaction.to.toLowerCase(),
+              )
+              this.assetService.updateHistory(updatedAddress, tx, amount)
+            }
+          } catch (err) {
+            Sentry.captureException(
+              `${err.message} in subscribeEthereumTransactions: (${tx}) `,
             )
-            const updatedAddress = addresses.find(
-              (address) =>
-                address.address.toLowerCase() ===
-                tx.transaction.to.toLowerCase(),
-            )
-            this.assetService.updateHistory(updatedAddress, tx, amount)
           }
-        } catch (err) {
-          Sentry.captureException(
-            `${err.message} in subscribeEthereumTransactions: (${tx}) `,
-          )
-        }
-      },
-    )
+        },
+      )
   }
 
-  async fetchEthereumTransactions() {
-    const assets = await this.assetService.getAllAssets()
+  async fetchEthereumTransactions(network: ENetworks) {
+    const assets =
+      network === ENetworks.ETHEREUM
+        ? this.activeEthAssets
+        : this.activeTestEthAssets
 
-    const ethereumAssets = assets.filter(
-      (asset) => asset.network === ENetworks.ETHEREUM,
-    )
-    if (ethereumAssets.length === 0) return
+    this.alchemyInstance
+      .forNetwork(
+        network === ENetworks.ETHEREUM
+          ? Network.ETH_MAINNET
+          : Network.ETH_GOERLI,
+      )
+      .ws.removeAllListeners()
 
-    this.alchemyInstance.ws.removeAllListeners()
-
-    this.subscribeEthereumTransactions(ethereumAssets)
+    this.subscribeEthereumTransactions(assets, network)
   }
 
   // alchemyConfigure(isProd: boolean, alchemyKey: string) {
@@ -235,20 +275,16 @@ export class PortfolioService {
           ) {
             updatedAddresses.push(asset)
             postUpdatedAddresses.push({
-              addressId: asset.id,
-              walletId: asset.wallet.id,
-              accountIds: asset.wallet.accounts.map(
-                (account) => account.accountId,
-              ),
+              assetId: asset.id,
+              walletIds: asset.wallets.map((wallet) => wallet.id),
+              accountIds: asset.wallets.map((wallet) => wallet.account.id),
               newHistory: newHistoryData[0],
             })
             if (newHistoryData.length === 2) {
               postUpdatedAddresses.push({
-                addressId: asset.id,
-                walletId: asset.wallet.id,
-                accountIds: asset.wallet.accounts.map(
-                  (account) => account.accountId,
-                ),
+                assetId: asset.id,
+                walletIds: asset.wallets.map((wallet) => wallet.id),
+                accountIds: asset.wallets.map((wallet) => wallet.account.id),
                 newHistory: newHistoryData[1],
               })
             }
@@ -274,29 +310,12 @@ export class PortfolioService {
     }
   }
 
-  async initializeWallets() {
-    let assets = await this.assetService.getAllAssets()
-    assets = assets.filter((address) => address.wallet.isActive)
-
-    this.activeEthAssets = assets.filter(
-      (address) => address.network === ENetworks.ETHEREUM,
-    )
-
-    this.activeBtcAssets = assets.filter(
-      (address) => address.network === ENetworks.BITCOIN,
-    )
-  }
-
-  async getEthWallets(): Promise<AssetEntity[]> {
-    return this.activeEthAssets
-  }
-
-  async getBtcWallets(): Promise<AssetEntity[]> {
-    return this.activeBtcAssets
-  }
-
-  notifyNFTUpdate(sourceAddress: string) {
-    const assetEntity = this.activeEthAssets.find(
+  notifyNFTUpdate(sourceAddress: string, network: ENetworks) {
+    const sourceAssets =
+      network === ENetworks.ETHEREUM
+        ? this.activeEthAssets
+        : this.activeTestEthAssets
+    const assetEntity = sourceAssets.find(
       (address) => address.address.toLowerCase() === sourceAddress,
     )
     firstValueFrom(
@@ -305,10 +324,8 @@ export class PortfolioService {
         data: [
           {
             addressId: assetEntity.id,
-            walletId: assetEntity.wallet.id,
-            accountIds: assetEntity.wallet.accounts.map(
-              (account) => account.accountId,
-            ),
+            walletIds: assetEntity.wallets.map((wallet) => wallet.id),
+            accountIds: assetEntity.wallets.map((wallet) => wallet.account.id),
           },
         ],
       }),
@@ -338,26 +355,58 @@ export class PortfolioService {
     ]
     const transferIface = new ethers.utils.Interface(transferABI)
 
-    // listen NFT transfer events
-    this.alchemyInstance.ws.on(transferFilter, async (log) => {
-      try {
-        const currentAddresses: string[] = this.activeEthAssets.map((address) =>
-          address.address.toLowerCase(),
-        )
-        const { args } = transferIface.parseLog(log)
-        const fromAddress = args.from.toLowerCase()
-        const toAddress = args.to.toLowerCase()
+    // listen NFT transfer events on Mainnet
+    this.alchemyInstance
+      .forNetwork(Network.ETH_MAINNET)
+      .ws.on(transferFilter, async (log) => {
+        try {
+          const currentAddresses: string[] = this.activeEthAssets.map(
+            (address) => address.address.toLowerCase(),
+          )
+          const { args } = transferIface.parseLog(log)
+          const fromAddress = args.from.toLowerCase()
+          const toAddress = args.to.toLowerCase()
 
-        if (currentAddresses.includes(fromAddress)) {
-          this.notifyNFTUpdate(fromAddress)
-        }
+          if (currentAddresses.includes(fromAddress)) {
+            this.notifyNFTUpdate(fromAddress, ENetworks.ETHEREUM)
+          }
 
-        if (currentAddresses.includes(toAddress) && fromAddress !== toAddress) {
-          this.notifyNFTUpdate(toAddress)
+          if (
+            currentAddresses.includes(toAddress) &&
+            fromAddress !== toAddress
+          ) {
+            this.notifyNFTUpdate(toAddress, ENetworks.ETHEREUM)
+          }
+        } catch (err) {
+          /* continue regardless of error */
         }
-      } catch (err) {
-        /* continue regardless of error */
-      }
-    })
+      })
+
+    // listen NFT transfer events on Goerli
+    this.alchemyInstance
+      .forNetwork(Network.ETH_GOERLI)
+      .ws.on(transferFilter, async (log) => {
+        try {
+          const currentAddresses: string[] = this.activeTestEthAssets.map(
+            (address) => address.address.toLowerCase(),
+          )
+          const { args } = transferIface.parseLog(log)
+          const fromAddress = args.from.toLowerCase()
+          const toAddress = args.to.toLowerCase()
+
+          if (currentAddresses.includes(fromAddress)) {
+            this.notifyNFTUpdate(fromAddress, ENetworks.ETHEREUM_TEST)
+          }
+
+          if (
+            currentAddresses.includes(toAddress) &&
+            fromAddress !== toAddress
+          ) {
+            this.notifyNFTUpdate(toAddress, ENetworks.ETHEREUM_TEST)
+          }
+        } catch (err) {
+          /* continue regardless of error */
+        }
+      })
   }
 }
