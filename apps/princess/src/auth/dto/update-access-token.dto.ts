@@ -5,16 +5,16 @@ export class UpdateAccessTokenDto {
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
   @IsNumber()
-  account_id: number
+  accountId: number
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()
   @IsUUID(4)
-  device_id: string
+  deviceId: string
 
   @ApiProperty({ description: 'refresh token' })
   @IsNotEmpty()
-  refresh_token: string
+  refreshToken: string
 
   @ApiProperty({ description: 'one time password or secret' })
   @IsNotEmpty()

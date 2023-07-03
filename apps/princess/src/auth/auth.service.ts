@@ -5,6 +5,7 @@ import {
   Request,
   Inject,
   ForbiddenException,
+  BadGatewayException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -13,6 +14,9 @@ import { AccountsService } from '../accounts/accounts.service'
 import { REQUEST } from '@nestjs/core'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { IAccessTokenPayload } from '../bootstrap/bootstrap.types'
+import * as Sentry from '@sentry/node'
+import { EAuth } from '@rana/core'
+import { firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class AuthService {
@@ -117,7 +121,7 @@ export class AuthService {
   //   }
   // }
 
-  async regenerateAccessToken(
+  async generateAccessToken(
     accountId: number,
     deviceId: string,
     otp: string,
@@ -137,45 +141,57 @@ export class AuthService {
       throw new ForbiddenException('Invalid refresh token')
     }
 
-    if (
-      +payload.accountId !== accountId ||
-      payload.deviceId !== deviceId ||
-      payload.otp !== otp
-    ) {
+    if (+payload.accountId !== accountId || payload.deviceId !== deviceId) {
       throw new BadRequestException(
         "Wrong refresh token. The payload isn't matched",
       )
     }
 
-    const accessToken = this.bootstrapService.generateAccessToken(payload)
+    await this.accountService.checkPair(accountId, deviceId, otp)
+
+    const newPayload = {
+      type: payload.type,
+      accountId: accountId,
+      idToken: payload.idToken,
+      deviceId,
+    }
+
+    const accessToken = this.bootstrapService.generateAccessToken(newPayload)
 
     return accessToken
   }
 
-  // async refresh(
-  //   type: EAuth | 'Anonymous',
-  //   idToken: string,
-  //   accountId: number,
-  //   deviceId: string,
-  //   otp: string,
-  // ): Promise<string> {
-  //   if (type === EAuth.Google || type === EAuth.Apple) {
-  //     const userResponse = await this.getUserFromIdToken(idToken, type)
-  //     if (accountId !== userResponse.account.id) {
-  //       throw new ForbiddenException(`Wrong account Id: ${accountId}`)
-  //     }
-  //     await this.syncRick(userResponse.is_new, userResponse.account, accountId)
-  //   }
+  async generateRefreshToken(
+    provider: EAuth | 'Anonymous',
+    providerToken: string,
+    accountId: number,
+    deviceId: string,
+    otp: string,
+  ): Promise<string> {
+    if (provider === EAuth.Google || provider === EAuth.Apple) {
+      const userResponse = await this.accountService.getUserFromIdToken(
+        providerToken,
+        provider,
+        accountId,
+      )
+      if (accountId !== userResponse.account.id) {
+        throw new ForbiddenException(`Wrong account Id: ${accountId}`)
+      }
+      await this.accountService.syncRick(
+        userResponse.is_new,
+        userResponse.account,
+        accountId,
+      )
+    }
 
-  //   const pair = await this.checkPair(
-  //     accountId,
-  //     false,
-  //     {},
-  //     type,
-  //     idToken,
-  //     deviceId,
-  //     otp,
-  //   )
-  //   return pair.refresh_token
-  // }
+    await this.accountService.checkPair(accountId, deviceId, otp)
+
+    const payload = {
+      type: provider,
+      accountId: accountId,
+      idToken: providerToken,
+      deviceId,
+    }
+    return await this.bootstrapService.generateRefreshToken(payload)
+  }
 }

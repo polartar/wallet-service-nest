@@ -61,7 +61,6 @@ export class BootstrapService {
         accountId: userResponse.data.id,
         idToken: deviceResponse.data.deviceId,
         deviceId: deviceResponse.data.deviceId,
-        otp: deviceResponse.data.otp,
       }
       const accessToken = await this.generateAccessToken(payload)
 

@@ -173,13 +173,7 @@ export class AccountsService {
     }
   }
 
-  async checkPair(
-    accountId: number,
-    type: EAuth | 'Anonymous',
-    token: string,
-    deviceId: string,
-    otp: string,
-  ) {
+  async checkPair(accountId: number, deviceId: string, otp: string) {
     try {
       await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
@@ -188,26 +182,6 @@ export class AccountsService {
           otp,
         }),
       )
-
-      const payload = {
-        type: type,
-        accountId: accountId,
-        idToken: token,
-        deviceId,
-        otp,
-      }
-
-      const accessToken = await this.bootstrapService.generateAccessToken(
-        payload,
-      )
-      const refreshToken = await this.bootstrapService.generateRefreshToken(
-        payload,
-      )
-
-      return {
-        accessToken,
-        refreshToken,
-      }
     } catch (err) {
       Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
       if (err.response) {
@@ -262,12 +236,18 @@ export class AccountsService {
 
     const userWallet = await this.syncRick(user.is_new, user.account, accountId)
 
-    const { accessToken, refreshToken } = await this.checkPair(
-      user.account.id,
-      type,
-      token,
+    await this.checkPair(user.account.id, deviceId, otp)
+
+    const payload = {
+      type: type,
+      accountId: accountId,
+      idToken: token,
       deviceId,
-      otp,
+    }
+
+    const accessToken = await this.bootstrapService.generateAccessToken(payload)
+    const refreshToken = await this.bootstrapService.generateRefreshToken(
+      payload,
     )
 
     if (user.is_new) {

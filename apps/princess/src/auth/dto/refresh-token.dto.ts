@@ -7,19 +7,19 @@ export class RefreshTokenDto {
     description: 'auth type',
     enum: [EAuth.Apple, EAuth.Google, 'Anonymous'],
   })
-  type: EAuth | 'Anonymous'
+  provider: EAuth | 'Anonymous'
 
   @ApiProperty({
     description:
       'token of Google or Apple login. When anonymous, it will be empty',
   })
   @IsOptional()
-  id_token: string
+  providerToken: string
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()
   @IsUUID(4)
-  device_id: string
+  deviceId: string
 
   @ApiProperty({ description: 'one time password' })
   @IsNotEmpty()
@@ -27,5 +27,5 @@ export class RefreshTokenDto {
 
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
-  account_id: number
+  accountId: number
 }

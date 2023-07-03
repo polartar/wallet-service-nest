@@ -1,8 +1,10 @@
 import { AuthService } from './auth.service'
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, UsePipes } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Public } from '../gateway/decorators/public.decorator'
 import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
+import { RefreshTokenValidationPipe } from './auth.pipe'
 
 @Controller('token')
 @ApiTags('token')
@@ -49,24 +51,24 @@ export class AuthController {
   })
   @Public()
   async generateAccessToken(@Body() data: UpdateAccessTokenDto) {
-    return this.authService.regenerateAccessToken(
-      data.account_id,
-      data.device_id,
+    return this.authService.generateAccessToken(
+      data.accountId,
+      data.deviceId,
       data.otp,
-      data.refresh_token,
+      data.refreshToken,
     )
   }
 
-  // @Post('refresh')
-  // @Public()
-  // @UsePipes(new RefreshTokenValidationPipe())
-  // async refresh(@Body() data: RefreshTokenDto) {
-  //   return this.authService.refresh(
-  //     data.type,
-  //     data.id_token,
-  //     data.account_id,
-  //     data.device_id,
-  //     data.otp,
-  //   )
-  // }
+  @Post('refresh')
+  @Public()
+  @UsePipes(new RefreshTokenValidationPipe())
+  async refresh(@Body() data: RefreshTokenDto) {
+    return this.authService.generateRefreshToken(
+      data.provider,
+      data.providerToken,
+      data.accountId,
+      data.deviceId,
+      data.otp,
+    )
+  }
 }

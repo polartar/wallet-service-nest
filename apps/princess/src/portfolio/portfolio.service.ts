@@ -42,7 +42,7 @@ export class PortfolioService {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       })
-      return payload.userId
+      return payload.accountId
     } catch (err) {
       Sentry.captureException('Unauthorize')
 
