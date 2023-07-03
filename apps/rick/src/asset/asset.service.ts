@@ -1,13 +1,15 @@
 import { WalletEntity } from './../wallet/wallet.entity'
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common'
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, MoreThan, Repository } from 'typeorm'
-import { ENetworks, EPeriod, EPortfolioType, getTimestamp } from '@rana/core'
+import { ENetworks, EPeriod, EPortfolioType } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
@@ -20,7 +22,6 @@ import ERC1155ABI from '../asset/abis/erc1155'
 import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { EXPubCurrency, SecondsIn } from '../wallet/wallet.types'
-import Moralis from 'moralis'
 import { NftService } from '../nft/nft.service'
 
 @Injectable()
@@ -38,6 +39,7 @@ export class AssetService {
     private configService: ConfigService,
     private httpService: HttpService,
     private nftService: NftService,
+    @Inject(forwardRef(() => PortfolioService))
     private portfolioService: PortfolioService,
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
@@ -540,5 +542,9 @@ export class AssetService {
       asset.network,
       pageNumber,
     )
+  }
+
+  updateAssets(assets: AssetEntity[]) {
+    return Promise.all(assets.map((asset) => this.assetRepository.save(asset)))
   }
 }

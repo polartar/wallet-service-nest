@@ -11,6 +11,7 @@ import { TransactionEntity } from './transaction.entity'
 import { AssetEntity } from './asset.entity'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
+import { NftService } from '../nft/nft.service'
 
 @Module({
   imports: [
@@ -20,12 +21,13 @@ import { PortfolioService } from '../portfolio/portfolio.service'
       AssetEntity,
       TransactionEntity,
     ]),
-    forwardRef(() => PortfolioModule),
+    // forwardRef(() => PortfolioModule),
+    PortfolioModule,
     AccountModule,
     HttpModule,
   ],
   controllers: [WalletController],
-  providers: [WalletService, AssetService, PortfolioService],
+  providers: [WalletService, AssetService, PortfolioService, NftService],
   exports: [WalletService],
 })
 export class WalletModule {}

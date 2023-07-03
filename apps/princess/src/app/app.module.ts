@@ -27,6 +27,7 @@ import { AssetModule } from '../asset/asset.module'
     TransactionModule,
     BootstrapModule,
     AssetModule,
+    AccountsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import { In, MoreThan, Repository } from 'typeorm'
+import { MoreThan, Repository } from 'typeorm'
 import {
   BadRequestException,
   Injectable,
@@ -7,30 +7,17 @@ import {
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import {
-  EXPubCurrency,
-  IAddressPath,
-  IBTCTransaction,
-  IBTCTransactionResponse,
-  SecondsIn,
-} from './wallet.types'
-import { BigNumber, ethers } from 'ethers'
+import { IBTCTransaction, SecondsIn } from './wallet.types'
+import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { firstValueFrom, timestamp } from 'rxjs'
 import { TransactionEntity } from './transaction.entity'
-import { AddAddressDto } from './dto/add-address.dto'
 import { AddHistoryDto } from './dto/add-history.dto'
-import { ENetworks, EPeriod, EPortfolioType, EWalletType } from '@rana/core'
-import { IWalletActiveData } from '../portfolio/portfolio.types'
+import { ENetworks, EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
-import { Alchemy, AlchemySubscription, Network } from 'alchemy-sdk'
 import { ExPubTypes, IXPub } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
-import { AccountEntity } from '../account/account.entity'
-import ERC721ABI from '../asset/abis/erc721'
-import ERC1155ABI from '../asset/abis/erc1155'
 import { AssetEntity } from './asset.entity'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
@@ -46,7 +33,7 @@ export class WalletService {
 
   constructor(
     private configService: ConfigService,
-    private httpService: HttpService,
+    // private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
     // @InjectRepository(AssetEntity)
@@ -121,7 +108,7 @@ export class WalletService {
         currentBalance = record.spent
           ? currentBalance - record.value
           : currentBalance + record.value
-        return this.addHistory({
+        return this.assetService.addHistory({
           asset: asset,
           from: record.spent ? asset.address : '',
           to: record.spent ? '' : asset.address,
@@ -565,9 +552,9 @@ export class WalletService {
   //   return await this.walletRepository.save(wallet)
   // }
 
-  addHistory(data: AddHistoryDto) {
-    return this.transactionRepository.save(data)
-  }
+  // addHistory(data: AddHistoryDto) {
+  //   return this.transactionRepository.save(data)
+  // }
 
   async getUserWalletPortfolio(
     accountId: number,

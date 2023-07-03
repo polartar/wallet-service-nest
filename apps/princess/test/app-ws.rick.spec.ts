@@ -15,7 +15,7 @@ import {
 } from '@nestjs/platform-fastify'
 import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
-import { MarketService } from '../src/market/market.service'
+import { CoinService } from '../src/market/market.service'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +30,7 @@ const runPrincessPortfolioModule = async () => {
     providers: [
       RickGateway, //
       PortfolioService,
-      MarketService,
+      CoinService,
     ],
   }).compile()
 

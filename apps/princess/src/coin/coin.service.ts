@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { HttpService } from '@nestjs/axios'
 import { Server } from 'socket.io'
-import { EPeriod, ENetworks, ECoinTypes } from '@rana/core'
+import { EPeriod, ECoinTypes } from '@rana/core'
 import { EEnvironment } from '../environments/environment.types'
 import * as Sentry from '@sentry/node'
 

@@ -5,7 +5,7 @@ import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { ESort, INewsQuery } from './news.types'
-import { ENetworks, getTimestamp } from '@rana/core'
+import { ECoinTypes, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { NewsPaginationDto } from './dto/news-pagination.dto'
 
@@ -60,37 +60,39 @@ export class NewsService {
   }
 
   generateParams(query: INewsQuery): string {
-    const skip = (query.pageNumber - 1) * query.countPerPage
-    let params = `?limit=${query.countPerPage}&skip=${skip}`
+    const skip = (query['page-number'] - 1) * query['count-per-page']
+    let params = `?limit=${query['count-per-page']}&skip=${skip}`
 
     if (query.sort === ESort.DESC) {
       params += '&sort=desc'
     } else {
       params += '&sort=asc'
     }
-    if (query.startTime) {
-      params += `&startTime=${query.startTime}`
+    if (query['start-time']) {
+      params += `&startTime=${query['start-time']}`
     }
-    if (query.endTime) {
-      params += `&endTime=${query.endTime}`
+    if (query['end-time']) {
+      params += `&endTime=${query['end-time']}`
     }
-    if (query.symbol) {
-      params += `&symbols=${query.symbol}`
+    if (query.coin) {
+      params += `&symbols=${query.coin}`
     } else {
-      params += `&symbols=${ENetworks.BITCOIN},${ENetworks.ETHEREUM}`
+      params += `&symbols=${ECoinTypes.BITCOIN},${ECoinTypes.ETHEREUM}`
     }
     return params
   }
 
   async getNews(query: NewsPaginationDto) {
     const newQuery = query
-    newQuery.pageNumber = query.pageNumber || 1
-    newQuery.countPerPage = query.countPerPage || this.defaultCountPerPage
+    console.log({ query })
+    newQuery['page-number'] = query['page-number'] || 1
+    newQuery['count-per-page'] =
+      query['count-per-page'] || this.defaultCountPerPage
 
     const params = query.highlights
       ? `?limit=${query.highlights}`
       : this.generateParams(newQuery)
-
+    console.log({ params })
     const apiURL = `${this.fidelityNewsApiUrl}/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
@@ -115,8 +117,8 @@ export class NewsService {
         return {
           news,
           total: (res.data as { total: number }).total,
-          currentPage: newQuery.pageNumber,
-          countPerPage: newQuery.countPerPage,
+          currentPage: newQuery['page-number'],
+          countPerPage: newQuery['count-per-page'],
         }
       }
     } catch (err) {

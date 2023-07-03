@@ -1,4 +1,4 @@
-import { ENetworks } from '@rana/core'
+import { ECoinTypes } from '@rana/core'
 
 export interface INewsResponse {
   success: boolean
@@ -14,9 +14,9 @@ export enum ESort {
 
 export interface INewsQuery {
   sort?: ESort
-  countPerPage?: number
-  pageNumber?: number
-  startTime?: Date
-  endTime?: Date
-  symbol?: ENetworks
+  'count-per-page'?: number
+  'page-number'?: number
+  'start-time'?: Date
+  'end-time'?: Date
+  coin?: ECoinTypes
 }

@@ -28,7 +28,6 @@ export class PortfolioService {
 
   constructor(
     private configService: ConfigService,
-    private readonly walletService: WalletService,
     private readonly assetService: AssetService,
     private readonly httpService: HttpService,
   ) {
@@ -229,7 +228,7 @@ export class PortfolioService {
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.getCurrentTimeBySeconds(),
             })
-            const newHistory = await this.walletService.addHistory({
+            const newHistory = await this.assetService.addHistory({
               asset,
               ...newHistoryData[0],
             })
@@ -259,7 +258,7 @@ export class PortfolioService {
               newHistoryData.length === 1
                 ? newHistoryData[0]
                 : newHistoryData[1]
-            const newHistory = await this.walletService.addHistory({
+            const newHistory = await this.assetService.addHistory({
               asset,
               ...historyData,
             })
@@ -303,7 +302,7 @@ export class PortfolioService {
           Sentry.captureException(`Princess portfolio/updated: ${err.message}`)
         })
 
-        return this.walletService.updateWallets(updatedAddresses)
+        return this.assetService.updateAssets(updatedAddresses)
       }
     } catch (err) {
       Sentry.captureException(`onBTCTransaction(): ${err.message}`)

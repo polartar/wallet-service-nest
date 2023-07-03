@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
 import { EEnvironment } from '../environments/environment.types'
-import { INFTAssetResponse, INFTInfo, INTAssetInput } from './nft.types'
+import { INFTAssetResponse, INFTInfo } from './nft.types'
 import * as Sentry from '@sentry/node'
 import { ENetworks, getTimestamp } from '@rana/core'
 

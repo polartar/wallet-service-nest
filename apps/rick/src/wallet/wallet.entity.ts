@@ -32,7 +32,7 @@ export class WalletEntity {
   account: AccountEntity
 
   @ManyToMany(() => AssetEntity, (address) => address.wallets)
-  @JoinColumn()
+  @JoinTable()
   assets: AssetEntity[]
 
   @Column()

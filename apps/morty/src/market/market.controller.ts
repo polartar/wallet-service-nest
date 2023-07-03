@@ -1,10 +1,10 @@
 import { Controller, Get, Param, ParseEnumPipe, Query } from '@nestjs/common'
-import { MarketService } from './market.service'
+import { CoinService } from './market.service'
 import { EPeriod, ECoinTypes } from '@rana/core'
 
 @Controller('market')
 export class MarketController {
-  constructor(private readonly marketService: MarketService) {}
+  constructor(private readonly marketService: CoinService) {}
 
   @Get(':/coinType')
   getEthMarketData(@Param('coinType') coinType: ECoinTypes) {

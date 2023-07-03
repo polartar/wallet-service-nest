@@ -35,7 +35,7 @@ export class GateWayGuard implements CanActivate {
 
       request['accountId'] = payload.accountId
       request['deviceId'] = payload.deviceId
-    } catch {
+    } catch (err) {
       throw new UnauthorizedException()
     }
     return true

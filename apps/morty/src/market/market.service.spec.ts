@@ -1,11 +1,11 @@
 import { HttpModule } from '@nestjs/axios'
 import { Test, TestingModule } from '@nestjs/testing'
-import { MarketService } from './market.service'
+import { CoinService } from './market.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 
-describe('MarketService', () => {
-  let service: MarketService
+describe('CoinService', () => {
+  let service: CoinService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -13,10 +13,10 @@ describe('MarketService', () => {
         HttpModule, //
         ConfigModule.forRoot({ load: [Environment] }),
       ],
-      providers: [MarketService],
+      providers: [CoinService],
     }).compile()
 
-    service = module.get<MarketService>(MarketService)
+    service = module.get<CoinService>(CoinService)
   })
 
   it('should be defined', () => {

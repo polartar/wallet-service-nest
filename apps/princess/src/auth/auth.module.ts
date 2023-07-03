@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { HttpModule } from '@nestjs/axios'
 import { AccountsService } from '../accounts/accounts.service'
-import { MarketService } from '../coin/coin.service'
+import { CoinService } from '../coin/coin.service'
 import { TransactionService } from '../transaction/transaction.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 
@@ -17,7 +17,7 @@ import { BootstrapService } from '../bootstrap/bootstrap.service'
   providers: [
     AuthService,
     AccountsService,
-    MarketService,
+    CoinService,
     TransactionService,
     BootstrapService,
   ],

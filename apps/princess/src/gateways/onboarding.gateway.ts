@@ -11,16 +11,16 @@ import { AuthService } from '../auth/auth.service'
 export class OnboardingGateway {
   constructor(private readonly onboardingService: AuthService) {}
 
-  @SubscribeMessage('bootstrap')
-  async handleBootstrap(
-    @MessageBody('account_id')
-    accountId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.onboardingService.getAccountHash(accountId).then((hash) => {
-      client.emit('bootstrap_client', hash)
-    })
-  }
+  // @SubscribeMessage('bootstrap')
+  // async handleBootstrap(
+  //   @MessageBody('account_id')
+  //   accountId: number,
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   this.onboardingService.getAccountHash(accountId).then((hash) => {
+  //     client.emit('bootstrap_client', hash)
+  //   })
+  // }
 
   // @SubscribeMessage('sync')
   // async handleSync(

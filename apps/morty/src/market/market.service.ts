@@ -9,7 +9,7 @@ import { EPeriod, getTimestamp, ECoinTypes } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
-export class MarketService {
+export class CoinService {
   private ethClient = null
   private btcClient
   coinMarketAPI: string
