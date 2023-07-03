@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { AccountsService } from '../accounts/accounts.service'
 import { JwtService } from '@nestjs/jwt'
-import { MarketService } from '../market/market.service'
+import { MarketService } from '../coin/coin.service'
 import { TransactionService } from '../transaction/transaction.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 

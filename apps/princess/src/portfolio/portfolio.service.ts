@@ -211,21 +211,21 @@ export class PortfolioService {
       )
   }
 
-  async getNFTAssets(address: string, pageNumber: number) {
-    const page = pageNumber || 1
+  // async getNFTAssets(address: string, pageNumber: number) {
+  //   const page = pageNumber || 1
 
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.rickApiUrl}/nft?address=${address}&page=${page}`,
-        ),
-      )
+  //   try {
+  //     const response = await firstValueFrom(
+  //       this.httpService.get(
+  //         `${this.rickApiUrl}/nft?address=${address}&page=${page}`,
+  //       ),
+  //     )
 
-      return response.data
-    } catch (err) {
-      Sentry.captureException(`getNFTAssets(): ${err.message}`)
+  //     return response.data
+  //   } catch (err) {
+  //     Sentry.captureException(`getNFTAssets(): ${err.message}`)
 
-      throw new BadRequestException(`Rick API call: ${err.message}`)
-    }
-  }
+  //     throw new BadRequestException(`Rick API call: ${err.message}`)
+  //   }
+  // }
 }

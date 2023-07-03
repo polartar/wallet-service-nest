@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common'
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
-import { ENetworks, EPortfolioType } from '@rana/core'
+import { In, MoreThan, Repository } from 'typeorm'
+import { ENetworks, EPeriod, EPortfolioType, getTimestamp } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
@@ -19,7 +19,9 @@ import ERC721ABI from '../asset/abis/erc721'
 import ERC1155ABI from '../asset/abis/erc1155'
 import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { EXPubCurrency } from '../wallet/wallet.types'
+import { EXPubCurrency, SecondsIn } from '../wallet/wallet.types'
+import Moralis from 'moralis'
+import { NftService } from '../nft/nft.service'
 
 @Injectable()
 export class AssetService {
@@ -35,6 +37,7 @@ export class AssetService {
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
+    private nftService: NftService,
     private portfolioService: PortfolioService,
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
@@ -445,22 +448,18 @@ export class AssetService {
   }
 
   getAsset(assetId: number) {
-    return this.assetRepository.find({
+    return this.transactionRepository.findOne({
       where: {
-        id: assetId,
+        asset: {
+          id: assetId,
+        },
       },
       order: {
-        transactions: {
-          timestamp: 'DESC',
-        },
+        timestamp: 'DESC',
       },
       relations: {
-        wallets: {
-          account: true,
-        },
-        transactions: true,
+        asset: true,
       },
-      take: 1,
     })
   }
 
@@ -502,5 +501,44 @@ export class AssetService {
     return await this.assetRepository.find({
       where: { id: In(assetIds) },
     })
+  }
+
+  async getAssetPortfolio(accountId: number, assetId: number, period: EPeriod) {
+    const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
+    const timeInPast =
+      period === EPeriod.All
+        ? 0
+        : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
+
+    return this.assetRepository.findOne({
+      where: {
+        id: assetId,
+        wallets: {
+          account: {
+            accountId: accountId,
+          },
+        },
+        transactions: {
+          timestamp: MoreThan(timeInPast),
+        },
+      },
+      relations: {
+        transactions: true,
+      },
+    })
+  }
+
+  async getNFTAssets(assetId: number, pageNumber: number) {
+    const asset = await this.assetRepository.findOne({ where: { id: assetId } })
+    if (!asset) {
+      Sentry.captureException(`getNFTAssets(): AssetId(${assetId}) Not found`)
+
+      throw new BadRequestException('Not found asset')
+    }
+    return this.nftService.getNFTAssets(
+      asset.address,
+      asset.network,
+      pageNumber,
+    )
   }
 }

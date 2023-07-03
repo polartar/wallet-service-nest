@@ -26,12 +26,12 @@ export class PortfolioController {
     this.portfolioService.handleUpdatedAddresses(type, data)
   }
 
-  @Get('/nft/:address')
-  @ApiOperation({ summary: 'Get NFT assets from address' })
-  async getNFTAssets(
-    @Param('address') address: string,
-    @Query('page') pageNumber?: number,
-  ) {
-    return this.portfolioService.getNFTAssets(address, pageNumber)
-  }
+  // @Get('/nft/:address')
+  // @ApiOperation({ summary: 'Get NFT assets from address' })
+  // async getNFTAssets(
+  //   @Param('address') address: string,
+  //   @Query('page') pageNumber?: number,
+  // ) {
+  //   return this.portfolioService.getNFTAssets(address, pageNumber)
+  // }
 }

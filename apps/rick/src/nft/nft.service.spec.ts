@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NftService } from './nft.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
+import { ENetworks } from '@rana/core'
 
 describe('NftService', () => {
   let service: NftService
@@ -22,9 +23,11 @@ describe('NftService', () => {
   })
 
   it('should get NFT assets', async () => {
-    const assets = await service.getNFTAssets({
-      address: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-    })
+    const assets = await service.getNFTAssets(
+      '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+      ENetworks.ETHEREUM_TEST,
+      1,
+    )
     expect(assets.success).toBeTruthy()
     expect(assets.data.nfts.length).toBe(100)
   }, 20000)

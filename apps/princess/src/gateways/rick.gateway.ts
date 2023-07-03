@@ -12,7 +12,7 @@ import {
 import { Server, Socket } from 'socket.io'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
-import { MarketService } from '../market/market.service'
+import { CoinService } from '../coin/coin.service'
 
 @WebSocketGateway() //, { namespace: 'rick', transports: ['websocket'] })
 export class RickGateway
@@ -26,11 +26,11 @@ export class RickGateway
 
   constructor(
     private readonly portfolioService: PortfolioService,
-    private readonly marketService: MarketService,
+    private readonly coinService: CoinService,
   ) {}
   afterInit() {
     Logger.log('Init')
-    this.marketService.server = this.server
+    this.coinService.server = this.server
   }
 
   handleDisconnect(client: Socket) {

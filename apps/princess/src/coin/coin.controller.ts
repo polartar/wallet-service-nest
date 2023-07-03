@@ -7,8 +7,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common'
-import { MarketService } from './market.service'
-import { EPeriod, ENetworks } from '@rana/core'
+import { CoinService } from './coin.service'
+import { EPeriod, ENetworks, ECoinTypes } from '@rana/core'
 import {
   ApiOkResponse,
   ApiOperation,
@@ -20,16 +20,16 @@ import { Public } from '../gateway/decorators/public.decorator'
 import { CoinMarketSwaggerResponse } from './dto/coin-market.dto'
 import { CoinHistorySwaggerResponse } from './dto/coin-history.dto'
 
-@Controller('market')
-@ApiTags('market')
-export class MarketController {
-  constructor(private readonly marketService: MarketService) {}
+@Controller('coin')
+@ApiTags('coin')
+export class CoinController {
+  constructor(private readonly coinService: CoinService) {}
 
   @ApiOperation({ summary: "This api can't be called directly" })
   @Post('price/eth')
   @Public()
   async setEthPrice(@Body() data: { ethereum: string }) {
-    this.marketService.setEthPrice(data.ethereum)
+    this.coinService.setEthPrice(data.ethereum)
     return true
   }
 
@@ -37,41 +37,43 @@ export class MarketController {
   @Post('price/btc')
   @Public()
   async setBtcPrice(@Body() data: { bitcoin: string }) {
-    this.marketService.setBtcPrice(data.bitcoin)
+    this.coinService.setBtcPrice(data.bitcoin)
     return true
   }
 
-  @Get(':coin')
+  @Get(':coinType/market')
   @ApiOkResponse({ type: CoinMarketSwaggerResponse })
   @ApiOperation({ summary: 'Get the current market data of the selected coin' })
-  @ApiParam({ name: 'coin', enum: ENetworks })
+  @ApiParam({ name: 'coinType', enum: ECoinTypes })
   async getEthMarketData(
-    @Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks,
+    @Param('coinType', new ParseEnumPipe(ECoinTypes)) coinType: ECoinTypes,
   ) {
-    return this.marketService.getMarketData(coin)
+    return this.coinService.getMarketData(coinType)
   }
 
-  @Get('eth/history')
+  @Get(':coinType/portfolio')
   @ApiOkResponse({ type: CoinHistorySwaggerResponse })
   @ApiOperation({
     summary: 'Get the current market history of the selected coin',
   })
+  @ApiParam({ name: 'coinType', enum: ECoinTypes })
   @ApiQuery({ name: 'period', enum: EPeriod })
   getEthHistoricalData(
+    @Param('coinType', new ParseEnumPipe(ECoinTypes)) coinType: ECoinTypes,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.marketService.getHistoricalData(ENetworks.ETHEREUM, period)
+    return this.coinService.getHistoricalData(coinType, period)
   }
 
-  @Get('btc/history')
-  @ApiOkResponse({ type: CoinHistorySwaggerResponse })
-  @ApiOperation({
-    summary: 'Get the current market history of the selected coin',
-  })
-  @ApiQuery({ name: 'period', enum: EPeriod })
-  getBtcHistoricalData(
-    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
-  ) {
-    return this.marketService.getHistoricalData(ENetworks.BITCOIN, period)
-  }
+  // @Get('btc/history')
+  // @ApiOkResponse({ type: CoinHistorySwaggerResponse })
+  // @ApiOperation({
+  //   summary: 'Get the current market history of the selected coin',
+  // })
+  // @ApiQuery({ name: 'period', enum: EPeriod })
+  // getBtcHistoricalData(
+  //   @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  // ) {
+  //   return this.coinService.getHistoricalData(ENetworks.BITCOIN, period)
+  // }
 }

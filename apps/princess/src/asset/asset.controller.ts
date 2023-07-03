@@ -10,7 +10,8 @@ import {
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AssetService } from './asset.service'
 import { AssetSwaggerResponse, CreateAssetDto } from './dto/create-asset.dto'
-import { GetWalletTransactionDto } from '../wallet/dto/get-wallet-transaction.dto'
+import { GetAssetPortfolioDto } from './dto/get-asset-portfolio.dto'
+import { GetAssetTransactionDto } from './dto/get-asset-transaction.dto'
 
 @Controller('asset')
 @ApiTags('wallet')
@@ -45,13 +46,37 @@ export class AssetController {
   })
   async getAssetTransactions(
     @Param('assetId') assetId: number,
-    @Query() query: GetWalletTransactionDto,
+    @Query() query: GetAssetTransactionDto,
   ) {
     return await this.assetService.getAssetTransactions(
       assetId,
       query.start,
       query.count,
     )
+  }
+
+  @Get(':assetId/portfolio')
+  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOperation({
+    summary: 'Get Asset',
+  })
+  async getAssetPortfolio(
+    @Param('assetId') assetId: number,
+    @Query() query: GetAssetPortfolioDto,
+  ) {
+    return await this.assetService.getAssetPortfolio(assetId, query.period)
+  }
+
+  @Get(':assetId/nft')
+  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOperation({
+    summary: 'Get Asset',
+  })
+  async getAssetNFTs(
+    @Param('assetId') assetId: number,
+    @Query('page') pageNumber?: number,
+  ) {
+    return await this.assetService.getAssetNFTs(assetId, pageNumber)
   }
 
   //   @Get(':walletId/transactions')

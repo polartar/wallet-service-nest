@@ -10,22 +10,22 @@ export class NewsPaginationDto {
     required: false,
   })
   @IsOptional()
-  sort: ESort
+  sort?: ESort
 
   @ApiProperty({ description: 'news count per page', required: false })
   @IsOptional()
-  countPerPage: number
+  countPerPage?: number
 
   @ApiProperty({ description: 'current page number', required: false })
   @IsOptional()
-  pageNumber: number
+  pageNumber?: number
 
   @ApiProperty({ description: 'start time', required: false })
   @IsOptional()
-  startTime: Date
+  startTime?: Date
 
   @ApiProperty({ description: 'end time', required: false })
-  endTime: Date
+  endTime?: Date
 
   @ApiProperty({
     description: 'symbol type',
@@ -33,11 +33,11 @@ export class NewsPaginationDto {
     required: false,
   })
   @IsOptional()
-  symbol: ENetworks
+  symbol?: ENetworks
 
   @ApiProperty({ description: 'highlights news', required: false })
   @IsOptional()
-  highlights: number
+  highlights?: number
 }
 
 export class PaginationNewsSwaggerResponse {

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { AssetController } from './asset.controller'
 import { AssetService } from './asset.service'
-import { MarketService } from '../market/market.service'
+import { CoinService } from '../coin/coin.service'
 
 @Module({
   controllers: [AssetController],
-  providers: [AssetService, MarketService],
+  providers: [AssetService, CoinService],
 })
 export class AssetModule {}

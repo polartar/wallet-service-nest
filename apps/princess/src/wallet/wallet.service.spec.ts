@@ -3,7 +3,7 @@ import { WalletsService } from './wallet.service'
 import { HttpModule } from '@nestjs/axios'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
-import { MarketService } from '../market/market.service'
+import { CoinService } from '../coin/coin.service'
 import { TransactionService } from '../transaction/transaction.service'
 
 describe('WalletsService', () => {
@@ -15,7 +15,7 @@ describe('WalletsService', () => {
         HttpModule, //
         ConfigModule.forRoot({ load: [Environment] }),
       ],
-      providers: [WalletsService, MarketService, TransactionService],
+      providers: [WalletsService, CoinService, TransactionService],
     }).compile()
 
     service = module.get<WalletsService>(WalletsService)

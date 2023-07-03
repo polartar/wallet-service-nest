@@ -13,10 +13,10 @@ import { CreateAssetDto } from './dto/create-asset.dto'
 import { EAPIMethod, ITransaction } from '../wallet/wallet.types'
 import { firstValueFrom } from 'rxjs'
 import * as Sentry from '@sentry/node'
-import { MarketService } from '../market/market.service'
-import { ENetworks, EPeriod } from '@rana/core'
+import { ECoinTypes, EPeriod } from '@rana/core'
 import { formatUnits, isAddress } from 'ethers/lib/utils'
 import { IMarketData } from './asset.types'
+import { CoinService } from '../coin/coin.service'
 
 @Injectable()
 export class AssetService {
@@ -26,7 +26,7 @@ export class AssetService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly marketService: MarketService,
+    private readonly coinService: CoinService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
@@ -82,46 +82,40 @@ export class AssetService {
   }
 
   async addUSDPrice(transactions: ITransaction[]) {
-    const ethMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.ETHEREUM,
-      EPeriod.All,
-    )
+    try {
+      const ethMarketHistories = await this.coinService.getHistoricalData(
+        ECoinTypes.ETHEREUM,
+        EPeriod.All,
+      )
 
-    const btcMarketHistories = await this.marketService.getHistoricalData(
-      ENetworks.BITCOIN,
-      EPeriod.All,
-    )
-    // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
-    // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
+      const btcMarketHistories = await this.coinService.getHistoricalData(
+        ECoinTypes.BITCOIN,
+        EPeriod.All,
+      )
+      // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
+      // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
 
-    if (!ethMarketHistories.success || !btcMarketHistories.success) {
+      const newTransactions = transactions.map((transaction) => {
+        const isEthereum = isAddress(transaction.from)
+        const source = isEthereum ? ethMarketHistories : btcMarketHistories
+        const decimal = isEthereum ? 18 : 8
+        const price = this.getPrice(source, transaction.timestamp)
+        const value = formatUnits(transaction.balance, decimal)
+        const amount = formatUnits(transaction.amount, decimal)
+        return {
+          ...transaction,
+          cryptoAmount: transaction.amount,
+          fiatBalance: (+value * price).toString(),
+          fiatAmount: (+amount * price).toString(),
+        }
+      })
+
+      return newTransactions
+    } catch (err) {
       Sentry.captureException('Something went wrong in Morty service')
+
       throw new InternalServerErrorException("Couldn't get market price ")
     }
-
-    // if (!ethFee.success || !btcFee.success) {
-    //   Sentry.captureException('Something went wrong in Transaction service')
-    //   throw new InternalServerErrorException("Couldn't get fee price ")
-    // }
-
-    const newTransactions = transactions.map((transaction) => {
-      const isEthereum = isAddress(transaction.from)
-      const source = isEthereum
-        ? ethMarketHistories.data
-        : btcMarketHistories.data
-      const decimal = isEthereum ? 18 : 8
-      const price = this.getPrice(source, transaction.timestamp)
-      const value = formatUnits(transaction.balance, decimal)
-      const amount = formatUnits(transaction.amount, decimal)
-      return {
-        ...transaction,
-        cryptoAmount: transaction.amount,
-        fiatBalance: (+value * price).toString(),
-        fiatAmount: (+amount * price).toString(),
-      }
-    })
-
-    return newTransactions
   }
 
   async getAsset(assetId: number) {
@@ -145,5 +139,34 @@ export class AssetService {
       EAPIMethod.GET,
       `/asset${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
+  }
+
+  async getAssetPortfolio(assetId, period?: EPeriod) {
+    const accountId = this.getAccountIdFromRequest()
+
+    return await this.rickApiCall(
+      EAPIMethod.GET,
+      `asset/${assetId}/portfolio?accountId=${accountId}&period=${
+        period ? period : EPeriod.Month
+      }`,
+    )
+  }
+
+  async getAssetNFTs(assetId: number, pageNumber?: number) {
+    const page = pageNumber || 1
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.rickApiUrl}/asset/${assetId}/nft?pageNumber=${page}`,
+        ),
+      )
+
+      return response.data
+    } catch (err) {
+      Sentry.captureException(`getAssetNFTs(): ${err.message}`)
+
+      throw new BadRequestException(`Rick API call: ${err.message}`)
+    }
   }
 }

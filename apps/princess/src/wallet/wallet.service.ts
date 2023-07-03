@@ -15,7 +15,6 @@ import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
 import { EAPIMethod, ITransaction } from './wallet.types'
 import * as Sentry from '@sentry/node'
-import { MarketService } from '../market/market.service'
 import { formatUnits, isAddress } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { TransactionService } from '../transaction/transaction.service'
@@ -132,7 +131,9 @@ export class WalletsService {
     return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${walletId}/portfolio?accountId=${accountId}&period=${period}`,
+      `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
+        period ? period : EPeriod.Months
+      }`,
     )
 
     // return this.addUSDPrice(wallets, period)

@@ -1,12 +1,11 @@
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
-import { IResponse } from './market.type'
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import * as WebSocket from 'ws'
 import { ConfigService } from '@nestjs/config'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { EPeriod, ENetworks, getTimestamp } from '@rana/core'
+import { EPeriod, getTimestamp, ECoinTypes } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -133,7 +132,7 @@ export class MarketService {
     this.btcClient.close()
   }
 
-  async getMarketData(coin: ENetworks): Promise<IResponse> {
+  async getMarketData(coinType: ECoinTypes) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(this.marketApiUrl, {
@@ -148,37 +147,29 @@ export class MarketService {
         }),
       )
 
-      if (coin === ENetworks.BITCOIN) {
+      if (coinType === ECoinTypes.BITCOIN) {
         return {
-          success: true,
-          data: {
-            ...res.data.data[0]['quote']['USD'],
-            total_supply: res.data.data[0].total_supply,
-            last_updated: getTimestamp(
-              res.data.data[0]['quote']['USD']['last_updated'],
-            ),
-          },
+          ...res.data.data[0]['quote']['USD'],
+          total_supply: res.data.data[0].total_supply,
+          last_updated: getTimestamp(
+            res.data.data[0]['quote']['USD']['last_updated'],
+          ),
         }
       } else {
         return {
-          success: true,
-          data: {
-            ...res.data.data[1]['quote']['USD'],
-            total_supply: res.data.data[1].total_supply,
-            last_updated: getTimestamp(
-              res.data.data[1]['quote']['USD']['last_updated'],
-            ),
-          },
+          ...res.data.data[1]['quote']['USD'],
+          total_supply: res.data.data[1].total_supply,
+          last_updated: getTimestamp(
+            res.data.data[1]['quote']['USD']['last_updated'],
+          ),
         }
       }
     } catch (err) {
       Sentry.captureException(
         `getMarketData(): ${err.response.data.status.error_message}`,
       )
-      return {
-        success: false,
-        error: err.response.data.status.error_message,
-      }
+
+      throw new InternalServerErrorException(err.message)
     }
   }
 
@@ -215,10 +206,7 @@ export class MarketService {
     }
   }
 
-  async getHistoricalData(
-    coin: ENetworks,
-    period: EPeriod,
-  ): Promise<IResponse> {
+  async getHistoricalData(coin: ECoinTypes, period: EPeriod) {
     const startDate = new Date(this.getPeriodTime(period))
     const timeFrame = this.getTimeFrame(period)
 
@@ -235,23 +223,17 @@ export class MarketService {
         }),
       )
 
-      return {
-        success: true,
-        data: res.data.map(
-          (item: { periodStart: string; periodEnd: string }) => ({
-            ...item,
-            periodStart: getTimestamp(item.periodStart),
-            periodEnd: getTimestamp(item.periodEnd),
-          }),
-        ),
-      }
+      return res.data.map(
+        (item: { periodStart: string; periodEnd: string }) => ({
+          ...item,
+          periodStart: getTimestamp(item.periodStart),
+          periodEnd: getTimestamp(item.periodEnd),
+        }),
+      )
     } catch (err) {
       Sentry.captureException(`getHistoricalData: ${err.message}`)
 
-      return {
-        success: false,
-        error: JSON.stringify(err.response.data),
-      }
+      throw new InternalServerErrorException(err.message)
     }
   }
 }
