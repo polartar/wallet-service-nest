@@ -371,83 +371,83 @@ export class AssetService {
     })
   }
 
-  // async addAssetFromXPub(
-  //   xPub: string,
-  //   index: number,
-  //   network: ENetworks,
-  //   wallet?: WalletEntity,
-  // ) {
-  //   try {
-  //     let apiURL, apiKey, currency
-  //     if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
-  //       apiURL = this.liquidAPIUrl
-  //       apiKey = this.liquidAPIKey
-  //     } else {
-  //       apiURL = this.liquidTestAPIUrl
-  //       apiKey = this.liquidAPIKey
-  //     }
+  async addAssetFromXPub(
+    xPub: string,
+    index: number,
+    network: ENetworks,
+    wallet?: WalletEntity,
+  ) {
+    try {
+      let apiURL, apiKey, currency
+      if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
+        apiURL = this.liquidAPIUrl
+        apiKey = this.liquidAPIKey
+      } else {
+        apiURL = this.liquidTestAPIUrl
+        apiKey = this.liquidAPIKey
+      }
 
-  //     if (
-  //       network === ENetworks.ETHEREUM ||
-  //       network === ENetworks.ETHEREUM_TEST
-  //     ) {
-  //       currency = EXPubCurrency.ETHEREUM
-  //     } else {
-  //       currency = EXPubCurrency.BITCOIN
-  //     }
+      if (
+        network === ENetworks.ETHEREUM ||
+        network === ENetworks.ETHEREUM_TEST
+      ) {
+        currency = EXPubCurrency.ETHEREUM
+      } else {
+        currency = EXPubCurrency.BITCOIN
+      }
 
-  //     const discoverResponse = await firstValueFrom(
-  //       this.httpService.get(
-  //         `${apiURL}}/api/v1/currencies/${currency}/accounts/discover?xpub=${xPub}`,
-  //         {
-  //           headers: { 'api-secret': apiKey },
-  //         },
-  //       ),
-  //     )
-  //     // return Promise.all(
-  //     //   discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
-  //     const addressInfo = discoverResponse.data.data.find(
-  //       (item: IXPubInfo) => item.index === index,
-  //     )
-  //     if (addressInfo) {
-  //       Sentry.captureException(
-  //         `addAssetFromXPub(): not found xPub address for index ${index}`,
-  //       )
-  //       throw new NotFoundException(`Not found address for index: ${index}`)
-  //     }
-  //     try {
-  //       const asset = this.assetRepository.findOne({
-  //         where: { address: addressInfo.address, network: network },
-  //       })
-  //       if (!asset) {
-  //         this.addAsset(addressInfo.address, addressInfo.index, network, wallet)
-  //         // this.addAsset({
-  //         //   wallet,
-  //         //   address: addressInfo.address,
-  //         //   index: addressInfo.index,
-  //         //   network,
-  //         // })
-  //       }
-  //       return asset
-  //     } catch (err) {
-  //       Sentry.captureException(
-  //         `${err.message}: ${addressInfo.address} in addAsset()`,
-  //       )
-  //     }
-  //     //   }),
-  //     // )
-  //   } catch (err) {
-  //     if (err.response) {
-  //       Sentry.captureException(
-  //         `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
-  //       )
-  //     } else {
-  //       Sentry.captureException(
-  //         `addAddressesFromXPub(): ${err.message}: ${xPub}`,
-  //       )
-  //     }
-  //   }
-  // }
+      const discoverResponse = await firstValueFrom(
+        this.httpService.get(
+          `${apiURL}}/api/v1/currencies/${currency}/accounts/discover?xpub=${xPub}`,
+          {
+            headers: { 'api-secret': apiKey },
+          },
+        ),
+      )
+      // return Promise.all(
+      //   discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
+      const addressInfo = discoverResponse.data.data.find(
+        (item: IXPubInfo) => item.index === index,
+      )
+      if (addressInfo) {
+        Sentry.captureException(
+          `addAssetFromXPub(): not found xPub address for index ${index}`,
+        )
+        throw new NotFoundException(`Not found address for index: ${index}`)
+      }
+      try {
+        const asset = this.assetRepository.findOne({
+          where: { address: addressInfo.address, network: network },
+        })
+        if (!asset) {
+          this.addAsset(addressInfo.address, addressInfo.index, network, wallet)
+          // this.addAsset({
+          //   wallet,
+          //   address: addressInfo.address,
+          //   index: addressInfo.index,
+          //   network,
+          // })
+        }
+        return asset
+      } catch (err) {
+        Sentry.captureException(
+          `${err.message}: ${addressInfo.address} in addAsset()`,
+        )
+      }
+      //   }),
+      // )
+    } catch (err) {
+      if (err.response) {
+        Sentry.captureException(
+          `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
+        )
+      } else {
+        Sentry.captureException(
+          `addAddressesFromXPub(): ${err.message}: ${xPub}`,
+        )
+      }
+    }
+  }
 
   getAsset(assetId: number) {
     return this.transactionRepository.findOne({
