@@ -1,6 +1,6 @@
 import { EPortfolioType } from '@rana/core'
 import { PortfolioService } from './portfolio.service'
-import { IUpdatedAddress } from './portfolio.types'
+import { IUpdatedAssets } from './portfolio.types'
 import {
   Body,
   Controller,
@@ -21,17 +21,17 @@ export class PortfolioController {
   @ApiOperation({ summary: "This api can't be called directly" })
   async updatedAddresses(
     @Body('type', new ParseEnumPipe(EPortfolioType)) type: EPortfolioType,
-    @Body('data') data: IUpdatedAddress[],
+    @Body('data') data: IUpdatedAssets[],
   ) {
     this.portfolioService.handleUpdatedAddresses(type, data)
   }
 
-  @Get('/nft/:address')
-  @ApiOperation({ summary: 'Get NFT assets from address' })
-  async getNFTAssets(
-    @Param('address') address: string,
-    @Query('page') pageNumber?: number,
-  ) {
-    return this.portfolioService.getNFTAssets(address, pageNumber)
-  }
+  // @Get('/nft/:address')
+  // @ApiOperation({ summary: 'Get NFT assets from address' })
+  // async getNFTAssets(
+  //   @Param('address') address: string,
+  //   @Query('page') pageNumber?: number,
+  // ) {
+  //   return this.portfolioService.getNFTAssets(address, pageNumber)
+  // }
 }

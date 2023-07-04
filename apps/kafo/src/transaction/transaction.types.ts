@@ -1,5 +1,5 @@
 import { Transaction } from '@ethereumjs/tx'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 
 export interface ITransactionResponse {
   success: boolean
@@ -26,14 +26,14 @@ export interface ITransactionInput {
   from: string
   to: string
   amount: string
-  coinType: ECoinType
+  coinType: ENetworks
   publicKey: string
 }
 
 export interface ITransactionPush {
   serializedTransaction: string
   signature: string
-  coinType: ECoinType
+  coinType: ENetworks
 }
 
 export interface INFTTransactionInput {

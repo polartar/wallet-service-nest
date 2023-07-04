@@ -5,11 +5,6 @@ export interface IResponse {
   error?: [string]
 }
 
-export enum EAPIMethod {
-  POST = 'post',
-  GET = 'get',
-}
-
 export enum ENFTTypes {
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',

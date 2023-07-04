@@ -13,7 +13,7 @@ describe('NewsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
-        AppModule,
+        // AppModule,
         HttpModule,
       ],
       providers: [NewsService],
@@ -27,20 +27,21 @@ describe('NewsService', () => {
   })
 
   it('should get top 5 news', async () => {
-    const news = await service.getLatestNews(5)
-    expect((news as { data: [] }).data.length).toBe(5)
+    const news = await service.getNews({ highlights: 5 })
+    expect((news as { pubDateUtc: string }[]).length).toBe(5)
   }, 10000)
 
   it('should get 5 news with pagination', async () => {
     const response = (await service.getNews({
-      pageNumber: 1,
-      countPerPage: 5,
+      'page-number': 1,
+      'count-per-page': 5,
     })) as {
-      success: boolean
-      data: { news: []; countPerPage: number; currentPage: number }
+      news: { pubDateUtc: string }[]
+      countPerPage: number
+      currentPage: number
     }
 
-    expect(response.data.news.length).toBe(5)
-    expect(response.data.currentPage).toBe(1)
+    expect(response.news.length).toBe(5)
+    expect(response.currentPage).toBe(1)
   }, 10000)
 })

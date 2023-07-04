@@ -1,7 +1,7 @@
 import { HttpModule } from '@nestjs/axios'
 import { Test, TestingModule } from '@nestjs/testing'
 import { MarketController } from './market.controller'
-import { MarketService } from './market.service'
+import { CoinService } from './market.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 
@@ -15,7 +15,7 @@ describe('MarketController', () => {
         ConfigModule.forRoot({ load: [Environment] }),
       ],
       controllers: [MarketController],
-      providers: [MarketService],
+      providers: [CoinService],
     }).compile()
 
     controller = module.get<MarketController>(MarketController)

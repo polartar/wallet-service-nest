@@ -1,12 +1,13 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { AxiosResponse } from 'axios'
-import { ESort, INewsQuery, INewsResponse } from './news.types'
-import { ECoinType, getTimestamp } from '@rana/core'
+import { ESort, INewsQuery } from './news.types'
+import { ECoinTypes, getTimestamp } from '@rana/core'
 import * as Sentry from '@sentry/node'
+import { NewsPaginationDto } from './dto/news-pagination.dto'
 
 @Injectable()
 export class NewsService {
@@ -17,6 +18,10 @@ export class NewsService {
   defaultCountPerPage = 10
   defaultTopCount = 3
 
+  fidelityNewsApiUrl =
+    'https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news'
+  fidelityAuthUrl =
+    'https://api-live.fidelity.com/oauth/client_credential/accesstoken?grant_type=client_credentials'
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
@@ -42,103 +47,86 @@ export class NewsService {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      await process.nextTick(() => {})
       const response = await firstValueFrom(
-        this.httpService.post(
-          `https://api-live.fidelity.com/oauth/client_credential/accesstoken?grant_type=client_credentials`,
-          params,
-          config,
-        ),
+        this.httpService.post(this.fidelityAuthUrl, params, config),
       )
 
       this.expiredAt = new Date().getTime() + 3590 * 1000
 
       this.fidelityAccessToken = response.data.access_token
     } catch (err) {
-      Sentry.captureException(err.message + ' in getAuthToken()')
-    }
-  }
-
-  async getLatestNews(
-    count?: number,
-    symbol?: ECoinType,
-  ): Promise<INewsResponse> {
-    const news = await this.getNews({
-      sort: ESort.DESC,
-      countPerPage: count || this.defaultTopCount,
-      symbol,
-    })
-    if (news.success) {
-      return {
-        success: true,
-        data: news.data.news,
-      }
-    } else {
-      return news
+      Sentry.captureException(`getAuthToken(): ${JSON.stringify(err)}`)
     }
   }
 
   generateParams(query: INewsQuery): string {
-    const skip = (query.pageNumber - 1) * query.countPerPage
-    let params = `?limit=${query.countPerPage}&skip=${skip}`
+    const skip = (query['page-number'] - 1) * query['count-per-page']
+    let params = `?limit=${query['count-per-page']}&skip=${skip}`
 
     if (query.sort === ESort.DESC) {
       params += '&sort=desc'
     } else {
       params += '&sort=asc'
     }
-    if (query.startTime) {
-      params += `&startTime=${query.startTime}`
+    if (query['start-time']) {
+      params += `&startTime=${query['start-time']}`
     }
-    if (query.endTime) {
-      params += `&endTime=${query.endTime}`
+    if (query['end-time']) {
+      params += `&endTime=${query['end-time']}`
     }
-    if (query.symbol) {
-      params += `&symbols=${query.symbol}`
+    if (query.coin) {
+      params += `&symbols=${query.coin}`
     } else {
-      params += `&symbols=${ECoinType.BITCOIN},${ECoinType.ETHEREUM}`
+      params += `&symbols=${ECoinTypes.BITCOIN},${ECoinTypes.ETHEREUM}`
     }
     return params
   }
 
-  async getNews(query: INewsQuery): Promise<INewsResponse> {
+  async getNews(query: NewsPaginationDto) {
     const newQuery = query
-    newQuery.pageNumber = query.pageNumber || 1
-    newQuery.countPerPage = query.countPerPage || this.defaultCountPerPage
 
-    const params = this.generateParams(newQuery)
+    newQuery['page-number'] = query['page-number'] || 1
+    newQuery['count-per-page'] =
+      query['count-per-page'] || this.defaultCountPerPage
 
-    const apiURL = `https://api-live.fidelity.com/crypto-asset-analytics/v1/crypto/analytics/news/${params}`
+    const params = query.highlights
+      ? `?limit=${query.highlights}`
+      : this.generateParams(newQuery)
+
+    const apiURL = `${this.fidelityNewsApiUrl}/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
         await this.getAuthToken()
       }
-      await this.getAuthToken()
+
       const res: { data: unknown } = await firstValueFrom(
         this.httpService.get<AxiosResponse>(apiURL, {
           headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
         }),
       )
-      return {
-        success: true,
-        data: {
-          news: (res.data as { news: [] }).news.map(
-            (item: { pubDateUtc: string }) => ({
-              pubDateUtc: getTimestamp(item.pubDateUtc),
-              ...item,
-            }),
-          ),
+      const news = (res.data as { news: [] }).news.map(
+        (item: { pubDateUtc: string }) => ({
+          pubDateUtc: getTimestamp(item.pubDateUtc),
+          ...item,
+        }),
+      )
+
+      if (query.highlights) {
+        return news
+      } else {
+        return {
+          news,
           total: (res.data as { total: number }).total,
-          currentPage: newQuery.pageNumber,
-          countPerPage: newQuery.countPerPage,
-        },
+          currentPage: newQuery['page-number'],
+          countPerPage: newQuery['count-per-page'],
+        }
       }
     } catch (err) {
-      Sentry.captureException(err.message + ' in getNews()')
+      Sentry.captureException(`getNews(): ${JSON.stringify(err.response.data)}`)
 
-      return {
-        success: false,
-        error: JSON.stringify(err.response.data),
-      }
+      throw new InternalServerErrorException(err.message)
     }
   }
 }

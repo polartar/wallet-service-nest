@@ -1,7 +1,7 @@
-import { AddressEntity } from './../address.entity'
+import { AssetEntity } from '../asset.entity'
 
 export class AddHistoryDto {
-  address: AddressEntity
+  asset: AssetEntity
   balance: string
   from: string
   to: string

@@ -10,7 +10,7 @@ import { BigNumber } from 'ethers'
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
   ISockets,
-  IUpdatedAddress,
+  IUpdatedAssets,
   IUpdatedHistory,
   IWalletHistoryResponse,
 } from './portfolio.types'
@@ -42,7 +42,7 @@ export class PortfolioService {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       })
-      return payload.userId
+      return payload.accountId
     } catch (err) {
       Sentry.captureException('Unauthorize')
 
@@ -156,7 +156,7 @@ export class PortfolioService {
 
   notifyTransactionCreation(
     accountId: string,
-    updatedAddresses: IUpdatedAddress[],
+    updatedAddresses: IUpdatedAssets[],
   ) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
@@ -166,7 +166,7 @@ export class PortfolioService {
     }
   }
 
-  notifyNFTUpdate(accountId: string, updatedAddresses: IUpdatedAddress[]) {
+  notifyNFTUpdate(accountId: string, updatedAddresses: IUpdatedAssets[]) {
     if (this.clients[accountId]) {
       this.clients[accountId].emit(
         this.NFT_UPDATE_CHANNEL,
@@ -175,7 +175,7 @@ export class PortfolioService {
     }
   }
 
-  handleUpdatedAddresses(type: EPortfolioType, addresses: IUpdatedAddress[]) {
+  handleUpdatedAddresses(type: EPortfolioType, addresses: IUpdatedAssets[]) {
     const history: IUpdatedHistory = {}
 
     addresses.map((address) => {
@@ -211,21 +211,21 @@ export class PortfolioService {
       )
   }
 
-  async getNFTAssets(address: string, pageNumber: number) {
-    const page = pageNumber || 1
+  // async getNFTAssets(address: string, pageNumber: number) {
+  //   const page = pageNumber || 1
 
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.rickApiUrl}/nft?address=${address}&page=${page}`,
-        ),
-      )
+  //   try {
+  //     const response = await firstValueFrom(
+  //       this.httpService.get(
+  //         `${this.rickApiUrl}/nft?address=${address}&page=${page}`,
+  //       ),
+  //     )
 
-      return response.data
-    } catch (err) {
-      Sentry.captureException(`getNFTAssets(): ${err.message}`)
+  //     return response.data
+  //   } catch (err) {
+  //     Sentry.captureException(`getNFTAssets(): ${err.message}`)
 
-      throw new BadRequestException(`Rick API call: ${err.message}`)
-    }
-  }
+  //     throw new BadRequestException(`Rick API call: ${err.message}`)
+  //   }
+  // }
 }

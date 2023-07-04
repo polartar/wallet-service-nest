@@ -7,7 +7,7 @@ import {
   Post,
 } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 import { TransactionService } from './transaction.service'
 import {
   GenerateTransactionDto,
@@ -28,8 +28,8 @@ export class TransactionController {
   @ApiOperation({
     summary: 'Get the current network fee of the selected chain',
   })
-  @ApiParam({ name: 'coin', enum: ECoinType })
-  async getFee(@Param('coin', new ParseEnumPipe(ECoinType)) coin: ECoinType) {
+  @ApiParam({ name: 'coin', enum: ENetworks })
+  async getFee(@Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks) {
     return this.transactionService.getFee(coin)
   }
 

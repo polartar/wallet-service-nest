@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { AccountEntity } from '../account/account.entity'
 import { HttpModule } from '@nestjs/axios'
+import { AssetModule } from '../asset/asset.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { HttpModule } from '@nestjs/axios'
     WalletModule,
     NftModule,
     HttpModule,
+    AssetModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,20 +6,18 @@ import {
   Injectable,
   InternalServerErrorException,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { ECoinType, EPeriod, EWalletType } from '@rana/core'
+import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { AxiosResponse } from 'axios'
-import { EAPIMethod, IMarketData, IWallet } from './accounts.types'
+import { IAccount, ICreateAccountResponse, IWallet } from './accounts.types'
 import * as Sentry from '@sentry/node'
-import { MarketService } from '../market/market.service'
-import { formatUnits } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
-import { TransactionService } from '../transaction/transaction.service'
+import { BootstrapService } from '../bootstrap/bootstrap.service'
+import { EAPIMethod } from '../wallet/wallet.types'
 
 @Injectable()
 export class AccountsService {
@@ -31,8 +29,7 @@ export class AccountsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly marketService: MarketService,
-    private readonly transactionService: TransactionService,
+    private bootstrapService: BootstrapService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
@@ -45,6 +42,10 @@ export class AccountsService {
 
   getAccountIdFromRequest(): number {
     return Number((this.request as IRequest).accountId)
+  }
+
+  getDeviceIdFromRequest(): string {
+    return (this.request as IRequest).deviceId
   }
 
   validateAccountId(accountId: number) {
@@ -75,164 +76,187 @@ export class AccountsService {
     }
   }
 
-  async createWallet(accountId: number, walletType: EWalletType, xPub: string) {
-    this.validateAccountId(accountId)
+  // async fluffyAPICall(path, body) {
+  //   try {
+  //     const url = `${this.fluffyApiUrl}/${path}`
+  //     const res = await firstValueFrom(
+  //       this.httpService.put<AxiosResponse>(url, body),
+  //     )
+  //     return res.data
+  //   } catch (err) {
+  //     const message = err.response ? err.response.data.message : err.message
 
-    const wallet = await this.rickAPICall(EAPIMethod.POST, `wallet`, {
-      account_id: accountId,
-      wallet_type: walletType,
-      xPub: xPub,
-    })
+  //     Sentry.captureException(`fluffyAPICall(): ${message}`)
 
-    return this.addUSDPrice([wallet], EPeriod.All)
+  //     if (err.response) {
+  //       throw new InternalServerErrorException(message)
+  //     }
+
+  //     throw new BadGatewayException(
+  //       `Fluffy server connection error: ${message}`,
+  //     )
+  //   }
+  // }
+
+  // async updatePassCode(
+  //   accountId: number,
+  //   deviceId: string,
+  //   passCodeKey: string,
+  // ) {
+  //   this.validateAccountId(accountId)
+
+  //   const path = `${deviceId}/accounts/${accountId}`
+  //   return this.fluffyAPICall(path, { passCodeKey })
+  // }
+
+  // async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
+  //   this.validateAccountId(accountId)
+
+  //   const path = `${deviceId}/accounts/${accountId}`
+  //   return this.fluffyAPICall(path, { isCloud })
+  // }
+
+  // async getAccount(accountId: number) {
+  //   try {
+  //     const accountResponse = await firstValueFrom(
+  //       this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
+  //     )
+  //     return accountResponse.data
+  //   } catch (err) {
+  //     Sentry.captureException(`getAccount(): ${err.message}`)
+  //     throw new BadGatewayException(err.message)
+  //   }
+  // }
+
+  async syncAccount(hash: string): Promise<IWallet[]> {
+    const accountId = this.getAccountIdFromRequest()
+
+    const isSync = await this.rickAPICall(
+      EAPIMethod.GET,
+      `account/hash?accountId=${accountId}&hash=${hash}`,
+    )
+
+    if (isSync) {
+      return []
+    } else {
+      return await this.rickAPICall(EAPIMethod.GET, `account/${accountId}`)
+    }
   }
 
-  async updateWallet(
-    accountId: number,
-    walletId: string,
-    data: UpdateWalletDto,
+  async createAccount(provider: EAuth, providerToken: string, otp: string) {
+    const deviceId = this.getDeviceIdFromRequest()
+
+    this.signIn(provider, providerToken, deviceId, otp)
+  }
+
+  async getUserFromIdToken(
+    token: string,
+    type: EAuth | 'Anonymous',
+    accountId?: number,
   ) {
-    this.validateAccountId(accountId)
-
-    return this.rickAPICall(EAPIMethod.POST, `wallet/activate`, {
-      account_id: accountId,
-      accountId: walletId,
-      is_active: data.is_active,
-    })
-  }
-
-  getPrice(source: IMarketData[], timestamp: number) {
-    const index = source.findIndex(
-      (market) =>
-        new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
-        +timestamp >= new Date(market.periodStart).getTime() / 1000,
-    )
-
-    return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
-  }
-
-  async addUSDPrice(wallets: IWallet[], period: EPeriod) {
-    const ethMarketHistories = await this.marketService.getHistoricalData(
-      ECoinType.ETHEREUM,
-      period,
-    )
-
-    const btcMarketHistories = await this.marketService.getHistoricalData(
-      ECoinType.BITCOIN,
-      period,
-    )
-    const ethFee = await this.transactionService.getFee(ECoinType.ETHEREUM)
-    const btcFee = await this.transactionService.getFee(ECoinType.BITCOIN)
-
-    if (!ethMarketHistories.success || !btcMarketHistories.success) {
-      Sentry.captureException('Something went wrong in Morty service')
-      return wallets
-    }
-
-    if (!ethFee.success || !btcFee.success) {
-      Sentry.captureException('Something went wrong in Transaction service')
-      return wallets
-    }
-
-    return wallets.map((wallet) => {
-      wallet.addresses = wallet.addresses.map((address) => {
-        const isEthereum = address.coinType === ECoinType.ETHEREUM
-        const source = isEthereum
-          ? ethMarketHistories.data
-          : btcMarketHistories.data
-        const decimal = isEthereum ? 18 : 8
-        const history = address.history.map((item) => {
-          const price = this.getPrice(source, item.timestamp)
-          const value = formatUnits(item.balance, decimal)
-          const amount = formatUnits(item.amount, decimal)
-          return {
-            ...item,
-            usdBalance: (+value * price).toString(),
-            usdAmount: (+amount * price).toString(),
-          }
-        })
-
-        return {
-          ...address,
-          fee: isEthereum ? ethFee.data.convert : btcFee.data.convert,
-          history,
-        }
-      })
-      return wallet
-    })
-  }
-
-  async getPortfolio(accountId: number, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
-    const wallets: IWallet[] = await this.rickAPICall(
-      EAPIMethod.GET,
-      `wallet/${accountId}?period=${period}`,
-    )
-
-    return this.addUSDPrice(wallets, period)
-  }
-
-  async getWalletPortfolio(accountId: number, walletId, period?: EPeriod) {
-    this.validateAccountId(accountId)
-
-    const wallets: IWallet[] = await this.rickAPICall(
-      EAPIMethod.GET,
-      `wallet/${accountId}/wallet/${walletId}?period=${period}`,
-    )
-
-    return this.addUSDPrice(wallets, period)
-  }
-
-  async fluffyAPICall(path, body) {
     try {
-      const url = `${this.fluffyApiUrl}/${path}`
-      const res = await firstValueFrom(
-        this.httpService.put<AxiosResponse>(url, body),
+      const userResponse = await firstValueFrom(
+        this.httpService.post(`${this.gandalfApiUrl}/auth`, {
+          idToken: token,
+          type,
+          accountId,
+        }),
       )
-      return res.data
+      return userResponse.data
     } catch (err) {
-      const message = err.response ? err.response.data.message : err.message
-
-      Sentry.captureException(`fluffyAPICall(): ${message}`)
-
+      Sentry.captureMessage(`SignIn(Gandalf): ${err.message} with ${accountId}`)
       if (err.response) {
-        throw new InternalServerErrorException(message)
+        throw new UnauthorizedException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Gandalf API call error')
       }
-
-      throw new BadGatewayException(
-        `Fluffy server connection error: ${message}`,
-      )
     }
   }
 
-  async updatePassCode(
-    accountId: number,
-    deviceId: string,
-    passCodeKey: string,
-  ) {
-    this.validateAccountId(accountId)
-
-    const path = `${deviceId}/accounts/${accountId}`
-    return this.fluffyAPICall(path, { passCodeKey })
-  }
-
-  async updateIsCloud(accountId: number, deviceId: string, isCloud: boolean) {
-    this.validateAccountId(accountId)
-
-    const path = `${deviceId}/accounts/${accountId}`
-    return this.fluffyAPICall(path, { isCloud })
-  }
-
-  async getAccount(accountId: number) {
+  async checkPair(accountId: number, deviceId: string, otp: string) {
     try {
-      const accountResponse = await firstValueFrom(
-        this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
+      await firstValueFrom(
+        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
+          userId: accountId,
+          deviceId,
+          otp,
+        }),
       )
-      return accountResponse.data
     } catch (err) {
-      Sentry.captureException(`getAccount(): ${err.message}`)
-      throw new BadGatewayException(err.message)
+      Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
+      if (err.response) {
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Fluffy API call error')
+      }
+    }
+  }
+
+  async syncRick(isNewUser: boolean, account: IAccount, accountId: number) {
+    try {
+      // if new user email, then register, then update the anonymous user with real info.
+      if (isNewUser) {
+        return await firstValueFrom(
+          this.httpService.put(`${this.rickApiUrl}/account/${account.id}`, {
+            email: account.email,
+            name: account.name,
+            accountId: account.id,
+          }),
+        )
+      } else {
+        // combine wallets
+        if (+account.id !== +accountId) {
+          return await firstValueFrom(
+            this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
+              existingAccountId: account.id,
+              anonymousId: accountId,
+            }),
+          )
+        }
+      }
+    } catch (err) {
+      Sentry.captureMessage(`SignIn(Rick): ${err.message} with ${accountId}`)
+      if (err.response) {
+        throw new InternalServerErrorException(err.response.data.message)
+      } else {
+        throw new BadGatewayException('Rick API call error')
+      }
+    }
+  }
+
+  async signIn(
+    type: EAuth,
+    token: string,
+    deviceId: string,
+    otp: string,
+  ): Promise<ICreateAccountResponse> {
+    const accountId = this.getAccountIdFromRequest()
+
+    const user = await this.getUserFromIdToken(token, type, accountId)
+
+    const userWallet = await this.syncRick(user.is_new, user.account, accountId)
+
+    await this.checkPair(user.account.id, deviceId, otp)
+
+    const payload = {
+      type: type,
+      accountId: accountId,
+      idToken: token,
+      deviceId,
+    }
+
+    const accessToken = await this.bootstrapService.generateAccessToken(payload)
+    const refreshToken = await this.bootstrapService.generateRefreshToken(
+      payload,
+    )
+
+    if (user.is_new) {
+      return user.account.id
+    }
+    return {
+      accessToken,
+      refreshToken,
+      ...userWallet.data,
     }
   }
 }

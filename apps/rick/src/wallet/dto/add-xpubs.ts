@@ -1,8 +1,14 @@
-export interface IXPub {
+export interface IVaultCoin {
   BIP44: number
-  xpub: string
+  wallets: {
+    address: string
+    hidden: boolean
+    index: number
+    publickey: string
+  }[]
 }
 export class AddXPubs {
+  title: string
   accountId: number
-  xpubs: IXPub[]
+  coins: IVaultCoin[]
 }

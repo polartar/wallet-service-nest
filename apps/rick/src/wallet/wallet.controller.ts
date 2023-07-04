@@ -12,6 +12,8 @@ import {
   ParseIntPipe,
   ParseEnumPipe,
   BadRequestException,
+  Patch,
+  Delete,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
@@ -20,6 +22,8 @@ import { EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
+import { CreateWalletDto } from './dto/create-wallet.dto'
+import { UpdateWalletDto } from './dto/update-wallet.dto'
 
 @Controller('wallet')
 export class WalletController {
@@ -29,65 +33,51 @@ export class WalletController {
     private readonly portfolioService: PortfolioService,
   ) {}
 
-  @Get(':accountId')
-  async getHistory(
-    @Param('accountId', ParseIntPipe) accountId: number,
-    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+  // Need to confirm if we need to verify account Id
+  @Get(':walletId')
+  async getWallet(
+    @Query('accountId', ParseIntPipe) accountId: number,
+    @Param('walletId', ParseIntPipe) walletId: number,
+    // @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
-      return await this.walletService.getUserHistory(accountId, period)
+      return await this.walletService.getWallet(accountId, walletId)
     } catch (e) {
-      Sentry.captureException(e.message + ' in getHistory()')
+      Sentry.captureException(e.message + ' in getWalletHistory')
 
       throw new InternalServerErrorException(e?.message)
     }
   }
 
-  @Post('')
-  async createPortfolio(
-    @Body('xPub') xPub: string,
-    @Body('account_id', ParseIntPipe) account_id: number,
-    @Body('wallet_type', new ParseEnumPipe(EWalletType))
-    walletType: EWalletType,
+  @Get(':walletId/transactions')
+  async getWalletTransaction(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId', ParseIntPipe) accountId: number,
+    @Query('start') start: number,
+    @Query('count') count: number,
   ) {
     try {
-      const res = await this.walletService.addNewWallet(
-        account_id,
-        xPub,
-        walletType,
+      return await this.walletService.getUserWalletTransaction(
+        accountId,
+        walletId,
+        start,
+        count,
       )
-
-      await this.portfolioService.initializeWallets()
-      return res
     } catch (e) {
-      Sentry.captureException(e.message + ' while addNewWallet')
+      Sentry.captureException(e.message + ' in getWalletHistory')
 
-      throw new BadRequestException(e.message)
+      throw new InternalServerErrorException(e?.message)
     }
   }
 
-  @Post('activate')
-  async activeWallet(@Body() data: IWalletActiveData) {
-    try {
-      const res = await this.walletService.updateWalletActive(data)
-
-      await this.portfolioService.initializeWallets()
-      return res
-    } catch (e) {
-      Sentry.captureException(e.message + ' in updateWalletActive()')
-
-      throw new NotFoundException(e?.message)
-    }
-  }
-
-  @Get(':accountId/wallet/:walletId')
-  async getWalletHistory(
-    @Param('accountId', ParseIntPipe) accountId: number,
+  @Get(':walletId/portfolio')
+  async getWalletPortfolio(
     @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId', ParseIntPipe) accountId: number,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
-      return await this.walletService.getUserWalletHistory(
+      return await this.walletService.getUserWalletPortfolio(
         accountId,
         walletId,
         period,
@@ -99,11 +89,107 @@ export class WalletController {
     }
   }
 
-  @Post('xpubs')
-  async AddXPubs(@Body() data: AddXPubs) {
-    const res = await this.walletService.addXPubs(data.accountId, data.xpubs)
+  @Post('')
+  async createWallet(@Body() data: CreateWalletDto) {
+    try {
+      const res = await this.walletService.addNewWallet(
+        data.accountId,
+        data.title,
+        data.mnemonic,
+        data.assetIds,
+        data.walletType,
+      )
 
-    await this.portfolioService.initializeWallets()
+      await this.portfolioService.updateCurrentWallets()
+      return res
+    } catch (e) {
+      Sentry.captureException(e.message + ' while addNewWallet')
+
+      throw new BadRequestException(e.message)
+    }
+  }
+
+  @Patch(':walletId')
+  async updateWallet(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Body() data: UpdateWalletDto,
+  ) {
+    try {
+      return await this.walletService.updateWallet(
+        walletId,
+        data.accountId,
+        data.title,
+        data.mnemonic,
+      )
+    } catch (e) {
+      Sentry.captureException(e.message + ' in getHistory()')
+
+      throw new InternalServerErrorException(e?.message)
+    }
+  }
+
+  @Delete(':walletId')
+  async deleteWallet(
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Body('accountId') accountId: number,
+  ) {
+    try {
+      return await this.walletService.deleteWallet(walletId, accountId)
+    } catch (e) {
+      Sentry.captureException(e.message + ' in getHistory()')
+
+      throw new InternalServerErrorException(e?.message)
+    }
+  }
+
+  // @Post('')
+  // async createPortfolio(
+  //   @Body('xPub') xPub: string,
+  //   @Body('account_id', ParseIntPipe) account_id: number,
+  //   @Body('wallet_type', new ParseEnumPipe(EWalletType))
+  //   walletType: EWalletType,
+  //   @Body('title') title?: string,
+  // ) {
+  //   try {
+  //     const res = await this.walletService.addNewWallet(
+  //       account_id,
+  //       xPub,
+  //       walletType,
+  //       title,
+  //     )
+
+  //     await this.portfolioService.updateCurrentWallets()
+  //     return res
+  //   } catch (e) {
+  //     Sentry.captureException(e.message + ' while addNewWallet')
+
+  //     throw new BadRequestException(e.message)
+  //   }
+  // }
+
+  // @Post('activate')
+  // async activeWallet(@Body() data: IWalletActiveData) {
+  //   try {
+  //     const res = await this.walletService.updateWalletActive(data)
+
+  //     await this.portfolioService.updateCurrentWallets()
+  //     return res
+  //   } catch (e) {
+  //     Sentry.captureException(e.message + ' in updateWalletActive()')
+
+  //     throw new NotFoundException(e?.message)
+  //   }
+  // }
+
+  @Post('vault')
+  async AddXPubs(@Body() data: AddXPubs) {
+    const res = await this.walletService.addVaultCoins(
+      data.title,
+      data.accountId,
+      data.coins,
+    )
+
+    await this.portfolioService.updateCurrentWallets()
     return res
   }
 

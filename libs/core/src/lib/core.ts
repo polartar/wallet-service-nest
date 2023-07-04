@@ -16,15 +16,22 @@ export enum EPeriod {
   All = 'All',
 }
 
-export enum ECoinType {
+export enum ECoinTypes {
   ETHEREUM = 'eth',
   BITCOIN = 'btc',
 }
 
+export enum ENetworks {
+  ETHEREUM = 'eth',
+  BITCOIN = 'btc',
+  BITCOIN_TEST = 'btc_testnet3',
+  ETHEREUM_TEST = 'eth_goerli',
+}
+
 export enum EWalletType {
-  HOTWALLET = 'hotwallet',
+  HOTWALLET = 'hot_wallet',
   VAULT = 'vault',
-  METAMASK = 'metamask',
+  LOCALWALLET = 'local_wallet',
 }
 
 export enum EPortfolioType {

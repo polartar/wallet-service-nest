@@ -6,6 +6,9 @@ stages:
   - build
   - deploy
 
+variables:
+    GIT_DEPTH: "50"
+
 .distributed:
   interruptible: true
   only:

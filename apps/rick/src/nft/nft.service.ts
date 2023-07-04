@@ -3,20 +3,15 @@ import { ConfigService } from '@nestjs/config'
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
 import { EEnvironment } from '../environments/environment.types'
-import { INFTAssetResponse, INFTInfo, INTAssetInput } from './nft.types'
+import { INFTAssetResponse, INFTInfo } from './nft.types'
 import * as Sentry from '@sentry/node'
-import { getTimestamp } from '@rana/core'
+import { ENetworks, getTimestamp } from '@rana/core'
 
 @Injectable()
 export class NftService {
-  isProduction: boolean
-
   constructor(private configService: ConfigService) {
     const moralisAPIKey = this.configService.get<string>(
       EEnvironment.moralisAPIKey,
-    )
-    this.isProduction = this.configService.get<boolean>(
-      EEnvironment.isProduction,
     )
     if (!Moralis.Core.isStarted) {
       Moralis.start({
@@ -25,16 +20,21 @@ export class NftService {
     }
   }
 
-  async getNFTAssets(query: INTAssetInput): Promise<INFTAssetResponse> {
+  async getNFTAssets(
+    address: string,
+    network: ENetworks,
+    pageNumber: number,
+  ): Promise<INFTAssetResponse> {
     try {
       let response = await Moralis.EvmApi.nft.getWalletNFTs({
-        address: query.address,
-        chain: this.isProduction ? EvmChain.ETHEREUM : EvmChain.GOERLI,
+        address: address,
+        chain:
+          network === ENetworks.ETHEREUM ? EvmChain.ETHEREUM : EvmChain.GOERLI,
       })
 
-      if (query.page && query.page > 1) {
+      if (pageNumber && pageNumber > 1) {
         let currPage = 1
-        while (currPage < query.page) {
+        while (currPage < pageNumber) {
           if (response.hasNext()) {
             response = await response.next()
             currPage++

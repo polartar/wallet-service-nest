@@ -6,12 +6,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, ENFTTypes, IResponse } from './transaction.types'
+import { ENFTTypes, IResponse } from './transaction.types'
 import * as Sentry from '@sentry/node'
+import { EAPIMethod } from '../wallet/wallet.types'
 
 @Injectable()
 export class TransactionService {
@@ -66,7 +67,7 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ECoinType): Promise<IResponse> {
+  async getFee(coin: ENetworks): Promise<IResponse> {
     return this.apiCall(EAPIMethod.GET, `transaction/fee/${coin}`)
   }
 
@@ -74,7 +75,7 @@ export class TransactionService {
     from: string,
     to: string,
     amount: string,
-    coinType: ECoinType,
+    coinType: ENetworks,
     publicKey: string,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/generate`, {
@@ -89,7 +90,7 @@ export class TransactionService {
   async publishTransaction(
     serializedTransaction: string,
     signature: string,
-    coinType: ECoinType,
+    coinType: ENetworks,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       serializedTransaction,

@@ -11,6 +11,6 @@
     "src/**/*.spec.ts",
     "src/**/*.d.ts",
     "src/nft/nft.service.spec.ts",
-    "src/wallet/wallet.controller.spec.ts"
+    "src/wallet/wallet.controller.spec"
   ]
 }

@@ -4,7 +4,7 @@ import { ENFTTypes, ITransactionInput } from './transaction.types'
 import { isAddress } from 'ethers/lib/utils'
 import * as Joi from 'joi'
 import { validate } from 'bitcoin-address-validation'
-import { ECoinType } from '@rana/core'
+import { ENetworks } from '@rana/core'
 
 @Injectable()
 export class TransactionInputPipe implements PipeTransform {
@@ -13,7 +13,7 @@ export class TransactionInputPipe implements PipeTransform {
     to: Joi.string().required(),
     amount: Joi.string().required(),
     publicKey: Joi.string().required(),
-    coinType: Joi.string().valid(ECoinType.BITCOIN, ECoinType.ETHEREUM),
+    coinType: Joi.string().valid(ENetworks.BITCOIN, ENetworks.ETHEREUM),
   })
 
   transform(value: ITransactionInput) {

@@ -33,14 +33,22 @@ export interface IBTCTransaction {
   confirmed: string
 }
 
-export interface IXPubInfo {
-  path: string
-  address: string
-  publickey: string
-  index: 0
-}
+// export interface IXPubInfo {
+//   path: string
+//   address: string
+//   publickey: string
+//   index: 0
+// }
 
 export enum EXPubCurrency {
   ETHEREUM = 'ethereumclassic.secp256k1',
   BITCOIN = 'segwit.bitcoin.secp256k1',
+}
+
+export enum ETransactionStatuses {
+  RECEIVED = 'received',
+  SENT = 'sent',
+  RECEIVING = 'receiving',
+  FAILED = 'failed',
+  SENDING = 'sending',
 }
