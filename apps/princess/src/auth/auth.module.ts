@@ -8,11 +8,7 @@ import { TransactionService } from '../transaction/transaction.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: parseInt(process.env.httptimeout) || 0,
-    }),
-  ],
+  imports: [HttpModule],
   controllers: [AuthController],
   providers: [
     AuthService,

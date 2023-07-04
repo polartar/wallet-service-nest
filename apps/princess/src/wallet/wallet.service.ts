@@ -35,7 +35,6 @@ export class WalletsService {
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly assetService: AssetService,
-    private readonly transactionService: TransactionService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.bristleApiUrl = this.configService.get<string>(

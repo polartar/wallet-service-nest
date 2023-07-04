@@ -27,11 +27,9 @@ export class AuthService {
 
   constructor(
     private configService: ConfigService,
-    private readonly httpService: HttpService,
     private accountService: AccountsService,
     private bootstrapService: BootstrapService,
     private jwtService: JwtService,
-    @Inject(REQUEST) private readonly request: Request,
   ) {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,

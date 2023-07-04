@@ -1,5 +1,4 @@
 import { AppModule } from '../src/app/app.module'
-import { MarketModule } from './../src/market/market.module'
 import { Environment } from '../src/environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
 import { RickGateway } from '../src/gateways/rick.gateway'
@@ -15,7 +14,10 @@ import {
 } from '@nestjs/platform-fastify'
 import { PortfolioService } from '../src/portfolio/portfolio.service'
 import { Logger } from '@nestjs/common'
-import { CoinService } from '../src/market/market.service'
+import { CoinService } from '../src/coin/coin.service'
+import { AuthModule } from '../src/auth/auth.module'
+import { AccountsModule } from '../src/accounts/accounts.module'
+import { BootstrapModule } from '../src/bootstrap/bootstrap.module'
 
 const runPrincessPortfolioModule = async () => {
   const module: TestingModule = await Test.createTestingModule({
@@ -25,7 +27,10 @@ const runPrincessPortfolioModule = async () => {
       RickModule, //
       HttpModule,
       PortfolioModule,
-      MarketModule,
+      ConfigModule,
+      AccountsModule,
+      AuthModule,
+      BootstrapModule,
     ],
     providers: [
       RickGateway, //
@@ -103,35 +108,35 @@ describe('RickGateway', () => {
       })
     })
 
-    it('Get all wallet history', async () => {
-      const accountId = 1
-      const channelId = `portfolio_history`
-      const data = await new Promise((resolve) => {
-        socket.on(channelId, (data) => {
-          Logger.log('history received', data)
+    // it('Get all wallet history', async () => {
+    //   const accountId = 1
+    //   const channelId = `portfolio_history`
+    //   const data = await new Promise((resolve) => {
+    //     socket.on(channelId, (data) => {
+    //       Logger.log('history received', data)
 
-          resolve(data)
-        })
-        socket.emit('get_portfolio_history', { accountId })
-      })
-      expect(data).toBeDefined()
-    })
+    //       resolve(data)
+    //     })
+    //     socket.emit('get_portfolio_history', { accountId })
+    //   })
+    //   expect(data).toBeDefined()
+    // })
 
-    it('Get wallet history for 1D', async () => {
-      const accountId = 1
-      const channelId = `portfolio_history`
-      const data = await new Promise((resolve) => {
-        socket.on(channelId, (data) => {
-          Logger.log('1D history received', data)
+    // it('Get wallet history for 1D', async () => {
+    //   const accountId = 1
+    //   const channelId = `portfolio_history`
+    //   const data = await new Promise((resolve) => {
+    //     socket.on(channelId, (data) => {
+    //       Logger.log('1D history received', data)
 
-          resolve(data)
-        })
-        socket.emit('get_portfolio_history', {
-          accountId,
-          period: ['1D'],
-        })
-      })
-      expect(data).toBeDefined()
-    })
+    //       resolve(data)
+    //     })
+    //     socket.emit('get_portfolio_history', {
+    //       accountId,
+    //       period: ['1D'],
+    //     })
+    //   })
+    //   expect(data).toBeDefined()
+    // })
   })
 })

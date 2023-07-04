@@ -8,7 +8,7 @@ describe('News Pipe', () => {
     expect(() =>
       pipe.transform({
         sort: ESort.ASC,
-        pageNumber: 0,
+        'page-number': 0,
       }),
     ).toThrow(BadRequestException)
   })
@@ -17,7 +17,7 @@ describe('News Pipe', () => {
     expect(() =>
       pipe.transform({
         sort: ESort.ASC,
-        countPerPage: 0,
+        'count-per-page': 0,
       }),
     ).toThrow(BadRequestException)
   })
@@ -26,7 +26,7 @@ describe('News Pipe', () => {
     expect(() =>
       pipe.transform({
         sort: ESort.ASC,
-        startTime: 'wrong date' as unknown as Date,
+        'start-time': 'wrong date' as unknown as Date,
       }),
     ).toThrow(BadRequestException)
   })
@@ -34,7 +34,7 @@ describe('News Pipe', () => {
   it('Should accept good news', () => {
     const newsBody: INewsQuery = {
       sort: ESort.ASC,
-      pageNumber: 1,
+      'page-number': 1,
     }
 
     expect(pipe.transform(newsBody)).toBe(newsBody)

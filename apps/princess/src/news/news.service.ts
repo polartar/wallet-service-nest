@@ -84,7 +84,7 @@ export class NewsService {
 
   async getNews(query: NewsPaginationDto) {
     const newQuery = query
-    console.log({ query })
+
     newQuery['page-number'] = query['page-number'] || 1
     newQuery['count-per-page'] =
       query['count-per-page'] || this.defaultCountPerPage
@@ -92,7 +92,7 @@ export class NewsService {
     const params = query.highlights
       ? `?limit=${query.highlights}`
       : this.generateParams(newQuery)
-    console.log({ params })
+
     const apiURL = `${this.fidelityNewsApiUrl}/${params}`
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
