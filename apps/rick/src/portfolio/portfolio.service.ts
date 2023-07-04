@@ -1,5 +1,5 @@
 import { EPortfolioType } from '@rana/core'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -28,6 +28,7 @@ export class PortfolioService {
 
   constructor(
     private configService: ConfigService,
+    @Inject(forwardRef(() => AssetService))
     private readonly assetService: AssetService,
     private readonly httpService: HttpService,
   ) {

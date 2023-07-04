@@ -7,15 +7,10 @@ import { AssetService } from '../asset/asset.service'
 import { NftService } from '../nft/nft.service'
 
 @Module({
-  imports: [
-    // AccountModule, //
-    HttpModule,
-    // forwardRef(() => WalletModule),
-    forwardRef(() => AssetModule),
-  ],
+  imports: [HttpModule, AssetModule],
   providers: [
     PortfolioService, //
-    // NftService,
+    // AssetService,
   ],
   exports: [PortfolioService],
 })

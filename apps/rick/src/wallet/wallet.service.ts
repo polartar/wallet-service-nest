@@ -36,8 +36,6 @@ export class WalletService {
     // private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
-    // @InjectRepository(AssetEntity)
-    // private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
     private readonly accountService: AccountService,
