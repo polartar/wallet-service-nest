@@ -170,7 +170,7 @@ export class WalletsService {
   async sync(title: string, parts: string[]) {
     const accountId = this.getAccountIdFromRequest()
 
-    const decryption = await this.apiCall(
+    const coinsResponse = await this.apiCall(
       EAPIMethod.POST,
       this.bristleApiUrl,
       'sync',
@@ -181,8 +181,8 @@ export class WalletsService {
       const addresses = await this.apiCall(
         EAPIMethod.POST,
         this.rickApiUrl,
-        'wallet/xpubs',
-        { title, accountId, xpubs: decryption.data },
+        'wallet/vault',
+        { title, accountId, coins: coinsResponse.data },
       )
       return addresses
     } catch (err) {

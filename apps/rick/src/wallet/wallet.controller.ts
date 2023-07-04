@@ -181,12 +181,12 @@ export class WalletController {
   //   }
   // }
 
-  @Post('xpubs')
+  @Post('vault')
   async AddXPubs(@Body() data: AddXPubs) {
-    const res = await this.walletService.addXPubs(
+    const res = await this.walletService.addVaultCoins(
       data.title,
       data.accountId,
-      data.xpubs,
+      data.coins,
     )
 
     await this.portfolioService.updateCurrentWallets()

@@ -16,7 +16,7 @@ import { TransactionEntity } from './transaction.entity'
 import { AddHistoryDto } from './dto/add-history.dto'
 import { ENetworks, EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
-import { ExPubTypes, IXPub } from './dto/add-xpubs'
+import { IVaultCoin } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
 import { AssetEntity } from './asset.entity'
 import { AssetService } from '../asset/asset.service'
@@ -824,7 +824,7 @@ export class WalletService {
   //   }
   // }
 
-  async addXPubs(title: string, accountId: number, xpubs: IXPub[]) {
+  async addVaultCoins(title: string, accountId: number, coins: IVaultCoin[]) {
     const account = await this.accountService.lookup({
       accountId: accountId,
     })
@@ -838,19 +838,31 @@ export class WalletService {
       prototype.type = EWalletType.VAULT
       prototype.title = title
       prototype.assets = []
-      const wallet = await this.walletRepository.save(prototype)
+      const walletEntity = await this.walletRepository.save(prototype)
 
       await Promise.all(
-        xpubs.map(async (xpub) => {
+        coins.map(async (coin) => {
           try {
-            return await this.assetService.addAssetFromXPub(
-              xpub.xpub,
-              0,
-              xpub.type === ExPubTypes.BIP44
-                ? ENetworks.ETHEREUM
-                : ENetworks.BITCOIN,
-              wallet,
+            const network =
+              coin.BIP44 === 0 ? ENetworks.BITCOIN : ENetworks.ETHEREUM
+            Promise.all(
+              coin.wallets.map(async (wallet) => {
+                return await this.assetService.addAsset(
+                  wallet.address,
+                  wallet.index,
+                  network,
+                  walletEntity,
+                )
+              }),
             )
+            // return await this.assetService.addAssetFromXPub(
+            //   xpub.xpub,
+            //   0,
+            //   xpub.type === ExPubTypes.BIP44
+            //     ? ENetworks.ETHEREUM
+            //     : ENetworks.BITCOIN,
+            //   wallet,
+            // )
             // eslint-disable-next-line no-empty
           } catch (err) {}
         }),
@@ -859,7 +871,7 @@ export class WalletService {
       this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
       this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
 
-      const newWallet = await this.getWallet(accountId, wallet.id)
+      const newWallet = await this.getWallet(accountId, walletEntity.id)
       return newWallet
     } catch (e) {
       Sentry.captureException(e.message + ' while addNewWallet')

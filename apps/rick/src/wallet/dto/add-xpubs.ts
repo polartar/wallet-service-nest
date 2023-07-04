@@ -1,13 +1,14 @@
-export enum ExPubTypes {
-  BIP44 = 'bip44',
-  BIPT66 = 'bip66',
-}
-export interface IXPub {
-  type: ExPubTypes
-  xpub: string
+export interface IVaultCoin {
+  BIP44: number
+  wallets: {
+    address: string
+    hidden: boolean
+    index: number
+    publickey: string
+  }[]
 }
 export class AddXPubs {
   title: string
   accountId: number
-  xpubs: IXPub[]
+  coins: IVaultCoin[]
 }

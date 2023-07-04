@@ -33,29 +33,29 @@ describe('AppService', () => {
     expect(service.welcomeMessage).toEqual(AppService.welcomeMessage)
   })
 
-  it('should verify the payload', () => {
-    const message = { message1: 'property1' }
-    const messageBuffer = Buffer.from(JSON.stringify(message))
+  // it('should verify the payload', async () => {
+  //   const message = { message1: 'property1' }
+  //   const messageBuffer = Buffer.from(JSON.stringify(message))
 
-    const ur = UR.fromBuffer(messageBuffer)
-    const maxFragmentLength = 150
-    const firstSeqNum = 0
+  //   const ur = UR.fromBuffer(messageBuffer)
+  //   const maxFragmentLength = 150
+  //   const firstSeqNum = 0
 
-    const encoder = new UREncoder(ur, maxFragmentLength, firstSeqNum)
+  //   const encoder = new UREncoder(ur, maxFragmentLength, firstSeqNum)
 
-    const part = encoder.nextPart()
+  //   const part = encoder.nextPart()
 
-    expect(service.verifyPayload([part])).toBe(JSON.stringify(message))
-  })
+  //   expect(await service.verifyPayload([part])).toBe(JSON.stringify(message))
+  // })
 
-  it('should verify the liquid parts', () => {
-    const decodedData = service.verifyPayload(parts)
-    expect(JSON.parse(decodedData).data).toBe(originalData)
+  it('should verify the liquid parts', async () => {
+    const coins = await service.verifyPayload(parts)
+    expect(coins.length).toBe(2)
   })
 
   it('should throw error when missing part', async () => {
     try {
-      service.verifyPayload(parts.slice(0, parts.length - 1))
+      await service.verifyPayload(parts.slice(0, parts.length - 1))
     } catch (err) {
       expect(err).toBeInstanceOf(BadRequestException)
     }

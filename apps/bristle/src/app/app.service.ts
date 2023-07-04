@@ -39,6 +39,7 @@ export class AppService {
     let i = 0
     do {
       const part = parts[i++]
+
       try {
         decoder.receivePart(part)
       } catch (err) {
@@ -54,7 +55,9 @@ export class AppService {
 
       let coins
       try {
-        coins = await this.Gunzip(originalMessage)
+        coins = await this.Gunzip(JSON.parse(originalMessage).data)
+
+        return coins
       } catch (err) {
         Sentry.captureException(
           `verifyPayload(): ${err.message}: ${originalMessage}`,
@@ -62,13 +65,6 @@ export class AppService {
 
         throw new BadRequestException(err.message)
       }
-
-      const xpubs = coins.map((coin) => ({
-        BIP44: ExPubTypes.BIP44,
-        xpub: coin.wallets[0].xpub,
-      }))
-
-      return xpubs
     } else {
       throw new BadRequestException('Some parts are missing in the payload')
     }
