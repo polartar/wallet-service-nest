@@ -6,8 +6,8 @@ import { UpdateAccessTokenDto } from './dto/update-access-token.dto'
 import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RefreshTokenValidationPipe } from './auth.pipe'
 
-@Controller('token')
-@ApiTags('token')
+@Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -45,7 +45,7 @@ export class AuthController {
   //   )
   // }
 
-  @Post('')
+  @Post('/access-token')
   @ApiOperation({
     summary: 'Generate new access token from the refresh token',
   })
@@ -59,7 +59,10 @@ export class AuthController {
     )
   }
 
-  @Post('refresh')
+  @Post('/refresh-token')
+  @ApiOperation({
+    summary: 'Generate new refresh token and access token',
+  })
   @Public()
   @UsePipes(new RefreshTokenValidationPipe())
   async refresh(@Body() data: RefreshTokenDto) {

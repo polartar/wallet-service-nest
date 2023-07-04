@@ -167,7 +167,7 @@ export class AuthService {
     accountId: number,
     deviceId: string,
     otp: string,
-  ): Promise<string> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     if (provider === EAuth.Google || provider === EAuth.Apple) {
       const userResponse = await this.accountService.getUserFromIdToken(
         providerToken,
@@ -192,6 +192,14 @@ export class AuthService {
       idToken: providerToken,
       deviceId,
     }
-    return await this.bootstrapService.generateRefreshToken(payload)
+    const refreshToken = await this.bootstrapService.generateRefreshToken(
+      payload,
+    )
+    const accessToken = await this.bootstrapService.generateAccessToken(payload)
+
+    return {
+      accessToken,
+      refreshToken,
+    }
   }
 }
