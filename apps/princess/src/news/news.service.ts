@@ -47,6 +47,8 @@ export class NewsService {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      await process.nextTick(() => {})
       const response = await firstValueFrom(
         this.httpService.post(this.fidelityAuthUrl, params, config),
       )
