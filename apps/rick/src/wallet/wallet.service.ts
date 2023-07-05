@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { IBTCTransaction, SecondsIn } from './wallet.types'
+import {
+  ETransactionStatuses,
+  IBTCTransaction,
+  SecondsIn,
+} from './wallet.types'
 import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
@@ -91,35 +95,38 @@ export class WalletService {
   //   })
   // }
 
-  async getBtcHistory(
-    transactions: IBTCTransaction[],
-    asset: AssetEntity,
-    balance: number,
-  ): Promise<TransactionEntity[]> {
-    if (!transactions || transactions.length === 0) {
-      return []
-    }
-    let currentBalance = balance
-    const allHistories = await Promise.all(
-      transactions.map((record) => {
-        const prevBalance = currentBalance
-        currentBalance = record.spent
-          ? currentBalance - record.value
-          : currentBalance + record.value
-        return this.assetService.addHistory({
-          asset: asset,
-          from: record.spent ? asset.address : '',
-          to: record.spent ? '' : asset.address,
-          amount: record.value.toString(),
-          hash: record.tx_hash,
-          balance: prevBalance.toString(),
-          timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
-        })
-      }),
-    )
+  // async getBtcHistory(
+  //   transactions: IBTCTransaction[],
+  //   asset: AssetEntity,
+  //   balance: number,
+  // ): Promise<TransactionEntity[]> {
+  //   if (!transactions || transactions.length === 0) {
+  //     return []
+  //   }
+  //   let currentBalance = balance
+  //   const allHistories = await Promise.all(
+  //     transactions.map((record) => {
+  //       const prevBalance = currentBalance
+  //       currentBalance = record.spent
+  //         ? currentBalance - record.value
+  //         : currentBalance + record.value
+  //       return this.assetService.addHistory({
+  //         asset: asset,
+  //         from: record.spent ? asset.address : '',
+  //         to: record.spent ? '' : asset.address,
+  //         amount: record.value.toString(),
+  //         hash: record.tx_hash,
+  //         balance: prevBalance.toString(),
+  //         timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
+  //         status: record.spent
+  //           ? ETransactionStatuses.SENT
+  //           : ETransactionStatuses.RECEIVED,
+  //       })
+  //     }),
+  //   )
 
-    return allHistories
-  }
+  //   return allHistories
+  // }
 
   // async getEthHistory(
   //   transactions: ethers.providers.TransactionResponse[],

@@ -1,4 +1,5 @@
 import { AssetEntity } from '../wallet/asset.entity'
+import { ETransactionStatuses } from '../wallet/wallet.types'
 
 export interface IBTCTransactionResponse {
   balance: number
@@ -26,6 +27,7 @@ export class ITransaction {
   tokenId?: string
   hash: string
   timestamp: number
+  status: ETransactionStatuses
 }
 
 export interface IXPubInfo {

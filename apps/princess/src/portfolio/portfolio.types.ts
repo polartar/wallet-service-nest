@@ -15,7 +15,6 @@ export interface IWallet {
   address: string
   accounts: IAccount[]
   addresses: IAddress[]
-  isActive: boolean
   path: string
   createdAt: number
 }
@@ -27,7 +26,6 @@ export interface IAddress {
   path: string
   wallet: IWallet
   history: IBalanceHistory[]
-  isActive: boolean
 }
 
 export interface IHistory {

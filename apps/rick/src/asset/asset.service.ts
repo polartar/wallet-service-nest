@@ -21,7 +21,11 @@ import ERC721ABI from '../asset/abis/erc721'
 import ERC1155ABI from '../asset/abis/erc1155'
 import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { EXPubCurrency, SecondsIn } from '../wallet/wallet.types'
+import {
+  ETransactionStatuses,
+  EXPubCurrency,
+  SecondsIn,
+} from '../wallet/wallet.types'
 import { NftService } from '../nft/nft.service'
 import { isAddress } from 'ethers/lib/utils'
 
@@ -104,7 +108,9 @@ export class AssetService {
       asset.network === ENetworks.ETHEREUM
         ? this.mainnetProvider
         : this.goerliProvider
+
     const transactions = await provider.getHistory(asset.address)
+
     if (!transactions || !transactions.length) {
       return []
     }
@@ -120,14 +126,16 @@ export class AssetService {
           const prevBalance = currentBalance
           const fee = record.gasLimit.mul(record.gasPrice)
           const walletAddress = asset.address.toLowerCase()
-
+          let status
           if (record.from?.toLowerCase() === walletAddress) {
             currentBalance = currentBalance.add(fee)
             currentBalance = currentBalance.add(record.value)
+            status = ETransactionStatuses.SENT
           }
           //consider if transferred itself
           if (record.to?.toLowerCase() === walletAddress) {
             currentBalance = currentBalance.sub(record.value)
+            status = ETransactionStatuses.RECEIVED
           }
 
           const newHistory: ITransaction = {
@@ -138,6 +146,7 @@ export class AssetService {
             amount: record.value.toString(),
             balance: prevBalance.toString(),
             timestamp: +record.timestamp,
+            status,
           }
           // parse the transaction
           if (record.value.isZero()) {
@@ -221,6 +230,9 @@ export class AssetService {
           hash: record.tx_hash,
           balance: prevBalance.toString(),
           timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
+          status: record.spent
+            ? ETransactionStatuses.SENT
+            : ETransactionStatuses.RECEIVED,
         })
       }),
     )
@@ -347,6 +359,10 @@ export class AssetService {
         ? BigNumber.from(transactions[0].balance).sub(amount).toString()
         : BigNumber.from(tx.transaction.value).toString(),
       timestamp: this.portfolioService.getCurrentTimeBySeconds(),
+      status:
+        updatedAsset.address === tx.transaction.from
+          ? ETransactionStatuses.SENT
+          : ETransactionStatuses.RECEIVED,
     }
 
     let newHistory
