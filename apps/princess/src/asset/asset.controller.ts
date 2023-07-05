@@ -27,7 +27,7 @@ export class AssetController {
     if (!data.address && !data.xPub) {
       throw new BadRequestException('Require one of address or xpub')
     }
-    this.assetService.createAsset(data)
+    return this.assetService.createAsset(data)
   }
 
   @Get(':assetId')
