@@ -15,7 +15,12 @@ import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
-import { IBTCTransactionResponse, ITransaction, IXPubInfo } from './asset.types'
+import {
+  IAssetDetail,
+  IBTCTransactionResponse,
+  ITransaction,
+  IXPubInfo,
+} from './asset.types'
 import { TransactionEntity } from '../wallet/transaction.entity'
 import ERC721ABI from '../asset/abis/erc721'
 import ERC1155ABI from '../asset/abis/erc1155'
@@ -478,20 +483,35 @@ export class AssetService {
     }
   }
 
-  getAsset(assetId: number) {
-    return this.transactionRepository.findOne({
-      where: {
-        asset: {
-          id: assetId,
-        },
-      },
-      order: {
-        timestamp: 'DESC',
-      },
-      relations: {
-        asset: true,
-      },
+  async getAsset(assetId: number) {
+    const assetEntity = await this.assetRepository.findOne({
+      where: { id: assetId },
+      relations: { transactions: true },
     })
+    if (!assetEntity) {
+      throw new BadRequestException('Not found asset')
+    }
+    const transactions = assetEntity.transactions
+    const asset: IAssetDetail = {
+      id: assetEntity.id,
+      index: assetEntity.index,
+      network: assetEntity.network,
+      address: assetEntity.address,
+      nfts: [],
+    }
+
+    if (transactions.length > 0) {
+      asset.transaction = transactions[transactions.length - 1]
+    }
+    const nftResponse = await this.nftService.getNFTAssets(
+      assetEntity.address,
+      assetEntity.network,
+      1,
+    )
+
+    asset.nfts = nftResponse.data.nfts
+
+    return asset
   }
 
   async getAssetTransactions(

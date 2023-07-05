@@ -126,23 +126,31 @@ export class AssetService {
       EAPIMethod.GET,
       `asset/${assetId}?accountId=${accountId}`,
     )
-    if (asset) {
-      const transactions = await this.addUSDPrice(asset.transactions)
+
+    if (asset.transaction) {
+      const transactions = await this.addUSDPrice([asset.transaction])
+
       asset.balance = {
         fiat: transactions[0].fiatBalance,
         crypto: transactions[0].balance,
       }
-      return asset
+
+      delete asset.transaction
     } else {
-      return null
+      asset.balance = {
+        fiat: '0',
+        crypto: '0',
+      }
     }
+
+    return asset
   }
 
   async getAssetTransactions(assetId: number, count = 50, start = 0) {
     const accountId = this.getAccountIdFromRequest()
     return await this.rickApiCall(
       EAPIMethod.GET,
-      `asset${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+      `asset/${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
   }
 
