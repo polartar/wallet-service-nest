@@ -9,7 +9,7 @@ export interface ITransaction {
   from: string
   to: string
   balance: string
-  amount: string
+  amount?: string
   tokenId: number
   timestamp: number
 }
