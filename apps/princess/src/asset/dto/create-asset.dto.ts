@@ -43,7 +43,7 @@ export class AssetSwaggerResponse {
   id: number
 
   @ApiProperty({
-    example: 2,
+    example: 0,
   })
   index: number
 

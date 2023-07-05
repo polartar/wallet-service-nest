@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { NewsModule } from '../news/news.module'
-import { MarketModule } from '../coin/coin.module'
+import { CoinModule } from '../coin/coin.module'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
 import { PortfolioModule } from '../portfolio/portfolio.module'
@@ -13,6 +13,7 @@ import { GateWayModule } from '../gateway/gateway.module'
 import { BootstrapModule } from '../bootstrap/bootstrap.module'
 import { AuthModule } from '../auth/auth.module'
 import { AssetModule } from '../asset/asset.module'
+import { WalletModule } from '../wallet/wallet.module'
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { AssetModule } from '../asset/asset.module'
     GateWayModule,
     RickModule,
     NewsModule,
-    MarketModule,
+    CoinModule,
     PortfolioModule,
     AuthModule,
     AccountsModule,
@@ -28,6 +29,7 @@ import { AssetModule } from '../asset/asset.module'
     BootstrapModule,
     AssetModule,
     AccountsModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

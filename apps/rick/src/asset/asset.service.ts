@@ -23,6 +23,7 @@ import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { EXPubCurrency, SecondsIn } from '../wallet/wallet.types'
 import { NftService } from '../nft/nft.service'
+import { isAddress } from 'ethers/lib/utils'
 
 @Injectable()
 export class AssetService {
@@ -261,7 +262,19 @@ export class AssetService {
   }
 
   async createAsset(address: string, index: number, network: ENetworks) {
-    const asset = this.addAsset(address, index, network)
+    if (network === ENetworks.ETHEREUM || network === ENetworks.ETHEREUM_TEST) {
+      if (!isAddress(address)) {
+        throw new BadRequestException('Invalid address')
+      }
+    }
+    let asset
+
+    asset = await this.assetRepository.findOne({ where: { address, network } })
+    if (asset) {
+      return asset.id
+    }
+
+    asset = this.addAsset(address, index, network)
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 

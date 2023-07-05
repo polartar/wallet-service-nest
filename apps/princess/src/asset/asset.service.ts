@@ -44,6 +44,7 @@ export class AssetService {
           ? this.httpService.post(url, body)
           : this.httpService.get(url),
       )
+
       return res.data
     } catch (err) {
       if (err.response) {
@@ -64,9 +65,9 @@ export class AssetService {
   async createAsset(data: CreateAssetDto) {
     let asset
     if (data.address) {
-      asset = await this.rickApiCall(EAPIMethod.POST, '/asset', data)
+      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
     } else {
-      asset = await this.rickApiCall(EAPIMethod.POST, '/asset/discover', data)
+      asset = await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     }
 
     return asset
@@ -123,7 +124,7 @@ export class AssetService {
     const accountId = this.getAccountIdFromRequest()
     const asset = await this.rickApiCall(
       EAPIMethod.GET,
-      `/asset${assetId}?accountId=${accountId}`,
+      `asset${assetId}?accountId=${accountId}`,
     )
 
     const transactions = await this.addUSDPrice(asset.transactions)
@@ -138,7 +139,7 @@ export class AssetService {
     const accountId = this.getAccountIdFromRequest()
     return await this.rickApiCall(
       EAPIMethod.GET,
-      `/asset${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+      `asset${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
   }
 
@@ -156,18 +157,9 @@ export class AssetService {
   async getAssetNFTs(assetId: number, pageNumber?: number) {
     const page = pageNumber || 1
 
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.rickApiUrl}/asset/${assetId}/nft?pageNumber=${page}`,
-        ),
-      )
-
-      return response.data
-    } catch (err) {
-      Sentry.captureException(`getAssetNFTs(): ${err.message}`)
-
-      throw new BadRequestException(`Rick API call: ${err.message}`)
-    }
+    return await this.rickApiCall(
+      EAPIMethod.GET,
+      `asset/${assetId}/nft?pageNumber=${page}`,
+    )
   }
 }
