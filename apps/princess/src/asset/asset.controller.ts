@@ -14,7 +14,7 @@ import { GetAssetPortfolioDto } from './dto/get-asset-portfolio.dto'
 import { GetAssetTransactionDto } from './dto/get-asset-transaction.dto'
 
 @Controller('asset')
-@ApiTags('wallet')
+@ApiTags('asset')
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 

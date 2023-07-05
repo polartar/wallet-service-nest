@@ -8,4 +8,4 @@ import { CoinService } from './coin.service'
   controllers: [CoinController],
   providers: [CoinService],
 })
-export class MarketModule {}
+export class CoinModule {}
