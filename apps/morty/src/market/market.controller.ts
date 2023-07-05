@@ -6,7 +6,7 @@ import { EPeriod, ECoinTypes } from '@rana/core'
 export class MarketController {
   constructor(private readonly marketService: CoinService) {}
 
-  @Get(':/coinType')
+  @Get(':coinType')
   getEthMarketData(@Param('coinType') coinType: ECoinTypes) {
     return this.marketService.getMarketData(coinType)
   }
