@@ -39,7 +39,7 @@ export class TransactionEntity {
   timestamp: number
 
   @Column('text')
-  network: ETransactionStatuses
+  status: ETransactionStatuses
 
   toJSON() {
     return {

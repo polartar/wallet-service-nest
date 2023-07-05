@@ -67,7 +67,6 @@ export class WalletSwaggerResponse {
   @ApiProperty({
     example: [
       {
-        isActive: true,
         id: 1,
         address: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
         createdAt: 1685445893,

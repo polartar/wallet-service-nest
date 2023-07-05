@@ -36,9 +36,6 @@ export class AssetEntity {
   @JoinColumn()
   transactions: TransactionEntity[]
 
-  @Column('boolean', { default: true })
-  isActive = true
-
   @BeforeInsert()
   public setCreatedAt() {
     this.createdAt = getTimestamp()
