@@ -1,5 +1,5 @@
 export class UpdateWalletDto {
-  accountId: number
+  accountId: string
   title?: string
   mnemonic?: string
 }

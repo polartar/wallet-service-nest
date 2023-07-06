@@ -10,13 +10,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { AccountEntity } from '../account/account.entity'
-import { EWalletType, getTimestamp } from '@rana/core'
+import { getTimestamp } from '@rana/core'
 import { AssetEntity } from './asset.entity'
 
 @Entity()
 export class WalletEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column('text')
   mnemonic: string

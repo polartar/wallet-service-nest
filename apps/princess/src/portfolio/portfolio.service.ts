@@ -140,7 +140,7 @@ export class PortfolioService {
     }
   }
 
-  addClient(accountId: number, client: Socket) {
+  addClient(accountId: string, client: Socket) {
     if (!this.clients[accountId]) {
       this.clients[accountId] = client
     }
@@ -199,7 +199,7 @@ export class PortfolioService {
     }
   }
 
-  getAccount(accountId: number): Observable<AxiosResponse> {
+  getAccount(accountId: string): Observable<AxiosResponse> {
     return this.httpService
       .get<AxiosResponse>(`${this.rickApiUrl}/account/${accountId}`)
       .pipe(

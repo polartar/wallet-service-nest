@@ -32,7 +32,7 @@ export class RefreshTokenValidationPipe implements PipeTransform {
     providerToken: Joi.string().optional().allow(''),
     provider: Joi.string().valid(EAuth.Google, EAuth.Apple, 'Anonymous'),
     deviceId: Joi.string().required(),
-    accountId: Joi.number().required(),
+    accountId: Joi.string().required(),
     otp: Joi.string().required(),
   })
 

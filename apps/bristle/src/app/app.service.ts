@@ -2,7 +2,6 @@ import { URDecoder } from '@ngraveio/bc-ur'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import * as Sentry from '@sentry/node'
 import zlib = require('zlib')
-import { ExPubTypes } from './app.types'
 
 @Injectable()
 export class AppService {

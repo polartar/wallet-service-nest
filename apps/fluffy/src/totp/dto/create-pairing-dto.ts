@@ -1,5 +1,5 @@
 export class CreatePairingDto {
-  userId: number
+  userId: string
   deviceId: string
   serverProposedShard?: string
   ownProposedShard?: string

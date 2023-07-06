@@ -32,8 +32,8 @@ export class AssetService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
-  getAccountIdFromRequest(): number {
-    return Number((this.request as IRequest).accountId)
+  getAccountIdFromRequest(): string {
+    return (this.request as IRequest).accountId
   }
 
   async rickApiCall(method: EAPIMethod, path: string, body?: unknown) {
@@ -120,7 +120,7 @@ export class AssetService {
     }
   }
 
-  async getAsset(assetId: number) {
+  async getAsset(assetId: string) {
     const accountId = this.getAccountIdFromRequest()
     const asset = await this.rickApiCall(
       EAPIMethod.GET,
@@ -146,7 +146,7 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(assetId: number, count = 50, start = 0) {
+  async getAssetTransactions(assetId: string, count = 50, start = 0) {
     const accountId = this.getAccountIdFromRequest()
     return await this.rickApiCall(
       EAPIMethod.GET,
@@ -165,7 +165,7 @@ export class AssetService {
     )
   }
 
-  async getAssetNFTs(assetId: number, pageNumber?: number) {
+  async getAssetNFTs(assetId: string, pageNumber?: number) {
     const page = pageNumber || 1
 
     return await this.rickApiCall(

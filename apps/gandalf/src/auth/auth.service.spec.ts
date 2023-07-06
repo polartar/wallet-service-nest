@@ -27,7 +27,7 @@ describe('AuthService', () => {
         service.authorize({
           idToken: 'test',
           type: EAuth.Google,
-          accountId: 1,
+          accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
         }),
       ).rejects.toThrowError('Invalid Id token')
     })

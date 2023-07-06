@@ -48,8 +48,8 @@ export class WalletsService {
     )
   }
 
-  getAccountIdFromRequest(): number {
-    return Number((this.request as IRequest).accountId)
+  getAccountIdFromRequest(): string {
+    return (this.request as IRequest).accountId
   }
 
   getDeviceIdFromRequest(): string {
@@ -207,7 +207,7 @@ export class WalletsService {
   //   return this.addUSDPrice([wallet], EPeriod.Day)
   // }
 
-  async updateWallet(walletId: number, title: string, mnemonic: string) {
+  async updateWallet(walletId: string, title: string, mnemonic: string) {
     const accountId = this.getAccountIdFromRequest()
 
     return this.apiCall(
@@ -222,7 +222,7 @@ export class WalletsService {
     )
   }
 
-  async deleteWallet(walletId: number) {
+  async deleteWallet(walletId: string) {
     const accountId = this.getAccountIdFromRequest()
 
     return this.apiCall(

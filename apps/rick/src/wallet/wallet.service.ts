@@ -188,8 +188,8 @@ export class WalletService {
   // }
 
   async getUserWalletTransaction(
-    accountId: number,
-    walletId: number,
+    accountId: string,
+    walletId: string,
     start: number,
     count: number,
   ) {
@@ -221,7 +221,7 @@ export class WalletService {
     return transactions
   }
 
-  async getWallet(accountId: number, walletId: number) {
+  async getWallet(accountId: string, walletId: string) {
     return this.walletRepository.find({
       where: {
         id: walletId,
@@ -236,8 +236,8 @@ export class WalletService {
   }
 
   async updateWallet(
-    walletId: number,
-    accountId: number,
+    walletId: string,
+    accountId: string,
     title: string,
     mnemonic: string,
   ) {
@@ -265,7 +265,7 @@ export class WalletService {
     }
   }
 
-  async deleteWallet(walletId: number, accountId: number) {
+  async deleteWallet(walletId: string, accountId: string) {
     await this.walletRepository.delete({
       id: walletId,
       account: {
@@ -355,10 +355,10 @@ export class WalletService {
   //   }
   // }
   async addNewWallet(
-    accountId: number,
+    accountId: string,
     title: string,
     mnemonic: string,
-    assetIds: number[],
+    assetIds: string[],
   ) {
     const account = await this.accountService.lookup({
       accountId,
@@ -566,8 +566,8 @@ export class WalletService {
   // }
 
   async getUserWalletPortfolio(
-    accountId: number,
-    walletId: number,
+    accountId: string,
+    walletId: string,
     period: EPeriod,
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
@@ -835,7 +835,7 @@ export class WalletService {
   //   }
   // }
 
-  async addVaultCoins(title: string, accountId: number, coins: IVaultCoin[]) {
+  async addVaultCoins(title: string, accountId: string, coins: IVaultCoin[]) {
     const account = await this.accountService.lookup({
       accountId: accountId,
     })
@@ -890,7 +890,7 @@ export class WalletService {
     }
   }
 
-  async combineWallets(existingAccountId: number, anonymousId: number) {
+  async combineWallets(existingAccountId: string, anonymousId: string) {
     const existingAccount = await this.accountService.lookup({
       accountId: existingAccountId,
     })

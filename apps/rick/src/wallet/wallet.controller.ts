@@ -7,9 +7,7 @@ import {
   Post,
   Get,
   forwardRef,
-  NotFoundException,
   Query,
-  ParseIntPipe,
   ParseEnumPipe,
   BadRequestException,
   Patch,
@@ -36,8 +34,8 @@ export class WalletController {
   // Need to confirm if we need to verify account Id
   @Get(':walletId')
   async getWallet(
-    @Query('accountId', ParseIntPipe) accountId: number,
-    @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId') accountId: string,
+    @Param('walletId') walletId: string,
     // @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
@@ -51,8 +49,8 @@ export class WalletController {
 
   @Get(':walletId/transactions')
   async getWalletTransaction(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Param('walletId') walletId: string,
+    @Query('accountId') accountId: string,
     @Query('start') start: number,
     @Query('count') count: number,
   ) {
@@ -72,8 +70,8 @@ export class WalletController {
 
   @Get(':walletId/portfolio')
   async getWalletPortfolio(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Param('walletId') walletId: string,
+    @Query('accountId') accountId: string,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
@@ -110,7 +108,7 @@ export class WalletController {
 
   @Patch(':walletId')
   async updateWallet(
-    @Param('walletId', ParseIntPipe) walletId: number,
+    @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
     try {
@@ -129,8 +127,8 @@ export class WalletController {
 
   @Delete(':walletId')
   async deleteWallet(
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @Body('accountId') accountId: number,
+    @Param('walletId') walletId: string,
+    @Body('accountId') accountId: string,
   ) {
     try {
       return await this.walletService.deleteWallet(walletId, accountId)
@@ -144,7 +142,7 @@ export class WalletController {
   // @Post('')
   // async createPortfolio(
   //   @Body('xPub') xPub: string,
-  //   @Body('account_id', ParseIntPipe) account_id: number,
+  //   @Body('account_id',) account_id: number,
   //   @Body('wallet_type', new ParseEnumPipe(EWalletType))
   //   walletType: EWalletType,
   //   @Body('title') title?: string,

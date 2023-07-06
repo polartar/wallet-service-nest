@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   forwardRef,
 } from '@nestjs/common'
 import { AssetEntity } from '../wallet/asset.entity'
@@ -472,7 +471,7 @@ export class AssetService {
     }
   }
 
-  async getAsset(assetId: number) {
+  async getAsset(assetId: string) {
     const assetEntity = await this.assetRepository.findOne({
       where: { id: assetId },
       relations: { transactions: true },
@@ -504,8 +503,8 @@ export class AssetService {
   }
 
   async getAssetTransactions(
-    assetId: number,
-    accountId: number,
+    assetId: string,
+    accountId: string,
     start: number,
     count: number,
   ) {
@@ -537,7 +536,7 @@ export class AssetService {
     return transactions
   }
 
-  async getAssetsByIds(assetIds: number[]) {
+  async getAssetsByIds(assetIds: string[]) {
     try {
       return await this.assetRepository.find({
         where: { id: In(assetIds) },
@@ -548,7 +547,7 @@ export class AssetService {
     }
   }
 
-  async getAssetPortfolio(assetId: number, accountId: number, period: EPeriod) {
+  async getAssetPortfolio(assetId: string, accountId: string, period: EPeriod) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast =
       period === EPeriod.All
@@ -573,7 +572,7 @@ export class AssetService {
     })
   }
 
-  async getNFTAssets(assetId: number, pageNumber: number) {
+  async getNFTAssets(assetId: string, pageNumber: number) {
     const asset = await this.assetRepository.findOne({ where: { id: assetId } })
     if (!asset) {
       Sentry.captureException(`getNFTAssets(): AssetId(${assetId}) Not found`)

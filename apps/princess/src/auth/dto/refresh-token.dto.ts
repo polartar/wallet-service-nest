@@ -27,5 +27,5 @@ export class RefreshTokenDto {
 
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
-  accountId: number
+  accountId: string
 }

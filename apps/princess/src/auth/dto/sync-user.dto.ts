@@ -5,16 +5,16 @@ export class SyncUserDto {
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
   @IsNumber()
-  account_id: number
+  accountId: string
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()
   @IsUUID(4)
-  device_id: string
+  deviceId: string
 
   @ApiProperty({ description: 'hash that represents account object' })
   @IsNotEmpty()
-  account_hash: string
+  accountHash: string
 
   @ApiProperty({ description: 'one time password' })
   @IsNotEmpty()

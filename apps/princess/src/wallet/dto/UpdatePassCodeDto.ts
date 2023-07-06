@@ -14,7 +14,7 @@ export class UpdatePassCodeSwaggerResponse {
   @ApiProperty({
     example: 1,
   })
-  userId: number
+  userId: string
 
   @ApiProperty({
     example: 'daa47873-3eb4-4635-9ce2-8cf0992b67e6',

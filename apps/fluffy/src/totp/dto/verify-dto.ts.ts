@@ -1,5 +1,5 @@
 export class VerifyDto {
-  userId: number
+  userId: string
   deviceId: string
   otp: string
 }

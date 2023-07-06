@@ -40,7 +40,7 @@ export class AccountController {
   @Put(':accountId')
   async updateAccount(
     @Body() data: UpdateAccountDto,
-    @Param('accountId') accountId: number,
+    @Param('accountId') accountId: string,
   ) {
     try {
       return await this.accountService.update(accountId, data)
@@ -56,7 +56,7 @@ export class AccountController {
   }
 
   @Get(':accountId')
-  async getWallets(@Param('accountId', ParseIntPipe) accountId: number) {
+  async getWallets(@Param('accountId', ParseIntPipe) accountId: string) {
     return await this.accountService.getWallets(accountId)
   }
 

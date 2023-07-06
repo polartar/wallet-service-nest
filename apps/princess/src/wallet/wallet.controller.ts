@@ -55,7 +55,7 @@ export class WalletsController {
       'Time series data, where date is timestamp (number), and the value of that date.',
   })
   async getWalletTransaction(
-    @Param('walletId') walletId: number,
+    @Param('walletId') walletId: string,
     @Query() query: GetWalletTransactionDto,
   ) {
     return await this.walletService.getWalletTransaction(
@@ -72,7 +72,7 @@ export class WalletsController {
       'Time series data, where date is timestamp (number), and the value of that date.',
   })
   async getWalletPortfolio(
-    @Param('walletId') walletId: number,
+    @Param('walletId') walletId: string,
     @Query() query: GetWalletPortfolioDto,
   ) {
     return await this.walletService.getWalletPortfolio(walletId, query.period)
@@ -84,7 +84,7 @@ export class WalletsController {
     summary:
       'Time series data, where date is timestamp (number), and the value of that date.',
   })
-  async getWallet(@Param('walletId') walletId: number) {
+  async getWallet(@Param('walletId') walletId: string) {
     return await this.walletService.getWallet(walletId)
   }
 
@@ -103,7 +103,7 @@ export class WalletsController {
     summary: 'Update the wallet object',
   })
   async updateWallet(
-    @Param('walletId') walletId: number,
+    @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
     if (!data.mnemonic && !data.title) {
@@ -123,7 +123,7 @@ export class WalletsController {
   @ApiOperation({
     summary: 'Delete the wallet object',
   })
-  async deleteWallet(@Param('walletId') walletId: number) {
+  async deleteWallet(@Param('walletId') walletId: string) {
     return await this.walletService.deleteWallet(walletId)
   }
 
@@ -132,7 +132,7 @@ export class WalletsController {
   //   summary: 'Update the wallet object',
   // })
   // async updateWallet(
-  //   @Param('walletId') walletId: number,
+  //   @Param('walletId') walletId: string,
   //   @Param('walletId') walletId: string,
   //   @Body() data: UpdateWalletDto,
   // ) {
@@ -146,8 +146,8 @@ export class WalletsController {
   //     'Time series data, where date is timestamp (number), and the value of that date.',
   // })
   // async getWalletPortfolio(
-  //   @Param('walletId') walletId: number,
-  //   @Param('walletId') walletId: number,
+  //   @Param('walletId') walletId: string,
+  //   @Param('walletId') walletId: string,
   //   @Query() query: GetPortfolioDto,
   // ) {
   //   return await this.walletService.getWalletPortfolio(
@@ -163,7 +163,7 @@ export class WalletsController {
   //   summary: 'Update the passCodeKey',
   // })
   // async updatePassCode(
-  //   @Param('walletId') walletId: number,
+  //   @Param('walletId') walletId: string,
   //   @Body() data: UpdatePassCodeDto,
   // ) {
   //   return await this.walletService.updatePassCode(
@@ -179,7 +179,7 @@ export class WalletsController {
   //   summary: 'Switch to Cloud',
   // })
   // async switchToCloud(
-  //   @Param('walletId') walletId: number,
+  //   @Param('walletId') walletId: string,
   //   @Body() data: SwitchToCloudShardDto,
   // ) {
   //   return await this.walletService.updateIsCloud(
@@ -195,7 +195,7 @@ export class WalletsController {
   //   summary: 'Switch to Wallet',
   // })
   // async switchToWallet(
-  //   @Param('walletId') walletId: number,
+  //   @Param('walletId') walletId: string,
   //   @Body() data: SwitchToCloudShardDto,
   // ) {
   //   return await this.walletService.updateIsCloud(

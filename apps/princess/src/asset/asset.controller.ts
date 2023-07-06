@@ -38,7 +38,7 @@ export class AssetController {
   @ApiOperation({
     summary: 'Get Asset',
   })
-  async getAsset(@Param('assetId') assetId: number) {
+  async getAsset(@Param('assetId') assetId: string) {
     return await this.assetService.getAsset(assetId)
   }
 
@@ -48,7 +48,7 @@ export class AssetController {
     summary: 'Get Asset',
   })
   async getAssetTransactions(
-    @Param('assetId') assetId: number,
+    @Param('assetId') assetId: string,
     @Query() query: GetAssetTransactionDto,
   ) {
     return await this.assetService.getAssetTransactions(
@@ -64,7 +64,7 @@ export class AssetController {
     summary: 'Get Asset',
   })
   async getAssetPortfolio(
-    @Param('assetId') assetId: number,
+    @Param('assetId') assetId: string,
     @Query() query: GetAssetPortfolioDto,
   ) {
     return await this.assetService.getAssetPortfolio(assetId, query.period)
@@ -76,7 +76,7 @@ export class AssetController {
     summary: 'Get Asset',
   })
   async getAssetNFTs(
-    @Param('assetId') assetId: number,
+    @Param('assetId') assetId: string,
     @Query('page') pageNumber?: number,
   ) {
     return await this.assetService.getAssetNFTs(assetId, pageNumber)

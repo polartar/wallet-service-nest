@@ -29,7 +29,7 @@ export class AccountService {
   }
 
   async update(
-    accountId: number,
+    accountId: string,
     data: UpdateAccountDto,
   ): Promise<AccountEntity> {
     const account = await this.lookup({
@@ -52,7 +52,7 @@ export class AccountService {
     })
   }
 
-  async getWallets(accountId: number) {
+  async getWallets(accountId: string) {
     const account = await this.accountRepository.findOne({
       where: {
         accountId: accountId,
@@ -67,7 +67,7 @@ export class AccountService {
     return account.wallets
   }
 
-  async checkHash(accountId: number, hash: string) {
+  async checkHash(accountId: string, hash: string) {
     const wallets = await this.getWallets(accountId)
 
     const addresses = wallets.reduce(

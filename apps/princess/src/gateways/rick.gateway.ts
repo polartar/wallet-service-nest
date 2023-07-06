@@ -41,7 +41,7 @@ export class RickGateway
   handleConnection(client: Socket) {
     Logger.log(`Client connected: ${client.id}`)
     // we should get the account Id from the authorization token
-    const accountId = 1
+    const accountId = '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87'
     this.portfolioService.addClient(accountId, client)
   }
 
@@ -76,7 +76,7 @@ export class RickGateway
   async handleGetAccount(
     @MessageBody()
     data: {
-      accountId: number
+      accountId: string
     },
     @ConnectedSocket() client: Socket,
   ) {

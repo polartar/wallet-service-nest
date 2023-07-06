@@ -10,7 +10,7 @@ describe('Auth Pipe', () => {
       pipe.transform({
         idToken: '1234',
         type: EAuth.Google,
-        accountId: 0,
+        accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
       }),
     ).toThrow(BadRequestException)
   })
@@ -18,7 +18,7 @@ describe('Auth Pipe', () => {
     const authBody: IAuthData = {
       idToken: '123.456.789',
       type: EAuth.Google,
-      accountId: 0,
+      accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
     }
 
     expect(pipe.transform(authBody)).toBe(authBody)

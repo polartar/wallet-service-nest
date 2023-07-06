@@ -3,7 +3,6 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { WalletService } from '../wallet/wallet.service'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
 import { ENetworks } from '@rana/core'

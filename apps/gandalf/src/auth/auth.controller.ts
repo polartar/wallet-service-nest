@@ -52,7 +52,7 @@ export class AuthController {
   }
 
   @Get('/:account_id')
-  async getAccount(@Param('account_id') accountId: number) {
+  async getAccount(@Param('account_id') accountId: string) {
     try {
       return this.accountService.getAccount(accountId)
     } catch (e) {

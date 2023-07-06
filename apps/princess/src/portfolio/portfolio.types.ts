@@ -2,13 +2,13 @@ import { ENetworks, EWalletType } from '@rana/core'
 import { Socket } from 'socket.io'
 
 export interface IAccount {
-  id?: number
+  id?: string
   email: string
   name: string
 }
 
 export interface IWallet {
-  id: number
+  id: string
   coinType: ENetworks
   xPub: string
   type: EWalletType
@@ -20,7 +20,7 @@ export interface IWallet {
 }
 
 export interface IAddress {
-  id: number
+  id: string
   address: string
   createdAt: number
   path: string
@@ -29,7 +29,7 @@ export interface IAddress {
 }
 
 export interface IHistory {
-  id: number
+  id: string
   address: IAddress
   balance: string
   from: string
@@ -49,7 +49,7 @@ export interface IUpdatedHistory {
 }
 
 export interface ISockets {
-  [accountId: number]: Socket
+  [accountId: string]: Socket
 }
 
 export interface IWalletHistoryResponse {
@@ -62,9 +62,9 @@ export interface IWalletHistoryResponse {
 }
 
 export interface IUpdatedAssets {
-  assetId: number
-  walletIds: number[]
-  accountIds: number[]
+  assetId: string
+  walletIds: string[]
+  accountIds: string[]
   newHistory?: {
     from: string
     to: string

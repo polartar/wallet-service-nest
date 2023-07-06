@@ -2,12 +2,12 @@ import { Request } from '@nestjs/common'
 import { ENetworks } from '@rana/core'
 
 export interface IRequest extends Request {
-  accountId: number
+  accountId: string
   deviceId: string
 }
 
 export interface IWallet {
-  id: number
+  id: string
   title: string
   addresses: IAddress[]
 }
@@ -25,16 +25,16 @@ export interface IAddress {
 }
 
 export interface IAccount {
-  id?: number
+  id?: string
   email?: string
   name?: string
 }
 
 export interface ICreateAccountResponse {
-  id: number
+  id: string
   email: string
   wallets: {
-    id: number
+    id: string
     title: string
     xPub: string
     mnemonic: string
