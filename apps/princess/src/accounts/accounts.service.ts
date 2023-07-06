@@ -224,12 +224,7 @@ export class AccountsService {
     }
   }
 
-  async signIn(
-    type: EAuth,
-    token: string,
-    deviceId: string,
-    otp: string,
-  ): Promise<ICreateAccountResponse> {
+  async signIn(type: EAuth, token: string, deviceId: string, otp: string) {
     const accountId = this.getAccountIdFromRequest()
 
     const user = await this.getUserFromIdToken(token, type, accountId)
@@ -250,8 +245,8 @@ export class AccountsService {
       payload,
     )
 
-    if (user.is_new) {
-      return user.account.id
+    if (!user.is_new) {
+      return { id: user.account.id, accessToken, refreshToken }
     }
     return {
       accessToken,
