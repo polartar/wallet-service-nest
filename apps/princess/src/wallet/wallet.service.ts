@@ -67,6 +67,10 @@ export class WalletsService {
       const res = await firstValueFrom(
         method === EAPIMethod.POST
           ? this.httpService.post(url, body)
+          : method === EAPIMethod.PATCH
+          ? this.httpService.patch(url, body)
+          : method === EAPIMethod.DELETE
+          ? this.httpService.delete(url)
           : this.httpService.get(url),
       )
       return res.data

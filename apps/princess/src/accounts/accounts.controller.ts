@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -11,9 +12,9 @@ import {
 import { AccountsService } from './accounts.service'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import {
-  UpdatePassCodeDto,
   UpdatePassCodeSwaggerResponse,
-} from './dto/UpdatePassCodeDto'
+  UpdateShardsDto,
+} from './dto/update-shartds.dto'
 import {
   SwitchAccountSwaggerResponse,
   SwitchCloudSwaggerResponse,
@@ -50,6 +51,16 @@ export class AccountsController {
       data.serverShard,
       data.vaultShard,
     )
+  }
+
+  @Patch('')
+  async updateShards(@Body() data: UpdateShardsDto) {
+    return await this.accountService.updateShards(data)
+  }
+
+  @Get('shards')
+  async getShards() {
+    return await this.accountService.getShards()
   }
 
   // @Put(':accountId')

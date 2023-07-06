@@ -16,7 +16,7 @@ import { firstValueFrom } from 'rxjs'
 import {
   IAccount,
   ICreateAccountResponse,
-  IDeviceOptionalParams,
+  IShard,
   IWallet,
 } from './accounts.types'
 import * as Sentry from '@sentry/node'
@@ -25,6 +25,7 @@ import { IRequest } from './accounts.types'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { EAPIMethod } from '../wallet/wallet.types'
 import { CreateAccountDto } from './dto/create-account.dto'
+import { UpdateShardsDto } from './dto/update-shartds.dto'
 
 @Injectable()
 export class AccountsService {
@@ -55,33 +56,64 @@ export class AccountsService {
     return (this.request as IRequest).deviceId
   }
 
-  validateAccountId(accountId: string) {
-    if (accountId === this.getAccountIdFromRequest()) {
-      return true
-    } else {
-      throw new BadRequestException('Account Id  not matched')
-    }
-  }
+  // validateAccountId(accountId: string) {
+  //   if (accountId === this.getAccountIdFromRequest()) {
+  //     return true
+  //   } else {
+  //     throw new BadRequestException('Account Id  not matched')
+  //   }
+  // }
 
-  async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
+  async apiCall(
+    method: EAPIMethod,
+    apiUrl: string,
+    path: string,
+    body?: unknown,
+  ) {
     try {
-      const url = `${this.rickApiUrl}/${path}`
+      const url = `${apiUrl}/${path}`
       const res = await firstValueFrom(
         method === EAPIMethod.POST
           ? this.httpService.post(url, body)
+          : method === EAPIMethod.PATCH
+          ? this.httpService.patch(url, body)
+          : method === EAPIMethod.DELETE
+          ? this.httpService.delete(url)
           : this.httpService.get(url),
       )
       return res.data
     } catch (err) {
-      const message = err.response ? err.response.data.message : err.message
-      Sentry.captureException(`rickAPICall(): ${message}`)
-
       if (err.response) {
-        throw new InternalServerErrorException(message)
+        Sentry.captureException(
+          `${err.response.data.message}: ${apiUrl}/${path} API call`,
+        )
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        Sentry.captureException(`${err.message}: ${apiUrl}/${path} API call`)
+        throw new BadRequestException(err.message)
       }
-      throw new BadGatewayException(`Rick server connection error: ${message}`)
     }
   }
+
+  // async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
+  //   try {
+  //     const url = `${this.rickApiUrl}/${path}`
+  //     const res = await firstValueFrom(
+  //       method === EAPIMethod.POST
+  //         ? this.httpService.post(url, body)
+  //         : this.httpService.get(url),
+  //     )
+  //     return res.data
+  //   } catch (err) {
+  //     const message = err.response ? err.response.data.message : err.message
+  //     Sentry.captureException(`rickAPICall(): ${message}`)
+
+  //     if (err.response) {
+  //       throw new InternalServerErrorException(message)
+  //     }
+  //     throw new BadGatewayException(`Rick server connection error: ${message}`)
+  //   }
+  // }
 
   // async fluffyAPICall(path, body) {
   //   try {
@@ -138,15 +170,20 @@ export class AccountsService {
   async syncAccount(hash: string): Promise<IWallet[]> {
     const accountId = this.getAccountIdFromRequest()
 
-    const isSync = await this.rickAPICall(
+    const isSync = await this.apiCall(
       EAPIMethod.GET,
+      this.rickApiUrl,
       `account/hash?accountId=${accountId}&hash=${hash}`,
     )
 
     if (isSync) {
       return []
     } else {
-      return await this.rickAPICall(EAPIMethod.GET, `account/${accountId}`)
+      return await this.apiCall(
+        EAPIMethod.GET,
+        this.rickApiUrl,
+        `account/${accountId}`,
+      )
     }
   }
 
@@ -232,25 +269,31 @@ export class AccountsService {
     accountId: string,
     deviceId: string,
     otp: string,
-    optionalParams?: IDeviceOptionalParams,
+    optionalParams?: IShard,
   ) {
-    try {
-      await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-          userId: accountId,
-          deviceId,
-          otp,
-          ...optionalParams,
-        }),
-      )
-    } catch (err) {
-      Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
-      if (err.response) {
-        throw new BadRequestException(err.response.data.message)
-      } else {
-        throw new BadGatewayException('Fluffy API call error')
-      }
-    }
+    this.apiCall(EAPIMethod.POST, this.fluffyApiUrl, 'pair', {
+      userId: accountId,
+      deviceId,
+      otp,
+      ...optionalParams,
+    })
+    // try {
+    //   await firstValueFrom(
+    //     this.httpService.post(`${this.fluffyApiUrl}/pair`, {
+    //       userId: accountId,
+    //       deviceId,
+    //       otp,
+    //       ...optionalParams,
+    //     }),
+    //   )
+    // } catch (err) {
+    //   Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
+    //   if (err.response) {
+    //     throw new BadRequestException(err.response.data.message)
+    //   } else {
+    //     throw new BadGatewayException('Fluffy API call error')
+    //   }
+    // }
   }
 
   async syncRick(isNewUser: boolean, account: IAccount, accountId: string) {
@@ -283,5 +326,24 @@ export class AccountsService {
         throw new BadGatewayException('Rick API call error')
       }
     }
+  }
+
+  async updateShards(data: UpdateShardsDto) {
+    const deviceId = this.getDeviceIdFromRequest()
+    const accountId = this.getAccountIdFromRequest()
+    return this.apiCall(EAPIMethod.PATCH, this.fluffyApiUrl, `${deviceId}`, {
+      ...data,
+      userId: accountId,
+    })
+  }
+
+  async getShards() {
+    const deviceId = this.getDeviceIdFromRequest()
+    const accountId = this.getAccountIdFromRequest()
+    return this.apiCall(
+      EAPIMethod.GET,
+      this.fluffyApiUrl,
+      `${deviceId}?accountId=${accountId}`,
+    )
   }
 }

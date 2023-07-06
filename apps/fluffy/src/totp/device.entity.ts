@@ -4,11 +4,11 @@ import { encode } from 'hi-base32'
 
 @Entity()
 export class DeviceEntity {
-  @Column({ nullable: true })
-  userId: string
-
   @PrimaryGeneratedColumn('uuid')
   deviceId: string
+
+  @Column({ nullable: true })
+  userId: string
 
   @Column()
   secret: string

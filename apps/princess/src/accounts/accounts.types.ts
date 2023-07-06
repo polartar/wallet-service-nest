@@ -42,7 +42,7 @@ export interface ICreateAccountResponse {
   }[]
 }
 
-export interface IDeviceOptionalParams {
+export interface IShard {
   accountShard: string
   iCloudshard: string
   passcodeKey: string
