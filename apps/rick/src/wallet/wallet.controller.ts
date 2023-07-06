@@ -97,7 +97,6 @@ export class WalletController {
         data.title,
         data.mnemonic,
         data.assetIds,
-        data.walletType,
       )
 
       await this.portfolioService.updateCurrentWallets()

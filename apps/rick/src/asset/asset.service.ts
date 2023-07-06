@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common'
@@ -537,12 +538,17 @@ export class AssetService {
   }
 
   async getAssetsByIds(assetIds: number[]) {
-    return await this.assetRepository.find({
-      where: { id: In(assetIds) },
-    })
+    try {
+      return await this.assetRepository.find({
+        where: { id: In(assetIds) },
+      })
+    } catch (err) {
+      Sentry.captureException(`getAssetsByIds(): ${err.message}`)
+      throw new InternalServerErrorException('Something went wrong')
+    }
   }
 
-  async getAssetPortfolio(accountId: number, assetId: number, period: EPeriod) {
+  async getAssetPortfolio(assetId: number, accountId: number, period: EPeriod) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast =
       period === EPeriod.All

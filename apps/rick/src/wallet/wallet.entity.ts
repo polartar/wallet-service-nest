@@ -24,9 +24,6 @@ export class WalletEntity {
   @Column('text')
   title: string
 
-  @Column('text')
-  type: EWalletType
-
   @ManyToOne(() => AccountEntity, (account) => account.wallets)
   @JoinTable()
   account: AccountEntity

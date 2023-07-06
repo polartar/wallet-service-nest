@@ -153,15 +153,15 @@ export class WalletsService {
   async createWallet(data: CreateWalletDto) {
     const accountId = this.getAccountIdFromRequest()
 
-    if (data.wallet_type !== EWalletType.VAULT) {
-      if (data.assets && data.assets.length > 0) {
-        return await this.apiCall(EAPIMethod.POST, this.rickApiUrl, `wallet`, {
-          accountId,
-          ...data,
-        })
-      } else {
-        throw new BadRequestException('Invalid asset ids')
-      }
+    if (data.assets && data.assets.length > 0) {
+      return await this.apiCall(EAPIMethod.POST, this.rickApiUrl, `wallet`, {
+        accountId,
+        title: data.title,
+        mnemonic: data.mnemonic,
+        assetIds: data.assets,
+      })
+    } else {
+      throw new BadRequestException('Invalid asset ids')
     }
 
     // return this.addUSDPrice([wallet], EPeriod.Day)
@@ -169,6 +169,9 @@ export class WalletsService {
 
   async sync(title: string, parts: string[]) {
     const accountId = this.getAccountIdFromRequest()
+    if (parts.length === 0) {
+      throw new BadRequestException('Invalid parts')
+    }
 
     const coinsResponse = await this.apiCall(
       EAPIMethod.POST,
