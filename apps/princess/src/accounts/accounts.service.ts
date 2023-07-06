@@ -146,7 +146,7 @@ export class AccountsService {
   async createAccount(provider: EAuth, providerToken: string, otp: string) {
     const deviceId = this.getDeviceIdFromRequest()
 
-    this.signIn(provider, providerToken, deviceId, otp)
+    return this.signIn(provider, providerToken, deviceId, otp)
   }
 
   async getUserFromIdToken(
