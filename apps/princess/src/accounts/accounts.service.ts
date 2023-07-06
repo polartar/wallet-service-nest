@@ -240,19 +240,26 @@ export class AccountsService {
       deviceId,
     }
 
-    const accessToken = await this.bootstrapService.generateAccessToken(payload)
-    const refreshToken = await this.bootstrapService.generateRefreshToken(
-      payload,
-    )
-
     if (!user.is_new) {
-      return { id: user.account.id, accessToken, refreshToken }
-    }
-    return {
-      accessToken,
-      refreshToken,
-      email: user.account.email,
-      ...userWallet.data,
+      const accessToken = await this.bootstrapService.generateAccessToken(
+        payload,
+      )
+      const refreshToken = await this.bootstrapService.generateRefreshToken(
+        payload,
+      )
+
+      return {
+        id: user.account.id,
+        email: user.account.email,
+        accessToken,
+        refreshToken,
+        ...userWallet.data,
+      }
+    } else {
+      return {
+        id: user.account.id,
+        email: user.account.email,
+      }
     }
   }
 }
