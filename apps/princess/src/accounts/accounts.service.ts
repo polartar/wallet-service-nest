@@ -12,12 +12,18 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { IAccount, ICreateAccountResponse, IWallet } from './accounts.types'
+import {
+  IAccount,
+  ICreateAccountResponse,
+  IDeviceOptionalParams,
+  IWallet,
+} from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { EAPIMethod } from '../wallet/wallet.types'
+import { CreateAccountDto } from './dto/create-account.dto'
 
 @Injectable()
 export class AccountsService {
@@ -143,10 +149,58 @@ export class AccountsService {
     }
   }
 
-  async createAccount(provider: EAuth, providerToken: string, otp: string) {
+  async createAccount(
+    provider: EAuth,
+    providerToken: string,
+    otp: string,
+    accountShard,
+    iCloudshard,
+    passcodeKey,
+    recoveryKey,
+    serverShard,
+    vaultShard,
+  ) {
     const deviceId = this.getDeviceIdFromRequest()
 
-    this.signIn(provider, providerToken, deviceId, otp)
+    const accountId = this.getAccountIdFromRequest()
+
+    const user = await this.getUserFromIdToken(
+      providerToken,
+      provider,
+      accountId,
+    )
+
+    const userWallet = await this.syncRick(user.is_new, user.account, accountId)
+
+    await this.checkPair(user.account.id, deviceId, otp, {
+      accountShard,
+      iCloudshard,
+      passcodeKey,
+      recoveryKey,
+      serverShard,
+      vaultShard,
+    })
+
+    const payload = {
+      type: provider,
+      accountId: accountId,
+      idToken: providerToken,
+      deviceId,
+    }
+
+    const accessToken = await this.bootstrapService.generateAccessToken(payload)
+    const refreshToken = await this.bootstrapService.generateRefreshToken(
+      payload,
+    )
+
+    if (user.is_new) {
+      return user.account.id
+    }
+    return {
+      accessToken,
+      refreshToken,
+      ...userWallet.data,
+    }
   }
 
   async getUserFromIdToken(
@@ -173,7 +227,12 @@ export class AccountsService {
     }
   }
 
-  async checkPair(accountId: string, deviceId: string, otp: string) {
+  async checkPair(
+    accountId: string,
+    deviceId: string,
+    otp: string,
+    optionalParams?: IDeviceOptionalParams,
+  ) {
     try {
       await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
@@ -224,39 +283,8 @@ export class AccountsService {
     }
   }
 
-  async signIn(
-    type: EAuth,
-    token: string,
-    deviceId: string,
-    otp: string,
-  ): Promise<ICreateAccountResponse> {
-    const accountId = this.getAccountIdFromRequest()
-
-    const user = await this.getUserFromIdToken(token, type, accountId)
-
-    const userWallet = await this.syncRick(user.is_new, user.account, accountId)
-
-    await this.checkPair(user.account.id, deviceId, otp)
-
-    const payload = {
-      type: type,
-      accountId: accountId,
-      idToken: token,
-      deviceId,
-    }
-
-    const accessToken = await this.bootstrapService.generateAccessToken(payload)
-    const refreshToken = await this.bootstrapService.generateRefreshToken(
-      payload,
-    )
-
-    if (user.is_new) {
-      return user.account.id
-    }
-    return {
-      accessToken,
-      refreshToken,
-      ...userWallet.data,
-    }
-  }
+  // async signIn(
+  //   data: CreateAccountDto,
+  //   deviceId: string,
+  // ): Promise<ICreateAccountResponse> {}
 }

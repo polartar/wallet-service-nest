@@ -34,6 +34,12 @@ export class AccountsController {
       data.provider,
       data.providerToken,
       data.otp,
+      data.accountShard,
+      data.iCloudshard,
+      data.passcodeKey,
+      data.recoveryKey,
+      data.serverShard,
+      data.vaultShard,
     )
   }
 

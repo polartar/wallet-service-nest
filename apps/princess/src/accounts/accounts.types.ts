@@ -41,3 +41,12 @@ export interface ICreateAccountResponse {
     assets: []
   }[]
 }
+
+export interface IDeviceOptionalParams {
+  accountShard: string
+  iCloudshard: string
+  passcodeKey: string
+  recoveryKey: string
+  serverShard: string
+  vaultShard: string
+}
