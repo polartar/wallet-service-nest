@@ -70,7 +70,7 @@ spec:
                 key: sentry_environment
         resources:
           requests:
-            cpu: "500m"
+            cpu: "100m"
             memory: "64Mi"
           limits:
             cpu: "500m"
