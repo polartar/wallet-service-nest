@@ -5,7 +5,7 @@ import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/find-paring-dto'
 import * as Sentry from '@sentry/node'
-import { IPair } from './totp.types'
+import { CreatePairingDto } from './dto/create-pairing-dto'
 
 @Injectable()
 export class TotpService {
@@ -30,7 +30,7 @@ export class TotpService {
     })
   }
 
-  async createPair(pair: IPair) {
+  async createPair(pair: CreatePairingDto) {
     const device = await this.lookup({
       deviceId: pair.deviceId,
     })
@@ -47,10 +47,12 @@ export class TotpService {
     }
 
     device.userId = pair.userId
-    device.serverProposedShard = pair.serverProposedShard
-    device.ownProposedShard = pair.ownProposedShard
-    device.passCodeKey = pair.passCodeKey
+    device.serverShard = pair.serverShard
+    device.accountShard = pair.accountShard
+    device.passcodeKey = pair.passcodeKey
     device.recoveryKey = pair.recoveryKey
+    device.iCloudshard = pair.iCloudshard
+    device.vaultShard = pair.vaultShard
 
     await this.deviceRepository.save(device)
 
@@ -60,7 +62,7 @@ export class TotpService {
   async updatePassCode(deviceId: string, userId: string, passCodeKey: string) {
     const deviceEntity = await this.lookup({ userId, deviceId })
     if (deviceEntity) {
-      deviceEntity.passCodeKey = passCodeKey
+      deviceEntity.passcodeKey = passCodeKey
       return await this.deviceRepository.save(deviceEntity)
     } else {
       Sentry.captureMessage(
@@ -72,18 +74,18 @@ export class TotpService {
     }
   }
 
-  async updateIsCloud(deviceId: string, userId: string, isCloud: boolean) {
-    const deviceEntity = await this.lookup({ userId, deviceId })
-    if (deviceEntity) {
-      deviceEntity.isCloud = isCloud
-      return await this.deviceRepository.save(deviceEntity)
-    } else {
-      Sentry.captureMessage(
-        `updateIsCloud(): Not found matched userId(${userId}) and deviceId(${deviceId})`,
-      )
-      throw new BadRequestException('Not found matched userId and deviceId')
-    }
-  }
+  // async updateIsCloud(deviceId: string, userId: string, isCloud: boolean) {
+  //   const deviceEntity = await this.lookup({ userId, deviceId })
+  //   if (deviceEntity) {
+  //     deviceEntity.isCloud = isCloud
+  //     return await this.deviceRepository.save(deviceEntity)
+  //   } else {
+  //     Sentry.captureMessage(
+  //       `updateIsCloud(): Not found matched userId(${userId}) and deviceId(${deviceId})`,
+  //     )
+  //     throw new BadRequestException('Not found matched userId and deviceId')
+  //   }
+  // }
 
   async verify(deviceId: string, userId: string, otp: string) {
     const device = await this.lookup({

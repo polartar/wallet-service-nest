@@ -14,19 +14,22 @@ export class DeviceEntity {
   secret: string
 
   @Column({ nullable: true })
-  serverProposedShard: string
+  serverShard: string
 
   @Column({ nullable: true })
-  ownProposedShard: string
+  accountShard: string
 
   @Column({ nullable: true })
-  passCodeKey: string
+  passcodeKey: string
 
   @Column({ nullable: true })
   recoveryKey: string
 
-  @Column({ default: false })
-  isCloud: boolean
+  @Column({ nullable: true })
+  iCloudshard: string
+
+  @Column({ nullable: true })
+  vaultShard: string
 
   async _getRandomKey(len: number) {
     return new Promise<string>((resolve) =>

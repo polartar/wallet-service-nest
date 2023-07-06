@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   Request,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -239,6 +240,7 @@ export class AccountsService {
           userId: accountId,
           deviceId,
           otp,
+          ...optionalParams,
         }),
       )
     } catch (err) {
@@ -282,9 +284,4 @@ export class AccountsService {
       }
     }
   }
-
-  // async signIn(
-  //   data: CreateAccountDto,
-  //   deviceId: string,
-  // ): Promise<ICreateAccountResponse> {}
 }

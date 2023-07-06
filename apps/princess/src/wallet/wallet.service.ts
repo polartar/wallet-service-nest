@@ -181,13 +181,13 @@ export class WalletsService {
     )
 
     try {
-      const addresses = await this.apiCall(
+      const wallet = await this.apiCall(
         EAPIMethod.POST,
         this.rickApiUrl,
         'wallet/vault',
         { title, accountId, coins: coinsResponse.data },
       )
-      return addresses
+      return wallet
     } catch (err) {
       Sentry.captureException(`Sync(): ${err.message}`)
 

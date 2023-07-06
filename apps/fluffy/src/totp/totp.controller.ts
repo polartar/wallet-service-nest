@@ -18,18 +18,18 @@ export class TotpController {
     return this.service.createDevice()
   }
 
-  @Put(':deviceId/account/:accountId')
-  updatePassCode(
-    @Param('deviceId') deviceId: string,
-    @Param('accountId') accountId: string,
-    @Body() data: IDeviceUpdate,
-  ) {
-    if (data.isCloud) {
-      return this.service.updateIsCloud(deviceId, accountId, data.isCloud)
-    } else {
-      return this.service.updatePassCode(deviceId, accountId, data.passCodeKey)
-    }
-  }
+  // @Put(':deviceId/account/:accountId')
+  // updatePassCode(
+  //   @Param('deviceId') deviceId: string,
+  //   @Param('accountId') accountId: string,
+  //   @Body() data: IDeviceUpdate,
+  // ) {
+  //   if (data.isCloud) {
+  //     return this.service.updateIsCloud(deviceId, accountId, data.isCloud)
+  //   } else {
+  //     return this.service.updatePassCode(deviceId, accountId, data.passCodeKey)
+  //   }
+  // }
 
   @Post('verify')
   verify(@Body() data: VerifyDto) {
