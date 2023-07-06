@@ -1,6 +1,6 @@
 export class CreateWalletDto {
-  accountId: number
+  accountId: string
   title: string
   mnemonic: string
-  assetIds: number[]
+  assetIds: string[]
 }

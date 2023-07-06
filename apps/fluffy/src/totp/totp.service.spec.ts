@@ -42,7 +42,7 @@ describe('TotpService', () => {
     const device = await service.createDevice()
     const token = authenticator.generate(device.otp)
     await service.createPair({
-      userId: 1,
+      userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
       deviceId: device.deviceId,
       serverProposedShard: 'server shard',
       ownProposedShard: 'own shard',
@@ -54,7 +54,7 @@ describe('TotpService', () => {
     expect(
       (
         await service.lookup({
-          userId: 1,
+          userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
           deviceId: device.deviceId,
         })
       ).deviceId,
@@ -64,7 +64,7 @@ describe('TotpService', () => {
   it('should throw error when deviceId not exists', async () => {
     try {
       await service.createPair({
-        userId: 1,
+        userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
         deviceId: 'device.deviceId',
         serverProposedShard: 'server shard',
         ownProposedShard: 'own shard',
@@ -81,7 +81,7 @@ describe('TotpService', () => {
     const device = await service.createDevice()
     try {
       await service.createPair({
-        userId: 1,
+        userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
         deviceId: device.deviceId,
         serverProposedShard: 'server shard',
         ownProposedShard: 'own shard',

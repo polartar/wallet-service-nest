@@ -5,7 +5,7 @@ export class UpdateAccessTokenDto {
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
   @IsNumber()
-  accountId: number
+  accountId: string
 
   @ApiProperty({ description: 'device id' })
   @IsNotEmpty()

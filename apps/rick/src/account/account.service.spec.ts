@@ -50,7 +50,7 @@ describe('AccountService', () => {
     await service.create({
       email: 'test@gmail.com',
       name: 'test',
-      accountId: 1,
+      accountId: '233-32222',
     })
     const account = await service.lookup({ email: 'test@gmail.com' })
     expect(account.email).toBe('test@gmail.com')

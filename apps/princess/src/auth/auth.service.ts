@@ -120,7 +120,7 @@ export class AuthService {
   // }
 
   async generateAccessToken(
-    accountId: number,
+    accountId: string,
     deviceId: string,
     otp: string,
     refreshToken: string,
@@ -139,7 +139,7 @@ export class AuthService {
       throw new ForbiddenException('Invalid refresh token')
     }
 
-    if (+payload.accountId !== accountId || payload.deviceId !== deviceId) {
+    if (payload.accountId !== accountId || payload.deviceId !== deviceId) {
       throw new BadRequestException(
         "Wrong refresh token. The payload isn't matched",
       )
@@ -162,7 +162,7 @@ export class AuthService {
   async generateRefreshToken(
     provider: EAuth | 'Anonymous',
     providerToken: string,
-    accountId: number,
+    accountId: string,
     deviceId: string,
     otp: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {

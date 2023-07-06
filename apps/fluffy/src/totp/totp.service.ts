@@ -57,7 +57,7 @@ export class TotpService {
     return device
   }
 
-  async updatePassCode(deviceId: string, userId: number, passCodeKey: string) {
+  async updatePassCode(deviceId: string, userId: string, passCodeKey: string) {
     const deviceEntity = await this.lookup({ userId, deviceId })
     if (deviceEntity) {
       deviceEntity.passCodeKey = passCodeKey
@@ -72,7 +72,7 @@ export class TotpService {
     }
   }
 
-  async updateIsCloud(deviceId: string, userId: number, isCloud: boolean) {
+  async updateIsCloud(deviceId: string, userId: string, isCloud: boolean) {
     const deviceEntity = await this.lookup({ userId, deviceId })
     if (deviceEntity) {
       deviceEntity.isCloud = isCloud
@@ -85,7 +85,7 @@ export class TotpService {
     }
   }
 
-  async verify(deviceId: string, userId: number, otp: string) {
+  async verify(deviceId: string, userId: string, otp: string) {
     const device = await this.lookup({
       deviceId,
       userId,

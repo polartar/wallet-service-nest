@@ -10,8 +10,8 @@ import { ETransactionStatuses } from './wallet.types'
 
 @Entity()
 export class TransactionEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @ManyToOne(() => AssetEntity, (asset) => asset.transactions)
   @JoinColumn()

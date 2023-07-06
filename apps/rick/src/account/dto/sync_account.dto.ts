@@ -1,5 +1,5 @@
 export class SyncAccountDto {
-  accountId: number
+  accountId: string
 
   hash: string
 }

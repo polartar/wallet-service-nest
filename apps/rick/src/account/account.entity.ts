@@ -1,19 +1,13 @@
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { WalletEntity } from '../wallet/wallet.entity'
 
 @Entity()
 export class AccountEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column()
-  accountId: number
+  accountId: string
 
   @Column({ nullable: true })
   email: string

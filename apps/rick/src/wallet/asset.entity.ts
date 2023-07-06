@@ -14,8 +14,8 @@ import { TransactionEntity } from './transaction.entity'
 
 @Entity()
 export class AssetEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column()
   address: string

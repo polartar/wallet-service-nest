@@ -1,4 +1,4 @@
 export type IWalletActiveData = {
-  accountId: number
+  accountId: string
   isActive: boolean
 }

@@ -9,6 +9,6 @@ export interface IVaultCoin {
 }
 export class AddXPubs {
   title: string
-  accountId: number
+  accountId: string
   coins: IVaultCoin[]
 }

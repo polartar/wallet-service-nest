@@ -33,7 +33,7 @@ export class AssetController {
   // Need to confirm account verification
   @Get(':assetId')
   async getAsset(
-    @Param('assetId') assetId: number,
+    @Param('assetId') assetId: string,
     // @Query('accountId') accountId: number,
   ) {
     return this.assetService.getAsset(assetId)
@@ -41,8 +41,8 @@ export class AssetController {
 
   @Get(':assetId/transactions')
   async getAssetTransactions(
-    @Param('assetId') assetId: number,
-    @Body('accountId') accountId: number,
+    @Param('assetId') assetId: string,
+    @Body('accountId') accountId: string,
     @Query('start') start: number,
     @Query('count') count: number,
   ) {
@@ -56,8 +56,8 @@ export class AssetController {
 
   @Get(':assetId/portfolio')
   async getAssetPortfolio(
-    @Param('assetId') assetId: number,
-    @Query('accountId') accountId: number,
+    @Param('assetId') assetId: string,
+    @Query('accountId') accountId: string,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     return this.assetService.getAssetPortfolio(assetId, accountId, period)
@@ -65,7 +65,7 @@ export class AssetController {
 
   @Get(':/assetId/nft')
   async getNFTAssets(
-    @Param('assetId') assetId: number,
+    @Param('assetId') assetId: string,
     @Query('pageNumber') pageNumber?: number,
   ) {
     return this.assetService.getNFTAssets(assetId, pageNumber)

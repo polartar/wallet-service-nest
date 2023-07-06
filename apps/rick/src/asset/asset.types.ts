@@ -33,7 +33,7 @@ export class ITransaction {
 }
 
 export interface IAssetDetail {
-  id: number
+  id: string
   transaction?: ITransaction
   network: ENetworks
   index: number

@@ -1,13 +1,13 @@
 export interface IDeviceCreateResponse {
   otpSecret: string
   id: string
-  accountId: number
+  accountId: string
   accessToken: string
   refreshToken: string
 }
 
 export interface IAccessTokenPayload {
-  accountId: number
+  accountId: string
   idToken: string
   deviceId: string
   type: string

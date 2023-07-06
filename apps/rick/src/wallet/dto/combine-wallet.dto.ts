@@ -1,4 +1,4 @@
 export class CombineWalletDto {
-  existingAccountId: number
-  anonymousId: number
+  existingAccountId: string
+  anonymousId: string
 }

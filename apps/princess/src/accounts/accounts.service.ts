@@ -40,16 +40,16 @@ export class AccountsService {
     )
   }
 
-  getAccountIdFromRequest(): number {
-    return Number((this.request as IRequest).accountId)
+  getAccountIdFromRequest(): string {
+    return (this.request as IRequest).accountId
   }
 
   getDeviceIdFromRequest(): string {
     return (this.request as IRequest).deviceId
   }
 
-  validateAccountId(accountId: number) {
-    if (Number(accountId) === this.getAccountIdFromRequest()) {
+  validateAccountId(accountId: string) {
+    if (accountId === this.getAccountIdFromRequest()) {
       return true
     } else {
       throw new BadRequestException('Account Id  not matched')
@@ -152,7 +152,7 @@ export class AccountsService {
   async getUserFromIdToken(
     token: string,
     type: EAuth | 'Anonymous',
-    accountId?: number,
+    accountId?: string,
   ) {
     try {
       const userResponse = await firstValueFrom(
@@ -173,7 +173,7 @@ export class AccountsService {
     }
   }
 
-  async checkPair(accountId: number, deviceId: string, otp: string) {
+  async checkPair(accountId: string, deviceId: string, otp: string) {
     try {
       await firstValueFrom(
         this.httpService.post(`${this.fluffyApiUrl}/pair`, {
@@ -192,7 +192,7 @@ export class AccountsService {
     }
   }
 
-  async syncRick(isNewUser: boolean, account: IAccount, accountId: number) {
+  async syncRick(isNewUser: boolean, account: IAccount, accountId: string) {
     try {
       // if new user email, then register, then update the anonymous user with real info.
       if (isNewUser) {

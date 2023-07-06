@@ -12,9 +12,9 @@ export class UpdatePassCodeDto {
 
 export class UpdatePassCodeSwaggerResponse {
   @ApiProperty({
-    example: 1,
+    example: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
   })
-  userId: number
+  userId: string
 
   @ApiProperty({
     example: 'daa47873-3eb4-4635-9ce2-8cf0992b67e6',

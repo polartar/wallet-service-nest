@@ -21,7 +21,7 @@ export class TotpController {
   @Put(':deviceId/account/:accountId')
   updatePassCode(
     @Param('deviceId') deviceId: string,
-    @Param('accountId') accountId: number,
+    @Param('accountId') accountId: string,
     @Body() data: IDeviceUpdate,
   ) {
     if (data.isCloud) {

@@ -31,10 +31,10 @@ export class CreateWalletDto {
 
   @ApiProperty({
     description: 'The ids of the assets',
-    example: [1, 2, 3],
+    example: ['7e430da0-460b-47d7-b7da-c573bfccac21'],
   })
   @IsOptional()
-  assets: number[]
+  assets: string[]
 }
 
 export class WalletSwaggerResponse {
@@ -116,9 +116,9 @@ export class WalletSwaggerResponse {
   coinType: string
 
   @ApiProperty({
-    example: 1,
+    example: '7e430da0-460b-47d7-b7da-c573bfccac21',
   })
-  id: number
+  id: string
 
   @ApiProperty({
     example: 1684343715,

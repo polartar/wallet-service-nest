@@ -35,7 +35,7 @@ export class AccountService {
       where: findAccount,
     })
   }
-  getAccount(accountId: number): Promise<AccountEntity> {
+  getAccount(accountId: string): Promise<AccountEntity> {
     return this.accountRepository.findOne({
       where: { id: accountId },
     })

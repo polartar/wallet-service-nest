@@ -41,7 +41,7 @@ export class SignInDto {
 
 export class SignInSwaggerResponse {
   @ApiProperty({
-    example: '1',
+    example: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
   })
   account_id: string
 

@@ -36,8 +36,8 @@ export class WalletController {
   // Need to confirm if we need to verify account Id
   @Get(':walletId')
   async getWallet(
-    @Query('accountId', ParseIntPipe) accountId: number,
-    @Param('walletId', ParseIntPipe) walletId: number,
+    @Query('accountId', ParseIntPipe) accountId: string,
+    @Param('walletId', ParseIntPipe) walletId: string,
     // @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {

@@ -6,9 +6,9 @@ import * as Sentry from '@sentry/node'
 @Injectable()
 export class AccountValidationPipe implements PipeTransform {
   private schema = Joi.object({
-    email: Joi.string().email({ tlds: { allow: false } }),
+    email: Joi.string().required(),
     name: Joi.string().required(),
-    accountId: Joi.number().required(),
+    accountId: Joi.string().required(),
   })
 
   transform(value: CreateAccountDto) {

@@ -38,9 +38,9 @@ export class CreateAssetDto {
 
 export class AssetSwaggerResponse {
   @ApiProperty({
-    example: 1,
+    example: '7e430da0-460b-47d7-b7da-c573bfccac21',
   })
-  id: number
+  id: string
 
   @ApiProperty({
     example: 0,
