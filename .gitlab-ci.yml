@@ -108,6 +108,7 @@ build:
 
 build source maps:
   stage: build
+  allow_failure: true
   before_script:
     - yarn install --frozen-lockfile --cache .yarn --prefer-offline
   cache:
@@ -181,19 +182,19 @@ deploy to testnet k8s cluster:
   variables:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
-    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN; true
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - kubectl config use-context ngrave/rana/app/be:gke-agent
     - deploy_k8s() {
       local project=$1;
       kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
       kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
-      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave;
+      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave; true
       pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
       now=$(date +%s);
       echo $pipeline_start;
       echo $now;
-      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((now-pipeline_start)) --org ngrave;
+      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((now-pipeline_start)) --org ngrave; true
       }
     - deploy_k8s anton
     - deploy_k8s bristle
@@ -224,19 +225,19 @@ deploy to mainnet k8s cluster:
   variables:
     SENTRY_URL: https://sentry.nscribe.xyz
   script:
-    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN; true
     - export COMMIT_SHA=$(sentry-cli releases propose-version)
     - kubectl config use-context ngrave/rana/app/be:gke-agent && kubectl config set-context --current --namespace=mainnet
     - deploy_k8s() {
       local project=$1;
       kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
       kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
-      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave;
+      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave; true
       pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
       now=$(date +%s);
       echo $pipeline_start;
       echo $now;
-      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e mainnet_staging -t $((now-pipeline_start)) --org ngrave;
+      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e mainnet_staging -t $((now-pipeline_start)) --org ngrave; true
       }
     - deploy_k8s anton
     - deploy_k8s bristle
