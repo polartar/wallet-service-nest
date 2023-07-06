@@ -26,6 +26,7 @@ export class AuthController {
   async auth(@Body() data: IAuthData) {
     try {
       const { name, email } = await this.authService.authorize(data)
+
       let account = await this.accountService.lookup({ email })
 
       if (account) {
@@ -35,8 +36,11 @@ export class AuthController {
         }
       } else if (data.accountId) {
         account = await this.accountService.getAccount(data.accountId)
-
-        await this.accountService.update(account, { name, email })
+        if (account) {
+          await this.accountService.update(account, { name, email })
+        } else {
+          account = await this.accountService.create({ name, email })
+        }
 
         return {
           is_new: true,
