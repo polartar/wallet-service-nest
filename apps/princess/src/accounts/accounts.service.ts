@@ -251,6 +251,7 @@ export class AccountsService {
     return {
       accessToken,
       refreshToken,
+      email: user.account.email,
       ...userWallet.data,
     }
   }
