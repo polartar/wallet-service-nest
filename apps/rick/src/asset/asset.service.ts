@@ -291,11 +291,16 @@ export class AssetService {
       return asset.id
     }
 
-    asset = this.addAsset(address, index, network)
+    asset = await this.addAsset(address, index, network)
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 
-    return asset
+    return {
+      id: asset.id,
+      address,
+      network,
+      index,
+    }
   }
 
   async addAsset(
@@ -405,12 +410,7 @@ export class AssetService {
     })
   }
 
-  async addAssetFromXPub(
-    xPub: string,
-    index: number,
-    network: ENetworks,
-    wallet?: WalletEntity,
-  ) {
+  async addAssetFromXPub(xPub: string, index: number, network: ENetworks) {
     try {
       let apiURL, apiKey, currency
       if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
@@ -432,44 +432,32 @@ export class AssetService {
 
       const discoverResponse = await firstValueFrom(
         this.httpService.get(
-          `${apiURL}}/api/v1/currencies/${currency}/accounts/discover?xpub=${xPub}`,
+          `${apiURL}/api/v1/currencies/${currency}/accounts/discover?xpub=${xPub}`,
           {
             headers: { 'api-secret': apiKey },
           },
         ),
       )
-      // return Promise.all(
-      //   discoverResponse.data.data.map((addressInfo: IXPubInfo) => {
       const addressInfo = discoverResponse.data.data.find(
         (item: IXPubInfo) => item.index === index,
       )
-      if (addressInfo) {
+      if (!addressInfo) {
         Sentry.captureException(
           `addAssetFromXPub(): not found xPub address for index ${index}`,
         )
-        throw new NotFoundException(`Not found address for index: ${index}`)
+        throw new BadRequestException(`Not found address for index: ${index}`)
       }
-      try {
-        const asset = this.assetRepository.findOne({
-          where: { address: addressInfo.address, network: network },
-        })
-        if (!asset) {
-          this.addAsset(addressInfo.address, addressInfo.index, network, wallet)
-          // this.addAsset({
-          //   wallet,
-          //   address: addressInfo.address,
-          //   index: addressInfo.index,
-          //   network,
-          // })
-        }
-        return asset
-      } catch (err) {
-        Sentry.captureException(
-          `${err.message}: ${addressInfo.address} in addAsset()`,
+      let asset = await this.assetRepository.findOne({
+        where: { address: addressInfo.address, network: network },
+      })
+      if (!asset) {
+        asset = await this.addAsset(
+          addressInfo.address,
+          addressInfo.index,
+          network,
         )
       }
-      //   }),
-      // )
+      return asset
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
