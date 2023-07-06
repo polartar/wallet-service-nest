@@ -43,7 +43,7 @@ export class TotpService {
 
     if (!authenticator.check(pair.otp, device.secret)) {
       Sentry.captureMessage(`Invalid otp token(${pair.otp}) in pair()`)
-      throw new BadRequestException('Invalid token')
+      throw new BadRequestException('Invalid otp token')
     }
 
     device.userId = pair.userId
