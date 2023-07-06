@@ -11,7 +11,10 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AssetService } from './asset.service'
 import { AssetSwaggerResponse, CreateAssetDto } from './dto/create-asset.dto'
 import { GetAssetPortfolioDto } from './dto/get-asset-portfolio.dto'
-import { GetAssetTransactionDto } from './dto/get-asset-transaction.dto'
+import {
+  AssetTransactionSwaggerResponse,
+  GetAssetTransactionDto,
+} from './dto/get-asset-transaction.dto'
 
 @Controller('asset')
 @ApiTags('asset')
@@ -40,7 +43,7 @@ export class AssetController {
   }
 
   @Get(':assetId/transactions')
-  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOkResponse({ type: [AssetTransactionSwaggerResponse] })
   @ApiOperation({
     summary: 'Get Asset',
   })

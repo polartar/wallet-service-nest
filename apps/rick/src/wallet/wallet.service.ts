@@ -359,8 +359,7 @@ export class WalletService {
     title: string,
     mnemonic: string,
     assetIds: number[],
-    walletType: EWalletType,
-  ): Promise<WalletEntity> {
+  ) {
     const account = await this.accountService.lookup({
       accountId,
     })
@@ -382,29 +381,34 @@ export class WalletService {
     //     throw new Error('The parameters are not matched with existing one')
     //   }
     // } else {
-    let assets
-    try {
-      assets = await this.assetService.getAssetsByIds(assetIds)
-    } catch (err) {
-      Sentry.captureException(`Add new wallet(): ${err.message}`)
-      throw new BadRequestException('Invalid asset ids')
+
+    const assets = await this.assetService.getAssetsByIds(assetIds)
+
+    if (assets.length === 0) {
+      throw new BadRequestException(
+        `assetIds (${assetIds.toString()}) not exist`,
+      )
+    }
+
+    if (assetIds.length !== assets.length) {
+      const notExistAssetIds = assets
+        .filter((asset) => !assetIds.includes(asset.id))
+        .map((asset) => asset.id)
+
+      throw new BadRequestException(
+        `assetIds (${notExistAssetIds.toString()}) not exist`,
+      )
     }
 
     try {
       const prototype = new WalletEntity()
       prototype.account = account
-      prototype.type = walletType
       prototype.title = title
       prototype.mnemonic = mnemonic
       prototype.assets = assets
 
-      // let network
-      // if (walletType === EWalletType.METAMASK) {
-      //   network = ENetworks.ETHEREUM
-      // } else if (walletType === EWalletType.HOTWALLET) {
-      //   network = ENetworks.BITCOIN
-      // }
-      return await this.walletRepository.save(prototype)
+      const wallet = await this.walletRepository.save(prototype)
+      return wallet.id
     } catch (err) {
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
@@ -842,7 +846,6 @@ export class WalletService {
     try {
       const prototype = new WalletEntity()
       prototype.account = account
-      prototype.type = EWalletType.VAULT
       prototype.title = title
       prototype.assets = []
       const walletEntity = await this.walletRepository.save(prototype)

@@ -57,7 +57,7 @@ export class AssetController {
   @Get(':assetId/portfolio')
   async getAssetPortfolio(
     @Param('assetId') assetId: number,
-    @Body('accountId') accountId: number,
+    @Query('accountId') accountId: number,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     return this.assetService.getAssetPortfolio(assetId, accountId, period)

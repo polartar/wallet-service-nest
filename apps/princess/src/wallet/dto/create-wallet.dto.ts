@@ -7,7 +7,7 @@ export class CreateWalletDto {
     enum: [EWalletType.HOTWALLET, EWalletType.LOCALWALLET, EWalletType.VAULT],
     example: EWalletType.LOCALWALLET,
   })
-  wallet_type: EWalletType
+  walletType: EWalletType
 
   @ApiProperty({
     description: 'The title of the wallet',
@@ -26,13 +26,14 @@ export class CreateWalletDto {
     description: 'array of parts that are encoded',
     default: ['UR:BYTES/GHCPGTKKCXJTHSJNIHCXINJKCXGAJKJNHSIHIHJZCPNYHLZTFR'],
   })
-  @IsNotEmpty()
+  @IsOptional()
   parts: string[]
 
   @ApiProperty({
     description: 'The ids of the assets',
     example: [1, 2, 3],
   })
+  @IsOptional()
   assets: number[]
 }
 

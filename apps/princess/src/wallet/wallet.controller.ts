@@ -41,10 +41,10 @@ export class WalletsController {
     summary: 'Add the wallet to the account',
   })
   async createWallet(@Body() data: CreateWalletDto) {
-    if (data.wallet_type !== EWalletType.VAULT) {
-      this.walletService.createWallet(data)
+    if (data.walletType !== EWalletType.VAULT) {
+      return this.walletService.createWallet(data)
     } else {
-      this.walletService.sync(data.title, data.parts)
+      return this.walletService.sync(data.title, data.parts)
     }
   }
 
