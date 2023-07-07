@@ -52,32 +52,27 @@ export class AccountService {
     })
   }
 
-  async getWallets(accountId: string) {
-    const account = await this.accountRepository.findOne({
-      where: {
-        accountId: accountId,
-      },
-      relations: {
-        wallets: {
-          assets: true,
-        },
-      },
-    })
+  // async getAccount(accountId: string) {
+  //   const account = await this.accountRepository.findOne({
+  //     where: {
+  //       accountId: accountId,
+  //     },
+  //   })
 
-    return account.wallets
-  }
+  //   return account
+  // }
 
-  async checkHash(accountId: string, hash: string) {
-    const wallets = await this.getWallets(accountId)
+  // async checkHash(accountId: string, hash: string) {
+  //   const wallets = await this.getWallets(accountId)
 
-    const addresses = wallets.reduce(
-      (allAddresses: AssetEntity[], wallet: WalletEntity) =>
-        allAddresses.concat(allAddresses, wallet.assets),
-      [],
-    )
+  //   const addresses = wallets.reduce(
+  //     (allAddresses: AssetEntity[], wallet: WalletEntity) =>
+  //       allAddresses.concat(allAddresses, wallet.assets),
+  //     [],
+  //   )
 
-    const walletHash = addresses.map((address) => address.address).join(',')
+  //   const walletHash = addresses.map((address) => address.address).join(',')
 
-    return walletHash === hash
-  }
+  //   return walletHash === hash
+  // }
 }

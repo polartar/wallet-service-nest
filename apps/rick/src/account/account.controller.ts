@@ -57,11 +57,11 @@ export class AccountController {
 
   @Get(':accountId')
   async getWallets(@Param('accountId') accountId: string) {
-    return await this.accountService.getWallets(accountId)
+    return await this.accountService.lookup({ accountId })
   }
 
-  @Get('/hash')
-  async checkHash(@Query() query: SyncAccountDto): Promise<boolean> {
-    return await this.accountService.checkHash(query.accountId, query.hash)
-  }
+  // @Get('/hash')
+  // async checkHash(@Query() query: SyncAccountDto): Promise<boolean> {
+  //   return await this.accountService.checkHash(query.accountId, query.hash)
+  // }
 }
