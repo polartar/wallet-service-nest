@@ -1,8 +1,16 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreatePairingDto } from './dto/create-pairing-dto'
-import { IDeviceUpdate } from './totp.types'
 import { VerifyDto } from './dto/verify-dto.ts'
+import { UpdateShardsDto } from './dto/update-shards-dto'
 
 @Controller()
 export class TotpController {
@@ -14,21 +22,24 @@ export class TotpController {
   }
 
   @Post('device')
-  crete() {
+  create() {
     return this.service.createDevice()
   }
 
-  @Put(':deviceId/account/:accountId')
-  updatePassCode(
+  @Patch(':deviceId')
+  updateShards(
     @Param('deviceId') deviceId: string,
-    @Param('accountId') accountId: string,
-    @Body() data: IDeviceUpdate,
+    @Body() data: UpdateShardsDto,
   ) {
-    if (data.isCloud) {
-      return this.service.updateIsCloud(deviceId, accountId, data.isCloud)
-    } else {
-      return this.service.updatePassCode(deviceId, accountId, data.passCodeKey)
-    }
+    return this.service.updateShards(deviceId, data)
+  }
+
+  @Get(':deviceId')
+  getShards(
+    @Param('deviceId') deviceId: string,
+    @Query('accountId') accountId: string,
+  ) {
+    return this.service.getShards(deviceId, accountId)
   }
 
   @Post('verify')

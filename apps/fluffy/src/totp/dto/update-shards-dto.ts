@@ -1,7 +1,5 @@
-export class CreatePairingDto {
+export class UpdateShardsDto {
   userId: string
-  deviceId: string
-  otp?: string
   serverShard?: string
   accountShard?: string
   iCloudshard?: string

@@ -56,7 +56,7 @@ export class AccountController {
   }
 
   @Get(':accountId')
-  async getWallets(@Param('accountId', ParseIntPipe) accountId: string) {
+  async getWallets(@Param('accountId') accountId: string) {
     return await this.accountService.getWallets(accountId)
   }
 

@@ -5,7 +5,8 @@ import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/find-paring-dto'
 import * as Sentry from '@sentry/node'
-import { IPair } from './totp.types'
+import { CreatePairingDto } from './dto/create-pairing-dto'
+import { UpdateShardsDto } from './dto/update-shards-dto'
 
 @Injectable()
 export class TotpService {
@@ -30,7 +31,7 @@ export class TotpService {
     })
   }
 
-  async createPair(pair: IPair) {
+  async createPair(pair: CreatePairingDto) {
     const device = await this.lookup({
       deviceId: pair.deviceId,
     })
@@ -47,39 +48,64 @@ export class TotpService {
     }
 
     device.userId = pair.userId
-    device.serverProposedShard = pair.serverProposedShard
-    device.ownProposedShard = pair.ownProposedShard
-    device.passCodeKey = pair.passCodeKey
+    device.serverShard = pair.serverShard
+    device.accountShard = pair.accountShard
+    device.passcodeKey = pair.passcodeKey
     device.recoveryKey = pair.recoveryKey
+    device.iCloudshard = pair.iCloudshard
+    device.vaultShard = pair.vaultShard
 
     await this.deviceRepository.save(device)
 
     return device
   }
 
-  async updatePassCode(deviceId: string, userId: string, passCodeKey: string) {
-    const deviceEntity = await this.lookup({ userId, deviceId })
+  // async updatePassCode(deviceId: string, userId: string, passCodeKey: string) {
+  //   const deviceEntity = await this.lookup({ userId, deviceId })
+  //   if (deviceEntity) {
+  //     deviceEntity.passcodeKey = passCodeKey
+  //     return await this.deviceRepository.save(deviceEntity)
+  //   } else {
+  //     Sentry.captureMessage(
+  //       `updatePassCode(): No found matched entity with userId(${userId}) and deviceId(${deviceId})`,
+  //     )
+  //     throw new BadRequestException(
+  //       'No found the matched entity with userId and deviceId',
+  //     )
+  //   }
+  // }
+
+  async updateShards(deviceId, data: UpdateShardsDto) {
+    const deviceEntity = await this.lookup({
+      // userId: data.userId,
+      deviceId: deviceId,
+    })
+
     if (deviceEntity) {
-      deviceEntity.passCodeKey = passCodeKey
+      Object.keys(data).map((key) => {
+        deviceEntity[key] = data[key]
+        return key
+      })
       return await this.deviceRepository.save(deviceEntity)
     } else {
       Sentry.captureMessage(
-        `updatePassCode(): No found matched entity with userId(${userId}) and deviceId(${deviceId})`,
+        `updateIsCloud(): Not found matched userId(${data.userId}) and deviceId(${deviceId})`,
       )
-      throw new BadRequestException(
-        'No found the matched entity with userId and deviceId',
-      )
+      throw new BadRequestException('Not found matched userId and deviceId')
     }
   }
 
-  async updateIsCloud(deviceId: string, userId: string, isCloud: boolean) {
-    const deviceEntity = await this.lookup({ userId, deviceId })
+  async getShards(deviceId, accountId) {
+    const deviceEntity = await this.lookup({
+      // userId: accountId,
+      deviceId: deviceId,
+    })
+
     if (deviceEntity) {
-      deviceEntity.isCloud = isCloud
-      return await this.deviceRepository.save(deviceEntity)
+      return deviceEntity
     } else {
       Sentry.captureMessage(
-        `updateIsCloud(): Not found matched userId(${userId}) and deviceId(${deviceId})`,
+        `updateIsCloud(): Not found matched userId(${accountId}) and deviceId(${deviceId})`,
       )
       throw new BadRequestException('Not found matched userId and deviceId')
     }

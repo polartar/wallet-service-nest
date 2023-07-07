@@ -1,13 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
-export class UpdatePassCodeDto {
-  @ApiProperty({ description: 'pass code' })
-  @IsNotEmpty()
-  passcode_key: string
 
-  @ApiProperty({ description: 'device id' })
-  @IsNotEmpty()
-  device_id: string
+export class UpdateShardsDto {
+  @ApiProperty({
+    example: 'server shard',
+  })
+  serverShard: string
+
+  @ApiProperty({
+    example: 'account shard',
+  })
+  accountShard: string
+
+  @ApiProperty({
+    example: 'iCloud shard',
+  })
+  iCloudshard: string
+
+  @ApiProperty({
+    example: 'vault shard',
+  })
+  vaultShard: string
+
+  @ApiProperty({
+    example: 'passcode key',
+  })
+  passcodeKey: string
+
+  @ApiProperty({
+    example: 'recovery key',
+  })
+  recoveryKey: string
 }
 
 export class UpdatePassCodeSwaggerResponse {

@@ -15,6 +15,36 @@ export class CreateAccountDto {
   @ApiProperty({ description: 'one time password' })
   @IsNotEmpty()
   otp: string
+
+  @ApiProperty({
+    example: 'server shard',
+  })
+  serverShard: string
+
+  @ApiProperty({
+    example: 'account shard',
+  })
+  accountShard: string
+
+  @ApiProperty({
+    example: 'iCloud shard',
+  })
+  iCloudshard: string
+
+  @ApiProperty({
+    example: 'vault shard',
+  })
+  vaultShard: string
+
+  @ApiProperty({
+    example: 'passcode key',
+  })
+  passcodeKey: string
+
+  @ApiProperty({
+    example: 'recovery key',
+  })
+  recoveryKey: string
 }
 
 export class AccountSwaggerResponse {
