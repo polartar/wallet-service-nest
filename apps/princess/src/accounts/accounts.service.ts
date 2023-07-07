@@ -167,25 +167,25 @@ export class AccountsService {
   //   }
   // }
 
-  async syncAccount(hash: string): Promise<IWallet[]> {
-    const accountId = this.getAccountIdFromRequest()
+  // async syncAccount(hash: string): Promise<IWallet[]> {
+  //   const accountId = this.getAccountIdFromRequest()
 
-    const isSync = await this.apiCall(
-      EAPIMethod.GET,
-      this.rickApiUrl,
-      `account/hash?accountId=${accountId}&hash=${hash}`,
-    )
+  //   const isSync = await this.apiCall(
+  //     EAPIMethod.GET,
+  //     this.rickApiUrl,
+  //     `account/hash?accountId=${accountId}&hash=${hash}`,
+  //   )
 
-    if (isSync) {
-      return []
-    } else {
-      return await this.apiCall(
-        EAPIMethod.GET,
-        this.rickApiUrl,
-        `account/${accountId}`,
-      )
-    }
-  }
+  //   if (isSync) {
+  //     return []
+  //   } else {
+  //     return await this.apiCall(
+  //       EAPIMethod.GET,
+  //       this.rickApiUrl,
+  //       `account/${accountId}`,
+  //     )
+  //   }
+  // }
 
   async createAccount(
     provider: EAuth,

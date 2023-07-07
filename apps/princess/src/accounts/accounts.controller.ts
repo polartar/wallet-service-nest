@@ -31,11 +31,11 @@ import { WalletSwaggerResponse } from '../wallet/dto/create-wallet.dto'
 export class AccountsController {
   constructor(private readonly accountService: AccountsService) {}
 
-  @Get('')
-  @ApiOkResponse({ type: WalletSwaggerResponse })
-  async sync(@Query('hash') hash?: string) {
-    return await this.accountService.syncAccount(hash)
-  }
+  // @Get('')
+  // @ApiOkResponse({ type: WalletSwaggerResponse })
+  // async sync(@Query('hash') hash?: string) {
+  //   return await this.accountService.syncAccount(hash)
+  // }
 
   @Post('')
   @ApiOkResponse({ type: AccountSwaggerResponse })

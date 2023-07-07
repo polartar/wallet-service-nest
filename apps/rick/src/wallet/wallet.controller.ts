@@ -31,6 +31,17 @@ export class WalletController {
     private readonly portfolioService: PortfolioService,
   ) {}
 
+  @Get('')
+  async getWallets(@Query('accountId') accountId: string) {
+    try {
+      return await this.walletService.getWallets(accountId)
+    } catch (e) {
+      Sentry.captureException(e.message + ' in getWallets')
+
+      throw new InternalServerErrorException(e?.message)
+    }
+  }
+
   // Need to confirm if we need to verify account Id
   @Get(':walletId')
   async getWallet(

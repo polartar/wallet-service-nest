@@ -148,7 +148,7 @@ export class WalletsService {
     return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `account/${accountId}`,
+      `wallet?accountId=${accountId}`,
     )
 
     // return this.addUSDPrice(wallets, period)

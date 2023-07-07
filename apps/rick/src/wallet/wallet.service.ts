@@ -235,6 +235,18 @@ export class WalletService {
     })
   }
 
+  async getWallets(accountId: string) {
+    const wallets = this.walletRepository.find({
+      where: {
+        account: {
+          accountId: accountId,
+        },
+      },
+    })
+
+    return (await wallets).map((wallet) => wallet.id)
+  }
+
   async updateWallet(
     walletId: string,
     accountId: string,
