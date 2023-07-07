@@ -5,15 +5,6 @@ import { EAuth } from '@rana/core'
 
 describe('Auth Pipe', () => {
   const pipe = new LoginValidationPipe()
-  it('Should reject bad tokens', () => {
-    expect(() =>
-      pipe.transform({
-        idToken: '1234',
-        type: EAuth.Google,
-        accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
-      }),
-    ).toThrow(BadRequestException)
-  })
   it('Should accept good tokens', () => {
     const authBody: IAuthData = {
       idToken: '123.456.789',

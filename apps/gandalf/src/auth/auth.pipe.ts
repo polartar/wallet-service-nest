@@ -7,9 +7,7 @@ import { EAuth } from '@rana/core'
 @Injectable()
 export class LoginValidationPipe implements PipeTransform {
   private schema = Joi.object().keys({
-    idToken: Joi.string().regex(
-      /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/,
-    ),
+    idToken: Joi.string(),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
     accountId: Joi.string(),
   })

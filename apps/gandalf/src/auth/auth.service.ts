@@ -29,6 +29,7 @@ export class AuthService {
         })
 
         const payload = response.getPayload()
+
         if (
           !payload.iss.includes('accounts.google.com') ||
           (payload.aud !== this.googleClientId &&

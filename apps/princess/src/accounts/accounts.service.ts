@@ -219,25 +219,32 @@ export class AccountsService {
       vaultShard,
     })
 
-    const payload = {
-      type: provider,
-      accountId: accountId,
-      idToken: providerToken,
-      deviceId,
-    }
-
-    const accessToken = await this.bootstrapService.generateAccessToken(payload)
-    const refreshToken = await this.bootstrapService.generateRefreshToken(
-      payload,
-    )
-
     if (user.is_new) {
-      return user.account.id
-    }
-    return {
-      accessToken,
-      refreshToken,
-      ...userWallet.data,
+      return {
+        id: user.account.id,
+        email: user.account.email,
+      }
+    } else {
+      const payload = {
+        type: provider,
+        accountId: accountId,
+        idToken: providerToken,
+        deviceId,
+      }
+      const accessToken = await this.bootstrapService.generateAccessToken(
+        payload,
+      )
+      const refreshToken = await this.bootstrapService.generateRefreshToken(
+        payload,
+      )
+
+      return {
+        id: user.account.id,
+        email: user.account.email,
+        accessToken,
+        refreshToken,
+        ...userWallet.data,
+      }
     }
   }
 
