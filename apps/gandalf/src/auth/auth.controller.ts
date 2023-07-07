@@ -39,7 +39,9 @@ export class AuthController {
         if (account) {
           await this.accountService.update(account, { name, email })
         } else {
-          account = await this.accountService.create({ name, email })
+          throw new BadRequestException(
+            `Account id(${data.accountId}) not found `,
+          )
         }
 
         return {

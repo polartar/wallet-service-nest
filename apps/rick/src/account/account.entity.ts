@@ -6,7 +6,7 @@ export class AccountEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column()
+  @Column({ unique: true })
   accountId: string
 
   @Column({ nullable: true })
