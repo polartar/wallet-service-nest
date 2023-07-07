@@ -25,7 +25,8 @@ export class WalletEntity {
   title: string
 
   @ManyToOne(() => AccountEntity, (account) => account.wallets)
-  @JoinTable()
+  // @JoinTable({ joinColumn: { referencedColumnName: 'accountId' } })
+  @JoinColumn({ referencedColumnName: 'accountId' })
   account: AccountEntity
 
   @ManyToMany(() => AssetEntity, (address) => address.wallets)
