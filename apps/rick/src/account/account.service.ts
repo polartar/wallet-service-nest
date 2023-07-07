@@ -32,15 +32,20 @@ export class AccountService {
     accountId: string,
     data: UpdateAccountDto,
   ): Promise<AccountEntity> {
-    const account = await this.lookup({
-      accountId: accountId,
-    })
+    const account = await this.lookup({ accountId })
     if (account) {
-      account.email = data.email
-      account.name = data.name
-      return this.accountRepository.save(account)
+      await this.accountRepository
+        .createQueryBuilder()
+        .update(account)
+        .set({ name: data.name, email: data.email })
+        .where('accountId = :accountId', { accountId })
+        .execute()
+      return {
+        ...account,
+        ...data,
+      }
     } else {
-      return this.create({ accountId, ...data })
+      return await this.create({ accountId, ...data })
     }
   }
 
