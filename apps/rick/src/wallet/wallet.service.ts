@@ -236,15 +236,13 @@ export class WalletService {
   }
 
   async getWallets(accountId: string) {
-    const wallets = this.walletRepository.find({
+    return this.walletRepository.find({
       where: {
         account: {
           accountId: accountId,
         },
       },
     })
-
-    return (await wallets).map((wallet) => wallet.id)
   }
 
   async updateWallet(
@@ -273,7 +271,7 @@ export class WalletService {
       Sentry.captureException(
         `updateWallet(): walletId: ${walletId}, accountId: ${accountId}`,
       )
-      throw new NotFoundException('Not found wallet')
+      throw new BadRequestException('Not found wallet')
     }
   }
 
@@ -420,8 +418,11 @@ export class WalletService {
       prototype.assets = assets
 
       const wallet = await this.walletRepository.save(prototype)
-      return wallet.id
+
+      return wallet
     } catch (err) {
+      Sentry.captureException(`addNewWallet(): ${err.message}`)
+      console.log(err)
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
       )

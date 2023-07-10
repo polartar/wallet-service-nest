@@ -9,8 +9,14 @@ import {
 } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { AssetService } from './asset.service'
-import { AssetSwaggerResponse, CreateAssetDto } from './dto/create-asset.dto'
-import { GetAssetPortfolioDto } from './dto/get-asset-portfolio.dto'
+import {
+  AssetCreateSwaggerResponse,
+  CreateAssetDto,
+} from './dto/create-asset.dto'
+import {
+  AssetSwaggerResponse,
+  GetAssetPortfolioDto,
+} from './dto/get-asset-portfolio.dto'
 import {
   AssetTransactionSwaggerResponse,
   GetAssetTransactionDto,
@@ -22,7 +28,7 @@ export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
   @Post('')
-  @ApiOkResponse({ type: AssetSwaggerResponse })
+  @ApiOkResponse({ type: AssetCreateSwaggerResponse })
   @ApiOperation({
     summary: 'Create asset',
   })

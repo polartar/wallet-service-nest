@@ -106,7 +106,7 @@ export class WalletsController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    if (!data.mnemonic && !data.title) {
+    if (data.mnemonic === null && data.title === null) {
       throw new BadRequestException('Should input at least title or mnemonic')
     } else if (data.mnemonic && data.title) {
       throw new BadRequestException('Should input one of title or mnemonic')

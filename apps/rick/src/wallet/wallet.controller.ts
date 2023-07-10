@@ -122,18 +122,12 @@ export class WalletController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    try {
-      return await this.walletService.updateWallet(
-        walletId,
-        data.accountId,
-        data.title,
-        data.mnemonic,
-      )
-    } catch (e) {
-      Sentry.captureException(e.message + ' in getHistory()')
-
-      throw new InternalServerErrorException(e?.message)
-    }
+    return await this.walletService.updateWallet(
+      walletId,
+      data.accountId,
+      data.title,
+      data.mnemonic,
+    )
   }
 
   @Delete(':walletId')

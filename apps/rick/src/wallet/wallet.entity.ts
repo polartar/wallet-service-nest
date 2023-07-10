@@ -6,7 +6,6 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { AccountEntity } from '../account/account.entity'
@@ -18,7 +17,7 @@ export class WalletEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column('text')
+  @Column({ nullable: true })
   mnemonic: string
 
   @Column('text')
