@@ -236,15 +236,13 @@ export class WalletService {
   }
 
   async getWallets(accountId: string) {
-    const wallets = this.walletRepository.find({
+    return this.walletRepository.find({
       where: {
         account: {
           accountId: accountId,
         },
       },
     })
-
-    return (await wallets).map((wallet) => wallet.id)
   }
 
   async updateWallet(
@@ -420,7 +418,8 @@ export class WalletService {
       prototype.assets = assets
 
       const wallet = await this.walletRepository.save(prototype)
-      return wallet.id
+
+      return wallet
     } catch (err) {
       Sentry.captureException(`addNewWallet(): ${err.message}`)
       console.log(err)
