@@ -100,21 +100,15 @@ export class WalletController {
 
   @Post('')
   async createWallet(@Body() data: CreateWalletDto) {
-    try {
-      const res = await this.walletService.addNewWallet(
-        data.accountId,
-        data.title,
-        data.mnemonic,
-        data.assetIds,
-      )
+    const res = await this.walletService.addNewWallet(
+      data.accountId,
+      data.title,
+      data.mnemonic,
+      data.assetIds,
+    )
 
-      await this.portfolioService.updateCurrentWallets()
-      return res
-    } catch (e) {
-      Sentry.captureException(e.message + ' while addNewWallet')
-
-      throw new BadRequestException(e.message)
-    }
+    await this.portfolioService.updateCurrentWallets()
+    return res
   }
 
   @Patch(':walletId')
