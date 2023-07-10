@@ -273,7 +273,7 @@ export class WalletService {
       Sentry.captureException(
         `updateWallet(): walletId: ${walletId}, accountId: ${accountId}`,
       )
-      throw new NotFoundException('Not found wallet')
+      throw new BadRequestException('Not found wallet')
     }
   }
 
