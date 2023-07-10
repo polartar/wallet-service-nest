@@ -422,6 +422,8 @@ export class WalletService {
       const wallet = await this.walletRepository.save(prototype)
       return wallet.id
     } catch (err) {
+      Sentry.captureException(`addNewWallet(): ${err.message}`)
+      console.log(err)
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
       )
