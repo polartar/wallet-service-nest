@@ -39,9 +39,14 @@ export class CreateWalletDto {
 
 export class WalletSwaggerResponse {
   @ApiProperty({
+    example: '7e430da0-460b-47d7-b7da-c573bfccac21',
+  })
+  id: string
+
+  @ApiProperty({
     example: 'My Wallet',
   })
-  name: string
+  title: string
 
   @ApiProperty({
     example: 'My mnemonic',
@@ -49,81 +54,9 @@ export class WalletSwaggerResponse {
   mnemonic: string
 
   @ApiProperty({
-    example: [
-      {
-        email: '',
-        name: '',
-        walletId: 3,
-        id: 2,
-      },
-    ],
-  })
-  accounts: string
-
-  @ApiProperty({
-    example: 'hot_wallet',
-  })
-  type: string
-
-  @ApiProperty({
-    example: [
-      {
-        id: 1,
-        address: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-        createdAt: 1685445893,
-        coinType: 'eth',
-        path: 'm/44/60/0/0/5',
-        fee: {
-          high_fee: '0.000000281316227971',
-          medium_fee: '0.000000058461980841',
-          low_fee: '0.000000005',
-        },
-        history: [
-          {
-            balance: '126946376672449164',
-            from: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-            to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-            amount: '0',
-            tokenId: '52852',
-            timestamp: '1685463120',
-            usdBalance: '239.94809743123068',
-            usdAmount: '0',
-          },
-          {
-            balance: '227433406994413955',
-            from: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-            to: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
-            amount: '10000000000000000',
-            tokenId: null,
-            timestamp: '1682560092',
-            usdBalance: '429.8839772435667',
-            usdAmount: '18.9015317901',
-          },
-        ],
-      },
-    ],
+    example: ['{{asset-2-btc}}', '{{asset-1-eth}}', '{{asset-2-eth}}'],
   })
   assets: []
-
-  @ApiProperty({
-    example: 'm/44/60/0',
-  })
-  path: []
-
-  @ApiProperty({
-    example: 'eth',
-  })
-  coinType: string
-
-  @ApiProperty({
-    example: '7e430da0-460b-47d7-b7da-c573bfccac21',
-  })
-  id: string
-
-  @ApiProperty({
-    example: 1684343715,
-  })
-  createdAt: number
 }
 
 export class WalletsSwaggerResponse {

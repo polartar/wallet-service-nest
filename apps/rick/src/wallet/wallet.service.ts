@@ -222,7 +222,7 @@ export class WalletService {
   }
 
   async getWallet(accountId: string, walletId: string) {
-    return this.walletRepository.find({
+    const wallet = await this.walletRepository.findOne({
       where: {
         id: walletId,
         account: {
@@ -233,16 +233,31 @@ export class WalletService {
         assets: true,
       },
     })
+
+    return {
+      id: wallet.id,
+      title: wallet.title,
+      mnemonic: wallet.mnemonic,
+      assets: wallet.assets.map((asset) => asset.id),
+    }
   }
 
   async getWallets(accountId: string) {
-    return this.walletRepository.find({
+    const wallets = await this.walletRepository.find({
       where: {
         account: {
           accountId: accountId,
         },
       },
+      relations: { assets: true },
     })
+
+    return wallets.map((wallet) => ({
+      id: wallet.id,
+      mnemonic: wallet.mnemonic,
+      title: wallet.title,
+      assets: wallet.assets.map((asset) => asset.id),
+    }))
   }
 
   async updateWallet(
@@ -419,7 +434,12 @@ export class WalletService {
 
       const wallet = await this.walletRepository.save(prototype)
 
-      return wallet
+      return {
+        id: wallet.id,
+        title,
+        mnemonic,
+        assets: assetIds,
+      }
     } catch (err) {
       Sentry.captureException(`addNewWallet(): ${err.message}`)
       console.log(err)
