@@ -70,7 +70,7 @@ export class AssetService {
       asset = await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     }
 
-    return asset
+    return [asset]
   }
 
   getPrice(source: IMarketData[], timestamp: number) {
