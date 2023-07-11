@@ -277,7 +277,7 @@ export class WalletService {
     })
 
     if (wallet) {
-      if (title) {
+      if (title !== undefined) {
         wallet.title = title
       } else {
         if (mnemonic) {
