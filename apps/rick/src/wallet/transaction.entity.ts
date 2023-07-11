@@ -33,7 +33,7 @@ export class TransactionEntity {
   amount: string
 
   @Column({ nullable: true })
-  tokenId: string
+  tokenId: number
 
   @Column('bigint')
   timestamp: number

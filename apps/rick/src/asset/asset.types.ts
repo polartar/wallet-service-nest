@@ -26,7 +26,7 @@ export class ITransaction {
   from: string
   to: string
   amount?: string
-  tokenId?: string
+  tokenId?: number
   hash: string
   timestamp: number
   status: ETransactionStatuses

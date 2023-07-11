@@ -21,6 +21,7 @@ import {
   AssetTransactionSwaggerResponse,
   GetAssetTransactionDto,
 } from './dto/get-asset-transaction.dto'
+import { EPeriod } from '@rana/core'
 
 @Controller('asset')
 @ApiTags('asset')
@@ -71,9 +72,9 @@ export class AssetController {
   })
   async getAssetPortfolio(
     @Param('assetId') assetId: string,
-    @Query() query: GetAssetPortfolioDto,
+    // @Query() query: GetAssetPortfolioDto,
   ) {
-    return await this.assetService.getAssetPortfolio(assetId, query.period)
+    return await this.assetService.getAssetPortfolio(assetId, EPeriod.All)
   }
 
   @Get(':assetId/nft')

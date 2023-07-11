@@ -13,7 +13,7 @@ import { EAuth, ENetworks, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
-import { EAPIMethod, ITransaction } from './wallet.types'
+import { EAPIMethod, IAsset, ITransaction } from './wallet.types'
 import * as Sentry from '@sentry/node'
 import { formatUnits, isAddress } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
@@ -131,13 +131,37 @@ export class WalletsService {
   async getWalletPortfolio(walletId, period?: EPeriod) {
     const accountId = this.getAccountIdFromRequest()
 
-    return await this.apiCall(
+    const assets = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
         period ? period : EPeriod.Months
       }`,
     )
+
+    let portfolios = []
+    await Promise.all(
+      assets.map(async (asset: IAsset) => {
+        const portfolio = await this.assetService.addUSDPrice(
+          asset.transactions,
+        )
+        portfolios = portfolios.concat(
+          portfolio.map((item) => ({
+            balance: item.balance,
+            timestamp: item.timestamp,
+            usdPrice: item.usdPrice,
+          })),
+        )
+        return portfolio
+      }),
+    )
+
+    return portfolios.sort((a, b) => {
+      if (a.timestamp > b.timestamp) {
+        return 1
+      }
+      return -1
+    })
 
     // return this.addUSDPrice(wallets, period)
   }

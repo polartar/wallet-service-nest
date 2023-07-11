@@ -554,7 +554,7 @@ export class AssetService {
         ? 0
         : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
 
-    return this.assetRepository.findOne({
+    const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,
         wallets: {
@@ -569,7 +569,19 @@ export class AssetService {
       relations: {
         transactions: true,
       },
+      order: {
+        transactions: { timestamp: 'DESC' },
+      },
     })
+
+    if (!asset) {
+      Sentry.captureException(
+        `getAssetPortfolio(): Not found asset(${assetId}) for account Id (${accountId})`,
+      )
+      throw new BadRequestException(`Not found asset(${assetId}) for the user`)
+    }
+    if (asset.transactions.length > 0) return asset.transactions[0]
+    else return null
   }
 
   async getNFTAssets(assetId: string, pageNumber: number) {
