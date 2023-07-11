@@ -288,7 +288,7 @@ export class AssetService {
 
     asset = await this.assetRepository.findOne({ where: { address, network } })
     if (asset) {
-      return asset.id
+      return asset
     }
 
     asset = await this.addAsset(address, index, network)
