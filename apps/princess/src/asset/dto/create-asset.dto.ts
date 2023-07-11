@@ -7,7 +7,7 @@ export class CreateAssetDto {
     description: 'The address of the asset',
     example: '0xdBC3A556693CBb5682127864fd80C8ae6976bfcf',
   })
-  @IsOptional()
+  @IsNotEmpty()
   address: string
 
   @ApiProperty({

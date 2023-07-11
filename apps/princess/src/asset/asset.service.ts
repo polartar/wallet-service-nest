@@ -64,10 +64,10 @@ export class AssetService {
 
   async createAsset(data: CreateAssetDto) {
     let asset
-    if (data.address) {
-      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
-    } else {
+    if (data.xPub) {
       asset = await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
+    } else {
+      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
     }
 
     return [asset]
