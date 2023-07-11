@@ -41,7 +41,7 @@ export class WalletsController {
     summary: 'Add the wallet to the account',
   })
   async createWallet(@Body() data: CreateWalletDto) {
-    if (data.walletType !== EWalletType.VAULT) {
+    if (data.assets) {
       return this.walletService.createWallet(data)
     } else {
       return this.walletService.sync(data.title, data.parts)
