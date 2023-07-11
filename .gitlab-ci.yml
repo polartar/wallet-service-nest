@@ -60,6 +60,7 @@ upload SBOM:
     - container_scanning
   dependencies:
     - container_scanning
+  allow_failure: true
   stage: .post
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
