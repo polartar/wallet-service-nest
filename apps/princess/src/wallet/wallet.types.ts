@@ -3,6 +3,7 @@ export enum EAPIMethod {
   GET = 'get',
   PATCH = 'patch',
   DELETE = 'delete',
+  PUT = 'put',
 }
 
 export interface ITransaction {

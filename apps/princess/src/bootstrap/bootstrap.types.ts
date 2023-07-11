@@ -8,7 +8,6 @@ export interface IDeviceCreateResponse {
 
 export interface IAccessTokenPayload {
   accountId: string
-  idToken: string
   deviceId: string
   type: string
 }

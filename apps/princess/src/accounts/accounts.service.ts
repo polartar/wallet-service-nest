@@ -5,7 +5,6 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   Request,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -13,12 +12,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import {
-  IAccount,
-  ICreateAccountResponse,
-  IShard,
-  IWallet,
-} from './accounts.types'
+import { IAccount, IShard } from './accounts.types'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
@@ -79,6 +73,8 @@ export class AccountsService {
           ? this.httpService.patch(url, body)
           : method === EAPIMethod.DELETE
           ? this.httpService.delete(url)
+          : method === EAPIMethod.PUT
+          ? this.httpService.put(url, body)
           : this.httpService.get(url),
       )
       return res.data
@@ -208,9 +204,7 @@ export class AccountsService {
       accountId,
     )
 
-    const userWallet = await this.syncRick(user.is_new, user.account, accountId)
-
-    await this.checkPair(user.account.id, deviceId, otp, {
+    await this.checkPair(accountId, deviceId, otp, {
       accountShard,
       iCloudshard,
       passcodeKey,
@@ -218,6 +212,8 @@ export class AccountsService {
       serverShard,
       vaultShard,
     })
+
+    const userWallet = await this.syncRick(user.is_new, user.account, accountId)
 
     if (user.is_new) {
       return {
@@ -227,8 +223,7 @@ export class AccountsService {
     } else {
       const payload = {
         type: provider,
-        accountId: accountId,
-        idToken: providerToken,
+        accountId: user.account.id,
         deviceId,
       }
       const accessToken = await this.bootstrapService.generateAccessToken(
@@ -243,7 +238,7 @@ export class AccountsService {
         email: user.account.email,
         accessToken,
         refreshToken,
-        ...userWallet.data,
+        wallets: userWallet,
       }
     }
   }
@@ -278,50 +273,39 @@ export class AccountsService {
     otp: string,
     optionalParams?: IShard,
   ) {
-    this.apiCall(EAPIMethod.POST, this.fluffyApiUrl, 'pair', {
+    return this.apiCall(EAPIMethod.POST, this.fluffyApiUrl, 'pair', {
       userId: accountId,
       deviceId,
       otp,
       ...optionalParams,
     })
-    // try {
-    //   await firstValueFrom(
-    //     this.httpService.post(`${this.fluffyApiUrl}/pair`, {
-    //       userId: accountId,
-    //       deviceId,
-    //       otp,
-    //       ...optionalParams,
-    //     }),
-    //   )
-    // } catch (err) {
-    //   Sentry.captureMessage(`SignIn(Fluffy): ${err.message} with ${deviceId}`)
-    //   if (err.response) {
-    //     throw new BadRequestException(err.response.data.message)
-    //   } else {
-    //     throw new BadGatewayException('Fluffy API call error')
-    //   }
-    // }
   }
 
   async syncRick(isNewUser: boolean, account: IAccount, accountId: string) {
     try {
       // if new user email, then register, then update the anonymous user with real info.
       if (isNewUser) {
-        return await firstValueFrom(
-          this.httpService.put(`${this.rickApiUrl}/account/${account.id}`, {
+        return this.apiCall(
+          EAPIMethod.PUT,
+          this.rickApiUrl,
+          `account/${account.id}`,
+          {
             email: account.email,
             name: account.name,
             accountId: account.id,
-          }),
+          },
         )
       } else {
         // combine wallets
         if (+account.id !== +accountId) {
-          return await firstValueFrom(
-            this.httpService.post(`${this.rickApiUrl}/wallet/combine`, {
+          return this.apiCall(
+            EAPIMethod.POST,
+            this.rickApiUrl,
+            'wallet/combine',
+            {
               existingAccountId: account.id,
               anonymousId: accountId,
-            }),
+            },
           )
         }
       }
