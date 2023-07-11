@@ -939,6 +939,12 @@ export class WalletService {
       wallet.account = existingAccount
     })
 
-    return this.updateWallets(wallets)
+    await this.updateWallets(wallets)
+
+    const resultWallets = await this.walletRepository.find({
+      where: { account: { accountId: existingAccountId } },
+    })
+    console.log({ resultWallets })
+    return resultWallets
   }
 }
