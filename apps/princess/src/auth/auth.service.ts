@@ -150,7 +150,6 @@ export class AuthService {
     const newPayload = {
       type: payload.type,
       accountId: accountId,
-      idToken: payload.idToken,
       deviceId,
     }
 
@@ -187,7 +186,6 @@ export class AuthService {
     const payload = {
       type: provider,
       accountId: accountId,
-      idToken: providerToken,
       deviceId,
     }
     const refreshToken = await this.bootstrapService.generateRefreshToken(

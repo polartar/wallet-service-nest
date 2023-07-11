@@ -59,7 +59,6 @@ export class BootstrapService {
       const payload = {
         type: 'anonymous',
         accountId: userResponse.data.id,
-        idToken: deviceResponse.data.deviceId,
         deviceId: deviceResponse.data.deviceId,
       }
       const accessToken = await this.generateAccessToken(payload)

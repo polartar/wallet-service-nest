@@ -227,8 +227,7 @@ export class AccountsService {
     } else {
       const payload = {
         type: provider,
-        accountId: accountId,
-        idToken: providerToken,
+        accountId: user.account.id,
         deviceId,
       }
       const accessToken = await this.bootstrapService.generateAccessToken(
