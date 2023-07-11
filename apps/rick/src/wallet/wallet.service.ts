@@ -1,4 +1,4 @@
-import { MoreThan, Repository } from 'typeorm'
+import { IsNull, MoreThan, Not, Repository } from 'typeorm'
 import {
   BadRequestException,
   Injectable,
@@ -248,6 +248,7 @@ export class WalletService {
         account: {
           accountId: accountId,
         },
+        mnemonic: Not(IsNull()),
       },
       relations: { assets: true },
     })
@@ -276,10 +277,14 @@ export class WalletService {
     })
 
     if (wallet) {
-      if (title) {
+      if (title !== undefined) {
         wallet.title = title
       } else {
-        wallet.mnemonic = mnemonic
+        if (mnemonic) {
+          wallet.mnemonic = mnemonic
+        } else {
+          wallet.mnemonic = null
+        }
       }
       return this.walletRepository.save(wallet)
     } else {
@@ -429,7 +434,9 @@ export class WalletService {
       const prototype = new WalletEntity()
       prototype.account = account
       prototype.title = title
-      prototype.mnemonic = mnemonic
+      if (mnemonic) {
+        prototype.mnemonic = mnemonic
+      }
       prototype.assets = assets
 
       const wallet = await this.walletRepository.save(prototype)
@@ -930,6 +937,7 @@ export class WalletService {
     const wallets = await this.walletRepository.find({
       where: {
         account: { accountId: anonymousId },
+        mnemonic: Not(IsNull()),
       },
       relations: {
         account: true,

@@ -157,7 +157,7 @@ export class WalletsService {
   async createWallet(data: CreateWalletDto) {
     const accountId = this.getAccountIdFromRequest()
 
-    if (data.assets && data.assets.length > 0) {
+    if (data.assets.length > 0) {
       return await this.apiCall(EAPIMethod.POST, this.rickApiUrl, `wallet`, {
         accountId,
         title: data.title,

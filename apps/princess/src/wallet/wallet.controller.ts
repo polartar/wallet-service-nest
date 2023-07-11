@@ -41,7 +41,7 @@ export class WalletsController {
     summary: 'Add the wallet to the account',
   })
   async createWallet(@Body() data: CreateWalletDto) {
-    if (data.walletType !== EWalletType.VAULT) {
+    if (data.assets) {
       return this.walletService.createWallet(data)
     } else {
       return this.walletService.sync(data.title, data.parts)
@@ -106,7 +106,7 @@ export class WalletsController {
     @Param('walletId') walletId: string,
     @Body() data: UpdateWalletDto,
   ) {
-    if (data.mnemonic === null && data.title === null) {
+    if (data.mnemonic === undefined && data.title === undefined) {
       throw new BadRequestException('Should input at least title or mnemonic')
     } else if (data.mnemonic && data.title) {
       throw new BadRequestException('Should input one of title or mnemonic')
