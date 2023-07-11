@@ -616,7 +616,7 @@ export class WalletService {
         ? 0
         : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
 
-    return this.walletRepository.find({
+    const wallet = await this.walletRepository.findOne({
       where: {
         id: walletId,
         account: {
@@ -634,7 +634,13 @@ export class WalletService {
         },
       },
     })
-
+    if (!wallet) {
+      Sentry.captureException(
+        `getUserWalletPortfolio(): Wallet(${walletId}) not found with account(${accountId})`,
+      )
+      throw new BadRequestException(`Wallet(${walletId}) not found`)
+    }
+    return wallet.assets
     // const queryBuilder = this.walletRepository
     //   .createQueryBuilder('wallet')
     //   .leftJoinAndSelect('wallet.accounts', 'accounts')

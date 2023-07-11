@@ -107,7 +107,7 @@ export class AssetService {
         return {
           ...transaction,
           cryptoAmount: transaction.amount,
-          fiatBalance: (+value * price).toString(),
+          usdPrice: (+value * price).toString(),
           fiatAmount: (+amount * price).toString(),
         }
       })
@@ -131,7 +131,7 @@ export class AssetService {
       const transactions = await this.addUSDPrice([asset.transaction])
 
       asset.balance = {
-        fiat: transactions[0].fiatBalance,
+        fiat: transactions[0].usdPrice,
         crypto: transactions[0].balance,
       }
 
@@ -157,12 +157,25 @@ export class AssetService {
   async getAssetPortfolio(assetId, period?: EPeriod) {
     const accountId = this.getAccountIdFromRequest()
 
-    return await this.rickApiCall(
+    const transaction = await this.rickApiCall(
       EAPIMethod.GET,
       `asset/${assetId}/portfolio?accountId=${accountId}&period=${
         period ? period : EPeriod.Month
       }`,
     )
+
+    if (transaction) {
+      const portfolio = await this.addUSDPrice([transaction])
+      return {
+        fiat: portfolio[0].usdPrice,
+        balance: portfolio[0].balance,
+      }
+    } else {
+      return {
+        fiat: 0,
+        crypto: 0,
+      }
+    }
   }
 
   async getAssetNFTs(assetId: string, pageNumber?: number) {

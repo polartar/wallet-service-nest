@@ -1,3 +1,5 @@
+import { ENetworks } from '@rana/core'
+
 export enum EAPIMethod {
   POST = 'post',
   GET = 'get',
@@ -15,6 +17,12 @@ export interface ITransaction {
   timestamp: number
 }
 
+export interface IAsset {
+  address: string
+  network: ENetworks
+  index: number
+  transactions: ITransaction[]
+}
 // export interface IWallet {
 //   id: number
 //   assets: IAsset[]
