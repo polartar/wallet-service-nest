@@ -944,7 +944,7 @@ export class WalletService {
     const resultWallets = await this.walletRepository.find({
       where: { account: { accountId: existingAccountId } },
     })
-    console.log({ resultWallets })
+
     return resultWallets
   }
 }
