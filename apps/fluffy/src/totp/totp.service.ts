@@ -47,6 +47,7 @@ export class TotpService {
       throw new BadRequestException('Invalid otp token')
     }
 
+    device.userId = pair.userId
     device.serverShard = pair.serverShard
     device.accountShard = pair.accountShard
     device.passcodeKey = pair.passcodeKey
