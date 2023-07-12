@@ -52,7 +52,7 @@ export class TotpService {
     device.accountShard = pair.accountShard
     device.passcodeKey = pair.passcodeKey
     device.recoveryKey = pair.recoveryKey
-    device.iCloudshard = pair.iCloudshard
+    device.iCloudShard = pair.iCloudShard
     device.vaultShard = pair.vaultShard
 
     await this.deviceRepository.save(device)

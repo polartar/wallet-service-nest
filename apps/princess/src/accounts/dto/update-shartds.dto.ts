@@ -14,7 +14,7 @@ export class UpdateShardsDto {
   @ApiProperty({
     example: 'iCloud shard',
   })
-  iCloudshard: string
+  iCloudShard: string
 
   @ApiProperty({
     example: 'vault shard',

@@ -188,7 +188,7 @@ export class AccountsService {
     providerToken: string,
     otp: string,
     accountShard,
-    iCloudshard,
+    iCloudShard,
     passcodeKey,
     recoveryKey,
     serverShard,
@@ -206,7 +206,7 @@ export class AccountsService {
 
     await this.checkPair(accountId, deviceId, otp, {
       accountShard,
-      iCloudshard,
+      iCloudShard,
       passcodeKey,
       recoveryKey,
       serverShard,

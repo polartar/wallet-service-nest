@@ -4,7 +4,7 @@ export class CreatePairingDto {
   otp?: string
   serverShard?: string
   accountShard?: string
-  iCloudshard?: string
+  iCloudShard?: string
   vaultShard?: string
   passcodeKey?: string
   recoveryKey?: string
