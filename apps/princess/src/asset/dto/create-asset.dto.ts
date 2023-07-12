@@ -31,6 +31,8 @@ export class CreateAssetDto {
 
   @ApiProperty({
     description: 'The xPub',
+    example:
+      'xpub6BzwKCWVs4F9cpmYundX3PjbqcPqERCXKCAw8SRKQgXd1ybTxi338A2Ep6EbGhFp7up4L7PDWivUtnYNC79MWo6wN5SqzrhksQVJupArUxD',
   })
   @IsOptional()
   xPub: string

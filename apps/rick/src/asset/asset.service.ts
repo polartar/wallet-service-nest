@@ -410,7 +410,12 @@ export class AssetService {
     })
   }
 
-  async addAssetFromXPub(xPub: string, index: number, network: ENetworks) {
+  async addAssetFromXPub(
+    xPub: string,
+    index: number,
+    network: ENetworks,
+    address: string,
+  ) {
     try {
       let apiURL, apiKey, currency
       if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
@@ -447,17 +452,12 @@ export class AssetService {
         )
         throw new BadRequestException(`Not found address for index: ${index}`)
       }
-      let asset = await this.assetRepository.findOne({
-        where: { address: addressInfo.address, network: network },
-      })
-      if (!asset) {
-        asset = await this.addAsset(
-          addressInfo.address,
-          addressInfo.index,
-          network,
-        )
-      }
-      return asset
+
+      return await this.createAsset(
+        addressInfo.address,
+        addressInfo.index,
+        network,
+      )
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
@@ -468,6 +468,7 @@ export class AssetService {
           `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
+      return this.createAsset(address, index, network)
     }
   }
 

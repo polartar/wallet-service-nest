@@ -27,6 +27,7 @@ export class AssetController {
       data.xPub,
       data.index,
       data.network,
+      data.address,
     )
   }
 

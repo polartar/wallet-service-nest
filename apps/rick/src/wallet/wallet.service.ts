@@ -449,7 +449,7 @@ export class WalletService {
       }
     } catch (err) {
       Sentry.captureException(`addNewWallet(): ${err.message}`)
-      console.log(err)
+
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
       )
