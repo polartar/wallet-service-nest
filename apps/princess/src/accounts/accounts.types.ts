@@ -44,7 +44,7 @@ export interface ICreateAccountResponse {
 
 export interface IShard {
   accountShard: string
-  iCloudshard: string
+  iCloudShard: string
   passcodeKey: string
   recoveryKey: string
   serverShard: string

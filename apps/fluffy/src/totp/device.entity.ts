@@ -26,7 +26,7 @@ export class DeviceEntity {
   recoveryKey: string
 
   @Column({ nullable: true })
-  iCloudshard: string
+  iCloudShard: string
 
   @Column({ nullable: true })
   vaultShard: string
