@@ -616,53 +616,35 @@ export class WalletService {
         ? 0
         : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
 
-    const wallet = await this.walletRepository.findOne({
-      where: {
-        id: walletId,
-        account: {
-          accountId: accountId,
+    const queryBuilder = this.walletRepository
+      .createQueryBuilder('wallet')
+      .leftJoinAndSelect('wallet.account', 'account')
+      .leftJoinAndSelect('wallet.assets', 'assets')
+      .leftJoinAndSelect(
+        'assets.transactions',
+        'assets.transactions',
+        'assets.transactions.timestamp >= :start_at',
+        {
+          start_at: timeInPast,
         },
-        assets: {
-          transactions: {
-            timestamp: MoreThan(timeInPast),
-          },
-        },
-      },
-      relations: {
-        assets: {
-          transactions: true,
-        },
-      },
-    })
+      )
+      // .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
+      .where('account.id = :accountId', { accountId })
+      .where('wallet.id = :walletId', { walletId })
+      .orderBy('wallet.id', 'ASC')
+      // .orderBy('assets.address', 'ASC')
+      .orderBy('assets.transactions.timestamp', 'ASC')
+
+    const wallet = await queryBuilder.getOne()
+
     if (!wallet) {
       Sentry.captureException(
-        `getUserWalletPortfolio(): Wallet(${walletId}) not found with account(${accountId})`,
+        `getUserWalletPortfolio(): wallet(${walletId} not found with account(${accountId}))`,
       )
-      throw new BadRequestException(`Wallet(${walletId}) not found`)
+      throw new BadRequestException(`Wallet not found(${walletId})`)
     }
+
     return wallet.assets
-    // const queryBuilder = this.walletRepository
-    //   .createQueryBuilder('wallet')
-    //   .leftJoinAndSelect('wallet.accounts', 'accounts')
-    //   .leftJoinAndSelect('wallet.addresses', 'addresses')
-    //   .leftJoinAndSelect(
-    //     'addresses.history',
-    //     'addresses.history',
-    //     'addresses.history.timestamp >= :start_at',
-    //     {
-    //       start_at: timeInPast,
-    //     },
-    //   )
-    //   .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
-    //   .orderBy('wallet.id', 'ASC')
-    //   .orderBy('addresses.address', 'ASC')
-    //   .orderBy('addresses.history.timestamp', 'DESC')
-
-    // if (walletId) {
-    //   queryBuilder.andWhere('wallet.id = :id', { id: walletId })
-    // }
-
-    // return await queryBuilder.getMany()
   }
 
   // async getUserHistory(accountId: number, period: EPeriod) {
