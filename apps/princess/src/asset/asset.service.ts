@@ -85,6 +85,9 @@ export class AssetService {
 
   async addUSDPrice(transactions: ITransaction[]) {
     try {
+      if (transactions.length === 0) {
+        return []
+      }
       const ethMarketHistories = await this.coinService.getHistoricalData(
         ECoinTypes.ETHEREUM,
         EPeriod.All,
