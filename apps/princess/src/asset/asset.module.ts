@@ -3,8 +3,6 @@ import { AssetController } from './asset.controller'
 import { AssetService } from './asset.service'
 import { CoinService } from '../coin/coin.service'
 import { HttpModule } from '@nestjs/axios'
-import { ConfigModule } from '@nestjs/config'
-import { CoinModule } from '../coin/coin.module'
 
 @Module({
   imports: [HttpModule],

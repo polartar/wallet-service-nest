@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
-import { IsNotEmpty, IsUUID } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator'
 
 export class SignInDto {
   @ApiProperty({
     description: 'auth type',
     enum: [EAuth.Apple, EAuth.Google],
   })
+  @IsEnum(EAuth)
   type: EAuth
 
   @ApiProperty({ description: 'token of Google or Apple login' })

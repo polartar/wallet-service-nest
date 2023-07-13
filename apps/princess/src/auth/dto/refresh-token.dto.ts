@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EAuth } from '@rana/core'
-import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 
 export class RefreshTokenDto {
   @ApiProperty({
     description: 'auth type',
     enum: [EAuth.Apple, EAuth.Google, 'Anonymous'],
   })
+  @IsEnum(EAuth)
   provider: EAuth | 'Anonymous'
 
   @ApiProperty({

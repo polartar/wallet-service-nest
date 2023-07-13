@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { EPeriod } from '@rana/core'
+import { IsEnum } from 'class-validator'
 
 export class GetWalletPortfolioDto {
   @ApiProperty({
@@ -14,5 +15,6 @@ export class GetWalletPortfolioDto {
     ],
     required: false,
   })
+  @IsEnum(EPeriod)
   period: EPeriod
 }
