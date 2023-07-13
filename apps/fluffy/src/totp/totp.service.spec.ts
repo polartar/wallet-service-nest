@@ -50,7 +50,6 @@ describe('TotpService', () => {
     expect(
       (
         await service.lookup({
-          userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
           deviceId: device.deviceId,
         })
       ).deviceId,
