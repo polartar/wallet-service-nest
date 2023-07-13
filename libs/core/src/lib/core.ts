@@ -22,8 +22,8 @@ export enum ECoinTypes {
 }
 
 export enum ENetworks {
-  ETHEREUM = 'eth',
-  BITCOIN = 'btc',
+  ETHEREUM = 'eth_mainnet',
+  BITCOIN = 'btc_mainnet',
   BITCOIN_TEST = 'btc_testnet3',
   ETHEREUM_TEST = 'eth_goerli',
 }
