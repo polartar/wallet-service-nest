@@ -1,6 +1,15 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { AccountService } from './account.service'
+import { UpdateShardsDto } from './dto/update-account.dto'
 
 @Controller('account')
 export class AccountController {
@@ -18,5 +27,18 @@ export class AccountController {
     } catch (e) {
       throw new BadRequestException(e?.message)
     }
+  }
+
+  @Get(':accountId')
+  async getAccount(@Param('accountId') accountId: string) {
+    return this.accountService.getAccount(accountId)
+  }
+
+  @Patch(':accountId')
+  async updateShards(
+    @Param('accountId') accountId: string,
+    @Body() data: UpdateShardsDto,
+  ) {
+    return this.accountService.updateShards(accountId, data)
   }
 }

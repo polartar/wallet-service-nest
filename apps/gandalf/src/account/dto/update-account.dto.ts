@@ -1,5 +1,5 @@
 export class UpdateShardsDto {
-  userId: string
+  accountId: string
   serverShard?: string
   accountShard?: string
   iCloudShard?: string

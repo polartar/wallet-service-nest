@@ -44,10 +44,6 @@ describe('TotpService', () => {
     await service.createPair({
       userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
       deviceId: device.deviceId,
-      serverShard: 'server shard',
-      accountShard: 'own shard',
-      passcodeKey: 'pass code',
-      recoveryKey: 'recovery key',
       otp: token,
     })
 
@@ -66,10 +62,6 @@ describe('TotpService', () => {
       await service.createPair({
         userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
         deviceId: 'device.deviceId',
-        serverShard: 'server shard',
-        accountShard: 'own shard',
-        passcodeKey: 'pass code',
-        recoveryKey: 'recovery key',
         otp: 'token',
       })
     } catch (err) {
@@ -83,10 +75,6 @@ describe('TotpService', () => {
       await service.createPair({
         userId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
         deviceId: device.deviceId,
-        serverShard: 'server shard',
-        accountShard: 'own shard',
-        passcodeKey: 'pass code',
-        recoveryKey: 'recovery key',
         otp: 'token',
       })
     } catch (err) {
