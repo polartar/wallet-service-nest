@@ -221,7 +221,7 @@ export class PortfolioService {
               ? Number(transactions[0].balance)
               : 0
             newHistoryData.push({
-              from: '',
+              from: asset.address,
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
               amount: senderInfo.prev_out.value.toString(),
@@ -247,7 +247,7 @@ export class PortfolioService {
 
             newHistoryData.push({
               from: receiverInfo.addr,
-              to: '',
+              to: asset.address,
               amount: receiverInfo.value,
               hash: transaction.hash,
               balance: (currBalance + receiverInfo.value).toString(),
