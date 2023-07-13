@@ -1,9 +1,15 @@
 import { Repository } from 'typeorm'
-import { Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { AccountEntity } from './account.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { FindAccountDto } from './dto/find-account.dto'
+import { UpdateShardsDto } from './dto/update-account.dto'
+import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AccountService {
@@ -13,11 +19,7 @@ export class AccountService {
   ) {}
 
   create(createAccount: CreateAccountDto): Promise<AccountEntity> {
-    const account = new AccountEntity()
-    account.email = createAccount.email
-    account.name = createAccount.name
-
-    return this.accountRepository.save(account)
+    return this.accountRepository.save(createAccount)
   }
 
   async update(
@@ -35,9 +37,25 @@ export class AccountService {
       where: findAccount,
     })
   }
+
   getAccount(accountId: string): Promise<AccountEntity> {
     return this.accountRepository.findOne({
       where: { id: accountId },
     })
+  }
+
+  async updateShards(accountId: string, data: UpdateShardsDto) {
+    const account = await this.getAccount(accountId)
+    if (!account) {
+      Sentry.captureException(`updateShards(): Not found user(${accountId})`)
+      throw new BadRequestException(`Not found user(${accountId})`)
+    }
+
+    const result = await this.accountRepository.update(accountId, data)
+    if (result.affected === 1) {
+      return 'Successfully updated'
+    } else {
+      throw new InternalServerErrorException('Something went wrong')
+    }
   }
 }

@@ -10,4 +10,22 @@ export class AccountEntity {
 
   @Column()
   name: string
+
+  @Column({ nullable: true })
+  serverShard: string
+
+  @Column({ nullable: true })
+  accountShard: string
+
+  @Column({ nullable: true })
+  passcodeKey: string
+
+  @Column({ nullable: true })
+  recoveryKey: string
+
+  @Column({ nullable: true })
+  iCloudShard: string
+
+  @Column({ nullable: true })
+  vaultShard: string
 }
