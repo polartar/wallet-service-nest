@@ -480,6 +480,7 @@ export class AssetService {
     if (!assetEntity) {
       throw new BadRequestException('Not found asset')
     }
+
     const transactions = assetEntity.transactions
     const asset: IAssetDetail = {
       id: assetEntity.id,
@@ -492,13 +493,23 @@ export class AssetService {
     if (transactions.length > 0) {
       asset.transaction = transactions[transactions.length - 1]
     }
-    const nftResponse = await this.nftService.getNFTAssets(
-      assetEntity.address,
-      assetEntity.network,
-      1,
-    )
 
-    asset.nfts = nftResponse.data.nfts
+    if (
+      assetEntity.network === ENetworks.ETHEREUM ||
+      assetEntity.network === ENetworks.ETHEREUM_TEST
+    ) {
+      try {
+        const nftResponse = await this.nftService.getNFTAssets(
+          assetEntity.address,
+          assetEntity.network,
+          1,
+        )
+
+        asset.nfts = nftResponse.nfts
+      } catch (err) {
+        Sentry.captureMessage(`getAsset(): ${err.message}`)
+      }
+    }
 
     return asset
   }
@@ -558,14 +569,11 @@ export class AssetService {
     const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,
-        wallets: {
-          account: {
-            accountId: accountId,
-          },
-        },
-        transactions: {
-          timestamp: MoreThan(timeInPast),
-        },
+        // wallets: {
+        //   account: {
+        //     accountId: accountId,
+        //   },
+        // },
       },
       relations: {
         transactions: true,
