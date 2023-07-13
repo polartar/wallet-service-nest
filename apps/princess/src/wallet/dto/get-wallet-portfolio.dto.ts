@@ -14,6 +14,7 @@ export class GetWalletPortfolioDto {
       EPeriod.Year,
     ],
     required: false,
+    default: EPeriod.Months,
   })
   @IsEnum(EPeriod)
   period: EPeriod
