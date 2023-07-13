@@ -569,11 +569,11 @@ export class AssetService {
     const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,
-        // wallets: {
-        //   account: {
-        //     accountId: accountId,
-        //   },
-        // },
+        wallets: {
+          account: {
+            accountId: accountId,
+          },
+        },
       },
       relations: {
         transactions: true,
