@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
@@ -39,10 +43,10 @@ export class NftService {
             response = await response.next()
             currPage++
           } else {
-            return {
-              success: false,
-              error: 'Exceed page number',
-            }
+            Sentry.captureException(
+              `getNFTAssets(): Exceed page number(${pageNumber})`,
+            )
+            throw new BadRequestException('Exceed page number')
           }
         }
       }
@@ -50,28 +54,20 @@ export class NftService {
       const obj = response.toJSON()
 
       return {
-        success: true,
-        data: {
-          total: obj.total,
-          pageNumber: obj.page,
-          countPerPage: obj.page_size,
-          hasNextPage: response.hasNext(),
-          nfts: obj.result.map((item: INFTInfo) => ({
-            ...item,
-            last_token_uri_sync: getTimestamp(
-              item.last_token_uri_sync as string,
-            ),
-            last_metadata_sync: getTimestamp(item.last_metadata_sync as string),
-          })),
-        },
+        total: obj.total,
+        pageNumber: obj.page,
+        countPerPage: obj.page_size,
+        hasNextPage: response.hasNext(),
+        nfts: obj.result.map((item: INFTInfo) => ({
+          ...item,
+          last_token_uri_sync: getTimestamp(item.last_token_uri_sync as string),
+          last_metadata_sync: getTimestamp(item.last_metadata_sync as string),
+        })),
       }
     } catch (err) {
       Sentry.captureException(`getNFTAssets(): ${err.mesage}`)
 
-      return {
-        success: false,
-        error: err.message,
-      }
+      throw new InternalServerErrorException(err.message)
     }
   }
 }

@@ -5,7 +5,7 @@ import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 export class RefreshTokenDto {
   @ApiProperty({
     description: 'auth type',
-    enum: [EAuth.Apple, EAuth.Google, 'Anonymous'],
+    enum: [EAuth.Apple, EAuth.Google],
   })
   provider: EAuth | 'Anonymous'
 

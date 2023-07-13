@@ -3,15 +3,11 @@ export interface INTAssetInput {
   page?: number
 }
 export interface INFTAssetResponse {
-  success: boolean
-  data?: {
-    total: number
-    pageNumber: number
-    hasNextPage: boolean
-    countPerPage: number
-    nfts: INFTInfo[]
-  }
-  error?: string
+  total: number
+  pageNumber: number
+  hasNextPage: boolean
+  countPerPage: number
+  nfts: INFTInfo[]
 }
 
 export interface INFTInfo {

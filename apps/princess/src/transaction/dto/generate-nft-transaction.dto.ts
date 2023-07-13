@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { ENFTTypes } from '../transaction.types'
 
 export class GenerateNFTTransactionDto {
@@ -51,5 +51,6 @@ export class GenerateNFTTransactionDto {
     enum: [ENFTTypes.ERC1155, ENFTTypes.ERC721],
     default: ENFTTypes.ERC1155,
   })
+  @IsEnum(ENFTTypes)
   type: ENFTTypes
 }

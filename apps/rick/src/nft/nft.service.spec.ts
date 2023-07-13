@@ -28,7 +28,6 @@ describe('NftService', () => {
       ENetworks.ETHEREUM_TEST,
       1,
     )
-    expect(assets.success).toBeTruthy()
-    expect(assets.data.nfts.length).toBe(100)
+    expect(assets.nfts.length).toBe(100)
   }, 20000)
 })
