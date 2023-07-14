@@ -25,7 +25,7 @@ spec:
           - name: LIQUID_API_KEY
             value: a
           - name: LIQUID_API_URL
-            value: "https://development.mainnet.liquid-debug.ngrave.io"
+            value: "https://development1.mainnet.liquid-debug.ngrave.io"
           - name: BLOCKCYPHER_TOKEN
             valueFrom:
               secretKeyRef:
