@@ -123,13 +123,13 @@ export class WalletsService {
 
   async getWalletPortfolio(walletId, period: EPeriod, networks: ENetworks[]) {
     const accountId = this.getAccountIdFromRequest()
-    console.log({ networks })
+
     const assets = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
         period ? period : EPeriod.All
-      }&networks=${networks}`,
+      }&networks=${networks ? networks : ''}`,
     )
 
     let portfolios = []
