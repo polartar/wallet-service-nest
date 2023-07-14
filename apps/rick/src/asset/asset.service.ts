@@ -443,21 +443,14 @@ export class AssetService {
           },
         ),
       )
-      const addressInfo = discoverResponse.data.data.find(
-        (item: IXPubInfo) => item.index === index,
-      )
-      if (!addressInfo) {
-        Sentry.captureException(
-          `addAssetFromXPub(): not found xPub address for index ${index}`,
-        )
-        throw new BadRequestException(`Not found address for index: ${index}`)
-      }
 
-      return await this.createAsset(
-        addressInfo.address,
-        addressInfo.index,
-        network,
+      const assets = await Promise.all(
+        discoverResponse.data.data.map(async (item: IXPubInfo) => {
+          return await this.createAsset(item.address, item.index, network)
+        }),
       )
+
+      return assets
     } catch (err) {
       if (err.response) {
         Sentry.captureException(

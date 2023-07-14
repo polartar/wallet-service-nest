@@ -65,12 +65,11 @@ export class AssetService {
   async createAsset(data: CreateAssetDto) {
     let asset
     if (data.xPub) {
-      asset = await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
+      return await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     } else {
       asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
+      return [asset]
     }
-
-    return [asset]
   }
 
   getPrice(source: IMarketData[], timestamp: number) {
