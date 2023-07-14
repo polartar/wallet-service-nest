@@ -16,30 +16,6 @@ export enum IAddressPath {
   ETH = 'm/44/60/0/0/5',
 }
 
-export interface IBTCTransactionResponse {
-  balance: number
-  txrefs: IBTCTransaction[]
-}
-
-export interface IBTCTransaction {
-  tx_hash: string
-  block_height: number
-  tx_input_n: number
-  tx_output_n: number
-  value: number
-  spent?: boolean
-  ref_balance: number
-  confirmations: number
-  confirmed: string
-}
-
-// export interface IXPubInfo {
-//   path: string
-//   address: string
-//   publickey: string
-//   index: 0
-// }
-
 export enum EXPubCurrency {
   ETHEREUM = 'ethereumclassic.secp256k1',
   BITCOIN = 'segwit.bitcoin.secp256k1',

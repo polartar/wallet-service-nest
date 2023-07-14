@@ -9,14 +9,12 @@ import {
   forwardRef,
   Query,
   ParseEnumPipe,
-  BadRequestException,
   Patch,
   Delete,
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { IWalletActiveData } from '../portfolio/portfolio.types'
-import { ECoinTypes, ENetworks, EPeriod, EWalletType } from '@rana/core'
+import { EPeriod } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
@@ -84,7 +82,7 @@ export class WalletController {
     @Param('walletId') walletId: string,
     @Query('accountId') accountId: string,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
-    @Query('networks') networks: ENetworks[],
+    @Query('networks') networks: string,
   ) {
     try {
       return await this.walletService.getUserWalletPortfolio(
@@ -139,45 +137,6 @@ export class WalletController {
       throw new InternalServerErrorException(e?.message)
     }
   }
-
-  // @Post('')
-  // async createPortfolio(
-  //   @Body('xPub') xPub: string,
-  //   @Body('account_id',) account_id: number,
-  //   @Body('wallet_type', new ParseEnumPipe(EWalletType))
-  //   walletType: EWalletType,
-  //   @Body('title') title?: string,
-  // ) {
-  //   try {
-  //     const res = await this.walletService.addNewWallet(
-  //       account_id,
-  //       xPub,
-  //       walletType,
-  //       title,
-  //     )
-
-  //     await this.portfolioService.updateCurrentWallets()
-  //     return res
-  //   } catch (e) {
-  //     Sentry.captureException(e.message + ' while addNewWallet')
-
-  //     throw new BadRequestException(e.message)
-  //   }
-  // }
-
-  // @Post('activate')
-  // async activeWallet(@Body() data: IWalletActiveData) {
-  //   try {
-  //     const res = await this.walletService.updateWalletActive(data)
-
-  //     await this.portfolioService.updateCurrentWallets()
-  //     return res
-  //   } catch (e) {
-  //     Sentry.captureException(e.message + ' in updateWalletActive()')
-
-  //     throw new NotFoundException(e?.message)
-  //   }
-  // }
 
   @Post('vault')
   async AddXPubs(@Body() data: AddXPubs) {
