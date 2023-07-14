@@ -10,6 +10,12 @@ export class LoginValidationPipe implements PipeTransform {
     idToken: Joi.string(),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
     accountId: Joi.string(),
+    accountShard: Joi.string().optional(),
+    iCloudShard: Joi.string().optional(),
+    vaultShard: Joi.string().optional(),
+    passcodeKey: Joi.string().optional(),
+    recoveryKey: Joi.string().optional(),
+    serverShard: Joi.string().optional(),
   })
 
   transform(value: IAuthData) {

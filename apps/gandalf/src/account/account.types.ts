@@ -1,0 +1,10 @@
+export type IAccountUpdate = {
+  name: string
+  email: string
+  accountShard?: string
+  iCloudShard?: string
+  vaultShard?: string
+  passcodeKey?: string
+  recoveryKey?: string
+  serverShard?: string
+}

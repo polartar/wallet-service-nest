@@ -10,6 +10,7 @@ import { CreateAccountDto } from './dto/create-account.dto'
 import { FindAccountDto } from './dto/find-account.dto'
 import { UpdateShardsDto } from './dto/update-account.dto'
 import * as Sentry from '@sentry/node'
+import { IAccountUpdate } from './account.types'
 
 @Injectable()
 export class AccountService {
@@ -22,14 +23,8 @@ export class AccountService {
     return this.accountRepository.save(createAccount)
   }
 
-  async update(
-    account: AccountEntity,
-    data: CreateAccountDto,
-  ): Promise<AccountEntity> {
-    account.email = data.email
-    account.name = data.name
-
-    return await this.accountRepository.save(account)
+  async update(accountId: string, data: IAccountUpdate) {
+    return await this.accountRepository.update(accountId, data)
   }
 
   lookup(findAccount: FindAccountDto): Promise<AccountEntity> {
