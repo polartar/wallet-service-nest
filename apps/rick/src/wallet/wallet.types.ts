@@ -17,7 +17,7 @@ export enum IAddressPath {
 }
 
 export enum EXPubCurrency {
-  ETHEREUM = 'ethereumclassic.secp256k1',
+  ETHEREUM = 'ethereum.secp256k1',
   BITCOIN = 'segwit.bitcoin.secp256k1',
 }
 

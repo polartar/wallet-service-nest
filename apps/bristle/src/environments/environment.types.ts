@@ -1,3 +1,1 @@
-export enum EEnvironment {
-  isProduction = 'is_production',
-}
+export enum EEnvironment {}
