@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common'
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, MoreThan, Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { ENetworks, EPeriod, EPortfolioType } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
