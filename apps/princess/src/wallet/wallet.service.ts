@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, ENetworks, EPeriod, EWalletType } from '@rana/core'
+import { EAuth, ECoinTypes, ENetworks, EPeriod, EWalletType } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
 import { AxiosResponse } from 'axios'
@@ -128,15 +128,15 @@ export class WalletsService {
     )
   }
 
-  async getWalletPortfolio(walletId, period?: EPeriod) {
+  async getWalletPortfolio(walletId, period: EPeriod, coinType: ECoinTypes) {
     const accountId = this.getAccountIdFromRequest()
 
     const assets = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
-        period ? period : EPeriod.Months
-      }`,
+        period ? period : EPeriod.All
+      }&coinType=${coinType}`,
     )
 
     let portfolios = []

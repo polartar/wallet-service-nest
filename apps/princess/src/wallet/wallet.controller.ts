@@ -17,18 +17,12 @@ import {
 } from './dto/create-wallet.dto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { GetWalletPortfolioDto } from './dto/get-wallet-portfolio.dto'
-// import {
-//   UpdatePassCodeDto,
-//   UpdatePassCodeSwaggerResponse,
-// } from './dto/UpdatePassCodeDto'
-// import {
-//   SwitchWalletSwaggerResponse,
-//   SwitchCloudSwaggerResponse,
-//   SwitchToCloudShardDto,
-// } from './dto/SwitchToCloudShardDto'
-import { EWalletType } from '@rana/core'
+import {
+  GetWalletPortfolioDto,
+  WalletPortfolioSwaggerResponse,
+} from './dto/get-wallet-portfolio.dto'
 import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
+import { ECoinTypes } from '@rana/core'
 
 @Controller('wallet')
 @ApiTags('wallet')
@@ -66,7 +60,7 @@ export class WalletsController {
   }
 
   @Get(':walletId/portfolio')
-  @ApiOkResponse({ type: WalletSwaggerResponse })
+  @ApiOkResponse({ type: [WalletPortfolioSwaggerResponse] })
   @ApiOperation({
     summary:
       'Time series data, where date is timestamp (number), and the value of that date.',
@@ -75,7 +69,11 @@ export class WalletsController {
     @Param('walletId') walletId: string,
     @Query() query: GetWalletPortfolioDto,
   ) {
-    return await this.walletService.getWalletPortfolio(walletId, query.period)
+    return await this.walletService.getWalletPortfolio(
+      walletId,
+      query.period,
+      query.coinType,
+    )
   }
 
   @Get(':walletId')
@@ -126,82 +124,4 @@ export class WalletsController {
   async deleteWallet(@Param('walletId') walletId: string) {
     return await this.walletService.deleteWallet(walletId)
   }
-
-  // @Post(':walletId/wallets/:walletId')
-  // @ApiOperation({
-  //   summary: 'Update the wallet object',
-  // })
-  // async updateWallet(
-  //   @Param('walletId') walletId: string,
-  //   @Param('walletId') walletId: string,
-  //   @Body() data: UpdateWalletDto,
-  // ) {
-  //   return await this.walletService.updateWallet(walletId, walletId, data)
-  // }
-
-  // @Get(':walletId/wallets/:walletId/portfolio')
-  // @ApiOkResponse({ type: PortfolioSwaggerResponse })
-  // @ApiOperation({
-  //   summary:
-  //     'Time series data, where date is timestamp (number), and the value of that date.',
-  // })
-  // async getWalletPortfolio(
-  //   @Param('walletId') walletId: string,
-  //   @Param('walletId') walletId: string,
-  //   @Query() query: GetPortfolioDto,
-  // ) {
-  //   return await this.walletService.getWalletPortfolio(
-  //     walletId,
-  //     walletId,
-  //     query.period,
-  //   )
-  // }
-
-  // @Put(':walletId')
-  // @ApiOkResponse({ type: UpdatePassCodeSwaggerResponse })
-  // @ApiOperation({
-  //   summary: 'Update the passCodeKey',
-  // })
-  // async updatePassCode(
-  //   @Param('walletId') walletId: string,
-  //   @Body() data: UpdatePassCodeDto,
-  // ) {
-  //   return await this.walletService.updatePassCode(
-  //     walletId,
-  //     data.device_id,
-  //     data.passcode_key,
-  //   )
-  // }
-
-  // @Put(':walletId/switchToiCloudShard')
-  // @ApiOkResponse({ type: SwitchCloudSwaggerResponse })
-  // @ApiOperation({
-  //   summary: 'Switch to Cloud',
-  // })
-  // async switchToCloud(
-  //   @Param('walletId') walletId: string,
-  //   @Body() data: SwitchToCloudShardDto,
-  // ) {
-  //   return await this.walletService.updateIsCloud(
-  //     walletId,
-  //     data.device_id,
-  //     true,
-  //   )
-  // }
-
-  // @Put(':walletId/switchToWalletShard')
-  // @ApiOkResponse({ type: SwitchWalletSwaggerResponse })
-  // @ApiOperation({
-  //   summary: 'Switch to Wallet',
-  // })
-  // async switchToWallet(
-  //   @Param('walletId') walletId: string,
-  //   @Body() data: SwitchToCloudShardDto,
-  // ) {
-  //   return await this.walletService.updateIsCloud(
-  //     walletId,
-  //     data.device_id,
-  //     false,
-  //   )
-  // }
 }
