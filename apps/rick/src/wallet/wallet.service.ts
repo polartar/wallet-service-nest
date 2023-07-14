@@ -20,8 +20,6 @@ import { PortfolioService } from '../portfolio/portfolio.service'
 
 @Injectable()
 export class WalletService {
-  provider: ethers.providers.EtherscanProvider
-  isProduction: boolean
   alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
@@ -38,15 +36,8 @@ export class WalletService {
     private readonly assetService: AssetService,
     private readonly portfolioService: PortfolioService,
   ) {
-    this.isProduction = this.configService.get<boolean>(
-      EEnvironment.isProduction,
-    )
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
-    )
-    this.provider = new ethers.providers.EtherscanProvider(
-      this.isProduction ? 'mainnet' : 'goerli',
-      this.configService.get<string>(EEnvironment.etherscanAPIKey),
     )
 
     this.liquidAPIKey = this.configService.get<string>(

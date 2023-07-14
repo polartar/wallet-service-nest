@@ -183,17 +183,6 @@ export class PortfolioService {
     this.subscribeEthereumTransactions(assets, network)
   }
 
-  // alchemyConfigure(isProd: boolean, alchemyKey: string) {
-  //   const settings = {
-  //     apiKey: alchemyKey,
-  //     network: isProd ? Network.ETH_MAINNET : Network.ETH_GOERLI,
-  //   }
-
-  //   this.alchemyInstance = new Alchemy(settings)
-
-  //   this.subscribeNFTTransferEvents()
-  // }
-
   async onBTCTransaction(transaction) {
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
