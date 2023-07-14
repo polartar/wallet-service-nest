@@ -24,7 +24,9 @@ spec:
           - name: LIQUID_API_KEY
             value: a # TODO: Make this a secret once its a 'real secret'
           - name: LIQUID_API_URL
-            value: "https://development.mainnet.liquid-debug.ngrave.io"
+            value: "https://development1.mainnet.liquid-debug.ngrave.io"
+          - name: LIQUID_TEST_API_URL
+            value: "https://development1.testnet.liquid-debug.ngrave.io"
           - name: INFURA_API_KEY
             valueFrom:
               secretKeyRef:
