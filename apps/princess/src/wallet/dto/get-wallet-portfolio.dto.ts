@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EPeriod } from '@rana/core'
+import { ECoinTypes, EPeriod } from '@rana/core'
 import { IsEnum } from 'class-validator'
 
 export class GetWalletPortfolioDto {
@@ -14,7 +14,32 @@ export class GetWalletPortfolioDto {
       EPeriod.Year,
     ],
     required: false,
-    default: EPeriod.Months,
+    default: EPeriod.All,
   })
   period: EPeriod
+
+  @ApiProperty({
+    name: 'coinType',
+    enum: [ECoinTypes.BITCOIN, ECoinTypes.ETHEREUM],
+    required: false,
+    default: ECoinTypes.ETHEREUM,
+  })
+  coinType: ECoinTypes
+}
+
+export class WalletPortfolioSwaggerResponse {
+  @ApiProperty({
+    example: '859513070656057616',
+  })
+  balance: string
+
+  @ApiProperty({
+    example: 1679077992,
+  })
+  timestamp: number
+
+  @ApiProperty({
+    example: '"1674.7041235028903"',
+  })
+  usdPrice: string
 }

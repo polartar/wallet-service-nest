@@ -16,7 +16,7 @@ import {
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { IWalletActiveData } from '../portfolio/portfolio.types'
-import { EPeriod, EWalletType } from '@rana/core'
+import { ECoinTypes, EPeriod, EWalletType } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
@@ -84,12 +84,14 @@ export class WalletController {
     @Param('walletId') walletId: string,
     @Query('accountId') accountId: string,
     @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
+    @Query('coinType') coinType: ECoinTypes,
   ) {
     try {
       return await this.walletService.getUserWalletPortfolio(
         accountId,
         walletId,
         period,
+        coinType,
       )
     } catch (e) {
       Sentry.captureException(e.message + ' in getWalletHistory')
