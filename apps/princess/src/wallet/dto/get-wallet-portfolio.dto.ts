@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { ECoinTypes, EPeriod } from '@rana/core'
+import { ECoinTypes, ENetworks, EPeriod } from '@rana/core'
 import { IsEnum } from 'class-validator'
 
 export class GetWalletPortfolioDto {
@@ -19,12 +19,19 @@ export class GetWalletPortfolioDto {
   period: EPeriod
 
   @ApiProperty({
-    name: 'coinType',
-    enum: [ECoinTypes.BITCOIN, ECoinTypes.ETHEREUM],
+    name: 'networks',
+    isArray: true,
+    enum: [
+      ENetworks.BITCOIN,
+      ENetworks.BITCOIN_TEST,
+      ENetworks.ETHEREUM,
+      ENetworks.ETHEREUM_TEST,
+    ],
     required: false,
-    default: ECoinTypes.ETHEREUM,
+    default: [ECoinTypes.ETHEREUM],
   })
-  coinType: ECoinTypes
+  // @IsEnum(ENetworks, { each: true, always: false })
+  networks: ENetworks[]
 }
 
 export class WalletPortfolioSwaggerResponse {

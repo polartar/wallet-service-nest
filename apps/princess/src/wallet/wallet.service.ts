@@ -1,25 +1,18 @@
 import { HttpService } from '@nestjs/axios'
 import {
-  BadGatewayException,
   BadRequestException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Request,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, ECoinTypes, ENetworks, EPeriod, EWalletType } from '@rana/core'
+import { ENetworks, EPeriod } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { UpdateWalletDto } from './dto/UpdateWalletDto'
-import { AxiosResponse } from 'axios'
 import { EAPIMethod, IAsset, ITransaction } from './wallet.types'
 import * as Sentry from '@sentry/node'
-import { formatUnits, isAddress } from 'ethers/lib/utils'
 import { REQUEST } from '@nestjs/core'
-import { TransactionService } from '../transaction/transaction.service'
 import { IRequest } from '../accounts/accounts.types'
-import { CreateAccountDto } from '../accounts/dto/create-account.dto'
 import { CreateWalletDto } from './dto/create-wallet.dto'
 import { AssetService } from '../asset/asset.service'
 
@@ -128,15 +121,15 @@ export class WalletsService {
     )
   }
 
-  async getWalletPortfolio(walletId, period: EPeriod, coinType: ECoinTypes) {
+  async getWalletPortfolio(walletId, period: EPeriod, networks: ENetworks[]) {
     const accountId = this.getAccountIdFromRequest()
-
+    console.log({ networks })
     const assets = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
         period ? period : EPeriod.All
-      }&coinType=${coinType}`,
+      }&networks=${networks}`,
     )
 
     let portfolios = []

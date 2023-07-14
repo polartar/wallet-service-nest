@@ -609,7 +609,7 @@ export class WalletService {
     accountId: string,
     walletId: string,
     period: EPeriod,
-    coinType: ECoinTypes,
+    networks: string,
   ) {
     const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
     const timeInPast =
@@ -645,12 +645,11 @@ export class WalletService {
       throw new BadRequestException(`Wallet not found(${walletId})`)
     }
 
-    if (coinType) {
-      const networks =
-        coinType === ECoinTypes.BITCOIN
-          ? [ENetworks.BITCOIN, ENetworks.BITCOIN_TEST]
-          : [ENetworks.ETHEREUM, ENetworks.ETHEREUM_TEST]
-      return wallet.assets.filter((asset) => networks.includes(asset.network))
+    if (networks) {
+      const allowedNetworks = networks.split(',')
+      return wallet.assets.filter((asset) =>
+        allowedNetworks.includes(asset.network),
+      )
     }
 
     return wallet.assets

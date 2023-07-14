@@ -22,7 +22,6 @@ import {
   WalletPortfolioSwaggerResponse,
 } from './dto/get-wallet-portfolio.dto'
 import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
-import { ECoinTypes } from '@rana/core'
 
 @Controller('wallet')
 @ApiTags('wallet')
@@ -72,7 +71,7 @@ export class WalletsController {
     return await this.walletService.getWalletPortfolio(
       walletId,
       query.period,
-      query.coinType,
+      query.networks,
     )
   }
 
