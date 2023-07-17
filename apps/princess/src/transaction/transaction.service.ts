@@ -37,11 +37,7 @@ export class TransactionService {
           ? this.httpService.post<AxiosResponse>(url, body)
           : this.httpService.get<AxiosResponse>(url),
       )
-      if ((res.data as IResponse).success) {
-        return res.data
-      } else {
-        throw new InternalServerErrorException((res.data as IResponse).error)
-      }
+      return res.data
     } catch (err) {
       if (err.response) {
         if (err.response.statusCode === 500) {
@@ -67,35 +63,35 @@ export class TransactionService {
     }
   }
 
-  async getFee(coin: ENetworks): Promise<IResponse> {
-    return this.apiCall(EAPIMethod.GET, `transaction/fee/${coin}`)
+  async getFee(network: ENetworks): Promise<IResponse> {
+    return this.apiCall(EAPIMethod.GET, `transaction/fee/${network}`)
   }
 
   async generateTransaction(
     from: string,
     to: string,
     amount: string,
-    coinType: ENetworks,
-    publicKey: string,
+    network: ENetworks,
+    transferMessage: string,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/generate`, {
       from,
       to,
       amount,
-      coinType,
-      publicKey,
+      network,
+      transferMessage,
     })
   }
 
   async publishTransaction(
     serializedTransaction: string,
     signature: string,
-    coinType: ENetworks,
+    network: ENetworks,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       serializedTransaction,
       signature,
-      coinType,
+      network,
     })
   }
 
@@ -106,6 +102,7 @@ export class TransactionService {
     publicKey: string,
     tokenId: number,
     type: ENFTTypes,
+    network: ENetworks,
     amount?: number,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/generate`, {
@@ -116,16 +113,19 @@ export class TransactionService {
       type,
       amount,
       publicKey,
+      network,
     })
   }
 
   async publishNFTTransaction(
     serializedTransaction: string,
     signature: string,
+    network: ENetworks,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
       serializedTransaction,
       signature,
+      network,
     })
   }
 }

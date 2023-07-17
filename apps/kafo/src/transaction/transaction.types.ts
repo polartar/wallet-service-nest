@@ -1,39 +1,37 @@
 import { Transaction } from '@ethereumjs/tx'
 import { ENetworks } from '@rana/core'
 
-export interface ITransactionResponse {
-  success: boolean
-  error?: string
-  data?: IVaultTransactionResponse
-}
 export interface IFeeResponse {
-  success: boolean
-  error?: string
-  data?: {
-    original: {
-      high_fee: number
-      medium_fee: number
-      low_fee: number
-    }
-    convert: {
-      high_fee: string
-      medium_fee: string
-      low_fee: string
-    }
+  original: {
+    high_fee: number
+    medium_fee: number
+    low_fee: number
   }
+  convert: {
+    high_fee: string
+    medium_fee: string
+    low_fee: string
+  }
+}
+export enum EAPIMethod {
+  POST = 'post',
+  GET = 'get',
+  PATCH = 'patch',
+  DELETE = 'delete',
+  PUT = 'put',
 }
 export interface ITransactionInput {
   from: string
   to: string
   amount: string
-  coinType: ENetworks
-  publicKey: string
+  network: ENetworks
+  transferMessage?: string
 }
 
 export interface ITransactionPush {
   serializedTransaction: string
   signature: string
-  coinType: ENetworks
+  network: ENetworks
 }
 
 export interface INFTTransactionInput {
@@ -44,6 +42,7 @@ export interface INFTTransactionInput {
   amount?: number
   type: ENFTTypes
   publicKey: string
+  network: ENetworks
 }
 
 export enum ENFTTypes {
@@ -78,7 +77,11 @@ export interface IVaultTransaction {
   nativeTransaction: Transaction
 }
 
-interface IVaultTransactionResponse extends IVaultTransaction {
+export interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
   serializedTransaction: string
+}
+export enum EXPubCurrency {
+  ETHEREUM = 'ethereum.secp256k1',
+  BITCOIN = 'segwit.bitcoin.secp256k1',
 }

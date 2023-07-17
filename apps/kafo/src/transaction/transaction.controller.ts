@@ -13,7 +13,7 @@ import {
   INFTTransactionInput,
   ITransactionInput,
   ITransactionPush,
-  ITransactionResponse,
+  IVaultTransactionResponse,
 } from './transaction.types'
 import { ENetworks } from '@rana/core'
 import { NFTTransactionRawPipe, TransactionInputPipe } from './transaction.pipe'
@@ -26,12 +26,14 @@ export class TransactionController {
   @UsePipes(new TransactionInputPipe())
   generateTransaction(
     @Body() data: ITransactionInput,
-  ): Promise<ITransactionResponse> {
-    if (data.coinType === ENetworks.ETHEREUM) {
-      return this.service.generateEthereumTransaction(data, false)
-    } else {
-      return this.service.generateBTCTransaction(data)
-    }
+  ): Promise<IVaultTransactionResponse> {
+    return this.service.generateTransaction(
+      data.from,
+      data.to,
+      data.amount,
+      data.transferMessage,
+      data.network,
+    )
   }
 
   @Post('publish')
@@ -39,23 +41,23 @@ export class TransactionController {
     return this.service.publish(
       data.serializedTransaction,
       data.signature,
-      data.coinType,
+      data.network,
     )
   }
 
-  @Get('fee/:coin')
+  @Get('fee/:network')
   async getFee(
-    @Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks,
+    @Param('network', new ParseEnumPipe(ENetworks)) network: ENetworks,
   ): Promise<IFeeResponse> {
-    return await this.service.getFee(coin)
+    return await this.service.getFee(network)
   }
 
   @Post('nft/generate')
   @UsePipes(new NFTTransactionRawPipe())
   generateNFTRawTransaction(
     @Body() data: INFTTransactionInput,
-  ): Promise<ITransactionResponse> {
-    return this.service.generateEthereumTransaction(data, true)
+  ): Promise<IVaultTransactionResponse> {
+    return this.service.generateNFTTransaction(data)
   }
 
   @Post('nft/publish')
@@ -63,7 +65,7 @@ export class TransactionController {
     return this.service.publish(
       data.serializedTransaction,
       data.signature,
-      ENetworks.ETHEREUM,
+      data.network,
     )
   }
 }

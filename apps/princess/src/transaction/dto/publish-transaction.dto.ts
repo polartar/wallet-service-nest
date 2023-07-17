@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsEnum, IsNotEmpty } from 'class-validator'
 import { ENetworks } from '@rana/core'
 
 export class PublishTransactionDto {
@@ -20,9 +20,10 @@ export class PublishTransactionDto {
   serializedTransaction: string
 
   @ApiProperty({
-    description: 'coin type',
-    enum: [ENetworks.BITCOIN, ENetworks.ETHEREUM],
-    default: ENetworks.BITCOIN,
+    description: 'network type',
+    enum: [ENetworks.ETHEREUM, ENetworks.ETHEREUM_TEST],
+    default: ENetworks.ETHEREUM_TEST,
   })
-  coin_type: ENetworks
+  @IsEnum(ENetworks)
+  network: ENetworks
 }

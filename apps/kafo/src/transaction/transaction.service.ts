@@ -7,11 +7,12 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import {
+  EAPIMethod,
   ENFTTypes,
+  EXPubCurrency,
   IFeeResponse,
   INFTTransactionInput,
-  ITransactionInput,
-  ITransactionResponse,
+  IVaultTransactionResponse,
   IVaultTransaction,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
@@ -26,8 +27,8 @@ import * as BJSON from 'buffer-json'
 
 @Injectable()
 export class TransactionService {
-  isProduction: boolean
-  provider: ethers.providers.JsonRpcProvider
+  mainnetProvider: ethers.providers.JsonRpcProvider
+  testnetProvider: ethers.providers.JsonRpcProvider
   ERC721ABI = [
     'function safeTransferFrom(address to, address from, uint256 tokenId)',
   ]
@@ -35,32 +36,165 @@ export class TransactionService {
     'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
   ]
   payloadPrivateKey: string
-  liquidApiUrl: string
-  liquidApiKey: string
+  liquidAPIKey: string
+  liquidTestAPIKey: string
+  liquidAPIUrl: string
+  liquidTestAPIUrl: string
 
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
   ) {
-    this.isProduction = this.configService.get<boolean>(
-      EEnvironment.isProduction,
-    )
     this.payloadPrivateKey = this.formatPrivateKey(
       this.configService.get<string>(EEnvironment.payloadPrivateKey),
     )
 
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
-    this.liquidApiUrl = this.configService.get<string>(
-      EEnvironment.liquidAPIUrl,
-    )
-    this.liquidApiKey = this.configService.get<string>(
+    this.liquidAPIKey = this.configService.get<string>(
       EEnvironment.liquidAPIKey,
     )
+    this.liquidTestAPIKey = this.configService.get<string>(
+      EEnvironment.liquidTestAPIKey,
+    )
+    this.liquidAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidAPIUrl,
+    )
+    this.liquidTestAPIUrl = this.configService.get<string>(
+      EEnvironment.liquidTestAPIUrl,
+    )
 
-    this.provider = new ethers.providers.InfuraProvider(
-      this.isProduction ? 'mainnet' : 'goerli',
+    this.mainnetProvider = new ethers.providers.InfuraProvider(
+      'mainnet',
       infura_key,
     )
+    this.testnetProvider = new ethers.providers.InfuraProvider(
+      'goerli',
+      infura_key,
+    )
+  }
+
+  async transactionAPI(
+    method: EAPIMethod,
+    path: string,
+    network: ENetworks,
+    body?: unknown,
+  ) {
+    let apiURL, apiKey, currency
+    if (network === ENetworks.ETHEREUM || network === ENetworks.BITCOIN) {
+      apiURL = this.liquidAPIUrl
+      apiKey = this.liquidAPIKey
+    } else {
+      apiURL = this.liquidTestAPIUrl
+      apiKey = this.liquidAPIKey
+    }
+
+    if (network === ENetworks.ETHEREUM || network === ENetworks.ETHEREUM_TEST) {
+      currency = EXPubCurrency.ETHEREUM
+    } else {
+      currency = EXPubCurrency.BITCOIN
+    }
+    const url = `${apiURL}/api/v1/currencies/${currency}/${path}`
+
+    try {
+      const res = await firstValueFrom(
+        method === EAPIMethod.POST
+          ? this.httpService.post(url, body, {
+              headers: { 'api-secret': apiKey },
+            })
+          : this.httpService.get(url, {
+              headers: { 'api-secret': apiKey },
+            }),
+      )
+      return res.data
+    } catch (err) {
+      if (err.response) {
+        Sentry.captureException(`${err.response.data.message}: ${url} API call`)
+        throw new BadRequestException(err.response.data.message)
+      } else {
+        Sentry.captureException(`${err.message}: ${url} API call`)
+        throw new InternalServerErrorException(err.message)
+      }
+    }
+  }
+
+  async generateTransaction(
+    from: string,
+    to: string,
+    amount: string,
+    message: string,
+    network: ENetworks,
+  ) {
+    return await this.transactionAPI(EAPIMethod.POST, `transactions`, network, {
+      from,
+      to,
+      value: {
+        value: amount,
+        factor: 1,
+      },
+      extra: {
+        transferMessage: message || '',
+      },
+    })
+  }
+
+  async publish(
+    serializedTransaction: string,
+    signature: string,
+    network: ENetworks,
+  ): Promise<IVaultTransactionResponse> {
+    return await this.transactionAPI(
+      EAPIMethod.POST,
+      'transactions/send',
+      network,
+      {
+        signature,
+        serializedTransaction,
+      },
+    )
+  }
+
+  async getFee(network: ENetworks): Promise<IFeeResponse> {
+    let params
+    if (network === ENetworks.BITCOIN || network === ENetworks.ETHEREUM) {
+      params = network === ENetworks.BITCOIN ? 'btc/main' : `eth/main`
+    } else {
+      params = network === ENetworks.BITCOIN_TEST ? 'btc/test3' : `beth/test`
+    }
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response: { data: any } = await firstValueFrom(
+        this.httpService.get(`https://api.blockcypher.com/v1/${params}`),
+      )
+
+      const data = response.data
+      const feeObj = {
+        high_fee: data.high_fee_per_kb || data.high_gas_price,
+        medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
+        low_fee: data.low_fee_per_kb || data.low_gas_price,
+      }
+      const unit =
+        network === ENetworks.BITCOIN || network === ENetworks.BITCOIN_TEST
+          ? 8
+          : 18
+      const convertedObj = {
+        high_fee: ethers.utils.formatUnits(feeObj.high_fee.toString(), unit),
+        medium_fee: ethers.utils.formatUnits(
+          feeObj.medium_fee.toString(),
+          unit,
+        ),
+        low_fee: ethers.utils.formatUnits(feeObj.low_fee.toString(), unit),
+      }
+
+      return {
+        original: feeObj,
+        convert: convertedObj,
+      }
+    } catch (err) {
+      Sentry.captureException(`getFee(): ${err.message}`)
+
+      throw new InternalServerErrorException(err.message)
+    }
   }
 
   formatPrivateKey(key: string) {
@@ -81,224 +215,48 @@ export class TransactionService {
     }
   }
 
-  async generateBTCTransaction(
-    data: ITransactionInput,
-  ): Promise<ITransactionResponse> {
-    const newTx = {
-      from: data.from,
-      to: data.to,
-      value: {
-        value: data.amount,
-        factor: 1,
-      },
-      extra: {
-        transferMessage: 'merhaba',
-        publicKey: data.publicKey,
-      },
-    }
-
+  async generateNFTTransaction(
+    tx: INFTTransactionInput,
+  ): Promise<IVaultTransactionResponse> {
+    const nftTransaction = tx as INFTTransactionInput
+    const iface = new ethers.utils.Interface(
+      nftTransaction.type === ENFTTypes.ERC1155
+        ? this.ERC1155ABI
+        : this.ERC721ABI,
+    )
+    const data =
+      nftTransaction.type === ENFTTypes.ERC1155
+        ? iface.encodeFunctionData('safeTransferFrom', [
+            nftTransaction.from,
+            nftTransaction.to,
+            nftTransaction.tokenId,
+            nftTransaction.amount,
+            '0x',
+          ])
+        : iface.encodeFunctionData('safeTransferFrom', [
+            nftTransaction.from,
+            nftTransaction.to,
+            nftTransaction.tokenId,
+          ])
+    const provider =
+      tx.network === ENetworks.ETHEREUM
+        ? this.mainnetProvider
+        : this.testnetProvider
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.liquidApiUrl}/api/v1/currencies/segwit.bitcoin.secp256k1/transactions`,
-          newTx,
-          {
-            headers: { 'api-secret': this.liquidApiKey },
-          },
-        ),
-      )
-
-      const tx = BJSON.parse(response.data.serializedTransaction)
-
-      const transaction: IVaultTransaction = {
-        type: 1,
-        from: data.from,
-        to: data.to,
-        value: {
-          value: data.amount,
-          factor: 0,
-        },
-        extra: {
-          publicKey: data.publicKey,
-        },
-        fee: {
-          fee: {
-            value: tx.fee,
-            factor: 0,
-          },
-        },
-        signingPayloads: [
-          {
-            address: data.from,
-            publickey: data.publicKey,
-            tosign: tx.nativeTransaction.getMessageToSign().toString('hex'),
-          },
-        ],
-        nativeTransaction: tx.nativeTransaction,
-      }
-
-      const signedPayload = this.signPayload(JSON.stringify(transaction))
-      return {
-        success: true,
-        data: {
-          ...transaction,
-          signedPayload,
-          serializedTransaction: this.serializeTransaction(transaction),
-        },
-      }
-    } catch (err) {
-      let msg
-      if (err.response && err.response.data) {
-        if (err.response.data.errors) {
-          msg = err.response.data.errors[0].title
-        } else msg = JSON.stringify(err.response.data)
-      } else {
-        msg = err.message
-      }
-      Sentry.captureException(`generate(): ${msg}`)
-
-      return {
-        success: false,
-        error: msg,
-        data: err.response.data,
-      }
-    }
-  }
-  async publish(
-    serializedTransaction: string,
-    signature: string,
-    type: ENetworks,
-  ): Promise<ITransactionResponse> {
-    try {
-      const currency =
-        type === ENetworks.ETHEREUM
-          ? 'ethereum.secp256k1'
-          : 'segwit.bitcoin.secp256k1'
-
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.liquidApiUrl}/api/v1/currencies/${currency}/transactions/send`,
-          {
-            serializedTransaction,
-            signature,
-          },
-          {
-            headers: { 'api-secret': this.liquidApiKey },
-          },
-        ),
-      )
-      return {
-        success: true,
-        data: response.data,
-      }
-    } catch (err) {
-      let msg
-      if (err.response && err.response.data) {
-        if (err.response.data.errors) {
-          msg = JSON.stringify(err.response.data.errors[0].detail)
-        } else msg = JSON.stringify(err.response.data)
-      } else {
-        msg = err.message
-      }
-
-      Sentry.captureException(`publish(): ${msg}`)
-
-      return {
-        success: false,
-        error: err.message,
-        data: err.response.data,
-      }
-    }
-  }
-
-  async getFee(coin: ENetworks): Promise<IFeeResponse> {
-    let params
-    if (this.isProduction) {
-      params = coin === ENetworks.BITCOIN ? 'btc/main' : `eth/main`
-    } else {
-      params = coin === ENetworks.BITCOIN ? 'btc/test3' : `beth/test`
-    }
-
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response: { data: any } = await firstValueFrom(
-        this.httpService.get(`https://api.blockcypher.com/v1/${params}`),
-      )
-      const data = response.data
-      const feeObj = {
-        high_fee: data.high_fee_per_kb || data.high_gas_price,
-        medium_fee: data.medium_fee_per_kb || data.medium_gas_price,
-        low_fee: data.low_fee_per_kb || data.low_gas_price,
-      }
-      const unit = coin == ENetworks.BITCOIN ? 8 : 18
-      const convertedObj = {
-        high_fee: ethers.utils.formatUnits(feeObj.high_fee.toString(), unit),
-        medium_fee: ethers.utils.formatUnits(
-          feeObj.medium_fee.toString(),
-          unit,
-        ),
-        low_fee: ethers.utils.formatUnits(feeObj.low_fee.toString(), unit),
-      }
-      return {
-        success: true,
-        data: {
-          original: feeObj,
-          convert: convertedObj,
-        },
-      }
-    } catch (err) {
-      Sentry.captureException(`getFee(): ${err.message}`)
-      return {
-        success: false,
-      }
-    }
-  }
-
-  async generateEthereumTransaction(
-    tx: INFTTransactionInput | ITransactionInput,
-    isNFT: boolean,
-  ): Promise<ITransactionResponse> {
-    let data
-
-    if (isNFT) {
-      const nftTransaction = tx as INFTTransactionInput
-      const iface = new ethers.utils.Interface(
-        nftTransaction.type === ENFTTypes.ERC1155
-          ? this.ERC1155ABI
-          : this.ERC721ABI,
-      )
-      data =
-        nftTransaction.type === ENFTTypes.ERC1155
-          ? iface.encodeFunctionData('safeTransferFrom', [
-              nftTransaction.from,
-              nftTransaction.to,
-              nftTransaction.tokenId,
-              nftTransaction.amount,
-              '0x',
-            ])
-          : iface.encodeFunctionData('safeTransferFrom', [
-              nftTransaction.from,
-              nftTransaction.to,
-              nftTransaction.tokenId,
-            ])
-    } else {
-      data = '0x'
-    }
-    try {
-      const txCount = await this.provider.getTransactionCount(tx.from, 'latest')
-      const gasPrice = await this.provider.getGasPrice()
+      const txCount = await provider.getTransactionCount(tx.from, 'latest')
+      const gasPrice = await provider.getGasPrice()
       const txParams = {
         nonce: txCount,
         gasPrice: hexlify(gasPrice),
         gasLimit: '0x156AB',
-        to: isNFT ? (tx as INFTTransactionInput).contractAddress : tx.from,
-        value: isNFT
-          ? '0x0'
-          : ethers.utils.hexlify(parseEther(tx.amount as string)),
+        to: (tx as INFTTransactionInput).contractAddress,
+        value: '0x0',
         data: data,
       }
 
-      const common = new Common({ chain: Number(this.isProduction ? 1 : 5) })
+      const common = new Common({
+        chain: Number(tx.network === ENetworks.ETHEREUM ? 1 : 5),
+      })
       const nativeTransaction = new Transaction(txParams, {
         common,
       })
@@ -309,8 +267,8 @@ export class TransactionService {
         from: tx.from,
         to: tx.to,
         value: {
-          value: isNFT ? '0' : (tx.amount as string),
-          factor: isNFT ? 0 : 1,
+          value: '0',
+          factor: 0,
         },
         extra: {
           publicKey: tx.publicKey,
@@ -318,7 +276,7 @@ export class TransactionService {
         fee: {
           fee: {
             value: formatEther(fee),
-            factor: isNFT ? 0 : 1,
+            factor: 0,
           },
         },
         signingPayloads: [
@@ -333,23 +291,24 @@ export class TransactionService {
 
       const signedPayload = this.signPayload(JSON.stringify(transaction))
       return {
-        success: true,
-        data: {
-          ...transaction,
-          signedPayload,
-          serializedTransaction: this.serializeTransaction(transaction),
-        },
+        ...transaction,
+        signedPayload,
+        serializedTransaction: this.serializeTransaction(transaction),
       }
     } catch (err) {
-      Sentry.captureException(`generateNFTRawTransaction(): ${err.message}`)
+      Sentry.captureException(`generateNFTTransaction(): ${err.message}`)
 
       throw new BadRequestException(err.message)
     }
   }
 
-  async publishNFTTransaction(signedHash: string) {
+  async publishNFTTransaction(signedHash: string, network: ENetworks) {
     try {
-      const response = await this.provider.sendTransaction(signedHash)
+      const provider =
+        network === ENetworks.ETHEREUM
+          ? this.mainnetProvider
+          : this.testnetProvider
+      const response = await provider.sendTransaction(signedHash)
 
       return {
         success: true,

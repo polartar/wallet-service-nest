@@ -17,20 +17,23 @@ import {
 import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
+import { Public } from '../gateway/decorators/public.decorator'
 
 @Controller('transaction')
 @ApiTags('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  @Get(':coin/fee')
+  @Get(':network/fee')
   @ApiOkResponse({ type: TransactionFeeSwaggerResponse })
   @ApiOperation({
     summary: 'Get the current network fee of the selected chain',
   })
-  @ApiParam({ name: 'coin', enum: ENetworks })
-  async getFee(@Param('coin', new ParseEnumPipe(ENetworks)) coin: ENetworks) {
-    return this.transactionService.getFee(coin)
+  @ApiParam({ name: 'network', enum: ENetworks })
+  async getFee(
+    @Param('network', new ParseEnumPipe(ENetworks)) network: ENetworks,
+  ) {
+    return this.transactionService.getFee(network)
   }
 
   @Post()
@@ -43,8 +46,8 @@ export class TransactionController {
       data.from,
       data.to,
       data.amount,
-      data.coin_type,
-      data.public_key,
+      data.network,
+      data.transferMessage,
     )
   }
 
@@ -57,7 +60,7 @@ export class TransactionController {
     return this.transactionService.publishTransaction(
       data.serializedTransaction,
       data.signature,
-      data.coin_type,
+      data.network,
     )
   }
 
@@ -74,6 +77,7 @@ export class TransactionController {
       data.public_key,
       data.tokenId,
       data.type,
+      data.network,
       data.amount,
     )
   }
@@ -87,6 +91,7 @@ export class TransactionController {
     return this.transactionService.publishNFTTransaction(
       data.serializedTransaction,
       data.signature,
+      data.network,
     )
   }
 }
