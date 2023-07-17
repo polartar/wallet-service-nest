@@ -27,7 +27,10 @@ export class TransactionController {
   generateTransaction(
     @Body() data: ITransactionInput,
   ): Promise<ITransactionResponse> {
-    if (data.coinType === ENetworks.ETHEREUM) {
+    if (
+      data.coinType === ENetworks.ETHEREUM ||
+      data.coinType === ENetworks.ETHEREUM_TEST
+    ) {
       return this.service.generateEthereumTransaction(data, false)
     } else {
       return this.service.generateBTCTransaction(data)

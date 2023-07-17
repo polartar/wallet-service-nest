@@ -17,6 +17,7 @@ import {
 import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
+import { Public } from '../gateway/decorators/public.decorator'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -35,6 +36,7 @@ export class TransactionController {
 
   @Post()
   @ApiOkResponse({ type: GenerateTransactionSwaggerResponse })
+  @Public()
   @ApiOperation({
     summary: 'Generate transaction object',
   })

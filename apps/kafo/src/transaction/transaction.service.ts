@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common'
 import {
   ENFTTypes,
+  EXPubCurrency,
   IFeeResponse,
   INFTTransactionInput,
   ITransactionInput,
@@ -172,8 +173,8 @@ export class TransactionService {
     try {
       const currency =
         type === ENetworks.ETHEREUM
-          ? 'ethereum.secp256k1'
-          : 'segwit.bitcoin.secp256k1'
+          ? EXPubCurrency.ETHEREUM
+          : EXPubCurrency.BITCOIN
 
       const response = await firstValueFrom(
         this.httpService.post(

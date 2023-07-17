@@ -13,7 +13,12 @@ export class TransactionInputPipe implements PipeTransform {
     to: Joi.string().required(),
     amount: Joi.string().required(),
     publicKey: Joi.string().required(),
-    coinType: Joi.string().valid(ENetworks.BITCOIN, ENetworks.ETHEREUM),
+    coinType: Joi.string().valid(
+      ENetworks.BITCOIN,
+      ENetworks.ETHEREUM,
+      ENetworks.BITCOIN_TEST,
+      ENetworks.ETHEREUM_TEST,
+    ),
   })
 
   transform(value: ITransactionInput) {
