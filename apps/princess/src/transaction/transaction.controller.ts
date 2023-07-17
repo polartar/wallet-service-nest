@@ -90,7 +90,7 @@ export class TransactionController {
   async publishNFTTransaction(@Body() data: PublishTransactionDto) {
     return this.transactionService.publishNFTTransaction(
       data.serializedTransaction,
-      data.signature,
+      data.signedPayloads,
       data.network,
     )
   }
