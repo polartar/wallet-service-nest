@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { ENFTTypes } from '../transaction.types'
+import { ENetworks } from '@rana/core'
 
 export class GenerateNFTTransactionDto {
   @ApiProperty({
@@ -53,4 +54,12 @@ export class GenerateNFTTransactionDto {
   })
   @IsEnum(ENFTTypes)
   type: ENFTTypes
+
+  @ApiProperty({
+    description: 'Network type',
+    enum: [ENetworks.ETHEREUM, ENetworks.ETHEREUM_TEST],
+    default: ENetworks.ETHEREUM_TEST,
+  })
+  @IsEnum(ENetworks)
+  network: ENetworks
 }

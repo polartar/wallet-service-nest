@@ -20,10 +20,10 @@ export class PublishTransactionDto {
   serializedTransaction: string
 
   @ApiProperty({
-    description: 'coin type',
-    enum: ENetworks,
-    default: ENetworks.BITCOIN,
+    description: 'network type',
+    enum: [ENetworks.ETHEREUM, ENetworks.ETHEREUM_TEST],
+    default: ENetworks.ETHEREUM_TEST,
   })
   @IsEnum(ENetworks)
-  coin_type: ENetworks
+  network: ENetworks
 }
