@@ -137,7 +137,7 @@ export class TransactionService {
       },
       extra: {
         transferMessage: message || '',
-        publicKey: publicKey,
+        publicKey,
       },
     })
   }

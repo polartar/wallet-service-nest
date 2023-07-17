@@ -19,6 +19,7 @@ export class TransactionInputPipe implements PipeTransform {
       ENetworks.ETHEREUM_TEST,
     ),
     transferMessage: Joi.string(),
+    publicKey: Joi.string().required(),
   })
 
   transform(value: ITransactionInput) {
