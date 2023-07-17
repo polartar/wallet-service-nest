@@ -107,9 +107,12 @@ export class TransactionService {
       )
       return res.data
     } catch (err) {
-      if (err.response) {
-        Sentry.captureException(`${err.response.data.message}: ${url} API call`)
-        throw new BadRequestException(err.response.data.message)
+      if (err.response.data) {
+        const message = err.response.data.errors
+          ? err.response.data.errors[0]?.title
+          : err.response.data
+        Sentry.captureException(`${message}: ${url} API call`)
+        throw new BadRequestException(message)
       } else {
         Sentry.captureException(`${err.message}: ${url} API call`)
         throw new InternalServerErrorException(err.message)
@@ -129,7 +132,7 @@ export class TransactionService {
       to,
       value: {
         value: amount,
-        factor: 1,
+        factor: 0,
       },
       extra: {
         transferMessage: message || '',
