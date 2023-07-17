@@ -30,7 +30,7 @@ export interface ITransactionInput {
 
 export interface ITransactionPush {
   serializedTransaction: string
-  signature: string
+  signedPayloads: []
   network: ENetworks
 }
 

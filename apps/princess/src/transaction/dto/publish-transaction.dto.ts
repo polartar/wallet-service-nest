@@ -4,12 +4,21 @@ import { ENetworks } from '@rana/core'
 
 export class PublishTransactionDto {
   @ApiProperty({
-    description: 'signed transaction hash',
-    example:
-      '555b9f751ac096d2d64b2e6915e23c9af60b1d4ab5e0e7e791f5945215cbeb6901335dc8371ceea290ae74469554875a2a152ac868b14f7582e3ab82b9296d3e',
+    description: 'signed payloads',
+    example: [
+      {
+        address: '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
+        publickey:
+          '02c00551a9b96c332410adaaed426dd0171311b8f5b6ebada246a6be8c24cac1c5',
+        tosign:
+          '30559a302192fbf575957cb44abe7016e117dd4ed7e3edf6fbf1c5280afa9415',
+        signature:
+          '32e9f0f876f4f46f412cbafb03111dda727d020325657af0388523effbfe0b8a2473dd2dfee4e03b8c9fdf5d48b3223450b237e5b5c4102c0a6dff9893970c07',
+      },
+    ],
   })
   @IsNotEmpty()
-  signature: string
+  signedPayloads: []
 
   @ApiProperty({
     description: 'serialized transaction object',

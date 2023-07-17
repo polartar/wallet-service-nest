@@ -142,7 +142,7 @@ export class TransactionService {
 
   async publish(
     serializedTransaction: string,
-    signature: string,
+    signedPayloads: [],
     network: ENetworks,
   ): Promise<IVaultTransactionResponse> {
     return await this.transactionAPI(
@@ -150,7 +150,7 @@ export class TransactionService {
       'transactions/send',
       network,
       {
-        signature,
+        signedPayloads,
         serializedTransaction,
       },
     )

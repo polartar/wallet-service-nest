@@ -40,7 +40,7 @@ export class TransactionController {
   publishTransaction(@Body() data: ITransactionPush) {
     return this.service.publish(
       data.serializedTransaction,
-      data.signature,
+      data.signedPayloads,
       data.network,
     )
   }
@@ -64,7 +64,7 @@ export class TransactionController {
   publishNFTTransaction(@Body() data: ITransactionPush) {
     return this.service.publish(
       data.serializedTransaction,
-      data.signature,
+      data.signedPayloads,
       data.network,
     )
   }

@@ -59,7 +59,7 @@ export class TransactionController {
   async publishTransaction(@Body() data: PublishTransactionDto) {
     return this.transactionService.publishTransaction(
       data.serializedTransaction,
-      data.signature,
+      data.signedPayloads,
       data.network,
     )
   }

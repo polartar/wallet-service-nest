@@ -85,12 +85,12 @@ export class TransactionService {
 
   async publishTransaction(
     serializedTransaction: string,
-    signature: string,
+    signedPayloads: [],
     network: ENetworks,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       serializedTransaction,
-      signature,
+      signedPayloads,
       network,
     })
   }
@@ -119,12 +119,12 @@ export class TransactionService {
 
   async publishNFTTransaction(
     serializedTransaction: string,
-    signature: string,
+    signedPayloads: [],
     network: ENetworks,
   ): Promise<IResponse> {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
       serializedTransaction,
-      signature,
+      signedPayloads,
       network,
     })
   }
