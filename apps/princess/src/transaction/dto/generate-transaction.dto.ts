@@ -39,6 +39,14 @@ export class GenerateTransactionDto {
   })
   @IsOptional()
   transferMessage: string
+
+  @ApiProperty({
+    description: 'Public key',
+    default:
+      '0295deb418112ccbf9ff1d5c81cbdbd74503016d143f087ad2858facde962bebbc',
+  })
+  @IsNotEmpty()
+  publicKey: string
 }
 
 export class GenerateTransactionSwaggerResponse {

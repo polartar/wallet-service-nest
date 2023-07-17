@@ -26,6 +26,7 @@ export interface ITransactionInput {
   amount: string
   network: ENetworks
   transferMessage?: string
+  publicKey: string
 }
 
 export interface ITransactionPush {

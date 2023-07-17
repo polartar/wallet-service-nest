@@ -125,6 +125,7 @@ export class TransactionService {
     to: string,
     amount: string,
     message: string,
+    publicKey: string,
     network: ENetworks,
   ) {
     return await this.transactionAPI(EAPIMethod.POST, `transactions`, network, {
@@ -136,6 +137,7 @@ export class TransactionService {
       },
       extra: {
         transferMessage: message || '',
+        publicKey: publicKey,
       },
     })
   }

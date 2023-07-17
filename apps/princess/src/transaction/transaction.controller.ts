@@ -46,6 +46,7 @@ export class TransactionController {
       data.from,
       data.to,
       data.amount,
+      data.publicKey,
       data.network,
       data.transferMessage,
     )

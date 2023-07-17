@@ -71,6 +71,7 @@ export class TransactionService {
     from: string,
     to: string,
     amount: string,
+    publicKey: string,
     network: ENetworks,
     transferMessage: string,
   ): Promise<IResponse> {
@@ -78,6 +79,7 @@ export class TransactionService {
       from,
       to,
       amount,
+      publicKey,
       network,
       transferMessage,
     })
