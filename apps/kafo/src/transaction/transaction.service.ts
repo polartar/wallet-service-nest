@@ -107,7 +107,6 @@ export class TransactionService {
       )
       return res.data
     } catch (err) {
-      console.log(err.response.data.errors[0].title)
       if (err.response.data) {
         const message = err.response.data.errors
           ? err.response.data.errors[0]?.title
