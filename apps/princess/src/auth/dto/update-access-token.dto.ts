@@ -4,7 +4,6 @@ import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator'
 export class UpdateAccessTokenDto {
   @ApiProperty({ description: 'account id' })
   @IsNotEmpty()
-  @IsNumber()
   accountId: string
 
   @ApiProperty({ description: 'device id' })
