@@ -30,6 +30,7 @@ export class ITransaction {
   hash: string
   timestamp: number
   status: ETransactionStatuses
+  fee: string
 }
 
 export interface IAssetDetail {
