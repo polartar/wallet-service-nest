@@ -152,6 +152,7 @@ export class AssetService {
             balance: prevBalance.toString(),
             timestamp: +record.timestamp,
             status,
+            fee: status === ETransactionStatuses.SENT ? fee.toString() : '0',
           }
           // parse the transaction
           if (record.value.isZero()) {
@@ -233,6 +234,7 @@ export class AssetService {
           to: record.spent ? '' : asset.address,
           amount: record.value.toString(),
           hash: record.tx_hash,
+          fee: '0',
           balance: prevBalance.toString(),
           timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
           status: record.spent
@@ -358,6 +360,7 @@ export class AssetService {
       transaction: { from: string; to: string; value: string; hash: string }
     },
     amount: BigNumber,
+    fee: BigNumber,
   ) {
     const transactions = updatedAsset.transactions
     const newHistoryData = {
@@ -369,6 +372,7 @@ export class AssetService {
         ? BigNumber.from(transactions[0].balance).sub(amount).toString()
         : BigNumber.from(tx.transaction.value).toString(),
       timestamp: this.portfolioService.getCurrentTimeBySeconds(),
+      fee: fee.toString(),
       status:
         updatedAsset.address === tx.transaction.from
           ? ETransactionStatuses.SENT

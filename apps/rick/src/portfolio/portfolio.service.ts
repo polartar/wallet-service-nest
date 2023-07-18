@@ -143,7 +143,7 @@ export class PortfolioService {
                   address.address.toLowerCase() ===
                   tx.transaction.from.toLowerCase(),
               )
-              this.assetService.updateHistory(updatedAddress, tx, amount)
+              this.assetService.updateHistory(updatedAddress, tx, amount, fee)
             }
 
             if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
@@ -155,7 +155,12 @@ export class PortfolioService {
                   address.address.toLowerCase() ===
                   tx.transaction.to.toLowerCase(),
               )
-              this.assetService.updateHistory(updatedAddress, tx, amount)
+              this.assetService.updateHistory(
+                updatedAddress,
+                tx,
+                amount,
+                BigNumber.from('0'),
+              )
             }
           } catch (err) {
             Sentry.captureException(
@@ -216,6 +221,7 @@ export class PortfolioService {
               amount: senderInfo.prev_out.value.toString(),
               balance: (currBalance - senderInfo.prev_out.value).toString(),
               timestamp: this.getCurrentTimeBySeconds(),
+              fee: '0',
             })
             const newHistory = await this.assetService.addHistory({
               asset,

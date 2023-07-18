@@ -33,6 +33,9 @@ export class TransactionEntity {
   amount: string
 
   @Column({ nullable: true })
+  fee: string
+
+  @Column({ nullable: true })
   tokenId: number
 
   @Column('bigint')
@@ -46,6 +49,8 @@ export class TransactionEntity {
       from: this.from,
       to: this.to,
       balance: this.balance,
+      hash: this.hash,
+      fee: this.fee,
       amount: this.amount,
       tokenId: this.tokenId,
       timestamp: +this.timestamp,
