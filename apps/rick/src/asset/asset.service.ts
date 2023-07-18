@@ -32,7 +32,7 @@ import {
   SecondsIn,
 } from '../wallet/wallet.types'
 import { NftService } from '../nft/nft.service'
-import { isAddress } from 'ethers/lib/utils'
+import { getAddress, isAddress } from 'ethers/lib/utils'
 
 @Injectable()
 export class AssetService {
@@ -287,13 +287,15 @@ export class AssetService {
       }
     }
     let asset
-
-    asset = await this.assetRepository.findOne({ where: { address, network } })
+    const validAddress = getAddress(address)
+    asset = await this.assetRepository.findOne({
+      where: { address: validAddress, network },
+    })
     if (asset) {
       return asset
     }
 
-    asset = await this.addAsset(address, index, network)
+    asset = await this.addAsset(validAddress, index, network)
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 
