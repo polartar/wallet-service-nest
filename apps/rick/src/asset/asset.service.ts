@@ -284,19 +284,8 @@ export class AssetService {
   async createAsset(address: string, index: number, network: ENetworks) {
     let validAddress
     if (network === ENetworks.ETHEREUM || network === ENetworks.ETHEREUM_TEST) {
-      if (!isAddress(address)) {
-        throw new BadRequestException('Invalid address')
-      }
       validAddress = getAddress(address)
     } else {
-      if (
-        !validate(
-          address,
-          network === ENetworks.BITCOIN ? Network.mainnet : Network.testnet,
-        )
-      ) {
-        throw new BadRequestException('Invalid address')
-      }
       validAddress = address
     }
     let asset
