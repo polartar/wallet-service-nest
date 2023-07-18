@@ -53,19 +53,19 @@ container_scanning:
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE/princess_prod:main
 
-upload SBOM:
-  needs:
-    - deploy to testnet k8s cluster
-    # - deploy to mainnet k8s cluster
-    - container_scanning
-  dependencies:
-    - container_scanning
-  allow_failure: true
-  stage: .post
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-  script:
-    - "curl -H \"X-Api-Key: ${DTRACK_API_KEY}\" -F bom=@gl-sbom-report.cdx.json -F project=\"$DTRACK_PROJECT_UUID\" -vf https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
+# upload SBOM:
+#   needs:
+#     - deploy to testnet k8s cluster
+#     # - deploy to mainnet k8s cluster
+#     - container_scanning
+#   dependencies:
+#     - container_scanning
+#   allow_failure: true
+#   stage: .post
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#   script:
+#     - "curl -H \"X-Api-Key: ${DTRACK_API_KEY}\" -F bom=@gl-sbom-report.cdx.json -F project=\"$DTRACK_PROJECT_UUID\" -vf https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
 
 test:
   stage: test
@@ -173,49 +173,49 @@ push to registry:
       when: never
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-deploy to testnet k8s cluster:
-  stage: deploy
-  allow_failure: true
-  when: on_success
-  needs: ["push to registry", "build source maps"]
-  image:
-    name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
-    entrypoint: [""]
-  variables:
-    SENTRY_URL: https://sentry.nscribe.xyz
-  script:
-    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN || true
-    - export COMMIT_SHA=$(sentry-cli releases propose-version)
-    - kubectl config use-context ngrave/rana/app/be:gke-agent
-    - deploy_k8s() {
-      local project=$1;
-      kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
-      kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
-      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave || true;
-      pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
-      now=$(date +%s);
-      echo $pipeline_start;
-      echo $now;
-      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((now-pipeline_start)) --org ngrave || true;
-      }
-    - deploy_k8s anton
-    - deploy_k8s bristle
-    - deploy_k8s fluffy
-    - deploy_k8s gandalf
-    - deploy_k8s kafo
-    - deploy_k8s morty
-    - deploy_k8s princess
-    - deploy_k8s rick
-    - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
-  environment:
-    name: testnet gke cluster
-    url: http://testnet.be.nscribe.xyz
-    kubernetes:
-      namespace: default
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    - if: '$CI_COMMIT_BRANCH == "main"'
+# deploy to testnet k8s cluster:
+#   stage: deploy
+#   allow_failure: true
+#   when: on_success
+#   needs: ["push to registry", "build source maps"]
+#   image:
+#     name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
+#     entrypoint: [""]
+#   variables:
+#     SENTRY_URL: https://sentry.nscribe.xyz
+#   script:
+#     - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN || true
+#     - export COMMIT_SHA=$(sentry-cli releases propose-version)
+#     - kubectl config use-context ngrave/rana/app/be:gke-agent
+#     - deploy_k8s() {
+#       local project=$1;
+#       kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+#       kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
+#       sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave || true;
+#       pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
+#       now=$(date +%s);
+#       echo $pipeline_start;
+#       echo $now;
+#       sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((now-pipeline_start)) --org ngrave || true;
+#       }
+#     - deploy_k8s anton
+#     - deploy_k8s bristle
+#     - deploy_k8s fluffy
+#     - deploy_k8s gandalf
+#     - deploy_k8s kafo
+#     - deploy_k8s morty
+#     - deploy_k8s princess
+#     - deploy_k8s rick
+#     - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
+#   environment:
+#     name: testnet gke cluster
+#     url: http://testnet.be.nscribe.xyz
+#     kubernetes:
+#       namespace: default
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#       when: never
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 
 deploy to mainnet k8s cluster:
   stage: deploy
