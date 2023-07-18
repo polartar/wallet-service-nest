@@ -150,10 +150,12 @@ export class AssetService {
 
   async getAssetTransactions(assetId: string, count = 50, start = 0) {
     const accountId = this.getAccountIdFromRequest()
-    return await this.rickApiCall(
+    const transactions = await this.rickApiCall(
       EAPIMethod.GET,
       `asset/${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
+
+    return await this.addUSDPrice(transactions)
   }
 
   async getAssetPortfolio(assetId, period?: EPeriod) {
