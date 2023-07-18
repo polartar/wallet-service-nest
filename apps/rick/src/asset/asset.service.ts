@@ -289,14 +289,6 @@ export class AssetService {
       }
       validAddress = getAddress(address)
     } else {
-      if (
-        !validate(
-          address,
-          network === ENetworks.BITCOIN ? Network.mainnet : Network.testnet,
-        )
-      ) {
-        throw new BadRequestException('Invalid address')
-      }
       validAddress = address
     }
     let asset
