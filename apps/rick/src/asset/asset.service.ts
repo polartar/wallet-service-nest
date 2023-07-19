@@ -312,7 +312,7 @@ export class AssetService {
     })
     if (asset) {
       if (walletEntity) {
-        if (asset.wallets.length === 0) {
+        if (!asset.wallets || asset.wallets.length === 0) {
           asset.wallets = [walletEntity]
           await this.assetRepository.save(asset)
         } else {
