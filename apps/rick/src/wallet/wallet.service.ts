@@ -312,7 +312,13 @@ export class WalletService {
         coins.map(async (coin) => {
           try {
             const network =
-              coin.BIP44 === 0 ? ENetworks.BITCOIN : ENetworks.ETHEREUM
+              coin.BIP44 === 0
+                ? ENetworks.BITCOIN
+                : coin.BIP44 === 1
+                ? ENetworks.BITCOIN_TEST
+                : coin.BIP44 === 60
+                ? ENetworks.ETHEREUM
+                : ENetworks.ETHEREUM_TEST
             return Promise.all(
               coin.wallets.map(async (wallet) => {
                 return Promise.all(
