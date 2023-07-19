@@ -1,10 +1,14 @@
 export interface IVaultCoin {
   BIP44: number
   wallets: {
-    address: string
-    hidden: boolean
-    index: number
-    publickey: string
+    accounts: {
+      address: string
+      hidden: boolean
+      index: number
+      publickey: string
+    }[]
+    wallet_index: number
+    xpub: string
   }[]
 }
 export class AddXPubs {
