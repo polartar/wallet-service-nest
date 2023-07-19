@@ -206,7 +206,7 @@ export class WalletsService {
         EAPIMethod.POST,
         this.rickApiUrl,
         'wallet/vault',
-        { title, accountId, coins: coinsResponse.data },
+        { title, accountId, coins: coinsResponse },
       )
       return wallet
     } catch (err) {

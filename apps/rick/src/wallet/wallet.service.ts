@@ -313,13 +313,17 @@ export class WalletService {
           try {
             const network =
               coin.BIP44 === 0 ? ENetworks.BITCOIN : ENetworks.ETHEREUM
-            Promise.all(
+            return Promise.all(
               coin.wallets.map(async (wallet) => {
-                return await this.assetService.addAsset(
-                  wallet.address,
-                  wallet.index,
-                  network,
-                  walletEntity,
+                return Promise.all(
+                  wallet.accounts.map(async (account) => {
+                    return await this.assetService.addAsset(
+                      account.address,
+                      account.index,
+                      network,
+                      walletEntity,
+                    )
+                  }),
                 )
               }),
             )
