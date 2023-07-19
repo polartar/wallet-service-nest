@@ -317,7 +317,7 @@ export class WalletService {
               coin.wallets.map(async (wallet) => {
                 return Promise.all(
                   wallet.accounts.map(async (account) => {
-                    return await this.assetService.addAsset(
+                    return await this.assetService.createAsset(
                       account.address,
                       account.index,
                       network,

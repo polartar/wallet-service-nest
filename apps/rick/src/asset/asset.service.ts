@@ -281,8 +281,14 @@ export class AssetService {
     this.assetRepository.save(updatedAssets.filter((asset) => !!asset))
   }
 
-  async createAsset(address: string, index: number, network: ENetworks) {
+  async createAsset(
+    address: string,
+    index: number,
+    network: ENetworks,
+    walletEntity?: WalletEntity,
+  ) {
     let validAddress
+
     if (network === ENetworks.ETHEREUM || network === ENetworks.ETHEREUM_TEST) {
       if (!isAddress(address)) {
         throw new BadRequestException('Invalid address')
@@ -299,15 +305,28 @@ export class AssetService {
       }
       validAddress = address
     }
-    let asset
+
+    let asset: AssetEntity
     asset = await this.assetRepository.findOne({
       where: { address: validAddress, network },
     })
     if (asset) {
+      if (walletEntity) {
+        if (asset.wallets.length === 0) {
+          asset.wallets = [walletEntity]
+          await this.assetRepository.save(asset)
+        } else {
+          const walletIds = asset.wallets.map((wallet) => wallet.id)
+          if (!walletIds.includes(walletEntity.id)) {
+            asset.wallets.push(walletEntity)
+            await this.assetRepository.save(asset)
+          }
+        }
+      }
       return asset
     }
 
-    asset = await this.addAsset(validAddress, index, network)
+    asset = await this.addAsset(validAddress, index, network, walletEntity)
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 
