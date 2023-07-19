@@ -5,4 +5,5 @@ export class DiscoverAssetDto {
   address: string
   index: number
   network: ENetworks
+  publicKey: string
 }

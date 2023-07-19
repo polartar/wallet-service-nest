@@ -39,6 +39,7 @@ export interface IAssetDetail {
   network: ENetworks
   index: number
   address: string
+  publicKey: string
   nfts: INFTInfo[]
 }
 
