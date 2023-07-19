@@ -327,6 +327,7 @@ export class WalletService {
                       account.address,
                       account.index,
                       network,
+                      account.publickey,
                       walletEntity,
                     )
                   }),

@@ -21,6 +21,9 @@ export class AssetEntity {
   address: string
 
   @Column()
+  publicKey: string
+
+  @Column()
   createdAt: number
 
   @Column('text')

@@ -41,6 +41,12 @@ export class AssetSwaggerResponse {
   address: string
 
   @ApiProperty({
+    example:
+      '0310F1C443F7F68843BCA3451773DE7889F60EA7B88FEB20963517851C00068550',
+  })
+  publicKey: string
+
+  @ApiProperty({
     example: {
       fiat: '226.75801875555356',
       crypto: '118408804060537227',

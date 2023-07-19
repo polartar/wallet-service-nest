@@ -18,7 +18,12 @@ export class AssetController {
 
   @Post('')
   async createAsset(@Body() data: CreateAssetDto) {
-    return this.assetService.createAsset(data.address, data.index, data.network)
+    return this.assetService.createAsset(
+      data.address,
+      data.index,
+      data.network,
+      data.publicKey,
+    )
   }
 
   @Post('/discover')
@@ -28,6 +33,7 @@ export class AssetController {
       data.index,
       data.network,
       data.address,
+      data.publicKey,
     )
   }
 

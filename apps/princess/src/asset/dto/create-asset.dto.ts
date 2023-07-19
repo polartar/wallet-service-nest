@@ -11,6 +11,14 @@ export class CreateAssetDto {
   address: string
 
   @ApiProperty({
+    description: 'The public key of the address',
+    example:
+      '02c00551a9b96c332410adaaed426dd0171311b8f5b6ebada246a6be8c24cac1c5',
+  })
+  @IsNotEmpty()
+  publicKey: string
+
+  @ApiProperty({
     description: 'The index of the asset',
   })
   @IsNotEmpty()

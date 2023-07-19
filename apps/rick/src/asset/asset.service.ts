@@ -285,6 +285,7 @@ export class AssetService {
     address: string,
     index: number,
     network: ENetworks,
+    publicKey: string,
     walletEntity?: WalletEntity,
   ) {
     let validAddress
@@ -326,7 +327,13 @@ export class AssetService {
       return asset
     }
 
-    asset = await this.addAsset(validAddress, index, network, walletEntity)
+    asset = await this.addAsset(
+      validAddress,
+      index,
+      network,
+      publicKey,
+      walletEntity,
+    )
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 
@@ -335,6 +342,7 @@ export class AssetService {
       address,
       network,
       index,
+      publicKey,
     }
   }
 
@@ -342,11 +350,13 @@ export class AssetService {
     address: string,
     index: number,
     network: ENetworks,
+    publicKey: string,
     walletEntity?: WalletEntity,
   ) {
     const prototype = new AssetEntity()
     prototype.wallets = walletEntity ? [walletEntity] : []
     prototype.address = address
+    prototype.publicKey = publicKey
     prototype.transactions = []
     prototype.index = index
     prototype.network = network
@@ -452,6 +462,7 @@ export class AssetService {
     index: number,
     network: ENetworks,
     address: string,
+    publicKey: string,
   ) {
     try {
       let apiURL, apiKey, currency
@@ -483,7 +494,12 @@ export class AssetService {
 
       const assets = await Promise.all(
         discoverResponse.data.data.map(async (item: IXPubInfo) => {
-          return await this.createAsset(item.address, item.index, network)
+          return await this.createAsset(
+            item.address,
+            item.index,
+            network,
+            item.publickey,
+          )
         }),
       )
 
@@ -498,7 +514,7 @@ export class AssetService {
           `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
-      return this.createAsset(address, index, network)
+      return this.createAsset(address, index, network, publicKey)
     }
   }
 
@@ -517,6 +533,7 @@ export class AssetService {
       index: assetEntity.index,
       network: assetEntity.network,
       address: assetEntity.address,
+      publicKey: assetEntity.publicKey,
       nfts: [],
     }
 
