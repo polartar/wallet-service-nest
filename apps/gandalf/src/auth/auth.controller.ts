@@ -52,6 +52,8 @@ export class AuthController {
             `Account id(${data.accountId}) not found `,
           )
         }
+        account.name = name
+        account.email = email
 
         return {
           is_new: true,

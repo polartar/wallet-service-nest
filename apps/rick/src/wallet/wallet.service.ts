@@ -358,7 +358,6 @@ export class WalletService {
     const wallets = await this.walletRepository.find({
       where: {
         account: { accountId: anonymousId },
-        mnemonic: Not(IsNull()),
       },
       relations: {
         account: true,
