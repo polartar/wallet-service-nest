@@ -6,7 +6,6 @@ import {
   NewsPaginationDto,
   PaginationNewsSwaggerResponse,
 } from './dto/news-pagination.dto'
-// import { NewsTopDto, TopNewsSwaggerResponse } from './dto/news-top.dto'
 
 @Controller('news')
 @ApiTags('news')

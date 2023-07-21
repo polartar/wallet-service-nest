@@ -80,26 +80,6 @@ export class WalletsService {
     }
   }
 
-  // async rickAPICall(method: EAPIMethod, path: string, body?: unknown) {
-  //   try {
-  //     const url = `${this.rickApiUrl}/${path}`
-  //     const res = await firstValueFrom(
-  //       method === EAPIMethod.POST
-  //         ? this.httpService.post(url, body)
-  //         : this.httpService.get(url),
-  //     )
-  //     return res.data
-  //   } catch (err) {
-  //     const message = err.response ? err.response.data.message : err.message
-  //     Sentry.captureException(`rickAPICall(): ${message}`)
-
-  //     if (err.response) {
-  //       throw new InternalServerErrorException(message)
-  //     }
-  //     throw new BadGatewayException(`Rick server connection error: ${message}`)
-  //   }
-  // }
-
   async getWalletTransaction(walletId, start = 0, count = 50) {
     const accountId = this.getAccountIdFromRequest()
     const transactions: ITransaction[] = await this.apiCall(
@@ -216,18 +196,6 @@ export class WalletsService {
     }
   }
 
-  // async createWallet(walletType: EWalletType, xPub: string) {
-  //   const accountId = this.getAccountIdFromRequest()
-
-  //   const wallet = await this.rickAPICall(EAPIMethod.POST, `wallet`, {
-  //     account_id: accountId,
-  //     wallet_type: walletType,
-  //     xPub: xPub,
-  //   })
-
-  //   return this.addUSDPrice([wallet], EPeriod.Day)
-  // }
-
   async updateWallet(walletId: string, title: string, mnemonic: string) {
     const accountId = this.getAccountIdFromRequest()
 
@@ -255,109 +223,4 @@ export class WalletsService {
       },
     )
   }
-
-  // getPrice(source: IMarketData[], timestamp: number) {
-  //   const index = source.findIndex(
-  //     (market) =>
-  //       new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
-  //       +timestamp >= new Date(market.periodStart).getTime() / 1000,
-  //   )
-
-  //   return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
-  // }
-
-  // async addUSDPrice(transactions: ITransaction[]) {
-  //   const ethMarketHistories = await this.marketService.getHistoricalData(
-  //     ENetworks.ETHEREUM,
-  //     EPeriod.All,
-  //   )
-
-  //   const btcMarketHistories = await this.marketService.getHistoricalData(
-  //     ENetworks.BITCOIN,
-  //     EPeriod.All,
-  //   )
-  //   // const ethFee = await this.transactionService.getFee(ENetworks.ETHEREUM)
-  //   // const btcFee = await this.transactionService.getFee(ENetworks.BITCOIN)
-
-  //   if (!ethMarketHistories.success || !btcMarketHistories.success) {
-  //     Sentry.captureException('Something went wrong in Morty service')
-  //     throw new InternalServerErrorException("Couldn't get market price ")
-  //   }
-
-  //   // if (!ethFee.success || !btcFee.success) {
-  //   //   Sentry.captureException('Something went wrong in Transaction service')
-  //   //   throw new InternalServerErrorException("Couldn't get fee price ")
-  //   // }
-
-  //   const newTransactions = transactions.map((transaction) => {
-  //     const isEthereum = isAddress(transaction.from)
-  //     const source = isEthereum
-  //       ? ethMarketHistories.data
-  //       : btcMarketHistories.data
-  //     const decimal = isEthereum ? 18 : 8
-  //     const price = this.getPrice(source, transaction.timestamp)
-  //     const value = formatUnits(transaction.balance, decimal)
-  //     const amount = formatUnits(transaction.amount, decimal)
-  //     return {
-  //       ...transaction,
-  //       cryptoAmount: transaction.amount,
-  //       fiatBalance: (+value * price).toString(),
-  //       fiatAmount: (+amount * price).toString(),
-  //     }
-  //   })
-
-  //   return newTransactions
-  // }
-
-  // async fluffyAPICall(path, body) {
-  //   try {
-  //     const url = `${this.fluffyApiUrl}/${path}`
-  //     const res = await firstValueFrom(
-  //       this.httpService.put<AxiosResponse>(url, body),
-  //     )
-  //     return res.data
-  //   } catch (err) {
-  //     const message = err.response ? err.response.data.message : err.message
-
-  //     Sentry.captureException(`fluffyAPICall(): ${message}`)
-
-  //     if (err.response) {
-  //       throw new InternalServerErrorException(message)
-  //     }
-
-  //     throw new BadGatewayException(
-  //       `Fluffy server connection error: ${message}`,
-  //     )
-  //   }
-  // }
-
-  // async updatePassCode(
-  //   walletId: number,
-  //   deviceId: string,
-  //   passCodeKey: string,
-  // ) {
-  //   this.validateAccountId(walletId)
-
-  //   const path = `${deviceId}/wallets/${walletId}`
-  //   return this.fluffyAPICall(path, { passCodeKey })
-  // }
-
-  // async updateIsCloud(walletId: number, deviceId: string, isCloud: boolean) {
-  //   this.validateAccountId(walletId)
-
-  //   const path = `${deviceId}/wallets/${walletId}`
-  //   return this.fluffyAPICall(path, { isCloud })
-  // }
-
-  // async getAccount(accountId: number) {
-  //   try {
-  //     const accountResponse = await firstValueFrom(
-  //       this.httpService.get(`${this.gandalfApiUrl}/auth/${accountId}`),
-  //     )
-  //     return accountResponse.data
-  //   } catch (err) {
-  //     Sentry.captureException(`getAccount(): ${err.message}`)
-  //     throw new BadGatewayException(err.message)
-  //   }
-  // }
 }

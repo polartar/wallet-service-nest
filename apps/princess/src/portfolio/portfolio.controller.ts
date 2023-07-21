@@ -1,15 +1,7 @@
 import { EPortfolioType } from '@rana/core'
 import { PortfolioService } from './portfolio.service'
 import { IUpdatedAssets } from './portfolio.types'
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseEnumPipe,
-  Post,
-  Query,
-} from '@nestjs/common'
+import { Body, Controller, ParseEnumPipe, Post } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 @Controller('portfolio')
@@ -25,13 +17,4 @@ export class PortfolioController {
   ) {
     this.portfolioService.handleUpdatedAddresses(type, data)
   }
-
-  // @Get('/nft/:address')
-  // @ApiOperation({ summary: 'Get NFT assets from address' })
-  // async getNFTAssets(
-  //   @Param('address') address: string,
-  //   @Query('page') pageNumber?: number,
-  // ) {
-  //   return this.portfolioService.getNFTAssets(address, pageNumber)
-  // }
 }

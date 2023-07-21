@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common'
 import { LoginValidationPipe } from './auth.pipe'
 import { IAuthData } from './auth.types'
 import { EAuth } from '@rana/core'

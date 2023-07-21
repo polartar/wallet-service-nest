@@ -28,17 +28,6 @@ export interface IAddress {
   history: IBalanceHistory[]
 }
 
-export interface IHistory {
-  id: string
-  address: IAddress
-  balance: string
-  from: string
-  to: string
-  hash: string
-  amount: string
-  timestamp: number
-}
-
 export interface IBalanceHistory {
   balance: string
   date: number

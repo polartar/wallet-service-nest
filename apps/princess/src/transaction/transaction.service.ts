@@ -10,7 +10,7 @@ import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { AxiosResponse } from 'axios'
-import { ENFTTypes, IResponse } from './transaction.types'
+import { ENFTTypes } from './transaction.types'
 import * as Sentry from '@sentry/node'
 import { EAPIMethod } from '../wallet/wallet.types'
 
@@ -25,11 +25,7 @@ export class TransactionService {
     this.kafoAPIUrl = this.configService.get<string>(EEnvironment.kafoAPIUrl)
   }
 
-  async apiCall(
-    method: EAPIMethod,
-    path: string,
-    body?: unknown,
-  ): Promise<IResponse> {
+  async apiCall(method: EAPIMethod, path: string, body?: unknown) {
     try {
       const url = `${this.kafoAPIUrl}/${path}`
       const res = await firstValueFrom(
@@ -63,7 +59,7 @@ export class TransactionService {
     }
   }
 
-  async getFee(network: ENetworks): Promise<IResponse> {
+  async getFee(network: ENetworks) {
     return this.apiCall(EAPIMethod.GET, `transaction/fee/${network}`)
   }
 
@@ -74,7 +70,7 @@ export class TransactionService {
     publicKey: string,
     network: ENetworks,
     transferMessage: string,
-  ): Promise<IResponse> {
+  ) {
     return this.apiCall(EAPIMethod.POST, `transaction/generate`, {
       from,
       to,
@@ -89,7 +85,7 @@ export class TransactionService {
     serializedTransaction: string,
     signedPayloads: [],
     network: ENetworks,
-  ): Promise<IResponse> {
+  ) {
     return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       serializedTransaction,
       signedPayloads,
@@ -106,7 +102,7 @@ export class TransactionService {
     type: ENFTTypes,
     network: ENetworks,
     amount?: number,
-  ): Promise<IResponse> {
+  ) {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/generate`, {
       from,
       to,
@@ -123,7 +119,7 @@ export class TransactionService {
     serializedTransaction: string,
     signedPayloads: [],
     network: ENetworks,
-  ): Promise<IResponse> {
+  ) {
     return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
       serializedTransaction,
       signedPayloads,

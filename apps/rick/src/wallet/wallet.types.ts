@@ -11,16 +11,6 @@ export const SecondsIn: {
   [EPeriod.All]: null,
 }
 
-export enum IAddressPath {
-  BTC = 'm/44/0/0/0/1',
-  ETH = 'm/44/60/0/0/5',
-}
-
-export enum EXPubCurrency {
-  ETHEREUM = 'ethereum.secp256k1',
-  BITCOIN = 'segwit.bitcoin.secp256k1',
-}
-
 export enum ETransactionStatuses {
   RECEIVED = 'received',
   SENT = 'sent',

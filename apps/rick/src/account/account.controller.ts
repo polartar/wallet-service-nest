@@ -4,18 +4,15 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   UsePipes,
   Put,
-  Query,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { AccountValidationPipe } from './account.pipe'
 import * as Sentry from '@sentry/node'
 import { UpdateAccountDto } from './dto/update-account.dto'
-import { SyncAccountDto } from './dto/sync_account.dto'
 
 @Controller('account')
 export class AccountController {
@@ -59,9 +56,4 @@ export class AccountController {
   async getWallets(@Param('accountId') accountId: string) {
     return await this.accountService.lookup({ accountId })
   }
-
-  // @Get('/hash')
-  // async checkHash(@Query() query: SyncAccountDto): Promise<boolean> {
-  //   return await this.accountService.checkHash(query.accountId, query.hash)
-  // }
 }

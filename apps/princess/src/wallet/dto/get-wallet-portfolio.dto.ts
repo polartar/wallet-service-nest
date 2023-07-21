@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ECoinTypes, ENetworks, EPeriod } from '@rana/core'
-import { IsEnum } from 'class-validator'
 
 export class GetWalletPortfolioDto {
   @ApiProperty({

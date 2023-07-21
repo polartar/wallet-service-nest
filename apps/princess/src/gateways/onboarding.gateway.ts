@@ -1,10 +1,4 @@
-import {
-  ConnectedSocket,
-  MessageBody,
-  SubscribeMessage,
-  WebSocketGateway,
-} from '@nestjs/websockets'
-import { Socket } from 'socket.io'
+import { WebSocketGateway } from '@nestjs/websockets'
 import { AuthService } from '../auth/auth.service'
 
 @WebSocketGateway()

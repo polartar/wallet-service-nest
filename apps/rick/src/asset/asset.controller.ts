@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseEnumPipe,
-  Post,
-  Query,
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
 import { AssetService } from './asset.service'
 import { CreateAssetDto } from './dto/create-asset.dto'
 import { DiscoverAssetDto } from './dto/discover-asset.dto'
-import { EPeriod } from '@rana/core'
 
 @Controller('asset')
 export class AssetController {
@@ -65,9 +56,8 @@ export class AssetController {
   async getAssetPortfolio(
     @Param('assetId') assetId: string,
     @Query('accountId') accountId: string,
-    @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
-    return this.assetService.getAssetPortfolio(assetId, accountId, period)
+    return this.assetService.getAssetPortfolio(assetId, accountId)
   }
 
   @Get(':/assetId/nft')

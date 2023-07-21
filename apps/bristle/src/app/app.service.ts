@@ -65,6 +65,10 @@ export class AppService {
         throw new BadRequestException(err.message)
       }
     } else {
+      Sentry.captureException(
+        `verifyPayload(): Some parts are missing in the payload`,
+      )
+
       throw new BadRequestException('Some parts are missing in the payload')
     }
   }

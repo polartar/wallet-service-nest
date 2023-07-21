@@ -23,19 +23,3 @@ export interface IAsset {
   index: number
   transactions: ITransaction[]
 }
-// export interface IWallet {
-//   id: number
-//   assets: IAsset[]
-// }
-
-// export interface IAsset {
-//   network: ENetworks
-//   address: string
-//   transactions: {
-//     balance: string
-//     amount: string
-//     timestamp: number
-//     usdBalance?: string
-//     usdAmount: string
-//   }[]
-// }

@@ -3,7 +3,6 @@ import { NewsService } from './news.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from './../environments/environment.dev'
 import { HttpModule } from '@nestjs/axios'
-import { AppModule } from '../app/app.module'
 
 describe('NewsService', () => {
   let service: NewsService
@@ -13,7 +12,6 @@ describe('NewsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ load: [Environment] }), //
-        // AppModule,
         HttpModule,
       ],
       providers: [NewsService],

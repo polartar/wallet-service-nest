@@ -16,7 +16,7 @@ import {
   WalletsSwaggerResponse,
 } from './dto/create-wallet.dto'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { UpdateWalletDto } from './dto/UpdateWalletDto'
+import { UpdateWalletDto } from './dto/update-wallet.dto'
 import {
   GetWalletPortfolioDto,
   WalletPortfolioSwaggerResponse,

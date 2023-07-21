@@ -9,7 +9,6 @@ import {
 import {
   EAPIMethod,
   ENFTTypes,
-  EXPubCurrency,
   IFeeResponse,
   INFTTransactionInput,
   IVaultTransactionResponse,
@@ -17,8 +16,8 @@ import {
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { ENetworks } from '@rana/core'
-import { formatEther, hexlify, parseEther } from 'ethers/lib/utils'
+import { ENetworks, EXPubCurrency } from '@rana/core'
+import { formatEther, hexlify } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
