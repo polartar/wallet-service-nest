@@ -1,7 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CreatePairingDto } from './dto/create-pairing-dto'
-import { VerifyDto } from './dto/verify-dto.ts'
 
 @Controller()
 export class TotpController {
