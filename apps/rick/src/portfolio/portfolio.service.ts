@@ -24,6 +24,8 @@ export class PortfolioService {
   princessAPIUrl: string
   btcSocket
   alchemyInstance
+  transferFilter
+  transferIface
 
   constructor(
     private configService: ConfigService,
@@ -63,6 +65,26 @@ export class PortfolioService {
 
     this.alchemyInstance = new AlchemyMultichainClient(defaultConfig, overrides)
 
+    this.transferFilter = {
+      topics: [
+        [
+          ethers.utils.id('Transfer(address,address,uint256)'), // ERC721 transfer
+          ethers.utils.id(
+            'TransferSingle(address,address,address,uint256,uint256)', // ERC1155 transfer
+          ),
+          ethers.utils.id(
+            'TransferBatch(address,address,address,uint256[],uint256[])', // ERC1155 batch transfer
+          ),
+        ],
+      ],
+    }
+    const transferABI = [
+      'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
+      'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
+      'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
+    ]
+    this.transferIface = new ethers.utils.Interface(transferABI)
+
     this.subscribeNFTTransferEvents()
   }
 
@@ -83,20 +105,6 @@ export class PortfolioService {
       (address) => address.network === ENetworks.BITCOIN_TEST,
     )
   }
-
-  // async getEthAssets(): Promise<AssetEntity[]> {
-  //   return this.activeEthAssets
-  // }
-  // async getTestEthAssets(): Promise<AssetEntity[]> {
-  //   return this.activeTestEthAssets
-  // }
-
-  // async getBtcAssets(): Promise<AssetEntity[]> {
-  //   return this.activeBtcAssets
-  // }
-  // async getTestBtcAssets(): Promise<AssetEntity[]> {
-  //   return this.activeTestBtcAssets
-  // }
 
   getCurrentTimeBySeconds() {
     return Math.floor(Date.now() / 1000)
@@ -329,78 +337,40 @@ export class PortfolioService {
   }
 
   subscribeNFTTransferEvents() {
-    const transferFilter = {
-      topics: [
-        [
-          ethers.utils.id('Transfer(address,address,uint256)'), // ERC721 transfer
-          ethers.utils.id(
-            'TransferSingle(address,address,address,uint256,uint256)', // ERC1155 transfer
-          ),
-          ethers.utils.id(
-            'TransferBatch(address,address,address,uint256[],uint256[])', // ERC1155 batch transfer
-          ),
-        ],
-      ],
-    }
-    const transferABI = [
-      'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
-      'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
-      'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
-    ]
-    const transferIface = new ethers.utils.Interface(transferABI)
-
     // listen NFT transfer events on Mainnet
     this.alchemyInstance
       .forNetwork(Network.ETH_MAINNET)
-      .ws.on(transferFilter, async (log) => {
-        try {
-          const currentAddresses: string[] = this.activeEthAssets.map(
-            (address) => address.address.toLowerCase(),
-          )
-          const { args } = transferIface.parseLog(log)
-          const fromAddress = args.from.toLowerCase()
-          const toAddress = args.to.toLowerCase()
-
-          if (currentAddresses.includes(fromAddress)) {
-            this.notifyNFTUpdate(fromAddress, ENetworks.ETHEREUM)
-          }
-
-          if (
-            currentAddresses.includes(toAddress) &&
-            fromAddress !== toAddress
-          ) {
-            this.notifyNFTUpdate(toAddress, ENetworks.ETHEREUM)
-          }
-        } catch (err) {
-          /* continue regardless of error */
-        }
+      .ws.on(this.transferFilter, async (log) => {
+        this.analyzeLog(log, ENetworks.ETHEREUM)
       })
 
     // listen NFT transfer events on Goerli
     this.alchemyInstance
       .forNetwork(Network.ETH_GOERLI)
-      .ws.on(transferFilter, async (log) => {
-        try {
-          const currentAddresses: string[] = this.activeTestEthAssets.map(
-            (address) => address.address.toLowerCase(),
-          )
-          const { args } = transferIface.parseLog(log)
-          const fromAddress = args.from.toLowerCase()
-          const toAddress = args.to.toLowerCase()
-
-          if (currentAddresses.includes(fromAddress)) {
-            this.notifyNFTUpdate(fromAddress, ENetworks.ETHEREUM_TEST)
-          }
-
-          if (
-            currentAddresses.includes(toAddress) &&
-            fromAddress !== toAddress
-          ) {
-            this.notifyNFTUpdate(toAddress, ENetworks.ETHEREUM_TEST)
-          }
-        } catch (err) {
-          /* continue regardless of error */
-        }
+      .ws.on(this.transferFilter, async (log) => {
+        this.analyzeLog(log, ENetworks.ETHEREUM_TEST)
       })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analyzeLog(log: any, network: ENetworks) {
+    try {
+      const currentAddresses: string[] = this.activeTestEthAssets.map(
+        (address) => address.address.toLowerCase(),
+      )
+      const { args } = this.transferIface.parseLog(log)
+      const fromAddress = args.from.toLowerCase()
+      const toAddress = args.to.toLowerCase()
+
+      if (currentAddresses.includes(fromAddress)) {
+        this.notifyNFTUpdate(fromAddress, network)
+      }
+
+      if (currentAddresses.includes(toAddress) && fromAddress !== toAddress) {
+        this.notifyNFTUpdate(toAddress, network)
+      }
+    } catch (err) {
+      /* continue regardless of error */
+    }
   }
 }

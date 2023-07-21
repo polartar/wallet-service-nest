@@ -8,8 +8,6 @@ import {
   FindAccountByEmailDto,
 } from './dto/find-account.dto'
 import { UpdateAccountDto } from './dto/update-account.dto'
-import { WalletEntity } from '../wallet/wallet.entity'
-import { AssetEntity } from '../wallet/asset.entity'
 
 @Injectable()
 export class AccountService {
@@ -56,28 +54,4 @@ export class AccountService {
       where: findAccount,
     })
   }
-
-  // async getAccount(accountId: string) {
-  //   const account = await this.accountRepository.findOne({
-  //     where: {
-  //       accountId: accountId,
-  //     },
-  //   })
-
-  //   return account
-  // }
-
-  // async checkHash(accountId: string, hash: string) {
-  //   const wallets = await this.getWallets(accountId)
-
-  //   const addresses = wallets.reduce(
-  //     (allAddresses: AssetEntity[], wallet: WalletEntity) =>
-  //       allAddresses.concat(allAddresses, wallet.assets),
-  //     [],
-  //   )
-
-  //   const walletHash = addresses.map((address) => address.address).join(',')
-
-  //   return walletHash === hash
-  // }
 }

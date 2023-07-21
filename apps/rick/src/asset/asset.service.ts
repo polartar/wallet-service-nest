@@ -9,7 +9,7 @@ import {
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
-import { ENetworks, EPeriod, EPortfolioType } from '@rana/core'
+import { ENetworks, EPortfolioType } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
@@ -26,14 +26,10 @@ import ERC721ABI from '../asset/abis/erc721'
 import ERC1155ABI from '../asset/abis/erc1155'
 import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import {
-  ETransactionStatuses,
-  EXPubCurrency,
-  SecondsIn,
-} from '../wallet/wallet.types'
+import { ETransactionStatuses, EXPubCurrency } from '../wallet/wallet.types'
 import { NftService } from '../nft/nft.service'
 import { getAddress, isAddress } from 'ethers/lib/utils'
-import { Network, getAddressInfo, validate } from 'bitcoin-address-validation'
+import { Network, validate } from 'bitcoin-address-validation'
 
 @Injectable()
 export class AssetService {
@@ -381,22 +377,6 @@ export class AssetService {
     return await this.assetRepository.save(assetEntity)
   }
 
-  //   async getAllAssetTransactions(): Promise<AssetEntity[]> {
-  //     return await this.assetRepository.find({
-  //       order: {
-  //         transactions: {
-  //           timestamp: 'DESC',
-  //         },
-  //       },
-  //       relations: {
-  //         wallets: {
-  //           account: true,
-  //         },
-  //         transactions: true,
-  //       },
-  //     })
-  //   }
-
   async updateHistory(
     updatedAsset: AssetEntity,
     tx: {
@@ -578,13 +558,6 @@ export class AssetService {
           },
         },
       },
-      // relations: {
-      //   asset: {
-      //     wallets: {
-      //       account: true,
-      //     },
-      //   },
-      // },
       order: {
         timestamp: 'DESC',
       },
@@ -606,13 +579,7 @@ export class AssetService {
     }
   }
 
-  async getAssetPortfolio(assetId: string, accountId: string, period: EPeriod) {
-    const periodAsNumber = period in SecondsIn ? SecondsIn[period] : null
-    const timeInPast =
-      period === EPeriod.All
-        ? 0
-        : this.portfolioService.getCurrentTimeBySeconds() - periodAsNumber || 0
-
+  async getAssetPortfolio(assetId: string, accountId: string) {
     const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,

@@ -5,10 +5,7 @@ import { AssetModule } from '../asset/asset.module'
 
 @Module({
   imports: [HttpModule, AssetModule],
-  providers: [
-    PortfolioService, //
-    // AssetService,
-  ],
+  providers: [PortfolioService],
   exports: [PortfolioService],
 })
 export class PortfolioModule {}

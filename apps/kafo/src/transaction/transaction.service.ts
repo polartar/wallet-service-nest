@@ -18,7 +18,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ENetworks } from '@rana/core'
-import { formatEther, hexlify, parseEther } from 'ethers/lib/utils'
+import { formatEther, hexlify } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
