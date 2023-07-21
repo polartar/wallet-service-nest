@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { CoinService } from './coin.service'
-import { EPeriod, ENetworks, ECoinTypes } from '@rana/core'
+import { EPeriod, ECoinTypes } from '@rana/core'
 import {
   ApiOkResponse,
   ApiOperation,
@@ -64,16 +64,4 @@ export class CoinController {
   ) {
     return this.coinService.getHistoricalData(coinType, period)
   }
-
-  // @Get('btc/history')
-  // @ApiOkResponse({ type: CoinHistorySwaggerResponse })
-  // @ApiOperation({
-  //   summary: 'Get the current market history of the selected coin',
-  // })
-  // @ApiQuery({ name: 'period', enum: EPeriod })
-  // getBtcHistoricalData(
-  //   @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
-  // ) {
-  //   return this.coinService.getHistoricalData(ENetworks.BITCOIN, period)
-  // }
 }

@@ -18,7 +18,7 @@ import { REQUEST } from '@nestjs/core'
 import { IRequest } from './accounts.types'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { EAPIMethod } from '../wallet/wallet.types'
-import { UpdateShardsDto } from './dto/update-shartds.dto'
+import { UpdateShardsDto } from './dto/update-shards.dto'
 
 @Injectable()
 export class AccountsService {
