@@ -1,22 +1,15 @@
-import { HttpService } from '@nestjs/axios'
 import {
   BadRequestException,
   Injectable,
-  Request,
-  Inject,
   ForbiddenException,
-  BadGatewayException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
-import { REQUEST } from '@nestjs/core'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { IAccessTokenPayload } from '../bootstrap/bootstrap.types'
-import * as Sentry from '@sentry/node'
 import { EAuth } from '@rana/core'
-import { firstValueFrom } from 'rxjs'
 
 @Injectable()
 export class AuthService {
@@ -40,84 +33,6 @@ export class AuthService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.version = this.configService.get<string>(EEnvironment.version)
   }
-
-  // async getAccountHash(accountId: number): Promise<number> {
-  //   const account = await this.accountService.getAccount(accountId)
-  //   return hash(account)
-  // }
-
-  // async syncAccount(
-  //   type: string,
-  //   iHash: string,
-  //   accountId: number,
-  // ): Promise<{ type: string; has_same_hash: boolean; data?: IAccount }> {
-  //   const account = await this.accountService.getAccount(accountId)
-  //   const oHash = hash(account)
-
-  //   return {
-  //     type,
-  //     has_same_hash: iHash === oHash,
-  //     data: iHash === oHash ? undefined : account,
-  //   }
-  // }
-
-  // async syncUser(
-  //   accountId: number,
-  //   deviceId: string,
-  //   accountHash: string,
-  //   otp: string,
-  // ): Promise<{ isSync: boolean; account?: IAccount }> {
-  //   let verifyResponse
-  //   try {
-  //     verifyResponse = await firstValueFrom(
-  //       this.httpService.post(`${this.fluffyApiUrl}/verify`, {
-  //         accountId,
-  //         deviceId,
-  //         token: otp,
-  //       }),
-  //     )
-  //   } catch (err) {
-  //     if (err.response) {
-  //       Sentry.captureException(err.response.data.message + ' in syncUser()')
-
-  //       throw new BadRequestException(err.response.data.message)
-  //     }
-
-  //     Sentry.captureException(err.message + ' in syncUser()')
-  //     throw new BadGatewayException('Fluffy API call')
-  //   }
-  //   if (!verifyResponse.data) {
-  //     throw new BadRequestException('Invalid otp')
-  //   }
-  //   const account = await this.accountService.getAccount(accountId)
-  //   const oHash = hash(account)
-
-  //   const isSync = accountHash === oHash
-  //   return {
-  //     isSync,
-  //     account: isSync ? undefined : account,
-  //   }
-  // }
-
-  // getAccountIdFromRequest(): number {
-  //   return Number((this.request as IRequest).accountId)
-  // }
-
-  // validateAccountId(accountId: number) {
-  //   if (Number(accountId) === this.getAccountIdFromRequest()) {
-  //     return true
-  //   } else {
-  //     throw new ForbiddenException('Account Id not matched')
-  //   }
-  // }
-
-  // validateDeviceId(deviceId: string) {
-  //   if (deviceId === (this.request as IRequest).deviceId) {
-  //     return true
-  //   } else {
-  //     throw new ForbiddenException('Device Id not matched')
-  //   }
-  // }
 
   async generateAccessToken(
     accountId: string,
