@@ -82,7 +82,3 @@ export interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
   serializedTransaction: string
 }
-export enum EXPubCurrency {
-  ETHEREUM = 'ethereum.secp256k1',
-  BITCOIN = 'segwit.bitcoin.secp256k1',
-}

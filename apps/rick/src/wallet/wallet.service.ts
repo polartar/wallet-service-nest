@@ -7,7 +7,6 @@ import {
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { SecondsIn } from './wallet.types'
-import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { TransactionEntity } from './transaction.entity'
@@ -27,7 +26,6 @@ export class WalletService {
 
   constructor(
     private configService: ConfigService,
-    // private httpService: HttpService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
     @InjectRepository(TransactionEntity)
@@ -177,21 +175,6 @@ export class WalletService {
     if (!account) {
       throw new BadRequestException(`${accountId} not exists`)
     }
-
-    // const wallet = await this.lookUpByXPub(xPub)
-
-    // if (wallet) {
-    //   if (wallet.type === walletType) {
-    //     if (
-    //       !wallet.accounts.map((account) => account.id).includes(account.id)
-    //     ) {
-    //       wallet.accounts.push(account)
-    //     }
-    //     return this.walletRepository.save(wallet)
-    //   } else {
-    //     throw new Error('The parameters are not matched with existing one')
-    //   }
-    // } else {
 
     const assets = await this.assetService.getAssetsByIds(assetIds)
 

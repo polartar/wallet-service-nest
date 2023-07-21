@@ -48,3 +48,8 @@ export function getTimestamp(date?: string): number {
     ? Math.floor(new Date(date).getTime() / 1000)
     : Math.floor(new Date().getTime() / 1000)
 }
+
+export enum EXPubCurrency {
+  ETHEREUM = 'ethereum.secp256k1',
+  BITCOIN = 'segwit.bitcoin.secp256k1',
+}
