@@ -23,6 +23,8 @@ import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
 import * as BJSON from 'buffer-json'
+import zlib = require('zlib')
+import * as ur from '@ngraveio/bc-ur'
 
 @Injectable()
 export class TransactionService {
@@ -338,5 +340,138 @@ export class TransactionService {
         .toString('hex')
     }
     return BJSON.stringify(tx)
+  }
+
+  getNetworkInfo(network: ENetworks) {
+    switch (network) {
+      case ENetworks.ETHEREUM:
+        return {
+          symbol: 'ETH',
+          coinName: 'Ethereum',
+          BIP44Index: 60,
+        }
+      case ENetworks.ETHEREUM_TEST:
+        return {
+          symbol: 'GETH',
+          coinName: 'Ethereum',
+          BIP44Index: 60,
+        }
+      case ENetworks.BITCOIN:
+        return {
+          symbol: 'BTC',
+          coinName: 'Bitcoin',
+          BIP44Index: 0,
+        }
+      case ENetworks.BITCOIN_TEST:
+        return {
+          symbol: 'TBTC',
+          coinName: 'Bitcoin',
+          BIP44Index: 1,
+        }
+    }
+  }
+
+  async generateVaultTransaction(
+    serializedTransaction: string,
+    derivedIndex: number,
+    network: ENetworks,
+  ) {
+    let transaction: IVaultTransaction
+    try {
+      transaction = JSON.parse(serializedTransaction)
+    } catch (err) {
+      throw new BadRequestException('The serialized transaction is invalid')
+    }
+
+    const signature = this.signPayload(serializedTransaction)
+
+    transaction.signingPayloads = transaction.signingPayloads.map((payload) => {
+      payload.derivation = {
+        account: 0,
+        index: derivedIndex,
+      }
+      return payload
+    })
+
+    transaction.extra = {
+      ...transaction.extra,
+      signature,
+    }
+
+    const networkInfo = this.getNetworkInfo(network)
+
+    const payload = {
+      coinName: networkInfo.coinName,
+      symbol: networkInfo.symbol,
+      ellipticCurve: 'secp256k1',
+      BIP44Index: networkInfo.BIP44Index,
+      transactions: [serializedTransaction],
+    }
+
+    const compressed = zlib.gzipSync(JSON.stringify(payload)).toString('base64')
+
+    const packaged = {
+      version: '1',
+      type: 'tx_sign',
+      md5: crypto.createHash('md5').update(compressed, 'utf8').digest('hex'),
+      data: compressed,
+    }
+
+    const fragmentSize = 90
+    const urObj = ur.UR.fromBuffer(Buffer.from(JSON.stringify(packaged)))
+    const encoder = new ur.UREncoder(urObj, fragmentSize)
+
+    const parts = []
+    for (let i = 0; i < encoder.fragmentsLength * 3; i++)
+      parts.push(encoder.nextPart().toUpperCase())
+
+    return parts
+  }
+
+  async publishVaultTransaction(
+    serializedTransaction: string,
+    parts: string[],
+    network: ENetworks,
+  ) {
+    const decoder = new ur.URDecoder()
+
+    try {
+      parts.forEach((line) => {
+        decoder.receivePart(line)
+      })
+    } catch (err) {
+      Sentry.captureException(
+        `publishVaultTransaction(): ${err.message} in ${parts}`,
+      )
+      throw new BadRequestException(err.message)
+    }
+
+    if (!decoder.isSuccess()) {
+      Sentry.captureException(
+        `publishVaultTransaction(): Some parts are missing in the payload`,
+      )
+
+      throw new BadRequestException('Some parts are missing in the payload')
+    }
+
+    let transaction
+
+    try {
+      const str = JSON.parse(decoder.resultUR().decodeCBOR().toString()).data
+
+      const buf = Buffer.from(str, 'base64')
+      const data = zlib.gunzipSync(buf).toString('utf8')
+      const obj = JSON.parse(data)
+
+      transaction = JSON.parse(obj.transactions)
+    } catch (err) {
+      throw new BadRequestException(err.message)
+    }
+
+    return await this.publish(
+      serializedTransaction,
+      transaction.signingPayloads,
+      network,
+    )
   }
 }

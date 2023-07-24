@@ -61,6 +61,7 @@ export interface IVaultTransaction {
   }
   extra: {
     publicKey: string
+    signature?: string
   }
   fee: {
     fee: {
@@ -68,17 +69,31 @@ export interface IVaultTransaction {
       factor: number
     }
   }
-  signingPayloads: [
-    {
-      address: string
-      publickey: string
-      tosign: string
-    },
-  ]
+  signingPayloads: {
+    address: string
+    publickey: string
+    tosign: string
+    derivation?: {
+      account: number
+      index: number
+    }
+  }[]
+
   nativeTransaction: Transaction
 }
 
 export interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
   serializedTransaction: string
+}
+
+export interface IVaultTransactionInput {
+  serializedTransaction: string
+  derivedIndex: number
+  network: ENetworks
+}
+export interface IVaultPublishTransactionInput {
+  serializedTransaction: string
+  parts: string[]
+  network: ENetworks
 }

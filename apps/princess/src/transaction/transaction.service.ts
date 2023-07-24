@@ -126,4 +126,28 @@ export class TransactionService {
       network,
     })
   }
+
+  async generateVaultTransaction(
+    serializedTransaction: string,
+    derivedIndex: number,
+    network: ENetworks,
+  ) {
+    return await this.apiCall(
+      EAPIMethod.POST,
+      'transaction/vault-transaction',
+      { serializedTransaction, derivedIndex, network },
+    )
+  }
+
+  async publishVaultTransaction(
+    serializedTransaction: string,
+    parts: string[],
+    network: ENetworks,
+  ) {
+    return await this.apiCall(
+      EAPIMethod.POST,
+      'transaction/vault-transaction/send',
+      { serializedTransaction, parts, network },
+    )
+  }
 }
