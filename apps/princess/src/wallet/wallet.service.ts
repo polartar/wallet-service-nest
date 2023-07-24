@@ -223,4 +223,18 @@ export class WalletsService {
       },
     )
   }
+
+  async addAsset(walletId: string, assetId: string) {
+    const accountId = this.getAccountIdFromRequest()
+
+    return this.apiCall(
+      EAPIMethod.PATCH,
+      this.rickApiUrl,
+      `wallet/${walletId}/asset`,
+      {
+        accountId,
+        assetId,
+      },
+    )
+  }
 }

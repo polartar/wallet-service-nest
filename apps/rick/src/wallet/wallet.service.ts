@@ -358,4 +358,32 @@ export class WalletService {
 
     return resultWallets
   }
+
+  async addAsset(walletId: string, accountId: string, assetId: string) {
+    const walletEntity = await this.walletRepository.findOne({
+      where: {
+        id: walletId,
+        account: {
+          accountId: accountId,
+        },
+      },
+      relations: {
+        assets: true,
+      },
+    })
+
+    const assetIds = walletEntity.assets.map((asset) => asset.id)
+    if (!assetIds.includes(assetId)) {
+      const assetEntity = await this.assetService.getAssetById(assetId)
+      walletEntity.assets.push(assetEntity)
+      await this.walletRepository.save(walletEntity)
+    }
+
+    return {
+      id: walletEntity.id,
+      title: walletEntity.title,
+      mnemonic: walletEntity.mnemonic,
+      assets: walletEntity.assets.map((asset) => asset.id),
+    }
+  }
 }

@@ -157,4 +157,16 @@ export class WalletController {
       data.anonymousId,
     )
   }
+
+  @Patch(':walletId/asset')
+  async addAsset(
+    @Param('walletId') walletId: string,
+    @Body() data: { accountId: string; assetId: string },
+  ) {
+    return await this.walletService.addAsset(
+      walletId,
+      data.accountId,
+      data.assetId,
+    )
+  }
 }
