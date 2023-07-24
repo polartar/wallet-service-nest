@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { ENetworks } from '@rana/core'
+import { IsEnum, IsNotEmpty } from 'class-validator'
 
 export class PublishVaultTransactionDto {
   @ApiProperty({
@@ -47,4 +48,13 @@ export class PublishVaultTransactionDto {
   })
   @IsNotEmpty()
   parts: string[]
+
+  @ApiProperty({
+    description: 'Network type',
+    enum: ENetworks,
+    example: ENetworks.ETHEREUM,
+  })
+  @IsNotEmpty()
+  @IsEnum(ENetworks)
+  network: ENetworks
 }

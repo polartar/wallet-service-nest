@@ -92,3 +92,8 @@ export interface IVaultTransactionInput {
   derivedIndex: number
   network: ENetworks
 }
+export interface IVaultPublishTransactionInput {
+  serializedTransaction: string
+  parts: string[]
+  network: ENetworks
+}

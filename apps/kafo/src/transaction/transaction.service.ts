@@ -431,6 +431,7 @@ export class TransactionService {
   async publishVaultTransaction(
     serializedTransaction: string,
     parts: string[],
+    network: ENetworks,
   ) {
     const decoder = new ur.URDecoder()
 
@@ -453,7 +454,7 @@ export class TransactionService {
       throw new BadRequestException('Some parts are missing in the payload')
     }
 
-    let transaction, network
+    let transaction
 
     try {
       const str = JSON.parse(decoder.resultUR().decodeCBOR().toString()).data
@@ -461,14 +462,6 @@ export class TransactionService {
       const buf = Buffer.from(str, 'base64')
       const data = zlib.gunzipSync(buf).toString('utf8')
       const obj = JSON.parse(data)
-      network =
-        obj.BIP44Index === 0
-          ? ENetworks.BITCOIN
-          : obj.BIP44Index === 1
-          ? ENetworks.BITCOIN_TEST
-          : obj.BIP44Index === 60
-          ? ENetworks.ETHEREUM
-          : ENetworks.ETHEREUM_TEST
 
       transaction = JSON.parse(obj.transactions)
     } catch (err) {

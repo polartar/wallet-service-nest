@@ -121,6 +121,7 @@ export class TransactionController {
     return this.transactionService.publishVaultTransaction(
       data.serializedTransaction,
       data.parts,
+      data.network,
     )
   }
 }

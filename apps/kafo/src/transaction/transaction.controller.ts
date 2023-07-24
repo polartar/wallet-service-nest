@@ -13,6 +13,7 @@ import {
   INFTTransactionInput,
   ITransactionInput,
   ITransactionPush,
+  IVaultPublishTransactionInput,
   IVaultTransactionInput,
   IVaultTransactionResponse,
 } from './transaction.types'
@@ -81,12 +82,11 @@ export class TransactionController {
   }
 
   @Post('vault-transaction/send')
-  async publishVaultTransaction(
-    @Body() data: { serializedTransaction: string; parts: string[] },
-  ) {
+  async publishVaultTransaction(@Body() data: IVaultPublishTransactionInput) {
     return this.service.publishVaultTransaction(
       data.serializedTransaction,
       data.parts,
+      data.network,
     )
   }
 }
