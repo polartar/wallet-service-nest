@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { ENetworks } from '@rana/core'
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
+import { IsNotEmpty } from 'class-validator'
 
 export class GenerateVaultTransactionDto {
   @ApiProperty({

@@ -24,7 +24,6 @@ import { Transaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
 import * as BJSON from 'buffer-json'
 import zlib = require('zlib')
-import { URDecoder } from '@ngraveio/bc-ur'
 import * as ur from '@ngraveio/bc-ur'
 
 @Injectable()
@@ -395,5 +394,60 @@ export class TransactionService {
       parts.push(encoder.nextPart().toUpperCase())
 
     return parts
+  }
+
+  async publishVaultTransaction(
+    serializedTransaction: string,
+    parts: string[],
+  ) {
+    const decoder = new ur.URDecoder()
+
+    // const lines = fs.readFileSync('signature.txt').toString().split('\n')
+    try {
+      parts.forEach((line) => {
+        decoder.receivePart(line)
+      })
+    } catch (err) {
+      Sentry.captureException(
+        `publishVaultTransaction(): ${err.message} in ${parts}`,
+      )
+      throw new BadRequestException(err.message)
+    }
+
+    if (!decoder.isSuccess()) {
+      Sentry.captureException(
+        `publishVaultTransaction(): Some parts are missing in the payload`,
+      )
+
+      throw new BadRequestException('Some parts are missing in the payload')
+    }
+
+    let transaction, network
+
+    try {
+      const str = JSON.parse(decoder.resultUR().decodeCBOR().toString()).data
+
+      const buf = Buffer.from(str, 'base64')
+      const data = zlib.gunzipSync(buf).toString('utf8')
+      const obj = JSON.parse(data)
+      network =
+        obj.BIP44Index === 0
+          ? ENetworks.BITCOIN
+          : obj.BIP44Index === 1
+          ? ENetworks.BITCOIN_TEST
+          : obj.BIP44Index === 60
+          ? ENetworks.ETHEREUM
+          : ENetworks.ETHEREUM_TEST
+
+      transaction = JSON.parse(obj.transactions)
+    } catch (err) {
+      throw new BadRequestException(err.message)
+    }
+
+    return await this.publish(
+      serializedTransaction,
+      transaction.signingPayloads,
+      network,
+    )
   }
 }

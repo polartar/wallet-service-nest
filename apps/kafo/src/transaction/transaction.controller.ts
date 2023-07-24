@@ -79,4 +79,14 @@ export class TransactionController {
       data.derivedIndex,
     )
   }
+
+  @Post('vault-transaction/send')
+  async publishVaultTransaction(
+    @Body() data: { serializedTransaction: string; parts: string[] },
+  ) {
+    return this.service.publishVaultTransaction(
+      data.serializedTransaction,
+      data.parts,
+    )
+  }
 }

@@ -111,6 +111,7 @@ export class TransactionController {
   }
 
   @Post('vault/send')
+  @ApiOkResponse({ type: PublishTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Publish the vault transaction',
   })
