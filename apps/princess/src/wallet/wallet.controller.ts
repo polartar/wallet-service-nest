@@ -123,4 +123,15 @@ export class WalletsController {
   async deleteWallet(@Param('walletId') walletId: string) {
     return await this.walletService.deleteWallet(walletId)
   }
+
+  @Patch(':walletId/asset')
+  @ApiOperation({
+    summary: 'Add asset to the wallet',
+  })
+  async addAsset(
+    @Param('walletId') walletId: string,
+    @Body() data: { assetId: string },
+  ) {
+    return await this.walletService.addAsset(walletId, data.assetId)
+  }
 }
