@@ -402,7 +402,6 @@ export class TransactionService {
   ) {
     const decoder = new ur.URDecoder()
 
-    // const lines = fs.readFileSync('signature.txt').toString().split('\n')
     try {
       parts.forEach((line) => {
         decoder.receivePart(line)
