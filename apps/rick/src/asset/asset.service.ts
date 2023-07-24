@@ -624,4 +624,8 @@ export class AssetService {
   updateAssets(assets: AssetEntity[]) {
     return Promise.all(assets.map((asset) => this.assetRepository.save(asset)))
   }
+
+  async getAssetById(assetId: string) {
+    return await this.assetRepository.findOne({ where: { id: assetId } })
+  }
 }

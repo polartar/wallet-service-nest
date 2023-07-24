@@ -22,6 +22,7 @@ import {
   WalletPortfolioSwaggerResponse,
 } from './dto/get-wallet-portfolio.dto'
 import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
+import { AddAssetDto } from './dto/add-asset.dto'
 
 @Controller('wallet')
 @ApiTags('wallet')
@@ -130,7 +131,7 @@ export class WalletsController {
   })
   async addAsset(
     @Param('walletId') walletId: string,
-    @Body() data: { assetId: string },
+    @Body() data: AddAssetDto,
   ) {
     return await this.walletService.addAsset(walletId, data.assetId)
   }
