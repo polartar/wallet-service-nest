@@ -107,6 +107,7 @@ export class TransactionController {
     return this.transactionService.generateVaultTransaction(
       data.serializedTransaction,
       data.derivationIndex,
+      data.network,
     )
   }
 

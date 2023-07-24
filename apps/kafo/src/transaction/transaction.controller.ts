@@ -13,6 +13,7 @@ import {
   INFTTransactionInput,
   ITransactionInput,
   ITransactionPush,
+  IVaultTransactionInput,
   IVaultTransactionResponse,
 } from './transaction.types'
 import { ENetworks } from '@rana/core'
@@ -71,12 +72,11 @@ export class TransactionController {
   }
 
   @Post('vault-transaction')
-  async generateVaultTransaction(
-    @Body() data: { serializedTransaction: string; derivedIndex: number },
-  ) {
+  async generateVaultTransaction(@Body() data: IVaultTransactionInput) {
     return this.service.generateVaultTransaction(
       data.serializedTransaction,
       data.derivedIndex,
+      data.network,
     )
   }
 

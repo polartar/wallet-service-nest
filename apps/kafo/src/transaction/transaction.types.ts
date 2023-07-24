@@ -86,3 +86,9 @@ export interface IVaultTransactionResponse extends IVaultTransaction {
   signedPayload: string
   serializedTransaction: string
 }
+
+export interface IVaultTransactionInput {
+  serializedTransaction: string
+  derivedIndex: number
+  network: ENetworks
+}

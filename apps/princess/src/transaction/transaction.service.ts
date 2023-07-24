@@ -130,11 +130,12 @@ export class TransactionService {
   async generateVaultTransaction(
     serializedTransaction: string,
     derivedIndex: number,
+    network: ENetworks,
   ) {
     return await this.apiCall(
       EAPIMethod.POST,
       'transaction/vault-transaction',
-      { serializedTransaction, derivedIndex },
+      { serializedTransaction, derivedIndex, network },
     )
   }
 

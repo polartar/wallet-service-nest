@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { ENetworks } from '@rana/core'
+import { IsEnum, IsNotEmpty } from 'class-validator'
 
 export class GenerateVaultTransactionDto {
   @ApiProperty({
@@ -16,4 +17,13 @@ export class GenerateVaultTransactionDto {
   })
   @IsNotEmpty()
   derivationIndex: number
+
+  @ApiProperty({
+    description: 'Network type',
+    enum: ENetworks,
+    example: ENetworks.ETHEREUM,
+  })
+  @IsNotEmpty()
+  @IsEnum(ENetworks)
+  network: ENetworks
 }

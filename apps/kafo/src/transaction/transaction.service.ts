@@ -342,9 +342,39 @@ export class TransactionService {
     return BJSON.stringify(tx)
   }
 
+  getNetworkInfo(network: ENetworks) {
+    switch (network) {
+      case ENetworks.ETHEREUM:
+        return {
+          symbol: 'ETH',
+          coinName: 'Ethereum',
+          BIP44Index: 60,
+        }
+      case ENetworks.ETHEREUM_TEST:
+        return {
+          symbol: 'GETH',
+          coinName: 'Ethereum',
+          BIP44Index: 60,
+        }
+      case ENetworks.BITCOIN:
+        return {
+          symbol: 'BTC',
+          coinName: 'Bitcoin',
+          BIP44Index: 0,
+        }
+      case ENetworks.BITCOIN_TEST:
+        return {
+          symbol: 'TBTC',
+          coinName: 'Bitcoin',
+          BIP44Index: 1,
+        }
+    }
+  }
+
   async generateVaultTransaction(
     serializedTransaction: string,
     derivedIndex: number,
+    network: ENetworks,
   ) {
     let transaction: IVaultTransaction
     try {
@@ -368,11 +398,13 @@ export class TransactionService {
       signature,
     }
 
+    const networkInfo = this.getNetworkInfo(network)
+
     const payload = {
-      coinName: 'Ethereum', // or Bitcoin
-      symbol: 'ETH', // or BTC
+      coinName: networkInfo.coinName,
+      symbol: networkInfo.symbol,
       ellipticCurve: 'secp256k1',
-      BIP44Index: 60, // or 0
+      BIP44Index: networkInfo.BIP44Index,
       transactions: [serializedTransaction],
     }
 
