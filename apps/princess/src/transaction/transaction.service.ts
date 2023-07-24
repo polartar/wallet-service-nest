@@ -137,4 +137,15 @@ export class TransactionService {
       { serializedTransaction, derivedIndex },
     )
   }
+
+  async publishVaultTransaction(
+    serializedTransaction: string,
+    parts: string[],
+  ) {
+    return await this.apiCall(
+      EAPIMethod.POST,
+      'transaction/vault-transaction/send',
+      { serializedTransaction, parts },
+    )
+  }
 }
