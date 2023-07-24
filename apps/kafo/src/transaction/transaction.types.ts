@@ -61,6 +61,7 @@ export interface IVaultTransaction {
   }
   extra: {
     publicKey: string
+    signature?: string
   }
   fee: {
     fee: {
@@ -68,13 +69,16 @@ export interface IVaultTransaction {
       factor: number
     }
   }
-  signingPayloads: [
-    {
-      address: string
-      publickey: string
-      tosign: string
-    },
-  ]
+  signingPayloads: {
+    address: string
+    publickey: string
+    tosign: string
+    derivation?: {
+      account: number
+      index: number
+    }
+  }[]
+
   nativeTransaction: Transaction
 }
 

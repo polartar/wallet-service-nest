@@ -69,4 +69,14 @@ export class TransactionController {
       data.network,
     )
   }
+
+  @Post('vault-transaction')
+  async generateVaultTransaction(
+    @Body() data: { serializedTransaction: string; derivedIndex: number },
+  ) {
+    return this.service.generateVaultTransaction(
+      data.serializedTransaction,
+      data.derivedIndex,
+    )
+  }
 }

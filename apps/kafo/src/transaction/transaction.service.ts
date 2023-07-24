@@ -23,6 +23,9 @@ import * as crypto from 'crypto'
 import { Transaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
 import * as BJSON from 'buffer-json'
+import zlib = require('zlib')
+import { URDecoder } from '@ngraveio/bc-ur'
+import * as ur from '@ngraveio/bc-ur'
 
 @Injectable()
 export class TransactionService {
@@ -338,5 +341,59 @@ export class TransactionService {
         .toString('hex')
     }
     return BJSON.stringify(tx)
+  }
+
+  async generateVaultTransaction(
+    serializedTransaction: string,
+    derivedIndex: number,
+  ) {
+    let transaction: IVaultTransaction
+    try {
+      transaction = JSON.parse(serializedTransaction)
+    } catch (err) {
+      throw new BadRequestException('The serialized transaction is invalid')
+    }
+
+    const signature = this.signPayload(serializedTransaction)
+
+    transaction.signingPayloads = transaction.signingPayloads.map((payload) => {
+      payload.derivation = {
+        account: 0,
+        index: derivedIndex,
+      }
+      return payload
+    })
+
+    transaction.extra = {
+      ...transaction.extra,
+      signature,
+    }
+
+    const payload = {
+      coinName: 'Ethereum', // or Bitcoin
+      symbol: 'ETH', // or BTC
+      ellipticCurve: 'secp256k1',
+      BIP44Index: 60, // or 0
+      transactions: [serializedTransaction],
+    }
+
+    const compressed = zlib.gzipSync(JSON.stringify(payload)).toString('base64')
+
+    const packaged = {
+      version: '1',
+      type: 'tx_sign',
+      md5: crypto.createHash('md5').update(compressed, 'utf8').digest('hex'),
+      data: compressed,
+    }
+
+    const fragmentSize = 90
+    const urObj = ur.UR.fromBuffer(Buffer.from(JSON.stringify(packaged)))
+    const encoder = new ur.UREncoder(urObj, fragmentSize)
+
+    const parts = []
+    for (let i = 0; i < encoder.fragmentsLength * 3; i++)
+      parts.push(encoder.nextPart().toUpperCase())
+
+    return parts
   }
 }
