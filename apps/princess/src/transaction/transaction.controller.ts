@@ -102,7 +102,6 @@ export class TransactionController {
   @ApiOperation({
     summary: 'Generate the vault transaction object',
   })
-  @Public()
   async generateVaultTransaction(@Body() data: GenerateVaultTransactionDto) {
     return this.transactionService.generateVaultTransaction(
       data.serializedTransaction,
@@ -116,7 +115,6 @@ export class TransactionController {
   @ApiOperation({
     summary: 'Publish the vault transaction',
   })
-  @Public()
   async publishVaultTransaction(@Body() data: PublishVaultTransactionDto) {
     return this.transactionService.publishVaultTransaction(
       data.serializedTransaction,
