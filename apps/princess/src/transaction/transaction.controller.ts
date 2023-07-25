@@ -19,6 +19,7 @@ import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dt
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
 import { GenerateVaultTransactionDto } from './dto/generate-vault-transaction.dto'
 import { PublishVaultTransactionDto } from './dto/publish-vault-transaction.dto'
+import { Public } from '../gateway/decorators/public.decorator'
 
 @Controller('transaction')
 @ApiTags('transaction')
@@ -110,11 +111,13 @@ export class TransactionController {
   }
 
   @Post('vault/send')
+  @Public()
   @ApiOkResponse({ type: PublishTransactionSwaggerResponse })
   @ApiOperation({
     summary: 'Publish the vault transaction',
   })
   async publishVaultTransaction(@Body() data: PublishVaultTransactionDto) {
+    console.log({ data })
     return this.transactionService.publishVaultTransaction(
       data.serializedTransaction,
       data.parts,

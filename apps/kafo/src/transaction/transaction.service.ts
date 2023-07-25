@@ -454,7 +454,7 @@ export class TransactionService {
       throw new BadRequestException('Some parts are missing in the payload')
     }
 
-    let transaction
+    let signingPayloads
 
     try {
       const str = JSON.parse(decoder.resultUR().decodeCBOR().toString()).data
@@ -463,15 +463,11 @@ export class TransactionService {
       const data = zlib.gunzipSync(buf).toString('utf8')
       const obj = JSON.parse(data)
 
-      transaction = JSON.parse(obj.transactions)
+      signingPayloads = JSON.parse(obj)
     } catch (err) {
       throw new BadRequestException(err.message)
     }
 
-    return await this.publish(
-      serializedTransaction,
-      transaction.signingPayloads,
-      network,
-    )
+    return await this.publish(serializedTransaction, signingPayloads, network)
   }
 }
