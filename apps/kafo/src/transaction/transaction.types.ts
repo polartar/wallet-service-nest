@@ -61,7 +61,7 @@ export interface IVaultTransaction {
   }
   extra: {
     publicKey: string
-    signature?: string
+    serverSignature?: string
   }
   fee: {
     fee: {

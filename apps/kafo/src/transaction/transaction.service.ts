@@ -395,7 +395,7 @@ export class TransactionService {
 
     transaction.extra = {
       ...transaction.extra,
-      signature,
+      serverSignature: signature,
     }
 
     const networkInfo = this.getNetworkInfo(network)
