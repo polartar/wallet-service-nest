@@ -405,7 +405,7 @@ export class TransactionService {
       symbol: networkInfo.symbol,
       ellipticCurve: 'secp256k1',
       BIP44Index: networkInfo.BIP44Index,
-      transactions: [transaction],
+      transactions: [JSON.stringify(transaction)],
     }
 
     const compressed = zlib.gzipSync(JSON.stringify(payload)).toString('base64')
