@@ -205,7 +205,7 @@ export class PortfolioService {
     const updatedAddresses = []
 
     try {
-      this.activeBtcAssets = await Promise.all(
+      await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
           const transactions = asset.transactions || []
           const newHistoryData = []
