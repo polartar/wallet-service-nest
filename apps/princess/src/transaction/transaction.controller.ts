@@ -18,7 +18,6 @@ import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
 import { GenerateVaultTransactionDto } from './dto/generate-vault-transaction.dto'
-import { Public } from '../gateway/decorators/public.decorator'
 import { PublishVaultTransactionDto } from './dto/publish-vault-transaction.dto'
 
 @Controller('transaction')

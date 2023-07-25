@@ -30,8 +30,8 @@ export class TransactionService {
       const url = `${this.kafoAPIUrl}/${path}`
       const res = await firstValueFrom(
         method === EAPIMethod.POST
-          ? this.httpService.post<AxiosResponse>(url, body)
-          : this.httpService.get<AxiosResponse>(url),
+          ? this.httpService.post(url, body)
+          : this.httpService.get(url),
       )
       return res.data
     } catch (err) {
@@ -83,7 +83,16 @@ export class TransactionService {
         transferMessage,
       },
     )
-    return JSON.stringify(transaction)
+
+    return {
+      meta: transaction.meta,
+      data: {
+        ...transaction.data,
+        serializedTransaction: JSON.stringify(
+          transaction.data.serializedTransaction,
+        ),
+      },
+    }
   }
 
   async publishTransaction(
@@ -123,7 +132,15 @@ export class TransactionService {
       },
     )
 
-    return JSON.stringify(transaction)
+    return {
+      meta: transaction.meta,
+      data: {
+        ...transaction.data,
+        serializedTransaction: JSON.stringify(
+          transaction.data.serializedTransaction,
+        ),
+      },
+    }
   }
 
   async publishNFTTransaction(
