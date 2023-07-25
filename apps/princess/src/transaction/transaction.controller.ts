@@ -117,7 +117,6 @@ export class TransactionController {
     summary: 'Publish the vault transaction',
   })
   async publishVaultTransaction(@Body() data: PublishVaultTransactionDto) {
-    console.log({ data })
     return this.transactionService.publishVaultTransaction(
       data.serializedTransaction,
       data.parts,
