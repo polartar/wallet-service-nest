@@ -71,14 +71,19 @@ export class TransactionService {
     network: ENetworks,
     transferMessage: string,
   ) {
-    return this.apiCall(EAPIMethod.POST, `transaction/generate`, {
-      from,
-      to,
-      amount,
-      publicKey,
-      network,
-      transferMessage,
-    })
+    const transaction = await this.apiCall(
+      EAPIMethod.POST,
+      `transaction/generate`,
+      {
+        from,
+        to,
+        amount,
+        publicKey,
+        network,
+        transferMessage,
+      },
+    )
+    return JSON.stringify(transaction)
   }
 
   async publishTransaction(
@@ -86,7 +91,7 @@ export class TransactionService {
     signedPayloads: [],
     network: ENetworks,
   ) {
-    return this.apiCall(EAPIMethod.POST, 'transaction/publish', {
+    return await this.apiCall(EAPIMethod.POST, 'transaction/publish', {
       serializedTransaction,
       signedPayloads,
       network,
@@ -103,16 +108,22 @@ export class TransactionService {
     network: ENetworks,
     amount?: number,
   ) {
-    return this.apiCall(EAPIMethod.POST, `transaction/nft/generate`, {
-      from,
-      to,
-      contractAddress,
-      tokenId,
-      type,
-      amount,
-      publicKey,
-      network,
-    })
+    const transaction = await this.apiCall(
+      EAPIMethod.POST,
+      `transaction/nft/generate`,
+      {
+        from,
+        to,
+        contractAddress,
+        tokenId,
+        type,
+        amount,
+        publicKey,
+        network,
+      },
+    )
+
+    return JSON.stringify(transaction)
   }
 
   async publishNFTTransaction(
