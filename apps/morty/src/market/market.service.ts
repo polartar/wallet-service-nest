@@ -103,7 +103,7 @@ export class CoinService {
       const res = JSON.parse(response)
 
       firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/market/price/eth`, res),
+        this.httpService.post(`${this.princessAPIUrl}/coin/price/eth`, res),
       ).catch((err) => {
         Sentry.captureException(`subscribeETHPrice(): ${err.message}`)
       })
@@ -117,7 +117,7 @@ export class CoinService {
     this.btcClient.on('message', (response) => {
       const res = JSON.parse(response)
       firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/market/price/btc`, res),
+        this.httpService.post(`${this.princessAPIUrl}/coin/price/btc`, res),
       ).catch((err) => {
         Sentry.captureException(`subscribeBTCPrice(): ${err.message}`)
       })
