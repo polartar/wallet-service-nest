@@ -89,7 +89,7 @@ export class TransactionService {
       data: {
         ...transaction.data,
         serializedTransaction: JSON.stringify(
-          transaction.data.serializedTransaction,
+          JSON.parse(transaction.data.serializedTransaction),
         ),
       },
     }
@@ -137,7 +137,7 @@ export class TransactionService {
       data: {
         ...transaction.data,
         serializedTransaction: JSON.stringify(
-          transaction.data.serializedTransaction,
+          JSON.parse(transaction.data.serializedTransaction),
         ),
       },
     }
