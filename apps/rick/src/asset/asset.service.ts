@@ -502,6 +502,11 @@ export class AssetService {
     const assetEntity = await this.assetRepository.findOne({
       where: { id: assetId },
       relations: { transactions: true },
+      order: {
+        transactions: {
+          timestamp: 'DESC',
+        },
+      },
     })
     if (!assetEntity) {
       throw new BadRequestException('Not found asset')
@@ -518,7 +523,7 @@ export class AssetService {
     }
 
     if (transactions.length > 0) {
-      asset.transaction = transactions[transactions.length - 1]
+      asset.transaction = transactions[0]
     }
 
     if (
