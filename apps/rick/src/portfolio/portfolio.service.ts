@@ -278,15 +278,15 @@ export class PortfolioService {
             updatedAddresses.push(asset)
             postUpdatedAddresses.push({
               assetId: asset.id,
-              walletIds: asset.wallets.map((wallet) => wallet.id),
-              accountIds: asset.wallets.map((wallet) => wallet.account.id),
+              walletIds: asset.wallets?.map((wallet) => wallet.id),
+              accountIds: asset.wallets?.map((wallet) => wallet.account.id),
               newHistory: newHistoryData[0],
             })
             if (newHistoryData.length === 2) {
               postUpdatedAddresses.push({
                 assetId: asset.id,
-                walletIds: asset.wallets.map((wallet) => wallet.id),
-                accountIds: asset.wallets.map((wallet) => wallet.account.id),
+                walletIds: asset.wallets?.map((wallet) => wallet.id),
+                accountIds: asset.wallets?.map((wallet) => wallet.account.id),
                 newHistory: newHistoryData[1],
               })
             }

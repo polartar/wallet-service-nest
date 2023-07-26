@@ -55,7 +55,7 @@ export class CoinService {
       try {
         this.server.emit('ethereum_price', price)
       } catch (err) {
-        Sentry.captureException(`setEthPrice: ${err.message}`)
+        // Sentry.captureException(`setEthPrice: ${err.message}`)
       }
     }
   }
@@ -65,7 +65,7 @@ export class CoinService {
       try {
         this.server.emit('bitcoin_price', price)
       } catch (err) {
-        Sentry.captureException(`setBtcPrice: ${err.message}`)
+        // Sentry.captureException(`setBtcPrice: ${err.message}`)
       }
     }
   }
