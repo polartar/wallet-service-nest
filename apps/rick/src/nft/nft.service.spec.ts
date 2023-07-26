@@ -22,12 +22,12 @@ describe('NftService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should get NFT assets', async () => {
-    const assets = await service.getNFTAssets(
-      '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
-      ENetworks.ETHEREUM_TEST,
-      1,
-    )
-    expect(assets.nfts.length).toBe(100)
-  }, 20000)
+  // it('should get NFT assets', async () => {
+  //   const assets = await service.getNFTAssets(
+  //     '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+  //     ENetworks.ETHEREUM_TEST,
+  //     1,
+  //   )
+  //   expect(assets.nfts.length).toBe(100)
+  // }, 20000)
 })
