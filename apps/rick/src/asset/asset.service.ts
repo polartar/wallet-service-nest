@@ -260,6 +260,7 @@ export class AssetService {
   // If there are missed transactions, they are added to history table
   async confirmWalletBalances(assets?: AssetEntity[]) {
     Sentry.captureMessage('Start Confirm wallets')
+
     if (!assets) {
       assets = await this.getAllAssets()
     }
