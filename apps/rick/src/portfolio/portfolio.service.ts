@@ -197,6 +197,9 @@ export class PortfolioService {
   }
 
   async onBTCTransaction(transaction) {
+    if (!this.activeBtcAssets) {
+      return
+    }
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
