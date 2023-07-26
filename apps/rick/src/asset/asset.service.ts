@@ -264,6 +264,8 @@ export class AssetService {
     }
     const updatedAssets = await Promise.all(
       assets.map((asset: AssetEntity) => {
+        Sentry.captureMessage(`All Debug wallet: ${asset.address}`)
+
         if (
           asset.network === ENetworks.BITCOIN ||
           asset.network === ENetworks.BITCOIN_TEST
