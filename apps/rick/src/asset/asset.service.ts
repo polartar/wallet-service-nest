@@ -268,6 +268,7 @@ export class AssetService {
           asset.network === ENetworks.BITCOIN ||
           asset.network === ENetworks.BITCOIN_TEST
         ) {
+          Sentry.captureMessage(`Debug wallet: ${asset.address}`)
           return this.confirmBTCBalance(asset)
         } else {
           return this.confirmETHBalance(asset)
