@@ -79,8 +79,6 @@ export class AssetService {
     this.liquidTestAPIUrl = this.configService.get<string>(
       EEnvironment.liquidTestAPIUrl,
     )
-
-    this.initMissingWallet()
   }
 
   async initMissingWallet() {
@@ -89,7 +87,7 @@ export class AssetService {
     })
     this.addHistory({
       asset: asset,
-      from: 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc',
+      from: 'bc1qcy27dl9uf478v5a4jdeyqrsu97zw6xred2reuk',
       to: 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc',
       amount: '68435',
       hash: '3a3d54bd7b7ea65adaeb761b6634608e92ee06ac2ea93915e67fddfda7b6e525',
