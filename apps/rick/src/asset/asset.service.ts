@@ -216,6 +216,10 @@ export class AssetService {
     const balance = txResponse.data.balance
 
     const transactions = txResponse.data.txrefs
+    const length = transactions.length
+    Sentry.captureException(
+      `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Network Transaction length: ${length}`,
+    )
 
     let currentBalance = balance
     const allHistories = await Promise.all(
@@ -224,7 +228,6 @@ export class AssetService {
         currentBalance = record.spent
           ? currentBalance - record.value
           : currentBalance + record.value
-        console.log({ asset })
         return this.addHistory({
           asset: asset,
           from: record.spent ? asset.address : '',
@@ -245,13 +248,13 @@ export class AssetService {
   }
 
   async confirmBTCBalance(asset: AssetEntity): Promise<AssetEntity> {
+    const transactions = await this.getBtcHistory(asset, 0)
     if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
+      const length = transactions.length
       Sentry.captureException(
-        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc: ${asset.transactions.length}`,
+        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Transaction length: ${length}`,
       )
     }
-    const transactions = await this.getBtcHistory(asset, 0)
-
     if (transactions.length > 0) {
       return asset
     }
