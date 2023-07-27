@@ -261,13 +261,19 @@ export class AssetService {
   }
 
   async confirmBTCBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const transactions = await this.getBtcHistory(
-      asset,
-      asset.transactions.length,
-    )
+    try {
+      const transactions = await this.getBtcHistory(
+        asset,
+        asset.transactions.length,
+      )
 
-    if (transactions.length > 0) {
-      return asset
+      if (transactions.length > 0) {
+        return asset
+      }
+    } catch (err) {
+      Sentry.captureException(
+        `Confirm BTCBalance: ${asset.address} : ${err.message}`,
+      )
     }
 
     return null
