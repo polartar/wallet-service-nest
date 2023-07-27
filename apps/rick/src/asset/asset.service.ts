@@ -196,6 +196,11 @@ export class AssetService {
     asset: AssetEntity,
     from: number,
   ): Promise<TransactionEntity[]> {
+    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
+      Sentry.captureMessage(
+        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Transaction start`,
+      )
+    }
     const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
       this.httpService.get(
         `https://api.blockcypher.com/v1/btc/${
@@ -203,6 +208,12 @@ export class AssetService {
         }/addrs/${asset.address}`,
       ),
     )
+
+    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
+      Sentry.captureMessage(
+        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Get Transactions: ${txResponse.data.txrefs.length}`,
+      )
+    }
 
     if (
       !txResponse ||
@@ -216,10 +227,12 @@ export class AssetService {
     const balance = txResponse.data.balance
 
     const transactions = txResponse.data.txrefs
-    const length = transactions.length
-    Sentry.captureException(
-      `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Network Transaction length: ${length}`,
-    )
+
+    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
+      Sentry.captureMessage(
+        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc balance: ${balance}`,
+      )
+    }
 
     let currentBalance = balance
     const allHistories = await Promise.all(
@@ -248,13 +261,11 @@ export class AssetService {
   }
 
   async confirmBTCBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const transactions = await this.getBtcHistory(asset, 0)
-    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
-      const length = transactions.length
-      Sentry.captureException(
-        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Transaction length: ${length}`,
-      )
-    }
+    const transactions = await this.getBtcHistory(
+      asset,
+      asset.transactions.length,
+    )
+
     if (transactions.length > 0) {
       return asset
     }
