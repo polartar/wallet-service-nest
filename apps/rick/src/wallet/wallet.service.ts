@@ -46,7 +46,6 @@ export class WalletService {
     )
 
     this.assetService.confirmWalletBalances()
-    this.assetService.initMissingWallet()
   }
 
   async getUserWalletTransaction(

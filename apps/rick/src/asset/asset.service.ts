@@ -81,23 +81,6 @@ export class AssetService {
     )
   }
 
-  async initMissingWallet() {
-    const asset = await this.assetRepository.findOne({
-      where: { id: '3bfec42c-3bbb-4ab7-b7a5-1391bb8119c8' },
-    })
-    this.addHistory({
-      asset: asset,
-      from: 'bc1qcy27dl9uf478v5a4jdeyqrsu97zw6xred2reuk',
-      to: 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc',
-      amount: '68435',
-      hash: '3a3d54bd7b7ea65adaeb761b6634608e92ee06ac2ea93915e67fddfda7b6e525',
-      fee: '0',
-      balance: '68435',
-      timestamp: 1690376598,
-      status: ETransactionStatuses.RECEIVED,
-    })
-  }
-
   async getAllAssets(): Promise<AssetEntity[]> {
     return await this.assetRepository.find({
       order: {
