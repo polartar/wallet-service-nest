@@ -196,11 +196,6 @@ export class AssetService {
     asset: AssetEntity,
     from: number,
   ): Promise<TransactionEntity[]> {
-    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
-      Sentry.captureMessage(
-        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Transaction start`,
-      )
-    }
     const txResponse: { data: IBTCTransactionResponse } = await firstValueFrom(
       this.httpService.get(
         `https://api.blockcypher.com/v1/btc/${
@@ -208,12 +203,6 @@ export class AssetService {
         }/addrs/${asset.address}`,
       ),
     )
-
-    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
-      Sentry.captureMessage(
-        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc Get Transactions: ${txResponse.data.txrefs.length}`,
-      )
-    }
 
     if (
       !txResponse ||
@@ -227,12 +216,6 @@ export class AssetService {
     const balance = txResponse.data.balance
 
     const transactions = txResponse.data.txrefs
-
-    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
-      Sentry.captureMessage(
-        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc balance: ${balance}`,
-      )
-    }
 
     let currentBalance = balance
     const allHistories = await Promise.all(
@@ -271,10 +254,9 @@ export class AssetService {
         return asset
       }
     } catch (err) {
-      if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc')
-        Sentry.captureException(
-          `Confirm BTCBalance for bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc: ${asset.address} : ${err.message}`,
-        )
+      Sentry.captureException(
+        `Confirm BTCBalance: ${asset.address} : ${err.message}`,
+      )
     }
 
     return null
