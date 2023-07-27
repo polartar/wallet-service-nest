@@ -44,6 +44,8 @@ export class WalletService {
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
     )
+
+    this.assetService.confirmWalletBalances()
   }
 
   async getUserWalletTransaction(

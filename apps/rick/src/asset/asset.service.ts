@@ -66,7 +66,6 @@ export class AssetService {
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
     )
-    this.confirmWalletBalances()
 
     this.liquidAPIKey = this.configService.get<string>(
       EEnvironment.liquidAPIKey,
@@ -225,6 +224,7 @@ export class AssetService {
         currentBalance = record.spent
           ? currentBalance - record.value
           : currentBalance + record.value
+        console.log({ asset })
         return this.addHistory({
           asset: asset,
           from: record.spent ? asset.address : '',
@@ -245,12 +245,14 @@ export class AssetService {
   }
 
   async confirmBTCBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const transactions = await this.getBtcHistory(
-      asset,
-      asset.transactions.length,
-    )
+    if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
+      Sentry.captureException(
+        `bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc: ${asset.transactions.length}`,
+      )
+    }
+    const transactions = await this.getBtcHistory(asset, 0)
+
     if (transactions.length > 0) {
-      asset.transactions = transactions
       return asset
     }
 
@@ -259,32 +261,22 @@ export class AssetService {
 
   // If there are missed transactions, they are added to history table
   async confirmWalletBalances(assets?: AssetEntity[]) {
-    Sentry.captureMessage('Start Confirm wallets')
-
     if (!assets) {
       assets = await this.getAllAssets()
     }
 
-    const btcAddresses = []
     const updatedAssets = await Promise.all(
       assets.map(async (asset: AssetEntity) => {
         if (
           asset.network === ENetworks.BITCOIN ||
           asset.network === ENetworks.BITCOIN_TEST
         ) {
-          if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc') {
-            Sentry.captureMessage(
-              'Special wallet: bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc',
-            )
-          }
-          btcAddresses.push(asset.address)
           return await this.confirmBTCBalance(asset)
         } else {
           return this.confirmETHBalance(asset)
         }
       }),
     )
-    Sentry.captureMessage(`Debug wallets: ${btcAddresses.toString()}`)
 
     this.assetRepository.save(updatedAssets.filter((asset) => !!asset))
   }
