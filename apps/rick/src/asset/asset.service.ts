@@ -271,9 +271,10 @@ export class AssetService {
         return asset
       }
     } catch (err) {
-      Sentry.captureException(
-        `Confirm BTCBalance: ${asset.address} : ${err.message}`,
-      )
+      if (asset.address === 'bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc')
+        Sentry.captureException(
+          `Confirm BTCBalance for bc1qr6r406a6je99ufg3dax3k5pdtl0jfcrydsvmpc: ${asset.address} : ${err.message}`,
+        )
     }
 
     return null
