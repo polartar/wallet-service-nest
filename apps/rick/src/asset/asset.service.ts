@@ -264,21 +264,26 @@ export class AssetService {
     if (!assets) {
       assets = await this.getAllAssets()
     }
+    Sentry.captureMessage(
+      `All Debug wallet: ${assets.map((asset) => asset.address).toString()}`,
+    )
+
+    const btcAddresses = []
     const updatedAssets = await Promise.all(
       assets.map((asset: AssetEntity) => {
-        Sentry.captureMessage(`All Debug wallet: ${asset.address}`)
-
         if (
           asset.network === ENetworks.BITCOIN ||
           asset.network === ENetworks.BITCOIN_TEST
         ) {
-          Sentry.captureMessage(`Debug wallet: ${asset.address}`)
+          btcAddresses.push(asset.address)
           return this.confirmBTCBalance(asset)
         } else {
           return this.confirmETHBalance(asset)
         }
       }),
     )
+    Sentry.captureMessage(`Debug wallet: ${btcAddresses.toString()}`)
+
     this.assetRepository.save(updatedAssets.filter((asset) => !!asset))
   }
 
