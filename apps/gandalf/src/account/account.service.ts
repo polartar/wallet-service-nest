@@ -46,6 +46,12 @@ export class AccountService {
       throw new BadRequestException(`Not found user(${accountId})`)
     }
 
+    Object.keys(data).map((key) => {
+      if (data[key] === '') {
+        data[key] = null
+      }
+    })
+
     const result = await this.accountRepository.update(accountId, data)
     if (result.affected === 1) {
       return 'Successfully updated'
