@@ -31,6 +31,7 @@ export class ITransaction {
   timestamp: number
   status: ETransactionStatuses
   fee: string
+  blockNumber?: number
 }
 
 export interface IAssetDetail {

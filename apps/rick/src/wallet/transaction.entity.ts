@@ -41,6 +41,9 @@ export class TransactionEntity {
   @Column('bigint')
   timestamp: number
 
+  @Column('bigint')
+  blockNumber?: number
+
   @Column('text')
   status: ETransactionStatuses
 
