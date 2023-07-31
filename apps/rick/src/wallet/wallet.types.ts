@@ -17,4 +17,5 @@ export enum ETransactionStatuses {
   RECEIVING = 'receiving',
   FAILED = 'failed',
   SENDING = 'sending',
+  INTERNAL = 'internal',
 }

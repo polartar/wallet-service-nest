@@ -128,6 +128,8 @@ export class AssetService {
 
     let transactions
 
+    const internalUrl = url.replace('txlist', 'txlistinternal')
+
     try {
       const response = await firstValueFrom(this.httpService.get(url))
       transactions = response.data.result
@@ -139,15 +141,38 @@ export class AssetService {
     if (!transactions || !transactions.length || !Array.isArray(transactions)) {
       return { balance, transactions: [] }
     }
-    // const balance = await provider.getBalance(asset.address)
+
+    // fetch internal transactions
+    try {
+      const response = await firstValueFrom(this.httpService.get(internalUrl))
+      if (
+        !response.data.result.length ||
+        !Array.isArray(response.data.result)
+      ) {
+        return { balance, transactions: [] }
+      }
+      transactions = transactions.concat(response.data.result)
+      transactions.sort((a, b) => {
+        if (a.blockNumber < b.blockNumber) {
+          return 1
+        }
+        return -1
+      })
+    } catch (err) {
+      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
+    }
 
     let currentBalance = balance
     const histories = await Promise.all(
       transactions.map(async (record) => {
         const prevBalance = currentBalance
-        const fee = BigNumber.from(record.gasUsed).mul(
-          BigNumber.from(record.gasPrice),
-        )
+
+        const fee =
+          record.gasUsed === '0'
+            ? BigNumber.from('0')
+            : BigNumber.from(record.gasUsed).mul(
+                BigNumber.from(record.gasPrice),
+              )
         const value = BigNumber.from(record.value)
 
         const walletAddress = asset.address.toLowerCase()
@@ -169,6 +194,9 @@ export class AssetService {
             record.isError === '0'
               ? ETransactionStatuses.RECEIVED
               : ETransactionStatuses.FAILED
+        }
+        if (record.type === 'call') {
+          status = ETransactionStatuses.INTERNAL
         }
 
         const newHistory: ITransaction = {
@@ -228,10 +256,7 @@ export class AssetService {
       const { balance: nextBalance, transactions } =
         await this.getEthPartialHistory(asset, fromBlock, balance, page++)
       balance = nextBalance
-      if (transactions.length !== 0) {
-        // asset.transactions = transactions
-        // await this.assetRepository.save(asset)
-      }
+
       if (transactions.length !== this.offset) {
         if (page === 1) return null
         return currentBalance
@@ -250,7 +275,7 @@ export class AssetService {
       transactions && transactions.length > 0
         ? transactions[0].blockNumber
         : 99999999
-    const response = await this.getEthHistory(asset, latestBlock)
+    const response = await this.getEthHistory(asset, latestBlock + 1)
 
     if (response !== null) {
       return asset
@@ -387,21 +412,21 @@ export class AssetService {
     asset = await this.assetRepository.findOne({
       where: { address: validAddress, network },
     })
-    if (asset) {
-      if (walletEntity) {
-        if (!asset.wallets || asset.wallets.length === 0) {
-          asset.wallets = [walletEntity]
-          await this.assetRepository.save(asset)
-        } else {
-          const walletIds = asset.wallets.map((wallet) => wallet.id)
-          if (!walletIds.includes(walletEntity.id)) {
-            asset.wallets.push(walletEntity)
-            await this.assetRepository.save(asset)
-          }
-        }
-      }
-      return asset
-    }
+    // if (asset) {
+    //   if (walletEntity) {
+    //     if (!asset.wallets || asset.wallets.length === 0) {
+    //       asset.wallets = [walletEntity]
+    //       await this.assetRepository.save(asset)
+    //     } else {
+    //       const walletIds = asset.wallets.map((wallet) => wallet.id)
+    //       if (!walletIds.includes(walletEntity.id)) {
+    //         asset.wallets.push(walletEntity)
+    //         await this.assetRepository.save(asset)
+    //       }
+    //     }
+    //   }
+    //   return asset
+    // }
 
     asset = await this.addAsset(
       validAddress,
