@@ -42,7 +42,7 @@ export class AssetService {
   liquidAPIUrl: string
   liquidTestAPIUrl: string
   etherscanAPIKey: string
-  offset = 500
+  offset = 200
 
   constructor(
     private configService: ConfigService,
@@ -112,7 +112,7 @@ export class AssetService {
 
   async getEthPartialHistory(
     asset: AssetEntity,
-    fromBlock: number,
+    toBlock: number,
     balance: BigNumber,
     page: number,
   ): Promise<{ balance: BigNumber; transactions: TransactionEntity[] }> {
@@ -122,7 +122,7 @@ export class AssetService {
         : 'api-goerli.etherscan.io'
     }/api?module=account&action=txlist&address=${
       asset.address
-    }&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=${
+    }&startblock=0&endblock=${toBlock}&sort=desc&apikey=${
       this.etherscanAPIKey
     }&page=${page}&offset=${this.offset}`
 
@@ -132,32 +132,36 @@ export class AssetService {
 
     try {
       const response = await firstValueFrom(this.httpService.get(url))
-      transactions = response.data.result
-    } catch (err) {
-      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
-      return { balance, transactions: [] }
-    }
+      console.log(url)
 
-    if (!transactions || !transactions.length || !Array.isArray(transactions)) {
+      if (response.data.status === '1') {
+        transactions = response.data.result
+      } else {
+        throw new BadRequestException(response.data.message)
+      }
+      console.log({ transactions })
+    } catch (err) {
+      console.log(err)
+      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
       return { balance, transactions: [] }
     }
 
     // fetch internal transactions
     try {
       const response = await firstValueFrom(this.httpService.get(internalUrl))
-      if (
-        !response.data.result.length ||
-        !Array.isArray(response.data.result)
-      ) {
-        return { balance, transactions: [] }
+
+      if (response.data.status === '0') {
+        throw new BadRequestException(response.data.message)
       }
-      transactions = transactions.concat(response.data.result)
-      transactions.sort((a, b) => {
-        if (a.blockNumber < b.blockNumber) {
-          return 1
-        }
-        return -1
-      })
+      if (response.data.result.length > 0) {
+        transactions = transactions.concat(response.data.result)
+        transactions.sort((a, b) => {
+          if (a.blockNumber < b.blockNumber) {
+            return 1
+          }
+          return -1
+        })
+      }
     } catch (err) {
       Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
     }
@@ -241,7 +245,7 @@ export class AssetService {
     return { balance: currentBalance, transactions: histories }
   }
 
-  async getEthHistory(asset: AssetEntity, fromBlock = 0) {
+  async getEthHistory(asset: AssetEntity, toBlock = 0) {
     const provider =
       asset.network === ENetworks.ETHEREUM
         ? this.mainnetProvider
@@ -254,7 +258,7 @@ export class AssetService {
 
     while (page) {
       const { balance: nextBalance, transactions } =
-        await this.getEthPartialHistory(asset, fromBlock, balance, page++)
+        await this.getEthPartialHistory(asset, toBlock, balance, page++)
       balance = nextBalance
 
       if (transactions.length !== this.offset) {
@@ -267,15 +271,15 @@ export class AssetService {
   async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
     const transactions = asset.transactions.sort((a, b) => {
       if (a.blockNumber > b.blockNumber) {
-        return -1
+        return 1
       }
-      return 1
+      return -1
     })
-    const latestBlock =
+    const lastBlockNumber =
       transactions && transactions.length > 0
-        ? transactions[0].blockNumber
+        ? transactions[0].blockNumber - 1
         : 99999999
-    const response = await this.getEthHistory(asset, latestBlock + 1)
+    const response = await this.getEthHistory(asset, lastBlockNumber)
 
     if (response !== null) {
       return asset
@@ -412,21 +416,21 @@ export class AssetService {
     asset = await this.assetRepository.findOne({
       where: { address: validAddress, network },
     })
-    // if (asset) {
-    //   if (walletEntity) {
-    //     if (!asset.wallets || asset.wallets.length === 0) {
-    //       asset.wallets = [walletEntity]
-    //       await this.assetRepository.save(asset)
-    //     } else {
-    //       const walletIds = asset.wallets.map((wallet) => wallet.id)
-    //       if (!walletIds.includes(walletEntity.id)) {
-    //         asset.wallets.push(walletEntity)
-    //         await this.assetRepository.save(asset)
-    //       }
-    //     }
-    //   }
-    //   return asset
-    // }
+    if (asset) {
+      if (walletEntity) {
+        if (!asset.wallets || asset.wallets.length === 0) {
+          asset.wallets = [walletEntity]
+          await this.assetRepository.save(asset)
+        } else {
+          const walletIds = asset.wallets.map((wallet) => wallet.id)
+          if (!walletIds.includes(walletEntity.id)) {
+            asset.wallets.push(walletEntity)
+            await this.assetRepository.save(asset)
+          }
+        }
+      }
+      return asset
+    }
 
     asset = await this.addAsset(
       validAddress,
