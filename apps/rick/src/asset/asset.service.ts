@@ -36,7 +36,6 @@ import { Network, validate } from 'bitcoin-address-validation'
 export class AssetService {
   goerliProvider: ethers.providers.EtherscanProvider
   mainnetProvider: ethers.providers.EtherscanProvider
-  alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
   liquidTestAPIKey: string
