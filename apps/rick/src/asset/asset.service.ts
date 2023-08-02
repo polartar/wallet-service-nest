@@ -278,7 +278,7 @@ export class AssetService {
     })
     const lastBlockNumber =
       transactions && transactions.length > 0
-        ? transactions[0].blockNumber - 1
+        ? (transactions[0].blockNumber || 1) - 1
         : 99999999
     const response = await this.getEthHistory(asset, lastBlockNumber)
 
