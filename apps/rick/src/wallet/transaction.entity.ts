@@ -42,6 +42,7 @@ export class TransactionEntity {
   timestamp: number
 
   @Column('bigint')
+  @Column({ nullable: true })
   blockNumber?: number
 
   @Column('text')
