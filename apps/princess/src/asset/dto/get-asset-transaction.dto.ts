@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger'
 
 export class GetAssetTransactionDto {
+  @ApiProperty({
+    example: 10,
+    required: false,
+  })
   count?: number
+
+  @ApiProperty({
+    example: 0,
+    required: false,
+  })
   start?: number
 }
 

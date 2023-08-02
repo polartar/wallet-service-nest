@@ -18,6 +18,7 @@ import { HttpService } from '@nestjs/axios'
 import {
   IAssetDetail,
   IBTCTransactionResponse,
+  IEthTransaction,
   ITransaction,
   IXPubInfo,
 } from './asset.types'
@@ -41,6 +42,8 @@ export class AssetService {
   liquidTestAPIKey: string
   liquidAPIUrl: string
   liquidTestAPIUrl: string
+  etherscanAPIKey: string
+  offset = 200
 
   constructor(
     private configService: ConfigService,
@@ -53,14 +56,17 @@ export class AssetService {
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>, // private readonly accountService: AccountService,
   ) {
+    this.etherscanAPIKey = this.configService.get<string>(
+      EEnvironment.etherscanAPIKey,
+    )
     this.goerliProvider = new ethers.providers.EtherscanProvider(
       'goerli',
-      this.configService.get<string>(EEnvironment.etherscanAPIKey),
+      this.etherscanAPIKey,
     )
 
     this.mainnetProvider = new ethers.providers.EtherscanProvider(
       'mainnet',
-      this.configService.get<string>(EEnvironment.etherscanAPIKey),
+      this.etherscanAPIKey,
     )
 
     this.princessAPIUrl = this.configService.get<string>(
@@ -97,95 +103,187 @@ export class AssetService {
     })
   }
 
-  addHistory(data: ITransaction) {
-    return this.transactionRepository.save(data)
+  async addHistory(data: ITransaction): Promise<TransactionEntity> {
+    try {
+      return await this.transactionRepository.save(data)
+    } catch (err) {
+      Sentry.captureException(`addHistory(): ${err.message}`)
+    }
   }
 
-  async getEthHistory(
+  async getEthPartialHistory(
     asset: AssetEntity,
-    from: number,
-  ): Promise<TransactionEntity[]> {
+    toBlock: number,
+    balance: BigNumber,
+    page: number,
+  ): Promise<{ balance: BigNumber; transactions: TransactionEntity[] }> {
+    const url = `https://${
+      asset.network === ENetworks.ETHEREUM
+        ? 'api.etherscan.io'
+        : 'api-goerli.etherscan.io'
+    }/api?module=account&action=txlist&address=${
+      asset.address
+    }&startblock=0&endblock=${toBlock}&sort=desc&apikey=${
+      this.etherscanAPIKey
+    }&page=${page}&offset=${this.offset}`
+
+    let transactions: IEthTransaction[]
+
+    const internalUrl = url.replace('txlist', 'txlistinternal')
+
+    try {
+      const response = await firstValueFrom(this.httpService.get(url))
+
+      if (response.data.status === '1') {
+        transactions = response.data.result
+      } else {
+        throw new BadRequestException(response.data.message)
+      }
+    } catch (err) {
+      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
+      return { balance, transactions: [] }
+    }
+
+    // fetch internal transactions
+    try {
+      const response = await firstValueFrom(this.httpService.get(internalUrl))
+
+      if (response.data.status === '0') {
+        throw new BadRequestException(response.data.message)
+      }
+      if (response.data.result.length > 0) {
+        transactions = transactions.concat(response.data.result)
+        transactions.sort((a, b) => {
+          if (a.blockNumber < b.blockNumber) {
+            return 1
+          }
+          return -1
+        })
+      }
+    } catch (err) {
+      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
+    }
+
+    let currentBalance = balance
+    const histories = await Promise.all(
+      transactions.map(async (record) => {
+        const prevBalance = currentBalance
+
+        const fee =
+          record.gasUsed === '0'
+            ? BigNumber.from('0')
+            : BigNumber.from(record.gasUsed).mul(
+                BigNumber.from(record.gasPrice),
+              )
+        const value = BigNumber.from(record.value)
+
+        const walletAddress = asset.address.toLowerCase()
+        let status
+        if (record.from?.toLowerCase() === walletAddress) {
+          currentBalance = currentBalance.add(fee)
+          if (record.isError === '0') {
+            currentBalance = currentBalance.add(value)
+            status = ETransactionStatuses.SENT
+          } else {
+            status = ETransactionStatuses.FAILED
+          }
+        }
+
+        //consider if transferred itself
+        if (record.to?.toLowerCase() === walletAddress) {
+          currentBalance = currentBalance.sub(value)
+          status =
+            record.isError === '0'
+              ? ETransactionStatuses.RECEIVED
+              : ETransactionStatuses.FAILED
+        }
+        if (record.type === 'call') {
+          status = ETransactionStatuses.INTERNAL
+        }
+
+        const newHistory: ITransaction = {
+          asset,
+          from: record.from || '',
+          to: record.to || '',
+          hash: record.hash,
+          amount: value.toString(),
+          balance: prevBalance.toString(),
+          timestamp: +record.timeStamp,
+          status,
+          blockNumber: record.blockNumber,
+          fee: status === ETransactionStatuses.SENT ? fee.toString() : '0',
+        }
+        // parse the transaction
+        if (value.isZero()) {
+          let iface = new ethers.utils.Interface(ERC721ABI)
+          let response
+          try {
+            response = iface.parseTransaction({ data: record.input })
+          } catch (err) {
+            iface = new ethers.utils.Interface(ERC1155ABI)
+            try {
+              response = iface.parseTransaction({ data: record.input })
+              // eslint-disable-next-line no-empty
+            } catch (err) {}
+          }
+          // only track the transfer functions
+          if (response && response.name.toLowerCase().includes('transfer')) {
+            const { from, tokenId, id } = response.args
+            newHistory.from = from || record.from
+            newHistory.tokenId = tokenId?.toString() || id?.toString()
+          }
+        }
+
+        const history = await this.addHistory(newHistory)
+
+        return history
+      }),
+    )
+
+    return { balance: currentBalance, transactions: histories }
+  }
+
+  async getEthHistory(asset: AssetEntity, toBlock = 99999999) {
     const provider =
       asset.network === ENetworks.ETHEREUM
         ? this.mainnetProvider
         : this.goerliProvider
 
-    const transactions = await provider.getHistory(asset.address)
+    const currentBalance = await provider.getBalance(asset.address)
 
-    if (!transactions || !transactions.length) {
-      return []
+    let balance = currentBalance
+    let page = 1
+
+    while (page) {
+      const { balance: nextBalance, transactions } =
+        await this.getEthPartialHistory(asset, toBlock, balance, page++)
+      balance = nextBalance
+
+      if (transactions.length > 0) {
+        asset.transactions = asset.transactions.concat(transactions)
+        await this.assetRepository.save(asset)
+      }
+      if (transactions.length !== this.offset) {
+        if (page === 1) return null
+        return currentBalance
+      }
     }
-
-    const balance = await provider.getBalance(asset.address)
-
-    let currentBalance = balance
-    const histories = await Promise.all(
-      transactions
-        .slice(from)
-        .reverse()
-        .map(async (record) => {
-          const prevBalance = currentBalance
-          const fee = record.gasLimit.mul(record.gasPrice)
-          const walletAddress = asset.address.toLowerCase()
-          let status
-          if (record.from?.toLowerCase() === walletAddress) {
-            currentBalance = currentBalance.add(fee)
-            currentBalance = currentBalance.add(record.value)
-            status = ETransactionStatuses.SENT
-          }
-          //consider if transferred itself
-          if (record.to?.toLowerCase() === walletAddress) {
-            currentBalance = currentBalance.sub(record.value)
-            status = ETransactionStatuses.RECEIVED
-          }
-
-          const newHistory: ITransaction = {
-            asset,
-            from: record.from || '',
-            to: record.to || '',
-            hash: record.hash,
-            amount: record.value.toString(),
-            balance: prevBalance.toString(),
-            timestamp: +record.timestamp,
-            status,
-            fee: status === ETransactionStatuses.SENT ? fee.toString() : '0',
-          }
-          // parse the transaction
-          if (record.value.isZero()) {
-            let iface = new ethers.utils.Interface(ERC721ABI)
-            let response
-            try {
-              response = iface.parseTransaction({ data: record.data })
-            } catch (err) {
-              iface = new ethers.utils.Interface(ERC1155ABI)
-              try {
-                response = iface.parseTransaction({ data: record.data })
-                // eslint-disable-next-line no-empty
-              } catch (err) {}
-            }
-            // only track the transfer functions
-            if (response && response.name.toLowerCase().includes('transfer')) {
-              const { from, to, tokenId, id } = response.args
-              newHistory.from = from || record.from
-              newHistory.to = to
-              newHistory.tokenId = tokenId?.toString() || id?.toString()
-            }
-          }
-
-          return await this.addHistory(newHistory)
-        }),
-    )
-    return histories
   }
 
   async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const transactions = await this.getEthHistory(
-      asset,
-      asset.transactions.length,
-    )
+    const transactions = asset.transactions.sort((a, b) => {
+      if (a.blockNumber > b.blockNumber) {
+        return 1
+      }
+      return -1
+    })
+    const lastBlockNumber =
+      transactions && transactions.length > 0
+        ? transactions[0].blockNumber - 1
+        : 99999999
+    const response = await this.getEthHistory(asset, lastBlockNumber)
 
-    if (transactions.length > 0) {
-      asset.transactions = transactions
+    if (response !== null) {
       return asset
     }
 
@@ -231,6 +329,7 @@ export class AssetService {
           amount: record.value.toString(),
           hash: record.tx_hash,
           fee: '0',
+          blockNumber: record.block_height,
           balance: prevBalance.toString(),
           timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
           status: record.spent
@@ -276,7 +375,7 @@ export class AssetService {
         ) {
           return await this.confirmBTCBalance(asset)
         } else {
-          return this.confirmETHBalance(asset)
+          return await this.confirmETHBalance(asset)
         }
       }),
     )
@@ -366,28 +465,32 @@ export class AssetService {
 
     const assetEntity = await this.assetRepository.save(prototype)
 
-    let transactions
     try {
       if (
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        transactions = await this.getEthHistory(assetEntity, 0)
+        this.getEthHistory(assetEntity)
       } else {
-        transactions = await this.getBtcHistory(assetEntity, 0)
+        this.getBtcHistory(assetEntity, 0)
       }
-      assetEntity.transactions = transactions
     } catch (err) {
       Sentry.captureException(`addAsset(): ${err.message}`)
     }
 
-    return await this.assetRepository.save(assetEntity)
+    return assetEntity
   }
 
   async updateHistory(
     updatedAsset: AssetEntity,
     tx: {
-      transaction: { from: string; to: string; value: string; hash: string }
+      transaction: {
+        from: string
+        to: string
+        value: string
+        hash: string
+        blockNumber: number
+      }
     },
     amount: BigNumber,
     fee: BigNumber,
@@ -398,6 +501,7 @@ export class AssetService {
       to: tx.transaction.to,
       value: tx.transaction.value.toString(),
       hash: tx.transaction.hash,
+      blockNumber: tx.transaction.blockNumber,
       balance: transactions.length
         ? BigNumber.from(transactions[0].balance).sub(amount).toString()
         : BigNumber.from(tx.transaction.value).toString(),

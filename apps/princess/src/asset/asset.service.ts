@@ -148,7 +148,7 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(assetId: string, count = 50, start = 0) {
+  async getAssetTransactions(assetId: string, start = 0, count = 100) {
     const accountId = this.getAccountIdFromRequest()
     const transactions = await this.rickApiCall(
       EAPIMethod.GET,
