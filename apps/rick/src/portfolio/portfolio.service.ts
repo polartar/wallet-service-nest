@@ -84,8 +84,6 @@ export class PortfolioService {
       'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
     ]
     this.transferIface = new ethers.utils.Interface(transferABI)
-
-    this.subscribeNFTTransferEvents()
   }
 
   async updateCurrentWallets() {
@@ -194,6 +192,19 @@ export class PortfolioService {
       .ws.removeAllListeners()
 
     this.subscribeEthereumTransactions(assets, network)
+    this.subscribeNFTTransferEvents()
+
+    this.alchemyInstance
+      .forNetwork(
+        network === ENetworks.ETHEREUM
+          ? Network.ETH_MAINNET
+          : Network.ETH_GOERLI,
+      )
+      .ws.on('error', () => {
+        Sentry.captureException(
+          'fetchEthereumTransactions: Alchemy socket error',
+        )
+      })
   }
 
   async onBTCTransaction(transaction) {

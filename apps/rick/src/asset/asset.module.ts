@@ -18,7 +18,10 @@ import { PortfolioService } from '../portfolio/portfolio.service'
       AssetEntity,
       TransactionEntity,
     ]),
-    HttpModule,
+    HttpModule.register({
+      timeout: 600000, // 10 mins
+      maxRedirects: 2,
+    }),
   ],
   controllers: [AssetController],
   providers: [AssetService, NftService, PortfolioService],

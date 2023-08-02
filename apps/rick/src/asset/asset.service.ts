@@ -36,7 +36,6 @@ import { Network, validate } from 'bitcoin-address-validation'
 export class AssetService {
   goerliProvider: ethers.providers.EtherscanProvider
   mainnetProvider: ethers.providers.EtherscanProvider
-  alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
   liquidTestAPIKey: string
@@ -299,6 +298,9 @@ export class AssetService {
         `https://api.blockcypher.com/v1/btc/${
           asset.network === ENetworks.BITCOIN ? 'main' : 'test3'
         }/addrs/${asset.address}`,
+        {
+          timeout: 1800000, // 30 mins
+        },
       ),
     )
 
