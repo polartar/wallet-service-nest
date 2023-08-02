@@ -20,6 +20,20 @@ export interface IBTCTransaction {
   confirmed: string
 }
 
+export class IEthTransaction {
+  from: string
+  to: string
+  gasUsed: string
+  gasPrice: string
+  value?: string
+  isError: string
+  type?: string
+  hash: string
+  timeStamp: number
+  input: string
+  blockNumber?: number
+}
+
 export class ITransaction {
   asset: AssetEntity
   balance: string

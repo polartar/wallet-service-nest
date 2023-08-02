@@ -18,6 +18,7 @@ import { HttpService } from '@nestjs/axios'
 import {
   IAssetDetail,
   IBTCTransactionResponse,
+  IEthTransaction,
   ITransaction,
   IXPubInfo,
 } from './asset.types'
@@ -126,7 +127,7 @@ export class AssetService {
       this.etherscanAPIKey
     }&page=${page}&offset=${this.offset}`
 
-    let transactions
+    let transactions: IEthTransaction[]
 
     const internalUrl = url.replace('txlist', 'txlistinternal')
 
