@@ -132,16 +132,13 @@ export class AssetService {
 
     try {
       const response = await firstValueFrom(this.httpService.get(url))
-      console.log(url)
 
       if (response.data.status === '1') {
         transactions = response.data.result
       } else {
         throw new BadRequestException(response.data.message)
       }
-      console.log({ transactions })
     } catch (err) {
-      console.log(err)
       Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
       return { balance, transactions: [] }
     }
@@ -241,11 +238,11 @@ export class AssetService {
         return history
       }),
     )
-    // return histories
+
     return { balance: currentBalance, transactions: histories }
   }
 
-  async getEthHistory(asset: AssetEntity, toBlock = 0) {
+  async getEthHistory(asset: AssetEntity, toBlock = 99999999) {
     const provider =
       asset.network === ENetworks.ETHEREUM
         ? this.mainnetProvider
@@ -261,6 +258,10 @@ export class AssetService {
         await this.getEthPartialHistory(asset, toBlock, balance, page++)
       balance = nextBalance
 
+      if (transactions.length > 0) {
+        asset.transactions = asset.transactions.concat(transactions)
+        await this.assetRepository.save(asset)
+      }
       if (transactions.length !== this.offset) {
         if (page === 1) return null
         return currentBalance
@@ -284,11 +285,6 @@ export class AssetService {
     if (response !== null) {
       return asset
     }
-
-    // if (transactions.length > 0) {
-    //   asset.transactions = transactions
-    //   return asset
-    // }
 
     return null
   }
@@ -378,7 +374,7 @@ export class AssetService {
         ) {
           return await this.confirmBTCBalance(asset)
         } else {
-          return this.confirmETHBalance(asset)
+          return await this.confirmETHBalance(asset)
         }
       }),
     )
@@ -473,7 +469,7 @@ export class AssetService {
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        this.getEthHistory(assetEntity, 0)
+        this.getEthHistory(assetEntity)
       } else {
         this.getBtcHistory(assetEntity, 0)
       }
@@ -481,7 +477,7 @@ export class AssetService {
       Sentry.captureException(`addAsset(): ${err.message}`)
     }
 
-    return await this.assetRepository.save(assetEntity)
+    return assetEntity
   }
 
   async updateHistory(
