@@ -36,9 +36,23 @@ spec:
               configMapKeyRef:
                 name: bristle-sentry-config
                 key: sentry_environment
+        envFrom:
+        - configMapRef:
+            name: proxyconfig
+        volumeMounts:
+        - name: cacert
+          mountPath: /etc/ssl/certs/ca_cert.pem
+          subPath: ca_cert.pem
         resources:
           limits:
             cpu: "50m"
             memory: "128Mi"
       imagePullSecrets:
         - name: gitlabregistry
+      volumes:
+      - name: cacert
+        configMap:
+          name: proxyca
+          items:
+            - key: ca_cert.pem
+              path: ca_cert.pem
