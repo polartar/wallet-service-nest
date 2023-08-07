@@ -62,13 +62,6 @@ spec:
               secretKeyRef:
                 name: kafo-env-secrets
                 key: PAYLOAD_VERIFICATION_RSA
-        envFrom:
-        - configMapRef:
-            name: proxyconfig
-        volumeMounts:
-        - name: cacert
-          mountPath: /etc/ssl/certs/ca_cert.pem
-          subPath: ca_cert.pem
         resources:
           requests:
             cpu: "20m"
@@ -78,10 +71,3 @@ spec:
             memory: "256Mi"
       imagePullSecrets:
         - name: gitlabregistry
-      volumes:
-      - name: cacert
-        configMap:
-          name: proxyca
-          items:
-            - key: ca_cert.pem
-              path: ca_cert.pem
