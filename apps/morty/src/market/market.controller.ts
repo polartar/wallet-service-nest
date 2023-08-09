@@ -22,8 +22,8 @@ export class MarketController {
   @Get(':coinType/period')
   getHistoricalDataWithPeriod(
     @Param('coinType') coinType: ECoinTypes,
-    @Query('startTime') startTime: Date,
-    @Query('endTime') endTime: Date,
+    @Query('startTime') startTime: number,
+    @Query('endTime') endTime: number,
   ) {
     return this.marketService.getHistoricalDataWithPeriod(
       coinType,

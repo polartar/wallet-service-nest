@@ -239,19 +239,19 @@ export class CoinService {
 
   async getHistoricalDataWithPeriod(
     coin: ECoinTypes,
-    startTime: Date,
-    endTime: Date,
+    startTime: number,
+    endTime: number,
   ) {
-    const firstDate = new Date(startTime),
-      secondDate = new Date(endTime),
-      timeDifference = Math.abs(secondDate.getTime() - firstDate.getTime())
-    const differentDays = Math.ceil(timeDifference / (1000 * 3600 * 24))
+    const timeDifference = Math.abs(endTime - startTime)
+    const differentDays = Math.ceil(timeDifference / (3600 * 24))
 
     const timeFrame = this.getTimeFrame(
       differentDays < 30 ? EPeriod.Month : EPeriod.Months,
     )
 
-    const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${startTime}&endTime=${endTime}&timeFrame=${timeFrame}`
+    const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${new Date(
+      startTime * 1000,
+    )}&endTime=${new Date(endTime * 1000)}&timeFrame=${timeFrame}`
 
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
