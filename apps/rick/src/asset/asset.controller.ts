@@ -60,7 +60,7 @@ export class AssetController {
     return this.assetService.getAssetPortfolio(assetId, accountId)
   }
 
-  @Get(':/assetId/nft')
+  @Get(':assetId/nft')
   async getNFTAssets(
     @Param('assetId') assetId: string,
     @Query('pageNumber') pageNumber?: number,

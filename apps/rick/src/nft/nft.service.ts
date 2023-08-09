@@ -60,6 +60,7 @@ export class NftService {
         hasNextPage: response.hasNext(),
         nfts: obj.result.map((item: INFTInfo) => ({
           ...item,
+          metadata: JSON.parse(item.metadata),
           last_token_uri_sync: getTimestamp(item.last_token_uri_sync as string),
           last_metadata_sync: getTimestamp(item.last_metadata_sync as string),
         })),
