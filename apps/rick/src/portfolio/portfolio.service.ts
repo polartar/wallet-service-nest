@@ -1,4 +1,4 @@
-import { EPortfolioType } from '@rana/core'
+import { ECoinTypes, EPortfolioType } from '@rana/core'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -223,6 +223,9 @@ export class PortfolioService {
         this.activeBtcAssets.map(async (asset) => {
           const transactions = asset.transactions || []
           const newHistoryData = []
+          const price = await this.assetService.getCurrentUSDPrice(
+            ECoinTypes.BITCOIN,
+          )
           if (senderAddresses.includes(asset.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
@@ -236,12 +239,16 @@ export class PortfolioService {
             const currBalance = transactions.length
               ? Number(transactions[0].balance)
               : 0
+            const balance = currBalance - senderInfo.prev_out.value
             newHistoryData.push({
               from: asset.address,
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
               amount: senderInfo.prev_out.value.toString(),
-              balance: (currBalance - senderInfo.prev_out.value).toString(),
+              usdAmount: (senderInfo.prev_out.value * price).toFixed(2),
+              balance: balance.toString(),
+              usdBalance: (balance * price).toFixed(2),
+
               timestamp: this.getCurrentTimeBySeconds(),
               fee: '0',
             })
@@ -262,12 +269,15 @@ export class PortfolioService {
             transaction.out.splice(index, 1)
             const currBalance = history.length ? Number(history[0].balance) : 0
 
+            const balance = currBalance + receiverInfo.value
             newHistoryData.push({
               from: receiverInfo.addr,
               to: asset.address,
               amount: receiverInfo.value,
+              udAmount: (receiverInfo.value * price).toFixed(2),
               hash: transaction.hash,
-              balance: (currBalance + receiverInfo.value).toString(),
+              balance: balance.toString(),
+              usdBalance: (balance * price).toFixed(2),
               timestamp: this.getCurrentTimeBySeconds(),
             })
 

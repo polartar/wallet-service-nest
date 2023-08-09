@@ -20,6 +20,12 @@ export interface IBTCTransaction {
   confirmed: string
 }
 
+export interface IMarketData {
+  periodStart: string
+  periodEnd: string
+  vwap: number
+}
+
 export class IEthTransaction {
   from: string
   to: string
@@ -37,9 +43,11 @@ export class IEthTransaction {
 export class ITransaction {
   asset: AssetEntity
   balance: string
+  usdBalance: string
   from: string
   to: string
   amount?: string
+  usdAmount?: string
   tokenId?: number
   hash: string
   timestamp: number
