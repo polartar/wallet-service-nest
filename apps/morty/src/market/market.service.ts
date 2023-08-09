@@ -236,4 +236,45 @@ export class CoinService {
       throw new InternalServerErrorException(err.message)
     }
   }
+
+  async getHistoricalDataWithPeriod(
+    coin: ECoinTypes,
+    startTime: Date,
+    endTime: Date,
+  ) {
+    const firstDate = new Date(startTime),
+      secondDate = new Date(endTime),
+      timeDifference = Math.abs(secondDate.getTime() - firstDate.getTime())
+    const differentDays = Math.ceil(timeDifference / (1000 * 3600 * 24))
+
+    const timeFrame = this.getTimeFrame(
+      differentDays < 30 ? EPeriod.Month : EPeriod.Months,
+    )
+
+    const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${startTime}&endTime=${endTime}&timeFrame=${timeFrame}`
+
+    try {
+      if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {
+        await this.getAuthToken()
+      }
+
+      const res = await firstValueFrom(
+        this.httpService.get(apiURL, {
+          headers: { Authorization: `Bearer ${this.fidelityAccessToken}` },
+        }),
+      )
+
+      return res.data.map(
+        (item: { periodStart: string; periodEnd: string }) => ({
+          ...item,
+          periodStart: getTimestamp(item.periodStart),
+          periodEnd: getTimestamp(item.periodEnd),
+        }),
+      )
+    } catch (err) {
+      Sentry.captureException(`getHistoricalData: ${err.message}`)
+
+      throw new InternalServerErrorException(err.message)
+    }
+  }
 }
