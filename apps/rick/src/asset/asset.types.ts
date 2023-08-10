@@ -43,11 +43,11 @@ export class IEthTransaction {
 export class ITransaction {
   asset: AssetEntity
   balance: string
-  usdBalance: string
+  usdPrice: string
   from: string
   to: string
-  amount?: string
-  usdAmount?: string
+  cryptoAmount?: string
+  fiatAmount?: string
   tokenId?: number
   hash: string
   timestamp: number

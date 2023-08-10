@@ -47,6 +47,13 @@ export class WalletService {
     )
 
     this.assetService.confirmWalletBalances()
+    this.startFetchEthereum()
+  }
+
+  async startFetchEthereum() {
+    await this.portfolioService.updateCurrentWallets()
+    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
+    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
   }
 
   async getUserWalletTransaction(
@@ -55,7 +62,7 @@ export class WalletService {
     start: number,
     count: number,
   ) {
-    const transactions = await this.transactionRepository.find({
+    return await this.transactionRepository.find({
       where: {
         asset: {
           wallets: {
@@ -79,13 +86,6 @@ export class WalletService {
       take: count,
       skip: start,
     })
-
-    return transactions.map((transaction) => ({
-      ...transaction,
-      cryptoAmount: transaction.amount,
-      fiatAmount: transaction.usdAmount,
-      usdPrice: transaction.usdBalance,
-    }))
   }
 
   async getWallet(accountId: string, walletId: string) {
@@ -294,7 +294,7 @@ export class WalletService {
           portfolio.map((item) => ({
             balance: item.balance,
             timestamp: item.timestamp,
-            usdPrice: item.usdBalance,
+            usdPrice: item.usdPrice,
           })),
         )
         return portfolio

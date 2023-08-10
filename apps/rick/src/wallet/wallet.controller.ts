@@ -107,7 +107,6 @@ export class WalletController {
       data.assetIds,
     )
 
-    await this.portfolioService.updateCurrentWallets()
     return res
   }
 
@@ -146,7 +145,6 @@ export class WalletController {
       data.coins,
     )
 
-    await this.portfolioService.updateCurrentWallets()
     return res
   }
 

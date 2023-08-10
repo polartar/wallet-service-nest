@@ -12,7 +12,6 @@ import { In, Repository } from 'typeorm'
 import {
   ECoinTypes,
   ENetworks,
-  EPeriod,
   EPortfolioType,
   EXPubCurrency,
   getTimestamp,
@@ -231,10 +230,10 @@ export class AssetService {
           from: record.from || '',
           to: record.to || '',
           hash: record.hash,
-          amount: value.toString(),
-          usdAmount: (+formatEther(value) * price).toFixed(2),
+          cryptoAmount: value.toString(),
+          fiatAmount: (+formatEther(value) * price).toFixed(2),
           balance: prevBalance.toString(),
-          usdBalance: (+formatEther(prevBalance) * price).toFixed(2),
+          usdPrice: (+formatEther(prevBalance) * price).toFixed(2),
           timestamp: +record.timeStamp,
           status,
           blockNumber: record.blockNumber,
@@ -366,15 +365,14 @@ export class AssetService {
           asset: asset,
           from: record.spent ? asset.address : '',
           to: record.spent ? '' : asset.address,
-          amount: record.value.toString(),
-          usdAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
+          cryptoAmount: record.value.toString(),
+          fiatAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
           hash: record.tx_hash,
           fee: '0',
           blockNumber: record.block_height,
           balance: prevBalance.toString(),
-          usdBalance: (+formatUnits(balance, 8) * price).toFixed(2),
+          usdPrice: (+formatUnits(balance, 8) * price).toFixed(2),
           timestamp: getTimestamp(record.confirmed),
-          // timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
           status: record.spent
             ? ETransactionStatuses.SENT
             : ETransactionStatuses.RECEIVED,
@@ -479,6 +477,7 @@ export class AssetService {
       publicKey,
       walletEntity,
     )
+
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(network)
 
@@ -524,7 +523,7 @@ export class AssetService {
     return assetEntity
   }
 
-  async updateHistory(
+  async updateTransaction(
     updatedAsset: AssetEntity,
     tx: {
       transaction: {
@@ -546,15 +545,16 @@ export class AssetService {
       : BigNumber.from(tx.transaction.value)
     const weiBalance = formatEther(balance)
     const weiAmount = formatEther(tx.transaction.value)
-    const newHistoryData = {
+    const newHistoryData: ITransaction = {
+      asset: updatedAsset,
       from: tx.transaction.from,
       to: tx.transaction.to,
-      amount: tx.transaction.value.toString(),
-      usdAmount: (+weiAmount * price).toFixed(2),
+      cryptoAmount: tx.transaction.value.toString(),
+      fiatAmount: (+weiAmount * price).toFixed(2),
       hash: tx.transaction.hash,
       blockNumber: tx.transaction.blockNumber,
       balance: balance.toString(),
-      usdBalance: (+weiBalance * price).toFixed(2),
+      usdPrice: (+weiBalance * price).toFixed(2),
       timestamp: this.portfolioService.getCurrentTimeBySeconds(),
       fee: fee.toString(),
       status:
@@ -565,13 +565,10 @@ export class AssetService {
 
     let newHistory
     try {
-      newHistory = await this.addHistory({
-        asset: updatedAsset,
-        ...newHistoryData,
-      })
+      newHistory = await this.addHistory(newHistoryData)
     } catch (err) {
       Sentry.captureException(
-        `${err.message} + " in updateHistory(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
+        `${err.message} + " in updateTransaction(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
       )
       return
     }
@@ -685,7 +682,7 @@ export class AssetService {
 
     if (transactions.length > 0) {
       asset.balance = {
-        fiat: transactions[0].usdBalance,
+        fiat: transactions[0].usdPrice,
         crypto: transactions[0].balance,
       }
     } else {
@@ -721,7 +718,7 @@ export class AssetService {
     start: number,
     count: number,
   ) {
-    const transactions = await this.transactionRepository.find({
+    return await this.transactionRepository.find({
       where: {
         asset: {
           id: assetId,
@@ -738,13 +735,6 @@ export class AssetService {
       take: count,
       skip: start,
     })
-
-    return transactions.map((transaction) => ({
-      ...transaction,
-      cryptoAmount: transaction.amount,
-      fiatAmount: transaction.usdAmount,
-      usdPrice: transaction.usdBalance,
-    }))
   }
 
   async getAssetsByIds(assetIds: string[]) {
@@ -810,13 +800,13 @@ export class AssetService {
 
   async getHistoricalData(
     coinType: ECoinTypes,
-    firstTime: number,
-    secondTime: number,
+    startTime: number,
+    endTime: number,
   ) {
     try {
       const res = await firstValueFrom(
         this.httpService.get(
-          `${this.mortyApiUrl}/api/market/${coinType}/period?firstTime=${firstTime}&secondTime=${secondTime}`,
+          `${this.mortyApiUrl}/api/market/${coinType}/period?startTime=${startTime}&endTime=${endTime}`,
         ),
       )
       return res.data
