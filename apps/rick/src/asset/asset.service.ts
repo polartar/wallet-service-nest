@@ -37,7 +37,12 @@ import * as Sentry from '@sentry/node'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { ETransactionStatuses } from '../wallet/wallet.types'
 import { NftService } from '../nft/nft.service'
-import { getAddress, isAddress } from 'ethers/lib/utils'
+import {
+  formatEther,
+  formatUnits,
+  getAddress,
+  isAddress,
+} from 'ethers/lib/utils'
 import { Network, validate } from 'bitcoin-address-validation'
 
 @Injectable()
@@ -216,8 +221,9 @@ export class AssetService {
           status = ETransactionStatuses.INTERNAL
         }
 
-        const price = BigNumber.from(
-          this.getUSDPrice(ethMarketHistories, record.timeStamp),
+        const price = await this.getUSDPrice(
+          ethMarketHistories,
+          record.timeStamp,
         )
 
         const newHistory: ITransaction = {
@@ -226,9 +232,9 @@ export class AssetService {
           to: record.to || '',
           hash: record.hash,
           amount: value.toString(),
-          usdAmount: value.mul(price).toString(),
+          usdAmount: (+formatEther(value) * price).toFixed(2),
           balance: prevBalance.toString(),
-          usdBalance: prevBalance.mul(price).toString(),
+          usdBalance: (+formatEther(prevBalance) * price).toFixed(2),
           timestamp: +record.timeStamp,
           status,
           blockNumber: record.blockNumber,
@@ -361,12 +367,12 @@ export class AssetService {
           from: record.spent ? asset.address : '',
           to: record.spent ? '' : asset.address,
           amount: record.value.toString(),
-          usdAmount: (record.value * price).toFixed(2),
+          usdAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
           hash: record.tx_hash,
           fee: '0',
           blockNumber: record.block_height,
           balance: prevBalance.toString(),
-          usdBalance: (balance * price).toFixed(2),
+          usdBalance: (+formatUnits(balance, 8) * price).toFixed(2),
           timestamp: getTimestamp(record.confirmed),
           // timestamp: Math.floor(new Date(record.confirmed).getTime() / 1000),
           status: record.spent
@@ -538,15 +544,17 @@ export class AssetService {
     const balance = transactions.length
       ? BigNumber.from(transactions[0].balance).sub(amount)
       : BigNumber.from(tx.transaction.value)
+    const weiBalance = formatEther(balance)
+    const weiAmount = formatEther(tx.transaction.value)
     const newHistoryData = {
       from: tx.transaction.from,
       to: tx.transaction.to,
       amount: tx.transaction.value.toString(),
-      usdAmount: (tx.transaction.value.toNumber() * price).toFixed(2),
+      usdAmount: (+weiAmount * price).toFixed(2),
       hash: tx.transaction.hash,
       blockNumber: tx.transaction.blockNumber,
       balance: balance.toString(),
-      usdBalance: (balance.toNumber() * price).toFixed(2),
+      usdBalance: (+weiBalance * price).toFixed(2),
       timestamp: this.portfolioService.getCurrentTimeBySeconds(),
       fee: fee.toString(),
       status:
@@ -676,7 +684,15 @@ export class AssetService {
     }
 
     if (transactions.length > 0) {
-      asset.transaction = transactions[0]
+      asset.balance = {
+        fiat: transactions[0].usdBalance,
+        crypto: transactions[0].balance,
+      }
+    } else {
+      asset.balance = {
+        fiat: '0',
+        crypto: '0',
+      }
     }
 
     if (
@@ -723,7 +739,12 @@ export class AssetService {
       skip: start,
     })
 
-    return transactions
+    return transactions.map((transaction) => ({
+      ...transaction,
+      cryptoAmount: transaction.amount,
+      fiatAmount: transaction.usdAmount,
+      usdPrice: transaction.usdBalance,
+    }))
   }
 
   async getAssetsByIds(assetIds: string[]) {

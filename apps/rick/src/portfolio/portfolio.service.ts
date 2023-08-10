@@ -13,6 +13,7 @@ import * as Sentry from '@sentry/node'
 import { AssetEntity } from '../wallet/asset.entity'
 import { AlchemyMultichainClient } from './alchemy-multichain-client'
 import { AssetService } from '../asset/asset.service'
+import { formatUnits } from 'ethers/lib/utils'
 
 @Injectable()
 export class PortfolioService {
@@ -240,14 +241,16 @@ export class PortfolioService {
               ? Number(transactions[0].balance)
               : 0
             const balance = currBalance - senderInfo.prev_out.value
+            const weiBalance = formatUnits(balance, 8)
+            const weiAmount = formatUnits(senderInfo.prev_out.value, 8)
             newHistoryData.push({
               from: asset.address,
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
               amount: senderInfo.prev_out.value.toString(),
-              usdAmount: (senderInfo.prev_out.value * price).toFixed(2),
+              usdAmount: (+weiAmount * price).toFixed(2),
               balance: balance.toString(),
-              usdBalance: (balance * price).toFixed(2),
+              usdBalance: (+weiBalance * price).toFixed(2),
 
               timestamp: this.getCurrentTimeBySeconds(),
               fee: '0',

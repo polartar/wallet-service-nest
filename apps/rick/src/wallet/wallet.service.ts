@@ -16,6 +16,7 @@ import { IVaultCoin } from './dto/add-xpubs'
 import { AccountService } from '../account/account.service'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
+import { AssetEntity } from './asset.entity'
 
 @Injectable()
 export class WalletService {
@@ -79,7 +80,12 @@ export class WalletService {
       skip: start,
     })
 
-    return transactions
+    return transactions.map((transaction) => ({
+      ...transaction,
+      cryptoAmount: transaction.amount,
+      fiatAmount: transaction.usdAmount,
+      usdPrice: transaction.usdBalance,
+    }))
   }
 
   async getWallet(accountId: string, walletId: string) {
@@ -268,14 +274,39 @@ export class WalletService {
       throw new BadRequestException(`Wallet not found(${walletId})`)
     }
 
+    let assets: AssetEntity[]
+
     if (networks) {
       const allowedNetworks = networks.split(',')
-      return wallet.assets.filter((asset) =>
+      assets = wallet.assets.filter((asset) =>
         allowedNetworks.includes(asset.network),
       )
+    } else {
+      assets = wallet.assets
     }
 
-    return wallet.assets
+    let portfolios = []
+    await Promise.all(
+      assets.map(async (asset) => {
+        const portfolio = asset.transactions
+
+        portfolios = portfolios.concat(
+          portfolio.map((item) => ({
+            balance: item.balance,
+            timestamp: item.timestamp,
+            usdPrice: item.usdBalance,
+          })),
+        )
+        return portfolio
+      }),
+    )
+
+    return portfolios.sort((a, b) => {
+      if (a.timestamp > b.timestamp) {
+        return 1
+      }
+      return -1
+    })
   }
 
   async addVaultCoins(title: string, accountId: string, coins: IVaultCoin[]) {

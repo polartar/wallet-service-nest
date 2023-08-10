@@ -12,7 +12,9 @@ export interface ITransaction {
   from: string
   to: string
   balance: string
+  usdBalance: string
   amount?: string
+  usdAmount: string
   tokenId: number
   timestamp: number
 }

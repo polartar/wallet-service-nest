@@ -129,33 +129,33 @@ export class AssetService {
       `asset/${assetId}?accountId=${accountId}`,
     )
 
-    if (asset.transaction) {
-      const transactions = await this.addUSDPrice([asset.transaction])
+    // if (asset.transaction) {
+    //   // const transactions = await this.addUSDPrice([asset.transaction])
 
-      asset.balance = {
-        fiat: transactions[0].usdPrice,
-        crypto: transactions[0].balance,
-      }
+    //   asset.balance = {
+    //     fiat: transactions[0].usdPrice,
+    //     crypto: transactions[0].balance,
+    //   }
 
-      delete asset.transaction
-    } else {
-      asset.balance = {
-        fiat: '0',
-        crypto: '0',
-      }
-    }
+    //   delete asset.transaction
+    // } else {
+    //   asset.balance = {
+    //     fiat: '0',
+    //     crypto: '0',
+    //   }
+    // }
 
     return asset
   }
 
   async getAssetTransactions(assetId: string, start = 0, count = 100) {
     const accountId = this.getAccountIdFromRequest()
-    const transactions = await this.rickApiCall(
+    return await this.rickApiCall(
       EAPIMethod.GET,
       `asset/${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
 
-    return await this.addUSDPrice(transactions)
+    // return await this.addUSDPrice(transactions)
   }
 
   async getAssetPortfolio(assetId, period?: EPeriod) {

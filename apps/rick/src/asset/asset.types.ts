@@ -58,7 +58,10 @@ export class ITransaction {
 
 export interface IAssetDetail {
   id: string
-  transaction?: ITransaction
+  balance?: {
+    fiat: string
+    crypto: string
+  }
   network: ENetworks
   index: number
   address: string

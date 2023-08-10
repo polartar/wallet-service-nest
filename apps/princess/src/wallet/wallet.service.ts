@@ -88,7 +88,9 @@ export class WalletsService {
       `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
 
-    return this.assetService.addUSDPrice(transactions)
+    return transactions
+
+    // return this.assetService.addUSDPrice(transactions)
   }
 
   async getWallet(walletId) {
@@ -104,7 +106,7 @@ export class WalletsService {
   async getWalletPortfolio(walletId, period: EPeriod, networks: ENetworks[]) {
     const accountId = this.getAccountIdFromRequest()
 
-    const assets = await this.apiCall(
+    return await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/portfolio?accountId=${accountId}&period=${
@@ -112,29 +114,28 @@ export class WalletsService {
       }&networks=${networks ? networks : ''}`,
     )
 
-    let portfolios = []
-    await Promise.all(
-      assets.map(async (asset: IAsset) => {
-        const portfolio = await this.assetService.addUSDPrice(
-          asset.transactions,
-        )
-        portfolios = portfolios.concat(
-          portfolio.map((item) => ({
-            balance: item.balance,
-            timestamp: item.timestamp,
-            usdPrice: item.usdPrice,
-          })),
-        )
-        return portfolio
-      }),
-    )
+    // let portfolios = []
+    // await Promise.all(
+    //   assets.map(async (asset: IAsset) => {
+    //     const portfolio = asset.transactions
 
-    return portfolios.sort((a, b) => {
-      if (a.timestamp > b.timestamp) {
-        return 1
-      }
-      return -1
-    })
+    //     portfolios = portfolios.concat(
+    //       portfolio.map((item) => ({
+    //         balance: item.balance,
+    //         timestamp: item.timestamp,
+    //         usdPrice: item.usdBalance,
+    //       })),
+    //     )
+    //     return portfolio
+    //   }),
+    // )
+
+    // return portfolios.sort((a, b) => {
+    //   if (a.timestamp > b.timestamp) {
+    //     return 1
+    //   }
+    //   return -1
+    // })
 
     // return this.addUSDPrice(wallets, period)
   }
