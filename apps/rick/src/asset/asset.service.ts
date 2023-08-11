@@ -677,6 +677,10 @@ export class AssetService {
       network: assetEntity.network,
       address: assetEntity.address,
       publicKey: assetEntity.publicKey,
+      balance: {
+        fiat: '0',
+        crypto: '0',
+      },
       nfts: [],
     }
 
@@ -684,11 +688,6 @@ export class AssetService {
       asset.balance = {
         fiat: transactions[0].usdPrice,
         crypto: transactions[0].balance,
-      }
-    } else {
-      asset.balance = {
-        fiat: '0',
-        crypto: '0',
       }
     }
 
@@ -734,6 +733,7 @@ export class AssetService {
       },
       take: count,
       skip: start,
+      cache: 1000 * 60,
     })
   }
 

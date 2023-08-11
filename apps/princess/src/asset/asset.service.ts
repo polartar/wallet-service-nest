@@ -79,7 +79,7 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(assetId: string, start = 0, count = 100) {
+  async getAssetTransactions(assetId: string, start = 0, count = 0) {
     const accountId = this.getAccountIdFromRequest()
     return await this.rickApiCall(
       EAPIMethod.GET,

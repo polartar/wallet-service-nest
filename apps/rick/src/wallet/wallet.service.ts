@@ -85,6 +85,7 @@ export class WalletService {
       },
       take: count,
       skip: start,
+      cache: 1000 * 60,
     })
   }
 
