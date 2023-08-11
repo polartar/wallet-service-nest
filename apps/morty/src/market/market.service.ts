@@ -251,7 +251,7 @@ export class CoinService {
 
     const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${new Date(
       startTime * 1000,
-    )}&endTime=${new Date(endTime * 1000)}&timeFrame=${timeFrame}`
+    )}&timeFrame=${timeFrame}`
 
     try {
       if (!this.expiredAt || new Date().getTime() >= this.expiredAt) {

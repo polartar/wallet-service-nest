@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { ENetworks, EPeriod } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { EAPIMethod, IAsset, ITransaction } from './wallet.types'
+import { EAPIMethod } from './wallet.types'
 import * as Sentry from '@sentry/node'
 import { REQUEST } from '@nestjs/core'
 import { IRequest } from '../accounts/accounts.types'
@@ -82,15 +82,13 @@ export class WalletsService {
 
   async getWalletTransaction(walletId, start = 0, count = 50) {
     const accountId = this.getAccountIdFromRequest()
-    const transactions: ITransaction[] = await this.apiCall(
+    const transactions = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
       `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
     )
 
     return transactions
-
-    // return this.assetService.addUSDPrice(transactions)
   }
 
   async getWallet(walletId) {
@@ -113,31 +111,6 @@ export class WalletsService {
         period ? period : EPeriod.All
       }&networks=${networks ? networks : ''}`,
     )
-
-    // let portfolios = []
-    // await Promise.all(
-    //   assets.map(async (asset: IAsset) => {
-    //     const portfolio = asset.transactions
-
-    //     portfolios = portfolios.concat(
-    //       portfolio.map((item) => ({
-    //         balance: item.balance,
-    //         timestamp: item.timestamp,
-    //         usdPrice: item.usdBalance,
-    //       })),
-    //     )
-    //     return portfolio
-    //   }),
-    // )
-
-    // return portfolios.sort((a, b) => {
-    //   if (a.timestamp > b.timestamp) {
-    //     return 1
-    //   }
-    //   return -1
-    // })
-
-    // return this.addUSDPrice(wallets, period)
   }
 
   async getWallets() {
@@ -148,8 +121,6 @@ export class WalletsService {
       this.rickApiUrl,
       `wallet?accountId=${accountId}`,
     )
-
-    // return this.addUSDPrice(wallets, period)
   }
 
   async createWallet(data: CreateWalletDto) {
