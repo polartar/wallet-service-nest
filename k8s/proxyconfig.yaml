@@ -6,8 +6,8 @@ metadata:
 data:
   https_proxy: "https://proxy.liquid-debug.ngrave.io:9090"
   HTTPS_PROXY: "https://proxy.liquid-debug.ngrave.io:9090"
-  no_proxy: "localhost,www.googleapis.com"
-  NO_PROXY: "localhost,www.googleapis.com"
+  no_proxy: "localhost,www.googleapis.com,appleid.apple.com"
+  NO_PROXY: "localhost,www.googleapis.com,appleid.apple.com"
   NODE_EXTRA_CA_CERTS: "/etc/ssl/certs/ca_cert.pem"
 ---
 apiVersion: v1
