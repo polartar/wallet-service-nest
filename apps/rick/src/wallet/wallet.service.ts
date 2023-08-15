@@ -306,17 +306,16 @@ export class WalletService {
                 : ENetworks.ETHEREUM_TEST
             return await Promise.all(
               coin.wallets.map(async (wallet) => {
-                return Promise.all(
-                  wallet.accounts.map(async (account) => {
-                    return await this.assetService.createAsset(
-                      account.address,
-                      account.index,
-                      network,
-                      account.publickey,
-                      walletEntity,
-                    )
-                  }),
-                )
+                for (const newAccount of wallet.accounts) {
+                  await this.assetService.createAsset(
+                    newAccount.address,
+                    newAccount.index,
+                    network,
+                    newAccount.publickey,
+                    walletEntity,
+                  )
+                }
+                return wallet
               }),
             )
             // eslint-disable-next-line no-empty
