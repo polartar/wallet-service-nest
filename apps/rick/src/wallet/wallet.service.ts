@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -164,12 +165,24 @@ export class WalletService {
   }
 
   async deleteWallet(walletId: string, accountId: string) {
-    await this.walletRepository.delete({
-      id: walletId,
-      account: {
-        accountId: accountId,
-      },
-    })
+    let response
+    try {
+      response = await this.walletRepository.delete({
+        id: walletId,
+        account: {
+          accountId: accountId,
+        },
+      })
+    } catch (err) {
+      Sentry.captureException(
+        `deleteWallet(): ${err.message} with "${walletId}"`,
+      )
+      throw new Error(err.message)
+    }
+    if (response.affected !== 1) {
+      throw new NotFoundException('Wallet Not Found')
+    }
+    return { message: 'SUCCESS' }
   }
 
   async addNewWallet(

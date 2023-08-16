@@ -189,10 +189,7 @@ export class WalletsService {
     return this.apiCall(
       EAPIMethod.DELETE,
       this.rickApiUrl,
-      `wallet/${walletId}`,
-      {
-        accountId,
-      },
+      `wallet/${walletId}/${accountId}`,
     )
   }
 
