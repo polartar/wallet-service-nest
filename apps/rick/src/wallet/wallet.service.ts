@@ -304,28 +304,24 @@ export class WalletService {
                 : coin.BIP44 === 60
                 ? ENetworks.ETHEREUM
                 : ENetworks.ETHEREUM_TEST
-            return Promise.all(
+            return await Promise.all(
               coin.wallets.map(async (wallet) => {
-                return Promise.all(
-                  wallet.accounts.map(async (account) => {
-                    return await this.assetService.createAsset(
-                      account.address,
-                      account.index,
-                      network,
-                      account.publickey,
-                      walletEntity,
-                    )
-                  }),
-                )
+                for (const newAccount of wallet.accounts) {
+                  await this.assetService.createAsset(
+                    newAccount.address,
+                    newAccount.index,
+                    network,
+                    newAccount.publickey,
+                    walletEntity,
+                  )
+                }
+                return wallet
               }),
             )
             // eslint-disable-next-line no-empty
           } catch (err) {}
         }),
       )
-      await this.portfolioService.updateCurrentWallets()
-      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
 
       const newWallet = await this.getWallet(accountId, walletEntity.id)
       return newWallet

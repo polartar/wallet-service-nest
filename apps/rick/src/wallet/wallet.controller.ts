@@ -146,7 +146,6 @@ export class WalletController {
       data.coins,
     )
 
-    await this.portfolioService.updateCurrentWallets()
     return res
   }
 
