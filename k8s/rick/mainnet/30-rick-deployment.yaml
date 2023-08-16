@@ -51,7 +51,9 @@ spec:
           - name: NODE_ENV
             value: "production"
           - name: PRINCESS_API_URL
-            value: "http://princess.default.svc.cluster.local"
+            value: "http://princess.mainnet.svc.cluster.local"
+          - name: MORTY_API_URL
+            value: "http://morty.mainnet.svc.cluster.local"
           - name: RICK_DB_HOST
             value: "rick-db-service.mainnet.svc.cluster.local"
           - name: RICK_DB_PORT
