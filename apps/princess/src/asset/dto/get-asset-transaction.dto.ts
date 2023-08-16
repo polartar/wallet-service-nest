@@ -33,7 +33,7 @@ export class AssetTransactionSwaggerResponse {
   @ApiProperty({
     example: '123123123',
   })
-  amount: string
+  cryptoAmount: string
 
   @ApiProperty({
     example: null,

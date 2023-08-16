@@ -20,6 +20,9 @@ export class TransactionEntity {
   @Column()
   balance: string
 
+  @Column({ nullable: true })
+  usdPrice: string
+
   @Column()
   from: string
 
@@ -30,7 +33,10 @@ export class TransactionEntity {
   hash: string
 
   @Column({ nullable: true })
-  amount: string
+  cryptoAmount: string
+
+  @Column({ nullable: true })
+  fiatAmount: string
 
   @Column({ nullable: true })
   fee: string
@@ -53,9 +59,11 @@ export class TransactionEntity {
       from: this.from,
       to: this.to,
       balance: this.balance,
+      usdPrice: this.usdPrice,
       hash: this.hash,
       fee: this.fee,
-      amount: this.amount,
+      cryptoAmount: this.cryptoAmount,
+      fiatAmount: this.fiatAmount,
       tokenId: this.tokenId,
       timestamp: +this.timestamp,
     }

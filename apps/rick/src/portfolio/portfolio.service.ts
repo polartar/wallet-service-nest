@@ -1,4 +1,4 @@
-import { EPortfolioType } from '@rana/core'
+import { ECoinTypes, EPortfolioType } from '@rana/core'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
@@ -13,6 +13,9 @@ import * as Sentry from '@sentry/node'
 import { AssetEntity } from '../wallet/asset.entity'
 import { AlchemyMultichainClient } from './alchemy-multichain-client'
 import { AssetService } from '../asset/asset.service'
+import { formatUnits } from 'ethers/lib/utils'
+import { ITransaction } from '../asset/asset.types'
+import { ETransactionStatuses } from '../wallet/wallet.types'
 
 @Injectable()
 export class PortfolioService {
@@ -33,7 +36,6 @@ export class PortfolioService {
     private readonly assetService: AssetService,
     private readonly httpService: HttpService,
   ) {
-    // this.updateCurrentWallets()
     this.btcSocket = new BlockchainSocket()
 
     this.btcSocket.onTransaction((transaction) => {
@@ -92,6 +94,7 @@ export class PortfolioService {
     this.activeEthAssets = assets.filter(
       (address) => address.network === ENetworks.ETHEREUM,
     )
+
     this.activeTestEthAssets = assets.filter(
       (address) => address.network === ENetworks.ETHEREUM_TEST,
     )
@@ -108,21 +111,19 @@ export class PortfolioService {
     return Math.floor(Date.now() / 1000)
   }
 
-  subscribeEthereumTransactions(addresses: AssetEntity[], network: ENetworks) {
-    let sourceAddresses: { from?: string; to?: string }[] = addresses.map(
-      (address) => ({
-        from: address.address,
+  subscribeEthereumTransactions(assets: AssetEntity[], network: ENetworks) {
+    let sourceAddresses: { from?: string; to?: string }[] = assets.map(
+      (asset) => ({
+        from: asset.address,
       }),
     )
 
     sourceAddresses = sourceAddresses.concat(
-      addresses.map((address) => ({
-        to: address.address,
+      assets.map((asset) => ({
+        to: asset.address,
       })),
     )
-    const currentAddresses = addresses.map((address) =>
-      address.address.toLowerCase(),
-    )
+    const currentAddresses = assets.map((asset) => asset.address.toLowerCase())
 
     this.alchemyInstance
       .forNetwork(
@@ -144,24 +145,29 @@ export class PortfolioService {
                 BigNumber.from(tx.transaction.gas),
               )
               const amount = BigNumber.from(tx.transaction.value).add(fee)
-              const updatedAddress = addresses.find(
-                (address) =>
-                  address.address.toLowerCase() ===
+              const updatedAddress = assets.find(
+                (asset) =>
+                  asset.address.toLowerCase() ===
                   tx.transaction.from.toLowerCase(),
               )
-              this.assetService.updateHistory(updatedAddress, tx, amount, fee)
+              this.assetService.updateTransaction(
+                updatedAddress,
+                tx,
+                amount,
+                fee,
+              )
             }
 
             if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
               const amount = BigNumber.from(0).sub(
                 BigNumber.from(tx.transaction.value),
               )
-              const updatedAddress = addresses.find(
-                (address) =>
-                  address.address.toLowerCase() ===
+              const updatedAddress = assets.find(
+                (asset) =>
+                  asset.address.toLowerCase() ===
                   tx.transaction.to.toLowerCase(),
               )
-              this.assetService.updateHistory(
+              this.assetService.updateTransaction(
                 updatedAddress,
                 tx,
                 amount,
@@ -190,7 +196,6 @@ export class PortfolioService {
           : Network.ETH_GOERLI,
       )
       .ws.removeAllListeners()
-
     this.subscribeEthereumTransactions(assets, network)
     this.subscribeNFTTransferEvents()
 
@@ -222,7 +227,10 @@ export class PortfolioService {
       await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
           const transactions = asset.transactions || []
-          const newHistoryData = []
+          const newHistoryData: ITransaction[] = []
+          const price = await this.assetService.getCurrentUSDPrice(
+            ECoinTypes.BITCOIN,
+          )
           if (senderAddresses.includes(asset.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
@@ -236,12 +244,19 @@ export class PortfolioService {
             const currBalance = transactions.length
               ? Number(transactions[0].balance)
               : 0
+            const balance = currBalance - senderInfo.prev_out.value
+            const weiBalance = formatUnits(balance, 8)
+            const weiAmount = formatUnits(senderInfo.prev_out.value, 8)
             newHistoryData.push({
+              asset,
               from: asset.address,
               to: senderInfo.prev_out.addr,
               hash: transaction.hash,
-              amount: senderInfo.prev_out.value.toString(),
-              balance: (currBalance - senderInfo.prev_out.value).toString(),
+              cryptoAmount: senderInfo.prev_out.value.toString(),
+              fiatAmount: (+weiAmount * price).toFixed(2),
+              balance: balance.toString(),
+              usdPrice: (+weiBalance * price).toFixed(2),
+              status: ETransactionStatuses.SENT,
               timestamp: this.getCurrentTimeBySeconds(),
               fee: '0',
             })
@@ -262,12 +277,18 @@ export class PortfolioService {
             transaction.out.splice(index, 1)
             const currBalance = history.length ? Number(history[0].balance) : 0
 
+            const balance = currBalance + receiverInfo.value
             newHistoryData.push({
+              asset,
               from: receiverInfo.addr,
               to: asset.address,
-              amount: receiverInfo.value,
+              cryptoAmount: receiverInfo.value,
+              status: ETransactionStatuses.RECEIVED,
+              fiatAmount: (receiverInfo.value * price).toFixed(2),
               hash: transaction.hash,
-              balance: (currBalance + receiverInfo.value).toString(),
+              fee: '0',
+              balance: balance.toString(),
+              usdPrice: (balance * price).toFixed(2),
               timestamp: this.getCurrentTimeBySeconds(),
             })
 
@@ -275,10 +296,7 @@ export class PortfolioService {
               newHistoryData.length === 1
                 ? newHistoryData[0]
                 : newHistoryData[1]
-            const newHistory = await this.assetService.addHistory({
-              asset,
-              ...historyData,
-            })
+            const newHistory = await this.assetService.addHistory(historyData)
 
             transactions.push(newHistory)
 

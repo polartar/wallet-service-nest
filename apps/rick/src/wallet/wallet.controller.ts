@@ -40,12 +40,10 @@ export class WalletController {
     }
   }
 
-  // Need to confirm if we need to verify account Id
   @Get(':walletId')
   async getWallet(
     @Query('accountId') accountId: string,
     @Param('walletId') walletId: string,
-    // @Query('period', new ParseEnumPipe(EPeriod)) period: EPeriod,
   ) {
     try {
       return await this.walletService.getWallet(accountId, walletId)
@@ -107,7 +105,6 @@ export class WalletController {
       data.assetIds,
     )
 
-    await this.portfolioService.updateCurrentWallets()
     return res
   }
 

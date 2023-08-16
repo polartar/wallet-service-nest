@@ -13,6 +13,7 @@ export const Environment = () => {
     [EEnvironment.liquidAPIUrl]: process.env.LIQUID_API_URL,
     [EEnvironment.liquidTestAPIKey]: process.env.LIQUID_TEST_API_KEY,
     [EEnvironment.liquidTestAPIUrl]: process.env.LIQUID_TEST_API_URL,
+    [EEnvironment.mortyAPIUrl]: process.env.MORTY_API_URL,
   }
 
   return env

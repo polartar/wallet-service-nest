@@ -57,7 +57,7 @@ export interface IUpdatedAssets {
   newHistory?: {
     from: string
     to: string
-    amount: string
+    cryptoAmount: string
     hash: string
     balance: string
     timestamp: number

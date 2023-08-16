@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NftService } from './nft.service'
 import { ConfigModule } from '@nestjs/config'
 import { Environment } from '../environments/environment.dev'
-import { ENetworks } from '@rana/core'
 
 describe('NftService', () => {
   let service: NftService

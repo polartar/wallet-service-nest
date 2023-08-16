@@ -20,6 +20,12 @@ export interface IBTCTransaction {
   confirmed: string
 }
 
+export interface IMarketData {
+  periodStart: string
+  periodEnd: string
+  vwap: number
+}
+
 export class IEthTransaction {
   from: string
   to: string
@@ -37,9 +43,11 @@ export class IEthTransaction {
 export class ITransaction {
   asset: AssetEntity
   balance: string
+  usdPrice: string
   from: string
   to: string
-  amount?: string
+  cryptoAmount?: string
+  fiatAmount?: string
   tokenId?: number
   hash: string
   timestamp: number
@@ -50,7 +58,10 @@ export class ITransaction {
 
 export interface IAssetDetail {
   id: string
-  transaction?: ITransaction
+  balance?: {
+    fiat: string
+    crypto: string
+  }
   network: ENetworks
   index: number
   address: string
