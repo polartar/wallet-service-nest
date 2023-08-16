@@ -307,7 +307,7 @@ export class WalletService {
         portfolios = portfolios.concat(
           portfolio.map((item) => ({
             balance: item.balance,
-            timestamp: item.timestamp,
+            timestamp: +item.timestamp,
             usdPrice: item.usdPrice,
           })),
         )
