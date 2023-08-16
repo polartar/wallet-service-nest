@@ -47,6 +47,20 @@ spec:
               secretKeyRef:
                 name: rick-env-secrets
                 key: MORALIS_API_KEY
+          - name: ALCHEMY_MAINNET_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: ALCHEMY_MAINNET_API_KEY
+          - name: ALCHEMY_GOERLI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: ALCHEMY_GOERLI_API_KEY
+          - name: LIQUID_TEST_API_KEY
+            value: a
+          - name: LIQUID_TEST_API_URL
+            value: "https://development1.testnet.liquid-debug.ngrave.io"
           - name: NODE_ENV
             value: ""
           - name: PRINCESS_API_URL
