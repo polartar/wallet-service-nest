@@ -121,10 +121,10 @@ export class WalletController {
     )
   }
 
-  @Delete(':walletId')
+  @Delete(':walletId/:accountId')
   async deleteWallet(
     @Param('walletId') walletId: string,
-    @Body('accountId') accountId: string,
+    @Param('accountId') accountId: string,
   ) {
     try {
       return await this.walletService.deleteWallet(walletId, accountId)
