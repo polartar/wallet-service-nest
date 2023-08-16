@@ -201,6 +201,8 @@ export class CoinService {
       period === EPeriod.Month
     ) {
       return '1HR'
+    } else if (period === EPeriod.All) {
+      return '1M'
     } else {
       return '1DAY'
     }
