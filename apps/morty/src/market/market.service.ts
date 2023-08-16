@@ -191,7 +191,7 @@ export class CoinService {
     } else {
       newTimestamp = now - day * 365 * 100
     }
-    return newTimestamp
+    return newTimestamp - (newTimestamp % 86400000)
   }
 
   getTimeFrame(period: EPeriod) {
@@ -208,6 +208,7 @@ export class CoinService {
 
   async getHistoricalData(coin: ECoinTypes, period: EPeriod) {
     const startDate = new Date(this.getPeriodTime(period))
+
     const timeFrame = this.getTimeFrame(period)
 
     const apiURL = `${this.historyApiUrl}/${coin}/price?startTime=${startDate}&timeFrame=${timeFrame}`
