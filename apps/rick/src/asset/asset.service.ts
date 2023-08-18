@@ -153,7 +153,6 @@ export class AssetService {
         throw new BadRequestException(response.data.message)
       }
     } catch (err) {
-      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
       return { balance, transactions: [] }
     }
 
@@ -174,7 +173,7 @@ export class AssetService {
         })
       }
     } catch (err) {
-      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
+      // continue regardless of error
     }
 
     const ethMarketHistories = await this.getHistoricalData(
@@ -249,8 +248,9 @@ export class AssetService {
             iface = new ethers.utils.Interface(ERC1155ABI)
             try {
               response = iface.parseTransaction({ data: record.input })
-              // eslint-disable-next-line no-empty
-            } catch (err) {}
+            } catch (err) {
+              // continue regardless of error
+            }
           }
           // only track the transfer functions
           if (response && response.name.toLowerCase().includes('transfer')) {
