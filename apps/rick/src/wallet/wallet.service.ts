@@ -352,13 +352,22 @@ export class WalletService {
             return await Promise.all(
               coin.wallets.map(async (wallet) => {
                 for (const newAccount of wallet.accounts) {
-                  await this.assetService.createAsset(
-                    newAccount.address,
-                    newAccount.index,
-                    network,
-                    newAccount.publickey,
-                    walletEntity,
-                  )
+                  if (network === ENetworks.ETHEREUM) {
+                    await this.assetService.createAsset(
+                      newAccount.address,
+                      newAccount.index,
+                      ENetworks.ETHEREUM,
+                      newAccount.publickey,
+                      walletEntity,
+                    )
+                    await this.assetService.createAsset(
+                      newAccount.address,
+                      newAccount.index,
+                      ENetworks.ETHEREUM_TEST,
+                      newAccount.publickey,
+                      walletEntity,
+                    )
+                  }
                 }
                 return wallet
               }),
