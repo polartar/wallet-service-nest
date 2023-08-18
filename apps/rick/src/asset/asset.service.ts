@@ -645,7 +645,9 @@ export class AssetService {
     } catch (err) {
       if (err.response) {
         Sentry.captureException(
-          `addAddressesFromXPub(): ${err.response.data.errors[0]}: ${xPub}`,
+          `addAddressesFromXPub(): ${JSON.stringify(
+            err.response.data.errors[0],
+          )}: ${xPub}`,
         )
       } else {
         Sentry.captureException(
