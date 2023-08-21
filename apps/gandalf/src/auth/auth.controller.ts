@@ -35,25 +35,19 @@ export class AuthController {
           account,
         }
       } else if (data.accountId) {
-        account = await this.accountService.getAccount(data.accountId)
-        if (account) {
-          await this.accountService.update(account.id, {
-            name,
-            email,
+        account = await this.accountService.updateAnonymousAccount(
+          data.accountId,
+          name,
+          email,
+          {
             accountShard: data.accountShard,
             iCloudShard: data.iCloudShard,
             vaultShard: data.vaultShard,
             passcodeKey: data.passcodeKey,
             recoveryKey: data.recoveryKey,
             serverShard: data.serverShard,
-          })
-        } else {
-          throw new BadRequestException(
-            `Account id(${data.accountId}) not found `,
-          )
-        }
-        account.name = name
-        account.email = email
+          },
+        )
 
         return {
           is_new: true,

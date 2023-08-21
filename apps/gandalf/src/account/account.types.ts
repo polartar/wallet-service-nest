@@ -8,3 +8,12 @@ export type IAccountUpdate = {
   recoveryKey?: string
   serverShard?: string
 }
+
+export interface IShard {
+  accountShard: string
+  iCloudShard: string
+  passcodeKey: string
+  recoveryKey: string
+  serverShard: string
+  vaultShard: string
+}
