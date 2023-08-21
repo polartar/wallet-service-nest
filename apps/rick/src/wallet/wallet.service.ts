@@ -359,12 +359,22 @@ export class WalletService {
                     newAccount.publickey,
                     walletEntity,
                   )
+                  if (network === ENetworks.ETHEREUM) {
+                    await this.assetService.createAsset(
+                      newAccount.address,
+                      newAccount.index,
+                      ENetworks.ETHEREUM_TEST,
+                      newAccount.publickey,
+                      walletEntity,
+                    )
+                  }
                 }
                 return wallet
               }),
             )
-            // eslint-disable-next-line no-empty
-          } catch (err) {}
+          } catch (err) {
+            // continue regardless of error
+          }
         }),
       )
 
