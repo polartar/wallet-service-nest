@@ -848,7 +848,8 @@ export class AssetService {
         where: { id: assetId },
         relations: { transactions: true, wallets: true },
       })
-      if (asset.wallets.length === 1) {
+
+      if (asset.wallets.length <= 1) {
         if (asset.transactions.length > 0) {
           await this.transactionRepository.delete({ asset: { id: assetId } })
         }
@@ -856,7 +857,6 @@ export class AssetService {
         await this.assetRepository.delete({ id: assetId })
       }
     } catch (err) {
-      console.log(err)
       // continue regardless of error
     }
   }

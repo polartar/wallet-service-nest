@@ -223,6 +223,7 @@ export class WalletService {
       if (mnemonic) {
         prototype.mnemonic = mnemonic
       }
+
       prototype.assets = assets
 
       const wallet = await this.walletRepository.save(prototype)
@@ -235,7 +236,6 @@ export class WalletService {
       }
     } catch (err) {
       Sentry.captureException(`addNewWallet(): ${err.message}`)
-
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
       )
