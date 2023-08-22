@@ -7,6 +7,7 @@ import {
   Post,
   UsePipes,
   Put,
+  Delete,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'
@@ -55,5 +56,13 @@ export class AccountController {
   @Get(':accountId')
   async getWallets(@Param('accountId') accountId: string) {
     return await this.accountService.lookup({ accountId })
+  }
+
+  @Delete(':accountId/:deviceId')
+  async deleteAccount(
+    @Param('accountId') accountId: string,
+    @Param('deviceId') deviceId: string,
+  ) {
+    return this.accountService.deleteAccount(accountId, deviceId)
   }
 }

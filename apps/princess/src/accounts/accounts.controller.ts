@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common'
 import { AccountsService } from './accounts.service'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { UpdateShardsDto } from './dto/update-shards.dto'
@@ -37,5 +37,10 @@ export class AccountsController {
   @Get('shards')
   async getShards() {
     return await this.accountService.getShards()
+  }
+
+  @Delete('')
+  async deleteAccount() {
+    return await this.accountService.deleteAccount()
   }
 }

@@ -439,4 +439,21 @@ export class WalletService {
       assets: walletEntity.assets.map((asset) => asset.id),
     }
   }
+
+  async deleteWallets(accountId: string) {
+    const wallets = await this.getWallets(accountId)
+
+    if (wallets && wallets.length > 0) {
+      wallets.forEach(async (wallet) => {
+        const assets = wallet.assets
+        await Promise.all(
+          assets.map(async (assetId) => {
+            return await this.assetService.deleteAsset(assetId)
+          }),
+        )
+      })
+
+      await this.walletRepository.delete({ account: { accountId: accountId } })
+    }
+  }
 }

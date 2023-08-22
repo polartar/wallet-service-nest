@@ -841,4 +841,21 @@ export class AssetService {
 
     return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
   }
+
+  async deleteAsset(assetId: string) {
+    try {
+      const asset = await this.assetRepository.findOne({
+        where: { id: assetId },
+        relations: { transactions: true, wallets: true },
+      })
+      if (asset.wallets.length === 1) {
+        if (asset.transactions.length > 0) {
+          await this.transactionRepository.delete({ asset: { id: assetId } })
+        }
+        await this.assetRepository.delete({ id: assetId })
+      }
+    } catch (err) {
+      // continue regardless of error
+    }
+  }
 }

@@ -187,7 +187,6 @@ export class AccountsService {
           {
             email: account.email,
             name: account.name,
-            accountId: account.id,
           },
         )
       } else {
@@ -228,10 +227,45 @@ export class AccountsService {
 
   async getShards() {
     const accountId = this.getAccountIdFromRequest()
+
     return this.apiCall(
       EAPIMethod.GET,
       this.gandalfApiUrl,
       `account/${accountId}`,
     )
+  }
+
+  async deleteAccount() {
+    const accountId = this.getAccountIdFromRequest()
+    const deviceId = this.getDeviceIdFromRequest()
+
+    await this.apiCall(
+      EAPIMethod.DELETE,
+      this.gandalfApiUrl,
+      `account/${accountId}/${deviceId}`,
+    )
+
+    await this.apiCall(
+      EAPIMethod.DELETE,
+      this.rickApiUrl,
+      `account/${accountId}/${deviceId}`,
+    )
+
+    // const payload = {
+    //   type: 'anonymous',
+    //   accountId: accountId,
+    //   deviceId: deviceId,
+    // }
+    // const accessToken = await this.generateAccessToken(payload)
+
+    // const refreshToken = await this.generateRefreshToken(payload)
+
+    // return {
+    //   otpSecret: deviceResponse.data.otp,
+    //   id: deviceResponse.data.deviceId,
+    //   accountId: userResponse.data.id,
+    //   accessToken: accessToken,
+    //   refreshToken: refreshToken,
+    // }
   }
 }
