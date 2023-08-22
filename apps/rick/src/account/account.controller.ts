@@ -58,11 +58,11 @@ export class AccountController {
     return await this.accountService.lookup({ accountId })
   }
 
-  @Delete(':accountId/:deviceId')
-  async deleteAccount(
-    @Param('accountId') accountId: string,
-    @Param('deviceId') deviceId: string,
-  ) {
-    return this.accountService.deleteAccount(accountId, deviceId)
-  }
+  // @Delete(':accountId/:deviceId')
+  // async deleteAccount(
+  //   @Param('accountId') accountId: string,
+  //   @Param('deviceId') deviceId: string,
+  // ) {
+  //   return this.accountService.deleteAccount(accountId, deviceId)
+  // }
 }

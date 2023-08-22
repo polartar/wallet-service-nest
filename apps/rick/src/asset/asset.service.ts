@@ -66,7 +66,7 @@ export class AssetService {
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
-    private readonly transactionRepository: Repository<TransactionEntity>, // private readonly accountService: AccountService,
+    private readonly transactionRepository: Repository<TransactionEntity>,
   ) {
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
     this.etherscanAPIKey = this.configService.get<string>(
@@ -852,9 +852,11 @@ export class AssetService {
         if (asset.transactions.length > 0) {
           await this.transactionRepository.delete({ asset: { id: assetId } })
         }
+
         await this.assetRepository.delete({ id: assetId })
       }
     } catch (err) {
+      console.log(err)
       // continue regardless of error
     }
   }

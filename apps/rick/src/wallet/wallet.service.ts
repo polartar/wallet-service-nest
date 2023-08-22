@@ -440,7 +440,7 @@ export class WalletService {
     }
   }
 
-  async deleteWallets(accountId: string) {
+  async deleteWallets(accountId: string, deviceId: string) {
     const wallets = await this.getWallets(accountId)
 
     if (wallets && wallets.length > 0) {
@@ -455,5 +455,12 @@ export class WalletService {
 
       await this.walletRepository.delete({ account: { accountId: accountId } })
     }
+    const name = 'anonymous'
+    const email = `any${deviceId}@gmail.com`
+
+    return await this.accountService.update(accountId, {
+      name,
+      email,
+    })
   }
 }

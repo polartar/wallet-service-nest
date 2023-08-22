@@ -245,10 +245,10 @@ export class AccountsService {
       `account/${accountId}/${deviceId}`,
     )
 
-    await this.apiCall(
+    return await this.apiCall(
       EAPIMethod.DELETE,
       this.rickApiUrl,
-      `account/${accountId}/${deviceId}`,
+      `wallet/account/${accountId}/${deviceId}`,
     )
 
     // const payload = {

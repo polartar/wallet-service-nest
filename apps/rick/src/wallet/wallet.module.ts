@@ -21,7 +21,6 @@ import { NftService } from '../nft/nft.service'
       AssetEntity,
       TransactionEntity,
     ]),
-    // forwardRef(() => PortfolioModule),
     PortfolioModule,
     AccountModule,
     HttpModule,

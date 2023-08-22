@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AccountEntity } from './account.entity'
 import { AccountService } from './account.service'
 import { AccountController } from './account.controller'
-import { WalletService } from '../wallet/wallet.service'
 
 @Module({
   imports: [
@@ -13,7 +12,7 @@ import { WalletService } from '../wallet/wallet.service'
       WalletEntity,
     ]),
   ],
-  providers: [AccountService, WalletService],
+  providers: [AccountService],
   exports: [AccountService],
   controllers: [AccountController],
 })

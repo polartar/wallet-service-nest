@@ -126,13 +126,15 @@ export class WalletController {
     @Param('walletId') walletId: string,
     @Param('accountId') accountId: string,
   ) {
-    try {
-      return await this.walletService.deleteWallet(walletId, accountId)
-    } catch (e) {
-      Sentry.captureException(e.message + ' in getHistory()')
+    return await this.walletService.deleteWallet(walletId, accountId)
+  }
 
-      throw new InternalServerErrorException(e?.message)
-    }
+  @Delete('account/:accountId/:deviceId')
+  async deleteWallets(
+    @Param('deviceId') deviceId: string,
+    @Param('accountId') accountId: string,
+  ) {
+    return await this.walletService.deleteWallets(accountId, deviceId)
   }
 
   @Post('vault')
