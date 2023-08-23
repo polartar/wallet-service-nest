@@ -241,16 +241,18 @@ export class AccountsService {
 
     await this.checkPair(accountId, deviceId, otp)
 
-    await this.apiCall(
+    const account = await this.apiCall(
       EAPIMethod.DELETE,
       this.gandalfApiUrl,
       `account/${accountId}/${deviceId}`,
     )
 
-    return await this.apiCall(
+    await this.apiCall(
       EAPIMethod.DELETE,
       this.rickApiUrl,
       `wallet/account/${accountId}/${deviceId}`,
     )
+
+    return account
   }
 }

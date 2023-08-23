@@ -857,7 +857,11 @@ export class AssetService {
         await this.assetRepository.delete({ id: assetId })
       }
     } catch (err) {
-      // continue regardless of error
+      Sentry.captureException(`deleteAsset(): ${err.message}`, {
+        tags: {
+          assetId,
+        },
+      })
     }
   }
 }

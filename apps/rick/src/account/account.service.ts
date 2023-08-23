@@ -54,19 +54,4 @@ export class AccountService {
       where: findAccount,
     })
   }
-
-  // async deleteAccount(
-  //   accountId: string,
-  //   deviceId: string,
-  // ): Promise<AccountEntity> {
-  //   const name = 'anonymous'
-  //   const email = `any${deviceId}@gmail.com`
-
-  //   await this.walletService.deleteWallets(accountId)
-
-  //   return await this.update(accountId, {
-  //     name,
-  //     email,
-  //   })
-  // }
 }

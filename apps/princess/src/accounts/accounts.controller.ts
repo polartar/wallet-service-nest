@@ -43,6 +43,6 @@ export class AccountsController {
   @Delete('')
   async deleteAccount(@Body() data: DeleteAccountDto) {
     console.log({ data })
-    return await this.accountService.deleteAccount()
+    return await this.accountService.deleteAccount(data.otp)
   }
 }
