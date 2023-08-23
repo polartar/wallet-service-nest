@@ -28,10 +28,7 @@ export class WalletEntity {
   @JoinColumn({ name: 'accountId', referencedColumnName: 'accountId' })
   account: AccountEntity
 
-  @ManyToMany(() => AssetEntity, (address) => address.wallets, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @ManyToMany(() => AssetEntity, (address) => address.wallets)
   @JoinTable()
   assets: AssetEntity[]
 
