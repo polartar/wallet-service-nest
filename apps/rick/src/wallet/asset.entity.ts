@@ -31,10 +31,7 @@ export class AssetEntity {
   @Column()
   index: number
 
-  @ManyToMany(() => WalletEntity, (wallet) => wallet.assets, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @ManyToMany(() => WalletEntity, (wallet) => wallet.assets)
   wallets: WalletEntity[]
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.asset)
