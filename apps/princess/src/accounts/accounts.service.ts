@@ -235,9 +235,11 @@ export class AccountsService {
     )
   }
 
-  async deleteAccount() {
+  async deleteAccount(otp: string) {
     const accountId = this.getAccountIdFromRequest()
     const deviceId = this.getDeviceIdFromRequest()
+
+    await this.checkPair(accountId, deviceId, otp)
 
     await this.apiCall(
       EAPIMethod.DELETE,

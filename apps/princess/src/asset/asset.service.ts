@@ -14,7 +14,6 @@ import { EAPIMethod } from '../wallet/wallet.types'
 import { firstValueFrom } from 'rxjs'
 import * as Sentry from '@sentry/node'
 import { EPeriod } from '@rana/core'
-import { CoinService } from '../coin/coin.service'
 
 @Injectable()
 export class AssetService {
@@ -24,7 +23,6 @@ export class AssetService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly coinService: CoinService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }

@@ -849,7 +849,7 @@ export class AssetService {
         relations: { transactions: true, wallets: true },
       })
 
-      if (asset.wallets.length <= 1) {
+      if (asset.wallets.length === 1) {
         if (asset.transactions.length > 0) {
           await this.transactionRepository.delete({ asset: { id: assetId } })
         }

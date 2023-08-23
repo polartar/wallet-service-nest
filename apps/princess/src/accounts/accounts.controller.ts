@@ -7,6 +7,7 @@ import {
   AccountSwaggerResponse,
   CreateAccountDto,
 } from './dto/create-account.dto'
+import { DeleteAccountDto } from './dto/delete-account.dto'
 
 @Controller('account')
 @ApiTags('account')
@@ -40,7 +41,8 @@ export class AccountsController {
   }
 
   @Delete('')
-  async deleteAccount() {
+  async deleteAccount(@Body() data: DeleteAccountDto) {
+    console.log({ data })
     return await this.accountService.deleteAccount()
   }
 }
