@@ -252,22 +252,5 @@ export class AccountsService {
       this.rickApiUrl,
       `wallet/account/${accountId}/${deviceId}`,
     )
-
-    // const payload = {
-    //   type: 'anonymous',
-    //   accountId: accountId,
-    //   deviceId: deviceId,
-    // }
-    // const accessToken = await this.generateAccessToken(payload)
-
-    // const refreshToken = await this.generateRefreshToken(payload)
-
-    // return {
-    //   otpSecret: deviceResponse.data.otp,
-    //   id: deviceResponse.data.deviceId,
-    //   accountId: userResponse.data.id,
-    //   accessToken: accessToken,
-    //   refreshToken: refreshToken,
-    // }
   }
 }
