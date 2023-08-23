@@ -7,7 +7,6 @@ import {
   Post,
   UsePipes,
   Put,
-  Delete,
 } from '@nestjs/common'
 import { AccountService } from './account.service'
 import { CreateAccountDto } from './dto/create-account.dto'

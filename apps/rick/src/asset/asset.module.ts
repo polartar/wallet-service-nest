@@ -9,7 +9,6 @@ import { WalletEntity } from '../wallet/wallet.entity'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { NftService } from '../nft/nft.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { WalletModule } from '../wallet/wallet.module'
 
 @Module({
   imports: [
