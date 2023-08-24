@@ -88,7 +88,7 @@ export class AccountService {
 
     if (account) {
       if (account.email === email) {
-        throw new BadRequestException('Email already exists')
+        throw new BadRequestException(`Can't proceed with Anonymous account`)
       }
       await this.update(account.id, {
         name: name,
