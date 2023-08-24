@@ -87,6 +87,9 @@ export class AccountService {
     const account = await this.getAccount(accountId)
 
     if (account) {
+      if (account.email === email) {
+        throw new BadRequestException('Email already exists')
+      }
       await this.update(account.id, {
         name: name,
         email: email,
