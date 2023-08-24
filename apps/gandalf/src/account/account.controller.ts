@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -40,5 +41,13 @@ export class AccountController {
     @Body() data: UpdateShardsDto,
   ) {
     return this.accountService.updateShards(accountId, data)
+  }
+
+  @Delete(':accountId/:deviceId')
+  async deleteAccount(
+    @Param('accountId') accountId: string,
+    @Param('deviceId') deviceId: string,
+  ) {
+    return this.accountService.deleteAccount(accountId, deviceId)
   }
 }

@@ -66,7 +66,7 @@ export class AssetService {
     @InjectRepository(AssetEntity)
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
-    private readonly transactionRepository: Repository<TransactionEntity>, // private readonly accountService: AccountService,
+    private readonly transactionRepository: Repository<TransactionEntity>,
   ) {
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
     this.etherscanAPIKey = this.configService.get<string>(
@@ -840,5 +840,28 @@ export class AssetService {
     )
 
     return index !== -1 ? source[index].vwap : source[source.length - 1].vwap
+  }
+
+  async deleteAsset(assetId: string) {
+    try {
+      const asset = await this.assetRepository.findOne({
+        where: { id: assetId },
+        relations: { transactions: true, wallets: true },
+      })
+
+      if (asset.wallets.length === 1) {
+        if (asset.transactions.length > 0) {
+          await this.transactionRepository.delete({ asset: { id: assetId } })
+        }
+
+        await this.assetRepository.delete({ id: assetId })
+      }
+    } catch (err) {
+      Sentry.captureException(`deleteAsset(): ${err.message}`, {
+        tags: {
+          assetId,
+        },
+      })
+    }
   }
 }

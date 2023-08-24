@@ -164,27 +164,6 @@ export class WalletService {
     }
   }
 
-  async deleteWallet(walletId: string, accountId: string) {
-    let response
-    try {
-      response = await this.walletRepository.delete({
-        id: walletId,
-        account: {
-          accountId: accountId,
-        },
-      })
-    } catch (err) {
-      Sentry.captureException(
-        `deleteWallet(): ${err.message} with "${walletId}"`,
-      )
-      throw new Error(err.message)
-    }
-    if (response.affected !== 1) {
-      throw new NotFoundException('Wallet Not Found')
-    }
-    return { message: 'SUCCESS' }
-  }
-
   async addNewWallet(
     accountId: string,
     title: string,
@@ -223,6 +202,7 @@ export class WalletService {
       if (mnemonic) {
         prototype.mnemonic = mnemonic
       }
+
       prototype.assets = assets
 
       const wallet = await this.walletRepository.save(prototype)
@@ -235,7 +215,6 @@ export class WalletService {
       }
     } catch (err) {
       Sentry.captureException(`addNewWallet(): ${err.message}`)
-
       throw new InternalServerErrorException(
         'Something went wrong while saving wallet',
       )
@@ -437,6 +416,66 @@ export class WalletService {
       title: walletEntity.title,
       mnemonic: walletEntity.mnemonic,
       assets: walletEntity.assets.map((asset) => asset.id),
+    }
+  }
+
+  async deleteWallet(walletId: string, accountId: string) {
+    let response
+    try {
+      const wallet = await this.getWallet(accountId, walletId)
+      const assets = wallet.assets
+      await Promise.all(
+        assets.map(async (assetId) => {
+          return await this.assetService.deleteAsset(assetId)
+        }),
+      )
+      await this.walletRepository.delete({ account: { accountId: accountId } })
+    } catch (err) {
+      Sentry.captureException(
+        `deleteWallet(): ${err.message} with "${walletId}"`,
+      )
+      throw new Error(err.message)
+    }
+    if (response.affected !== 1) {
+      throw new NotFoundException('Wallet Not Found')
+    }
+    return { message: 'SUCCESS' }
+  }
+
+  async deleteWallets(accountId: string, deviceId: string) {
+    try {
+      const wallets = await this.getWallets(accountId)
+
+      if (wallets && wallets.length > 0) {
+        await Promise.all(
+          wallets.map(async (wallet) => {
+            const assets = wallet.assets
+            return await Promise.all(
+              assets.map(async (assetId) => {
+                return await this.assetService.deleteAsset(assetId)
+              }),
+            )
+          }),
+        )
+
+        await this.walletRepository.delete({
+          account: { accountId: accountId },
+        })
+      }
+      const name = 'anonymous'
+      const email = `any${deviceId}@gmail.com`
+
+      return await this.accountService.update(accountId, {
+        name,
+        email,
+      })
+    } catch (err) {
+      Sentry.captureException(`deleteWallets(): ${err.message}`, {
+        tags: {
+          accountId: accountId,
+        },
+      })
+      throw new BadRequestException(err.message)
     }
   }
 }
