@@ -102,6 +102,9 @@ export class WalletService {
         assets: true,
       },
     })
+    if (!wallet) {
+      throw new NotFoundException('Wallet Not Found')
+    }
 
     return {
       id: wallet.id,
@@ -488,6 +491,40 @@ export class WalletService {
           accountId: accountId,
         },
       })
+      throw new BadRequestException(err.message)
+    }
+  }
+
+  async signOut(
+    email: string,
+    name: string,
+    accountId: string,
+    newAccountId: string,
+  ) {
+    try {
+      const account = await this.accountService.create({
+        email,
+        name,
+        accountId: newAccountId,
+      })
+
+      const existingWallets = await this.walletRepository.find({
+        where: {
+          account: { accountId: accountId },
+          mnemonic: IsNull(),
+        },
+        relations: {
+          account: true,
+        },
+      })
+      existingWallets.map((wallet) => {
+        wallet.account = account
+      })
+
+      await this.updateWallets(existingWallets)
+
+      return true
+    } catch (err) {
       throw new BadRequestException(err.message)
     }
   }

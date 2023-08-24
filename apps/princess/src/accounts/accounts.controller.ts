@@ -44,4 +44,9 @@ export class AccountsController {
   async deleteAccount(@Body() data: DeleteAccountDto) {
     return await this.accountService.deleteAccount(data.otp)
   }
+
+  @Post('/signout')
+  async signOut() {
+    return await this.accountService.signOut()
+  }
 }
