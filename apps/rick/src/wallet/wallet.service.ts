@@ -311,11 +311,8 @@ export class WalletService {
     }
 
     try {
-      const prototype = new WalletEntity()
-      prototype.account = account
-      prototype.title = title
-      prototype.assets = []
-      const walletEntity = await this.walletRepository.save(prototype)
+      const assets = []
+      let isEthereumAsset = false
 
       await Promise.all(
         coins.map(async (coin) => {
@@ -331,21 +328,22 @@ export class WalletService {
             return await Promise.all(
               coin.wallets.map(async (wallet) => {
                 for (const newAccount of wallet.accounts) {
-                  await this.assetService.createAsset(
+                  const { asset } = await this.assetService.addAsset(
                     newAccount.address,
                     newAccount.index,
                     network,
                     newAccount.publickey,
-                    walletEntity,
                   )
+                  assets.push(asset)
                   if (network === ENetworks.ETHEREUM) {
-                    await this.assetService.createAsset(
+                    isEthereumAsset = true
+                    const { asset: asset1 } = await this.assetService.addAsset(
                       newAccount.address,
                       newAccount.index,
                       ENetworks.ETHEREUM_TEST,
                       newAccount.publickey,
-                      walletEntity,
                     )
+                    assets.push(asset1)
                   }
                 }
                 return wallet
@@ -356,6 +354,21 @@ export class WalletService {
           }
         }),
       )
+      const prototype = new WalletEntity()
+      prototype.account = account
+      prototype.title = title
+      prototype.assets = assets
+      const walletEntity = await this.walletRepository.save(prototype)
+
+      if (assets.length > 0) {
+        await this.portfolioService.updateCurrentWallets()
+        if (isEthereumAsset) {
+          this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
+          this.portfolioService.fetchEthereumTransactions(
+            ENetworks.ETHEREUM_TEST,
+          )
+        }
+      }
 
       const newWallet = await this.getWallet(accountId, walletEntity.id)
       return newWallet
