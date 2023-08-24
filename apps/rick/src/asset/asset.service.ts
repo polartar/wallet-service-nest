@@ -429,7 +429,6 @@ export class AssetService {
     index: number,
     network: ENetworks,
     publicKey: string,
-    walletEntity?: WalletEntity,
   ) {
     let validAddress
 
@@ -454,32 +453,12 @@ export class AssetService {
     asset = await this.assetRepository.findOne({
       where: { address: validAddress, network },
     })
-    if (asset) {
-      if (walletEntity) {
-        if (!asset.wallets || asset.wallets.length === 0) {
-          asset.wallets = [walletEntity]
-          await this.assetRepository.save(asset)
-        } else {
-          const walletIds = asset.wallets.map((wallet) => wallet.id)
-          if (!walletIds.includes(walletEntity.id)) {
-            asset.wallets.push(walletEntity)
-            await this.assetRepository.save(asset)
-          }
-        }
-      }
-      return asset
+    if (!asset) {
+      asset = await this.addAsset(validAddress, index, network, publicKey)
+
+      await this.portfolioService.updateCurrentWallets()
+      this.portfolioService.fetchEthereumTransactions(network)
     }
-
-    asset = await this.addAsset(
-      validAddress,
-      index,
-      network,
-      publicKey,
-      walletEntity,
-    )
-
-    await this.portfolioService.updateCurrentWallets()
-    this.portfolioService.fetchEthereumTransactions(network)
 
     return {
       id: asset.id,
@@ -495,10 +474,9 @@ export class AssetService {
     index: number,
     network: ENetworks,
     publicKey: string,
-    walletEntity?: WalletEntity,
   ) {
     const prototype = new AssetEntity()
-    prototype.wallets = walletEntity ? [walletEntity] : []
+    prototype.wallets = []
     prototype.address = address
     prototype.publicKey = publicKey
     prototype.transactions = []
