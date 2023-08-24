@@ -449,13 +449,14 @@ export class AssetService {
       validAddress = address
     }
 
-    let asset: AssetEntity
-    asset = await this.assetRepository.findOne({
-      where: { address: validAddress, network },
-    })
-    if (!asset) {
-      asset = await this.addAsset(validAddress, index, network, publicKey)
+    const { asset, isNew } = await this.addAsset(
+      validAddress,
+      index,
+      network,
+      publicKey,
+    )
 
+    if (isNew) {
       await this.portfolioService.updateCurrentWallets()
       this.portfolioService.fetchEthereumTransactions(network)
     }
@@ -474,7 +475,13 @@ export class AssetService {
     index: number,
     network: ENetworks,
     publicKey: string,
-  ) {
+  ): Promise<{ asset: AssetEntity; isNew: boolean }> {
+    const asset = await this.assetRepository.findOne({
+      where: { address, network },
+    })
+    if (asset) {
+      return { asset, isNew: false }
+    }
     const prototype = new AssetEntity()
     prototype.wallets = []
     prototype.address = address
@@ -498,7 +505,7 @@ export class AssetService {
       Sentry.captureException(`addAsset(): ${err.message}`)
     }
 
-    return assetEntity
+    return { asset: assetEntity, isNew: true }
   }
 
   async updateTransaction(
