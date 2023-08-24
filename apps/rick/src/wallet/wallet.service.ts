@@ -312,6 +312,7 @@ export class WalletService {
 
     try {
       const assets = []
+      let isEthereumAsset = false
 
       await Promise.all(
         coins.map(async (coin) => {
@@ -335,6 +336,7 @@ export class WalletService {
                   )
                   assets.push(asset)
                   if (network === ENetworks.ETHEREUM) {
+                    isEthereumAsset = true
                     const asset1 = await this.assetService.addAsset(
                       newAccount.address,
                       newAccount.index,
@@ -358,9 +360,15 @@ export class WalletService {
       prototype.assets = assets
       const walletEntity = await this.walletRepository.save(prototype)
 
-      await this.portfolioService.updateCurrentWallets()
-      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-      this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
+      if (assets.length > 0) {
+        await this.portfolioService.updateCurrentWallets()
+        if (isEthereumAsset) {
+          this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
+          this.portfolioService.fetchEthereumTransactions(
+            ENetworks.ETHEREUM_TEST,
+          )
+        }
+      }
 
       const newWallet = await this.getWallet(accountId, walletEntity.id)
       return newWallet
