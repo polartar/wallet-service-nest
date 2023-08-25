@@ -20,6 +20,7 @@ import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
 import { CreateWalletDto } from './dto/create-wallet.dto'
 import { UpdateWalletDto } from './dto/update-wallet.dto'
+import { SignOutWalletsDto } from './dto/signout-wallet.dto'
 
 @Controller('wallet')
 export class WalletController {
@@ -45,13 +46,7 @@ export class WalletController {
     @Query('accountId') accountId: string,
     @Param('walletId') walletId: string,
   ) {
-    try {
-      return await this.walletService.getWallet(accountId, walletId)
-    } catch (e) {
-      Sentry.captureException(e.message + ' in getWalletHistory')
-
-      throw new InternalServerErrorException(e?.message)
-    }
+    return await this.walletService.getWallet(accountId, walletId)
   }
 
   @Get(':walletId/transactions')
@@ -165,6 +160,16 @@ export class WalletController {
       walletId,
       data.accountId,
       data.assetId,
+    )
+  }
+
+  @Post('signout')
+  async signOut(@Body() data: SignOutWalletsDto) {
+    return await this.walletService.signOut(
+      data.email,
+      data.name,
+      data.accountId,
+      data.newAccountId,
     )
   }
 }

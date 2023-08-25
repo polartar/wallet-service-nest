@@ -255,4 +255,53 @@ export class AccountsService {
 
     return account
   }
+
+  async signOut() {
+    const deviceId = this.getDeviceIdFromRequest()
+    const accountId = this.getAccountIdFromRequest()
+    try {
+      const tmpEmail = `signout${deviceId}@gmail.com`
+      const tmpName = 'Anonymous'
+      // create anonymous user
+      const userResponse = await firstValueFrom(
+        this.httpService.post(`${this.gandalfApiUrl}/account`, {
+          email: tmpEmail,
+          name: tmpName,
+        }),
+      )
+
+      // create the anonymous user in rick
+      await firstValueFrom(
+        this.httpService.post(`${this.rickApiUrl}/wallet/signout`, {
+          email: tmpEmail,
+          name: tmpName,
+          accountId: accountId,
+          newAccountId: userResponse.data.id,
+        }),
+      )
+
+      const payload = {
+        type: 'anonymous',
+        accountId: userResponse.data.id,
+        deviceId: deviceId,
+      }
+      const accessToken = await this.bootstrapService.generateAccessToken(
+        payload,
+      )
+
+      const refreshToken = await this.bootstrapService.generateRefreshToken(
+        payload,
+      )
+
+      return {
+        accountId: userResponse.data.id,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      }
+    } catch (err) {
+      Sentry.captureException(err.message + ' in createDevice()')
+
+      throw new BadRequestException(err.message)
+    }
+  }
 }

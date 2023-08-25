@@ -87,6 +87,9 @@ export class AccountService {
     const account = await this.getAccount(accountId)
 
     if (account) {
+      if (account.email === email) {
+        throw new BadRequestException(`Can't proceed with Anonymous account`)
+      }
       await this.update(account.id, {
         name: name,
         email: email,
