@@ -314,7 +314,7 @@ export class WalletService {
     }
 
     try {
-      const assets = []
+      let assets: AssetEntity[] = []
       let isEthereumAsset = false
 
       await Promise.all(
@@ -338,15 +338,16 @@ export class WalletService {
                     newAccount.publickey,
                   )
                   assets.push(asset)
+
                   if (network === ENetworks.ETHEREUM) {
                     isEthereumAsset = true
-                    const { asset: asset1 } = await this.assetService.addAsset(
+                    const { asset } = await this.assetService.addAsset(
                       newAccount.address,
                       newAccount.index,
                       ENetworks.ETHEREUM_TEST,
                       newAccount.publickey,
                     )
-                    assets.push(asset1)
+                    assets.push(asset)
                   }
                 }
                 return wallet
@@ -357,6 +358,13 @@ export class WalletService {
           }
         }),
       )
+
+      //remove duplication
+      assets = assets.filter(
+        (asset, index) =>
+          assets.findIndex((item) => asset.id === item.id) === index,
+      )
+
       const prototype = new WalletEntity()
       prototype.account = account
       prototype.title = title
