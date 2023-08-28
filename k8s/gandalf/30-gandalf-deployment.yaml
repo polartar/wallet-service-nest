@@ -22,9 +22,9 @@ spec:
         - containerPort: 3333
         env:
           - name: GOOGLE_CLIENT_ID
-            value: "141910175763-86aa4fnrfmqb0gnlf0bu5gkk923jlai8.apps.googleusercontent.com"
+            value: "141910175763-78q2cc71dvas1l3ef7j1pkj2gsm9krh1.apps.googleusercontent.com"
           - name: APPLE_CLIENT_ID
-            value: "changethis"
+            value: "io.rana.fcat"
           - name: GANDALF_DB_HOST
             value: "gandalf-db-service.default.svc.cluster.local"
           - name: GANDALF_DB_PORT
