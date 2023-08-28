@@ -20,6 +20,7 @@ export class AccountsController {
     return await this.accountService.createAccount(
       data.provider,
       data.providerToken,
+      data.platform,
       data.otp,
       data.accountShard,
       data.iCloudShard,

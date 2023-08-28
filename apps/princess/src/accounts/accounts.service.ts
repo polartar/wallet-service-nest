@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth } from '@rana/core'
+import { EAuth, EPeriod, EPlatform } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { IAccount, IShard } from './accounts.types'
 import * as Sentry from '@sentry/node'
@@ -85,6 +85,7 @@ export class AccountsService {
   async createAccount(
     provider: EAuth,
     providerToken: string,
+    platform: EPlatform,
     otp: string,
     accountShard,
     iCloudShard,
@@ -101,6 +102,7 @@ export class AccountsService {
     const user = await this.getUserFromIdToken(
       providerToken,
       provider,
+      platform,
       accountId,
       {
         accountShard,
@@ -145,6 +147,7 @@ export class AccountsService {
   async getUserFromIdToken(
     token: string,
     type: EAuth | 'Anonymous',
+    platform: EPlatform,
     accountId: string,
     optionalParams?: IShard,
   ) {
@@ -153,6 +156,7 @@ export class AccountsService {
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
           type,
+          platform,
           accountId,
           ...optionalParams,
         }),

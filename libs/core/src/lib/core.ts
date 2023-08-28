@@ -43,6 +43,11 @@ export enum EAuth {
   Apple = 'apple',
 }
 
+export enum EPlatform {
+  Android = 'android',
+  IOS = 'ios',
+}
+
 export function getTimestamp(date?: string): number {
   return date
     ? Math.floor(new Date(date).getTime() / 1000)

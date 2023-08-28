@@ -7,6 +7,7 @@ export const Environment = () => {
     [key in EEnvironment]: IData
   } = {
     [EEnvironment.googleClientID]: process.env.GOOGLE_CLIENT_ID,
+    [EEnvironment.IOSGoogleClientID]: process.env.IOS_GOOGLE_CLIENT_ID,
     [EEnvironment.appleClientID]: process.env.APPLE_CLIENT_ID,
   }
   return env
