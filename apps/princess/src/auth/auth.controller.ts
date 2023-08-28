@@ -33,6 +33,7 @@ export class AuthController {
     return this.authService.generateRefreshToken(
       data.provider,
       data.providerToken,
+      data.platform,
       data.accountId,
       data.deviceId,
       data.otp,

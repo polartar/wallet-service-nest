@@ -97,7 +97,7 @@ export class AccountsService {
     const deviceId = this.getDeviceIdFromRequest()
 
     const accountId = this.getAccountIdFromRequest()
-    await this.checkPair(accountId, deviceId, otp)
+    // await this.checkPair(accountId, deviceId, otp)
 
     const user = await this.getUserFromIdToken(
       providerToken,
