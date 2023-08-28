@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { IAccessTokenPayload } from '../bootstrap/bootstrap.types'
-import { EAuth } from '@rana/core'
+import { EAuth, EPlatform } from '@rana/core'
 
 @Injectable()
 export class AuthService {
@@ -76,6 +76,7 @@ export class AuthService {
   async generateRefreshToken(
     provider: EAuth | 'Anonymous',
     providerToken: string,
+    platform: EPlatform,
     accountId: string,
     deviceId: string,
     otp: string,
@@ -84,6 +85,7 @@ export class AuthService {
       const userResponse = await this.accountService.getUserFromIdToken(
         providerToken,
         provider,
+        platform,
         accountId,
       )
       if (accountId !== userResponse.account.id) {

@@ -4,16 +4,20 @@ import { IAuthData, IAuthResponse } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth } from '@rana/core'
+import { EAuth, EPlatform } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
 export class AuthService {
   googleClientId: string
+  IOSGoogleClientId: string
   appleClientId: string
   constructor(private configService: ConfigService) {
     this.googleClientId = this.configService.get<string>(
       EEnvironment.googleClientID,
+    )
+    this.IOSGoogleClientId = this.configService.get<string>(
+      EEnvironment.IOSGoogleClientID,
     )
     this.appleClientId = this.configService.get<string>(
       EEnvironment.appleClientID,
@@ -22,7 +26,11 @@ export class AuthService {
 
   async authorize(data: IAuthData): Promise<IAuthResponse> {
     if (data.type === EAuth.Google) {
-      const client = new OAuth2Client(this.googleClientId)
+      const googleClientId =
+        data.platform === EPlatform.Android
+          ? this.googleClientId
+          : this.IOSGoogleClientId
+      const client = new OAuth2Client(googleClientId)
       try {
         const response = await client.verifyIdToken({
           idToken: data.idToken,
@@ -31,8 +39,7 @@ export class AuthService {
         const payload = response.getPayload()
         if (
           !payload.iss.includes('accounts.google.com') ||
-          (payload.aud !== this.googleClientId &&
-            payload.azp !== this.googleClientId)
+          (payload.aud !== googleClientId && payload.azp !== googleClientId)
         ) {
           throw new Error('Invalid Google Id token')
         }

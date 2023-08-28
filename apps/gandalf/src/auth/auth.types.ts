@@ -1,8 +1,9 @@
-import { EAuth } from '@rana/core'
+import { EAuth, EPlatform } from '@rana/core'
 
 export type IAuthData = {
   idToken: string
   type: EAuth
+  platform: EPlatform
   accountId: string
   accountShard?: string
   iCloudShard?: string

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth } from '@rana/core'
+import { EAuth, EPlatform } from '@rana/core'
 import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 
 export class RefreshTokenDto {
@@ -8,6 +8,14 @@ export class RefreshTokenDto {
     enum: [EAuth.Apple, EAuth.Google],
   })
   provider: EAuth | 'Anonymous'
+
+  @ApiProperty({
+    description: 'platform type',
+    enum: [EPlatform.Android, EPlatform.IOS],
+    default: EPlatform.Android,
+  })
+  @IsOptional()
+  platform: EPlatform
 
   @ApiProperty({
     description:

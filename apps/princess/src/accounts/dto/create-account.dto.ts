@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth } from '@rana/core'
-import { IsEnum, IsNotEmpty } from 'class-validator'
+import { EAuth, EPlatform } from '@rana/core'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 export class CreateAccountDto {
   @ApiProperty({
     description: 'auth provider',
@@ -8,6 +8,14 @@ export class CreateAccountDto {
   })
   @IsEnum(EAuth)
   provider: EAuth
+
+  @ApiProperty({
+    description: 'platform type',
+    enum: [EPlatform.Android, EPlatform.IOS],
+    default: EPlatform.Android,
+  })
+  @IsOptional()
+  platform: EPlatform
 
   @ApiProperty({ description: 'token of Google or Apple login' })
   @IsNotEmpty()
