@@ -11,7 +11,6 @@ export type IAuthData = {
   passcodeKey?: string
   recoveryKey?: string
   serverShard?: string
-  isApple: boolean
 }
 
 export type IAuthResponse = {
