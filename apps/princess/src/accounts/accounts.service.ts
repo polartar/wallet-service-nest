@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, EPeriod, EPlatform } from '@rana/core'
+import { EAuth, EPlatform } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { IAccount, IShard } from './accounts.types'
 import * as Sentry from '@sentry/node'
