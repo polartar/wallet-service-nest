@@ -92,7 +92,7 @@ export class NewsService {
       query['count-per-page'] || this.defaultCountPerPage
 
     const params = query.highlights
-      ? `?limit=${query.highlights}`
+      ? `?limit=${query.highlights}&sort=desc&symbols=${ECoinTypes.BITCOIN},${ECoinTypes.ETHEREUM}`
       : this.generateParams(newQuery)
 
     const apiURL = `${this.fidelityNewsApiUrl}/${params}`
