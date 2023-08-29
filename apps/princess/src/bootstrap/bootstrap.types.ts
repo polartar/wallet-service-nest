@@ -18,7 +18,6 @@ export interface IGetInfoResponse {
   serverVersion: string
   self?: {
     rick: string
-    morty: string
   }
   '3rdParty'?: {
     'blockcypher.com': string

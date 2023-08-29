@@ -11,27 +11,27 @@ import * as Sentry from '@sentry/node'
 @Injectable()
 export class CoinService {
   server: Server
-  mortyApiUrl: string
+  rickApiURL: string
 
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
+    this.rickApiURL = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
   async getMarketData(coinType: ECoinTypes) {
     try {
       const res = await firstValueFrom(
         this.httpService.get<AxiosResponse>(
-          `${this.mortyApiUrl}/api/market/${coinType}`,
+          `${this.rickApiURL}/coin/${coinType}`,
         ),
       )
       return res.data
     } catch (err) {
       Sentry.captureException(err.message + 'in getMarketData()')
 
-      throw new InternalServerErrorException('Morty API call error')
+      throw new InternalServerErrorException('Rick API call error')
     }
   }
 
@@ -39,14 +39,14 @@ export class CoinService {
     try {
       const res = await firstValueFrom(
         this.httpService.get(
-          `${this.mortyApiUrl}/api/market/${coinType}/history?period=${period}`,
+          `${this.rickApiURL}/coin/${coinType}/history?period=${period}`,
         ),
       )
       return res.data
     } catch (err) {
       Sentry.captureException(err.message + 'in getHistoricalData()')
 
-      throw new InternalServerErrorException('Morty API call error')
+      throw new InternalServerErrorException('Rick API call error')
     }
   }
 

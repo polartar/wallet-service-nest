@@ -87,7 +87,6 @@ export class BootstrapService {
     if (isIncludeHealthCheck) {
       info.self = {
         rick: 'up',
-        morty: 'down',
       }
       info['3rdParty'] = {
         'blockcypher.com': 'up',

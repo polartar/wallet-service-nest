@@ -13,9 +13,6 @@ import { EAuth, EPlatform } from '@rana/core'
 
 @Injectable()
 export class AuthService {
-  gandalfApiUrl: string
-  fluffyApiUrl: string
-  rickApiUrl: string
   version: string
 
   constructor(
@@ -24,13 +21,6 @@ export class AuthService {
     private bootstrapService: BootstrapService,
     private jwtService: JwtService,
   ) {
-    this.gandalfApiUrl = this.configService.get<string>(
-      EEnvironment.gandalfAPIUrl,
-    )
-    this.fluffyApiUrl = this.configService.get<string>(
-      EEnvironment.fluffyAPIUrl,
-    )
-    this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.version = this.configService.get<string>(EEnvironment.version)
   }
 

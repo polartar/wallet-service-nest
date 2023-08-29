@@ -3,7 +3,6 @@ export enum EEnvironment {
   fidelityClientSecret = 'fidelity_client_secret',
   infuraAPIKey = 'infura_api_key',
   rickAPIUrl = 'rick_api_url',
-  mortyAPIUrl = 'morty_api_url',
   gandalfAPIUrl = 'gandalf_api_url',
   fluffyAPIUrl = 'fluffy_api_url',
   kafoAPIUrl = 'kafo_api_url',

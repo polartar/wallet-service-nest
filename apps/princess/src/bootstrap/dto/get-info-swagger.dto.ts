@@ -19,7 +19,6 @@ export class GetInfoSwaggerResponse {
   @ApiProperty({
     example: {
       rick: 'up',
-      morty: 'down',
     },
   })
   self: string
