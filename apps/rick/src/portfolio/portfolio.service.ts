@@ -16,6 +16,7 @@ import { AssetService } from '../asset/asset.service'
 import { formatUnits } from 'ethers/lib/utils'
 import { ITransaction } from '../asset/asset.types'
 import { ETransactionStatuses } from '../wallet/wallet.types'
+import { CoinService } from '../coin/coin.service'
 
 @Injectable()
 export class PortfolioService {
@@ -34,6 +35,7 @@ export class PortfolioService {
     private configService: ConfigService,
     @Inject(forwardRef(() => AssetService))
     private readonly assetService: AssetService,
+    private readonly coinService: CoinService,
     private readonly httpService: HttpService,
   ) {
     this.btcSocket = new BlockchainSocket()
@@ -228,7 +230,7 @@ export class PortfolioService {
         this.activeBtcAssets.map(async (asset) => {
           const transactions = asset.transactions || []
           const newHistoryData: ITransaction[] = []
-          const price = await this.assetService.getCurrentUSDPrice(
+          const { price } = await this.coinService.getMarketData(
             ECoinTypes.BITCOIN,
           )
           if (senderAddresses.includes(asset.address)) {

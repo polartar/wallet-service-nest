@@ -13,7 +13,9 @@ export const Environment = () => {
     [EEnvironment.liquidAPIUrl]: process.env.LIQUID_API_URL,
     [EEnvironment.liquidTestAPIKey]: process.env.LIQUID_TEST_API_KEY,
     [EEnvironment.liquidTestAPIUrl]: process.env.LIQUID_TEST_API_URL,
-    [EEnvironment.mortyAPIUrl]: process.env.MORTY_API_URL,
+    [EEnvironment.coinMarketAPI]: process.env.COINMARKET_API_KEY,
+    [EEnvironment.fidelityClientId]: process.env.FIDELITY_CLIENT_ID,
+    [EEnvironment.fidelityClientSecret]: process.env.FIDELITY_CLIENT_SECRET,
   }
 
   return env

@@ -12,6 +12,7 @@ import { AssetEntity } from './asset.entity'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { NftService } from '../nft/nft.service'
+import { CoinService } from '../coin/coin.service'
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { NftService } from '../nft/nft.service'
     HttpModule,
   ],
   controllers: [WalletController],
-  providers: [WalletService, AssetService, PortfolioService, NftService],
+  providers: [
+    WalletService,
+    AssetService,
+    PortfolioService,
+    NftService,
+    CoinService,
+  ],
   exports: [WalletService],
 })
 export class WalletModule {}

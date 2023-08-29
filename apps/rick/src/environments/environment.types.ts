@@ -8,5 +8,7 @@ export enum EEnvironment {
   liquidTestAPIKey = 'liquid_test_api_key',
   liquidAPIUrl = 'liquid__api_url',
   liquidTestAPIUrl = 'liquid_test_api_url',
-  mortyAPIUrl = 'morty_api_url',
+  coinMarketAPI = 'coin_market_api',
+  fidelityClientId = 'fidelity_client_id',
+  fidelityClientSecret = 'fidelity_client_secret',
 }

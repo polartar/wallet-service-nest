@@ -12,6 +12,7 @@ import { WalletEntity } from '../wallet/wallet.entity'
 import { AccountEntity } from '../account/account.entity'
 import { HttpModule } from '@nestjs/axios'
 import { AssetModule } from '../asset/asset.module'
+import { CoinModule } from '../coin/coin.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AssetModule } from '../asset/asset.module'
     NftModule,
     HttpModule,
     AssetModule,
+    CoinModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,3 @@
-import { WalletEntity } from './../wallet/wallet.entity'
 import {
   BadRequestException,
   Inject,
@@ -43,6 +42,7 @@ import {
   isAddress,
 } from 'ethers/lib/utils'
 import { Network, validate } from 'bitcoin-address-validation'
+import { CoinService } from '../coin/coin.service'
 
 @Injectable()
 export class AssetService {
@@ -55,7 +55,6 @@ export class AssetService {
   liquidTestAPIUrl: string
   etherscanAPIKey: string
   offset = 200
-  mortyApiUrl: string
 
   constructor(
     private configService: ConfigService,
@@ -67,8 +66,8 @@ export class AssetService {
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
+    private coinService: CoinService,
   ) {
-    this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
     this.etherscanAPIKey = this.configService.get<string>(
       EEnvironment.etherscanAPIKey,
     )
@@ -176,11 +175,12 @@ export class AssetService {
       // continue regardless of error
     }
 
-    const ethMarketHistories = await this.getHistoricalData(
-      ECoinTypes.ETHEREUM,
-      transactions[transactions.length - 1].timeStamp,
-      transactions[0].timeStamp,
-    )
+    const ethMarketHistories =
+      await this.coinService.getHistoricalDataWithPeriod(
+        ECoinTypes.ETHEREUM,
+        transactions[transactions.length - 1].timeStamp,
+        transactions[0].timeStamp,
+      )
 
     let currentBalance = balance
     const histories = await Promise.all(
@@ -344,11 +344,12 @@ export class AssetService {
 
     const transactions = txResponse.data.txrefs
 
-    const btcMarketHistories = await this.getHistoricalData(
-      ECoinTypes.BITCOIN,
-      getTimestamp(transactions[transactions.length - 1].confirmed),
-      getTimestamp(transactions[0].confirmed),
-    )
+    const btcMarketHistories =
+      await this.coinService.getHistoricalDataWithPeriod(
+        ECoinTypes.BITCOIN,
+        getTimestamp(transactions[transactions.length - 1].confirmed),
+        getTimestamp(transactions[0].confirmed),
+      )
 
     let currentBalance = balance
     const allHistories = await Promise.all(
@@ -523,7 +524,7 @@ export class AssetService {
     fee: BigNumber,
   ) {
     const transactions = updatedAsset.transactions
-    const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
+    const { price } = await this.coinService.getMarketData(ECoinTypes.ETHEREUM)
 
     const balance = transactions.length
       ? BigNumber.from(transactions[0].balance).sub(amount)
@@ -783,38 +784,6 @@ export class AssetService {
 
   async getAssetById(assetId: string) {
     return await this.assetRepository.findOne({ where: { id: assetId } })
-  }
-
-  async getHistoricalData(
-    coinType: ECoinTypes,
-    startTime: number,
-    endTime: number,
-  ) {
-    try {
-      const res = await firstValueFrom(
-        this.httpService.get(
-          `${this.mortyApiUrl}/api/market/${coinType}/period?startTime=${startTime}&endTime=${endTime}`,
-        ),
-      )
-      return res.data
-    } catch (err) {
-      Sentry.captureException(err.message + 'in getHistoricalData()')
-
-      throw new InternalServerErrorException(err.message)
-    }
-  }
-
-  async getCurrentUSDPrice(coinType: ECoinTypes): Promise<number> {
-    try {
-      const res = await firstValueFrom(
-        this.httpService.get(`${this.mortyApiUrl}/api/market/${coinType}`),
-      )
-      return res.data.price
-    } catch (err) {
-      Sentry.captureException(err.message + 'in getCurrentUSDPrice()')
-
-      throw new InternalServerErrorException(err.message)
-    }
   }
 
   getUSDPrice(source: IMarketData[], timestamp: number) {
