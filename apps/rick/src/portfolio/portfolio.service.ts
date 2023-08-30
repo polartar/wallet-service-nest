@@ -128,7 +128,7 @@ export class PortfolioService {
     this.alchemyInstance
       .forNetwork(
         network === ENetworks.ETHEREUM
-          ? Network.MATIC_MAINNET
+          ? Network.ETH_MAINNET
           : Network.ETH_GOERLI,
       )
       .ws.on(
@@ -226,7 +226,9 @@ export class PortfolioService {
     try {
       await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
-          const transactions = asset.transactions || []
+          // const transactions = asset.transactions || []
+          const lastTransaction =
+            await this.assetService.getLastTransactionFromAssetId(asset.id)
           const newHistoryData: ITransaction[] = []
           const price = await this.assetService.getCurrentUSDPrice(
             ECoinTypes.BITCOIN,
@@ -241,8 +243,8 @@ export class PortfolioService {
 
             inputs.splice(index, 1)
 
-            const currBalance = transactions.length
-              ? Number(transactions[0].balance)
+            const currBalance = lastTransaction
+              ? Number(lastTransaction.balance)
               : 0
             const balance = currBalance - senderInfo.prev_out.value
             const weiBalance = formatUnits(balance, 8)
@@ -260,13 +262,10 @@ export class PortfolioService {
               timestamp: this.getCurrentTimeBySeconds(),
               fee: '0',
             })
-            const newHistory = await this.assetService.addHistory({
+            await this.assetService.addHistory({
               asset,
               ...newHistoryData[0],
             })
-            transactions.push(newHistory)
-
-            asset.transactions = transactions
           }
           if (receiverAddresses.includes(asset.address)) {
             // handle if sender transfer btc to same address more than twice
@@ -296,11 +295,7 @@ export class PortfolioService {
               newHistoryData.length === 1
                 ? newHistoryData[0]
                 : newHistoryData[1]
-            const newHistory = await this.assetService.addHistory(historyData)
-
-            transactions.push(newHistory)
-
-            asset.transactions = transactions
+            await this.assetService.addHistory(historyData)
           }
 
           if (
