@@ -47,11 +47,11 @@ export class WalletService {
       EEnvironment.liquidAPIUrl,
     )
 
-    this.assetService.confirmWalletBalances()
     this.startFetchEthereum()
   }
 
   async startFetchEthereum() {
+    await this.assetService.confirmWalletBalances()
     await this.portfolioService.updateCurrentWallets()
     this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
     this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
