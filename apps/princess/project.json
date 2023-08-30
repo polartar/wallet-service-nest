@@ -1,0 +1,61 @@
+{
+  "name": "princess",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/princess/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/princess",
+        "main": "apps/princess/src/main.ts",
+        "tsConfig": "apps/princess/tsconfig.app.json",
+        "assets": ["apps/princess/src/assets"]
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/princess/src/environments/environment.ts",
+              "with": "apps/princess/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/js:node",
+      "options": {
+        "buildTarget": "princess:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "princess:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/princess/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/princess/jest.config.ts",
+        "passWithNoTests": true,
+        "detectOpenHandles": true
+      }
+    }
+  },
+  "tags": []
+}

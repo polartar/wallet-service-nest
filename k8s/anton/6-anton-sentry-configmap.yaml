@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anton-sentry-config
+  namespace: default
+data:
+  sentry_dsn: "http://0b923e7b4bd8414ebb91b5a28f57ec70@10.207.0.2:9000/8"
+  sentry_traces_sample_rate: "0.25"
+  sentry_environment: "testnet_staging"

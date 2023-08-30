@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: morty-deployment
+  labels:
+    app: morty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: morty
+  template:
+    metadata:
+      labels:
+        app: morty
+    spec:
+      containers:
+      - name: morty-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/morty_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: PRINCESS_API_URL
+            value: "http://princess.default.svc.cluster.local"
+          - name: COINMARKET_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: morty-env-secrets
+                key: COINMARKET_API_KEY
+          - name: FIDELITY_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: princess-env-secrets
+                key: FIDELITY_CLIENT_ID
+          - name: FIDELITY_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: princess-env-secrets
+                key: FIDELITY_CLIENT_SECRET
+          - name: NODE_ENV
+            value: ""
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: morty-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: morty-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: morty-sentry-config
+                key: sentry_environment
+        envFrom:
+        - configMapRef:
+            name: proxyconfig
+        volumeMounts:
+        - name: cacert
+          mountPath: /etc/ssl/certs/ca_cert.pem
+          subPath: ca_cert.pem        
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "150m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
+      volumes:
+      - name: cacert
+        configMap:
+          name: proxyca
+          items:
+            - key: ca_cert.pem
+              path: ca_cert.pem

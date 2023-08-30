@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gandalf-deployment
+  labels:
+    app: gandalf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gandalf
+  template:
+    metadata:
+      labels:
+        app: gandalf
+    spec:
+      containers:
+      - name: gandalf-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/gandalf_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: GOOGLE_CLIENT_ID
+            value: "141910175763-78q2cc71dvas1l3ef7j1pkj2gsm9krh1.apps.googleusercontent.com"
+          - name: IOS_GOOGLE_CLIENT_ID
+            value: "141910175763-86aa4fnrfmqb0gnlf0bu5gkk923jlai8.apps.googleusercontent.com"
+          - name: APPLE_CLIENT_ID
+            value: "io.rana.fcat"
+          - name: GANDALF_DB_HOST
+            value: "gandalf-db-service.default.svc.cluster.local"
+          - name: GANDALF_DB_PORT
+            value: "5432"
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: gandalf-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: gandalf-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: gandalf-sentry-config
+                key: sentry_environment
+        envFrom:
+        - configMapRef:
+            name: proxyconfig
+        volumeMounts:
+        - name: cacert
+          mountPath: /etc/ssl/certs/ca_cert.pem
+          subPath: ca_cert.pem
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
+      volumes:
+      - name: cacert
+        configMap:
+          name: proxyca
+          items:
+            - key: ca_cert.pem
+              path: ca_cert.pem

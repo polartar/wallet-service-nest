@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafo-deployment
+  labels:
+    app: kafo
+  namespace: mainnet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafo
+  template:
+    metadata:
+      labels:
+        app: kafo
+    spec:
+      containers:
+      - name: kafo-prod
+        image: registry.gitlab.com/ngrave/rana/app/be/kafo_prod:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
+          - name: LIQUID_API_KEY
+            value: a
+          - name: LIQUID_API_URL
+            value: "https://development1.mainnet.liquid-debug.ngrave.io"
+          - name: LIQUID_TEST_API_KEY
+            value: a
+          - name: LIQUID_TEST_API_URL
+            value: "https://development1.testnet.liquid-debug.ngrave.io"
+          - name: BLOCKCYPHER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: kafo-env-secrets
+                key: BLOCKCYPHER_TOKEN
+          - name: INFURA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: INFURA_API_KEY
+          - name: NODE_ENV
+            value: "production"
+          - name: SENTRY_DSN
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_dsn
+          - name: SENTRY_TRACES_SAMPLE_RATE
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_traces_sample_rate
+          - name: SENTRY_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: kafo-sentry-config
+                key: sentry_environment
+          - name: PAYLOAD_VERIFICATION_RSA
+            valueFrom:
+              secretKeyRef:
+                name: kafo-env-secrets
+                key: PAYLOAD_VERIFICATION_RSA
+        envFrom:
+        - configMapRef:
+            name: proxyconfig
+        volumeMounts:
+        - name: cacert
+          mountPath: /etc/ssl/certs/ca_cert.pem
+          subPath: ca_cert.pem
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+      imagePullSecrets:
+        - name: gitlabregistry
+      volumes:
+      - name: cacert
+        configMap:
+          name: proxyca
+          items:
+            - key: ca_cert.pem
+              path: ca_cert.pem

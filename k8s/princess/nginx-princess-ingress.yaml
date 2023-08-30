@@ -1,0 +1,97 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: princess-mainnet
+  namespace: mainnet
+  annotations:
+    # nginx.ingress.kubernetes.io/canary: "true"
+    # nginx.ingress.kubernetes.io/canary-by-header: "X-NETWORK"
+    # nginx.ingress.kubernetes.io/canary-by-header-value: "mainnet"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($request_uri ~* "/coin/(ethereum|bitcoin)") {
+        return 403;
+      }
+      if ($request_uri ~* "/portfolio/updated") {
+        return 403;
+      }
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - mainnet.be.nscribe.xyz
+    secretName: letsencrypt-mainnet
+  rules:
+    - host: mainnet.be.nscribe.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: princess
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: princess-testnet
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "180"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($request_uri ~* "/coin/(ethereum|bitcoin)") {
+        return 403;
+      }
+      if ($request_uri ~* "/portfolio/updated") {
+        return 403;
+      }
+spec:
+  tls:
+  - hosts:
+    - testnet.be.nscribe.xyz
+    secretName: letsencrypt
+  ingressClassName: nginx
+  rules:
+    - host: testnet.be.nscribe.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: princess
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pgadmin
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "180"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  tls:
+  - hosts:
+    - pgadmin.nscribe.xyz
+    secretName: pgadmin-letsencrypt
+  ingressClassName: nginx
+  rules:
+    - host: pgadmin.nscribe.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pgadmin-service
+                port:
+                  number: 80

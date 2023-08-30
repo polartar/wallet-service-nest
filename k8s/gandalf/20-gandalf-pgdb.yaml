@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gandalf-db-sfs
+spec:
+  selector:
+    matchLabels:
+      app: gandalf-db # has to match .spec.template.metadata.labels
+  serviceName: "gandalf-db-service"
+  replicas: 1 # Don't change this to > 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: gandalf-db # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: postgres
+        image: postgres:15.2-alpine
+        env:
+        - name: POSTGRES_USER
+          value: myusername
+        - name: POSTGRES_DB
+          value: gandalf
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_PASSWORD
+          value: mypassword
+        ports:
+        - containerPort: 5432
+          name: postgres-port
+        volumeMounts:
+        - name: gandalf-dbdata
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 50m
+            memory: 128Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: gandalf-dbdata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 1Gi

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: morty-sentry-config
+  namespace: default
+data:
+  sentry_dsn: "http://9ad88a4df82545a1823744aa288a3e03@10.207.0.2:9000/4"
+  sentry_traces_sample_rate: "0.25"
+  sentry_environment: "testnet_staging"

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rick-db-sfs
+  namespace: mainnet
+spec:
+  selector:
+    matchLabels:
+      app: rick-db # has to match .spec.template.metadata.labels
+  serviceName: "rick-db-service"
+  replicas: 1 # Don't change this to > 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: rick-db # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: postgres
+        image: postgres:15.2-alpine
+        env:
+        - name: POSTGRES_USER
+          value: myusername
+        - name: POSTGRES_DB
+          value: rick
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_PASSWORD
+          value: mypassword
+        ports:
+        - containerPort: 5432
+          name: postgres-port
+        volumeMounts:
+        - name: rick-dbdata
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 50m
+            memory: 128Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: rick-dbdata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 1Gi
