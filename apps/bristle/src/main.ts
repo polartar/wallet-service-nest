@@ -23,7 +23,7 @@ async function bootstrap() {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     tracesSampleRate: parseInt(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0.5,
-    // Set sampling rate for profiling - this is relative to tracesSampleRate
+
     profilesSampleRate:
       parseInt(process.env.SENTRY_PROFILES_SAMPLE_RATE) || 1.0,
     environment: process.env.SENTRY_ENVIRONMENT || 'dev',
