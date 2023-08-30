@@ -1,0 +1,262 @@
+image: node:18
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+    GIT_DEPTH: "50"
+
+.distributed:
+  interruptible: true
+  only:
+    - main
+    - merge_requests
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn/
+  before_script:
+    - yarn install --frozen-lockfile --cache .yarn --prefer-offline
+    - NX_HEAD=$CI_COMMIT_SHA
+    - NX_BASE=${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$CI_COMMIT_BEFORE_SHA}
+  artifacts:
+    paths:
+      - node_modules/.cache/nx
+
+lint-all:
+  stage: lint
+  extends: .distributed
+  script:
+    - npx nx workspace-lint --base=$NX_BASE --head=$NX_HEAD
+
+lint:commit:
+  stage: lint
+  script:
+    - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
+
+lint:
+  stage: lint
+  extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=lint --parallel=3
+
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE/princess_prod:main
+
+# upload SBOM:
+#   needs:
+#     - deploy to testnet k8s cluster
+#     # - deploy to mainnet k8s cluster
+#     - container_scanning
+#   dependencies:
+#     - container_scanning
+#   allow_failure: true
+#   stage: .post
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#   script:
+#     - "curl -H \"X-Api-Key: ${DTRACK_API_KEY}\" -F bom=@gl-sbom-report.cdx.json -F project=\"$DTRACK_PROJECT_UUID\" -vf https://apiserver.deptrack.nscribe.xyz/api/v1/bom"
+
+test:
+  stage: test
+  extends: .distributed
+  services:
+    - postgres:15.2-alpine
+  variables:
+    PG_HOST: postgres
+    PG_PORT: 5432
+    POSTGRES_DB: testdb
+    POSTGRES_USER: pguser
+    POSTGRES_PASSWORD: pgpassword
+    GANDALF_DB_USERNAME: $POSTGRES_USER
+    RICK_DB_USERNAME: $POSTGRES_USER
+    FLUFFY_DB_USERNAME: $POSTGRES_USER
+    GANDALF_DB_PASSWORD: $POSTGRES_PASSWORD
+    RICK_DB_PASSWORD: $POSTGRES_PASSWORD
+    FLUFFY_DB_PASSWORD: $POSTGRES_PASSWORD
+    GANDALF_DB_HOST: $PG_HOST
+    RICK_DB_HOST: $PG_HOST
+    FLUFFY_DB_HOST: $PG_HOST
+    GANDALF_DB_PORT: $PG_PORT
+    RICK_DB_PORT: $PG_PORT
+    FLUFFY_DB_PORT: $PG_PORT
+    RICK_DB_NAME: rick_db
+    FLUFFY_DB_NAME: fluffy_db
+    GANDALF_DB_NAME: gandalf_db
+  script:
+    - apt-get update && apt-get install -y postgresql-client
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $RICK_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $FLUFFY_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "CREATE DATABASE $GANDALF_DB_NAME;"
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -h postgres -p $PG_PORT $POSTGRES_DB -c "GRANT ALL ON DATABASE $RICK_DB_NAME,$FLUFFY_DB_NAME,$GANDALF_DB_NAME TO $POSTGRES_USER;"
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=test --parallel=3 --ci --code-coverage
+
+build:
+  stage: build
+  extends: .distributed
+  script:
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD --target=build --parallel=3
+
+build source maps:
+  stage: build
+  allow_failure: true
+  before_script:
+    - yarn install --frozen-lockfile --cache .yarn --prefer-offline
+  cache:
+    key:
+      files:
+        - node_modules/.cache/nx
+        - yarn.lock
+    paths:
+      - .yarn/
+      - node_modules/.cache/nx
+  variables:
+    SENTRY_URL: https://sentry.nscribe.xyz
+  script:
+    - yarn nx run-many --target=build --parallel=3
+    - curl -sL https://sentry.io/get-cli/ | sh
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN
+    - export COMMIT_SHA=$(sentry-cli releases propose-version)
+    - source_map_release() {
+        local project=$1;
+        local version="${COMMIT_SHA}";
+        sentry-cli releases set-commits $version --auto --project "be-$project" --org ngrave;
+        sentry-cli releases files $version upload-sourcemaps "./dist/apps/$project/" --project "be-${project}" --org ngrave;
+      }
+    - source_map_release anton
+    - source_map_release bristle
+    - source_map_release fluffy
+    - source_map_release gandalf
+    - source_map_release kafo
+    - source_map_release morty
+    - source_map_release princess
+    - source_map_release rick
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+push to registry:
+  image: docker:20.10.16
+  stage: build
+  services:
+    - docker:20.10.16-dind
+  variables:
+    DOCKER_BUILDKIT: 1
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker_build_push() {
+      local project=$1;
+      docker build --cache-from ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} -t ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG} . --target=${project}_prod --build-arg BUILDKIT_INLINE_CACHE=1;
+      docker push ${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+      }
+    - docker_build_push anton
+    - docker_build_push bristle
+    - docker_build_push princess
+    - docker_build_push fluffy
+    - docker_build_push gandalf
+    - docker_build_push kafo
+    - docker_build_push morty
+    - docker_build_push rick
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# deploy to testnet k8s cluster:
+#   stage: deploy
+#   allow_failure: true
+#   when: on_success
+#   needs: ["push to registry", "build source maps"]
+#   image:
+#     name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
+#     entrypoint: [""]
+#   variables:
+#     SENTRY_URL: https://sentry.nscribe.xyz
+#   script:
+#     - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN || true
+#     - export COMMIT_SHA=$(sentry-cli releases propose-version)
+#     - kubectl config use-context ngrave/rana/app/be:gke-agent
+#     - deploy_k8s() {
+#       local project=$1;
+#       kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+#       kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
+#       sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave || true;
+#       pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
+#       now=$(date +%s);
+#       echo $pipeline_start;
+#       echo $now;
+#       sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e testnet_staging -t $((now-pipeline_start)) --org ngrave || true;
+#       }
+#     - deploy_k8s anton
+#     - deploy_k8s bristle
+#     - deploy_k8s fluffy
+#     - deploy_k8s gandalf
+#     - deploy_k8s kafo
+#     - deploy_k8s morty
+#     - deploy_k8s princess
+#     - deploy_k8s rick
+#     - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
+#   environment:
+#     name: testnet gke cluster
+#     url: http://testnet.be.nscribe.xyz
+#     kubernetes:
+#       namespace: default
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#       when: never
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy to mainnet k8s cluster:
+  stage: deploy
+  when: on_success
+  needs: ["push to registry", "build source maps"]
+  image:
+    name: "${CI_REGISTRY_IMAGE}/kubectl_sentry_cli"
+    entrypoint: [""]
+  variables:
+    SENTRY_URL: https://sentry.nscribe.xyz
+  script:
+    - sentry-cli login --auth-token $SENTRY_AUTH_TOKEN || true
+    - export COMMIT_SHA=$(sentry-cli releases propose-version)
+    - kubectl config use-context ngrave/rana/app/be:gke-agent && kubectl config set-context --current --namespace=mainnet
+    - deploy_k8s() {
+      local project=$1;
+      kubectl set image deployment/${project}-deployment ${project}-prod=${CI_REGISTRY_IMAGE}/${project}_prod:${CI_COMMIT_REF_SLUG};
+      kubectl set env deployment/${project}-deployment SENTRY_RELEASE=${COMMIT_SHA};
+      sentry-cli releases finalize "${COMMIT_SHA}" --project be-$project --org ngrave || true;
+      pipeline_start=$(date -d "${CI_PIPELINE_CREATED_AT}" +%s);
+      now=$(date +%s);
+      echo $pipeline_start;
+      echo $now;
+      sentry-cli releases deploys "${COMMIT_SHA}" --project be-$project new -e mainnet_staging -t $((now-pipeline_start)) --org ngrave || true;
+      }
+    - deploy_k8s anton
+    - deploy_k8s bristle
+    - deploy_k8s fluffy
+    - deploy_k8s gandalf
+    - deploy_k8s kafo
+    - deploy_k8s morty
+    - deploy_k8s princess
+    - deploy_k8s rick
+    - find . -type f -path "./k8s/*/mainnet/*-deployment.yaml" -exec kubectl apply -f {} \;
+    - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment
+  environment:
+    name: mainnet gke cluster
+    url: https://mainnet.be.nscribe.xyz
+    kubernetes:
+      namespace: mainnet
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'

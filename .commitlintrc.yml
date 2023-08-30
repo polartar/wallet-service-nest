@@ -1,0 +1,24 @@
+# Copied partially from @commitlint/config-conventional
+# The goal is to support these specifications: https://www.conventionalcommits.org/en/v1.0.0/#specification
+
+# One can easily set `extends: '@commitlint/config-conventional'` to use locally, but that will not work in the CI as it requires that npm package.
+
+rules:
+  body-leading-blank: [1, always]
+  body-max-line-length: [2, always, 100]
+  footer-leading-blank: [1, always]
+  footer-max-line-length: [2, always, 100]
+  header-max-length: [2, always, 100]
+  subject-case:
+    - 2
+    - never
+    # The NPM package forces a lowercase title, but the specification does not. So this is commented out.
+    # - [sentence-case, start-case, pascal-case, upper-case]
+  subject-empty: [2, never]
+  subject-full-stop: [2, never, "."]
+  type-case: [2, always, lower-case]
+  type-empty: [2, never]
+  type-enum:
+    - 2
+    - always
+    - [build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test]
