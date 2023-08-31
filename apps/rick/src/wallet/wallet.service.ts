@@ -444,7 +444,6 @@ export class WalletService {
   }
 
   async deleteWallet(walletId: string, accountId: string) {
-    let response
     try {
       const wallet = await this.getWallet(accountId, walletId)
       const assets = wallet.assets
@@ -453,16 +452,20 @@ export class WalletService {
           return await this.assetService.deleteAsset(assetId)
         }),
       )
-      await this.walletRepository.delete({ account: { accountId: accountId } })
+      try {
+        await this.walletRepository.delete({
+          account: { accountId: accountId },
+        })
+      } catch (err) {
+        // continue regardless of error
+      }
     } catch (err) {
       Sentry.captureException(
         `deleteWallet(): ${err.message} with "${walletId}"`,
       )
       throw new Error(err.message)
     }
-    if (response.affected !== 1) {
-      throw new NotFoundException('Wallet Not Found')
-    }
+
     return { message: 'SUCCESS' }
   }
 
