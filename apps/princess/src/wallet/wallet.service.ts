@@ -27,7 +27,6 @@ export class WalletsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly assetService: AssetService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.bristleApiUrl = this.configService.get<string>(
@@ -136,8 +135,6 @@ export class WalletsService {
     } else {
       throw new BadRequestException('Invalid asset ids')
     }
-
-    // return this.addUSDPrice([wallet], EPeriod.Day)
   }
 
   async sync(title: string, parts: string[]) {
