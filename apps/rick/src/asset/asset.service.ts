@@ -459,7 +459,12 @@ export class AssetService {
 
     if (isNew) {
       await this.portfolioService.updateCurrentWallets()
-      this.portfolioService.fetchEthereumTransactions(network)
+      if (
+        network === ENetworks.ETHEREUM ||
+        network === ENetworks.ETHEREUM_TEST
+      ) {
+        this.portfolioService.fetchEthereumTransactions(network)
+      }
     }
 
     return {
@@ -509,6 +514,19 @@ export class AssetService {
     return { asset: assetEntity, isNew: true }
   }
 
+  async getLastTransactionFromAssetId(assetId: string) {
+    return await this.transactionRepository.findOne({
+      where: {
+        asset: {
+          id: assetId,
+        },
+      },
+      order: {
+        timestamp: 'DESC',
+      },
+    })
+  }
+
   async updateTransaction(
     updatedAsset: AssetEntity,
     tx: {
@@ -517,17 +535,19 @@ export class AssetService {
         to: string
         value: BigNumber
         hash: string
-        blockNumber: number
+        blockNumber: string
       }
     },
     amount: BigNumber,
     fee: BigNumber,
   ) {
-    const transactions = updatedAsset.transactions
+    const lastTransaction = await this.getLastTransactionFromAssetId(
+      updatedAsset.id,
+    )
     const { price } = await this.coinService.getMarketData(ECoinTypes.ETHEREUM)
 
-    const balance = transactions.length
-      ? BigNumber.from(transactions[0].balance).sub(amount)
+    const balance = lastTransaction
+      ? BigNumber.from(lastTransaction.balance).sub(amount)
       : BigNumber.from(tx.transaction.value)
     const weiBalance = formatEther(balance)
     const weiAmount = formatEther(tx.transaction.value)
@@ -538,7 +558,7 @@ export class AssetService {
       cryptoAmount: tx.transaction.value.toString(),
       fiatAmount: (+weiAmount * price).toFixed(2),
       hash: tx.transaction.hash,
-      blockNumber: tx.transaction.blockNumber,
+      blockNumber: BigNumber.from(tx.transaction.blockNumber).toNumber(),
       balance: balance.toString(),
       usdPrice: (+weiBalance * price).toFixed(2),
       timestamp: this.portfolioService.getCurrentTimeBySeconds(),
@@ -548,19 +568,7 @@ export class AssetService {
           ? ETransactionStatuses.SENT
           : ETransactionStatuses.RECEIVED,
     }
-
-    let newHistory
-    try {
-      newHistory = await this.addHistory(newHistoryData)
-    } catch (err) {
-      Sentry.captureException(
-        `${err.message} + " in updateTransaction(address: ${updatedAsset.address}, hash: ${tx.transaction.hash}`,
-      )
-      return
-    }
-
-    transactions.push(newHistory)
-    updatedAsset.transactions = transactions
+    await this.addHistory(newHistoryData)
 
     const postUpdatedAddress = {
       assetId: updatedAsset.id,
