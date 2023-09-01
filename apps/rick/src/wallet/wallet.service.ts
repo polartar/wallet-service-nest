@@ -57,37 +57,48 @@ export class WalletService {
     this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
   }
 
-  async getUserWalletTransaction(
-    accountId: string,
-    walletId: string,
-    start: number,
-    count: number,
-  ) {
-    return await this.transactionRepository.find({
-      where: {
-        asset: {
-          wallets: {
-            id: walletId,
-            account: {
-              accountId: accountId,
+  async getUserWalletTransaction(accountId: string, walletId: string) {
+    try {
+      const transactions = await this.transactionRepository.find({
+        where: {
+          asset: {
+            wallets: {
+              id: walletId,
+              account: {
+                accountId: accountId,
+              },
             },
           },
         },
-      },
-      relations: {
-        asset: {
-          wallets: {
-            account: true,
+        relations: {
+          asset: {
+            wallets: {
+              account: true,
+            },
           },
         },
-      },
-      order: {
-        timestamp: 'DESC',
-      },
-      take: count,
-      skip: start,
-      cache: 1000 * 60,
-    })
+        order: {
+          timestamp: 'DESC',
+        },
+        cache: 1000 * 60,
+      })
+      if (transactions.length) {
+        return transactions.map((transaction) => {
+          const network = transaction.asset.network
+          delete transaction.asset
+          return {
+            ...transaction,
+            network,
+          }
+        })
+      }
+      return []
+    } catch (err) {
+      Sentry.captureException(
+        `getUserWalletTransaction():walletId(${walletId}), accountId(${accountId}): ${err.message}`,
+      )
+      throw new InternalServerErrorException()
+    }
   }
 
   async getWallet(accountId: string, walletId: string) {

@@ -80,12 +80,12 @@ export class WalletsService {
     }
   }
 
-  async getWalletTransaction(walletId, start = 0, count = 0) {
+  async getWalletTransaction(walletId) {
     const accountId = this.getAccountIdFromRequest()
     const transactions = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+      `wallet/${walletId}/transactions?accountId=${accountId}`,
     )
 
     return transactions
