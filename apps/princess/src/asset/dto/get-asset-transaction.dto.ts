@@ -1,19 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-export class GetAssetTransactionDto {
-  @ApiProperty({
-    example: 10,
-    required: false,
-  })
-  count?: number
-
-  @ApiProperty({
-    example: 0,
-    required: false,
-  })
-  start?: number
-}
-
 export class AssetTransactionSwaggerResponse {
   @ApiProperty({
     example: '0x42cda393bbe6d079501B98cc9cCF1906901b10Bf',
@@ -44,4 +30,9 @@ export class AssetTransactionSwaggerResponse {
     example: '1651928714',
   })
   timestamp: number
+
+  @ApiProperty({
+    example: 'eth_goerli',
+  })
+  network: string
 }
