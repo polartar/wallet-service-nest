@@ -706,39 +706,21 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(
-    assetId: string,
-    accountId: string,
-    start: number,
-    count: number,
-  ) {
+  async getAssetTransactions(assetId: string, accountId: string) {
     try {
-      const transactions = await this.transactionRepository.find({
-        where: {
-          asset: {
-            id: assetId,
-            wallets: {
-              account: {
-                accountId: accountId,
-              },
-            },
-          },
-        },
-        relations: { asset: true },
+      const asset = await this.assetRepository.findOne({
+        where: { id: assetId, wallets: { account: { accountId } } },
+        relations: { wallets: { account: true }, transactions: true },
         order: {
-          timestamp: 'DESC',
+          transactions: { timestamp: 'DESC' },
         },
-        take: count,
-        skip: start,
-        cache: 1000 * 60,
       })
-      if (transactions.length) {
-        return transactions.map((transaction) => {
-          const network = transaction.asset.network
-          delete transaction.asset
+
+      if (asset && asset.transactions.length) {
+        return asset.transactions.map((transaction) => {
           return {
             ...transaction,
-            network,
+            network: asset.network,
           }
         })
       }
