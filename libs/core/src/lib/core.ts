@@ -43,6 +43,11 @@ export enum EAuth {
   Apple = 'apple',
 }
 
+export enum EFlavor {
+  FCAT = 'fcat',
+  Greens = 'greens',
+}
+
 export enum EPlatform {
   Android = 'android',
   IOS = 'ios',

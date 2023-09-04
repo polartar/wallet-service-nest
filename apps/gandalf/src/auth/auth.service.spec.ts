@@ -3,7 +3,7 @@ import { AuthService } from './auth.service'
 
 import { Environment } from './../environments/environment.dev'
 import { ConfigModule } from '@nestjs/config'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 
 describe('AuthService', () => {
   let service: AuthService
@@ -26,6 +26,7 @@ describe('AuthService', () => {
       expect(
         service.authorize({
           idToken: 'test',
+          flavor: EFlavor.FCAT,
           type: EAuth.Google,
           platform: EPlatform.Android,
           accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',

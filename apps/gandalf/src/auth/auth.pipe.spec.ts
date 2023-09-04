@@ -1,6 +1,6 @@
 import { LoginValidationPipe } from './auth.pipe'
 import { IAuthData } from './auth.types'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 
 describe('Auth Pipe', () => {
   const pipe = new LoginValidationPipe()
@@ -8,6 +8,7 @@ describe('Auth Pipe', () => {
     const authBody: IAuthData = {
       idToken: '123.456.789',
       type: EAuth.Google,
+      flavor: EFlavor.FCAT,
       platform: EPlatform.Android,
       accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
     }
