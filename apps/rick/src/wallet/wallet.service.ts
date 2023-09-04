@@ -48,11 +48,16 @@ export class WalletService {
     )
 
     this.startFetchEthereum()
+    this.startFetchBTC()
+  }
+
+  async startFetchBTC() {
+    await this.assetService.confirmWalletBalances()
+    await this.portfolioService.subscribeBTCTransaction()
   }
 
   async startFetchEthereum() {
-    await this.assetService.confirmWalletBalances()
-    await this.portfolioService.updateCurrentWallets()
+    await this.portfolioService.updateCurrentEthWallets()
     this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
     this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
   }
@@ -383,12 +388,9 @@ export class WalletService {
       const walletEntity = await this.walletRepository.save(prototype)
 
       if (assets.length > 0) {
-        await this.portfolioService.updateCurrentWallets()
+        this.portfolioService.subscribeBTCTransaction()
         if (isEthereumAsset) {
-          this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-          this.portfolioService.fetchEthereumTransactions(
-            ENetworks.ETHEREUM_TEST,
-          )
+          this.startFetchEthereum()
         }
       }
 

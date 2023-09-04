@@ -38,10 +38,6 @@ export class PortfolioService {
   ) {
     this.btcSocket = new BlockchainSocket()
 
-    this.btcSocket.onTransaction((transaction) => {
-      this.onBTCTransaction(transaction)
-    })
-
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
     )
@@ -88,7 +84,7 @@ export class PortfolioService {
     this.transferIface = new ethers.utils.Interface(transferABI)
   }
 
-  async updateCurrentWallets() {
+  async updateCurrentEthWallets() {
     const assets = await this.assetService.getAllAssets()
 
     this.activeEthAssets = assets.filter(
@@ -98,13 +94,7 @@ export class PortfolioService {
     this.activeTestEthAssets = assets.filter(
       (address) => address.network === ENetworks.ETHEREUM_TEST,
     )
-
-    this.activeBtcAssets = assets.filter(
-      (address) => address.network === ENetworks.BITCOIN,
-    )
-    this.activeTestBtcAssets = assets.filter(
-      (address) => address.network === ENetworks.BITCOIN_TEST,
-    )
+    this.subscribeNFTTransferEvents()
   }
 
   getCurrentTimeBySeconds() {
@@ -197,7 +187,6 @@ export class PortfolioService {
       )
       .ws.removeAllListeners()
     this.subscribeEthereumTransactions(assets, network)
-    this.subscribeNFTTransferEvents()
 
     this.alchemyInstance
       .forNetwork(
@@ -210,6 +199,24 @@ export class PortfolioService {
           'fetchEthereumTransactions: Alchemy socket error',
         )
       })
+  }
+
+  async subscribeBTCTransaction() {
+    const assets = await this.assetService.getAllAssets()
+
+    this.activeBtcAssets = assets.filter(
+      (address) => address.network === ENetworks.BITCOIN,
+    )
+    this.activeTestBtcAssets = assets.filter(
+      (address) => address.network === ENetworks.BITCOIN_TEST,
+    )
+    if (this.btcSocket) {
+      this.btcSocket.close()
+      this.btcSocket = new BlockchainSocket()
+    }
+    this.btcSocket.onTransaction((transaction) => {
+      this.onBTCTransaction(transaction)
+    })
   }
 
   async onBTCTransaction(transaction) {

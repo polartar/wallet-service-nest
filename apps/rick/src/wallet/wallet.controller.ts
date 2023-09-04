@@ -168,4 +168,9 @@ export class WalletController {
       data.newAccountId,
     )
   }
+
+  @Post('btc/restart')
+  async restartBTCTransactionFetch() {
+    return await this.walletService.startFetchBTC()
+  }
 }
