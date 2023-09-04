@@ -58,25 +58,11 @@ export class AssetService {
   }
 
   async createAsset(data: CreateAssetDto) {
+    let asset
     if (data.xPub) {
-      const assets = await this.rickApiCall(
-        EAPIMethod.POST,
-        'asset/discover',
-        data,
-      )
-      this.rickApiCall(EAPIMethod.POST, 'wallet/btc/restart', {})
-
-      return assets
+      return await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     } else {
-      const { asset, isNew } = await this.rickApiCall(
-        EAPIMethod.POST,
-        'asset',
-        data,
-      )
-
-      if (isNew) {
-        this.rickApiCall(EAPIMethod.POST, 'wallet/btc/restart', {})
-      }
+      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
       return [asset]
     }
   }
