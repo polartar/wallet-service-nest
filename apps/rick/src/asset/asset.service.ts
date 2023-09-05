@@ -707,30 +707,32 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(
-    assetId: string,
-    accountId: string,
-    start: number,
-    count: number,
-  ) {
-    return await this.transactionRepository.find({
-      where: {
-        asset: {
-          id: assetId,
-          wallets: {
-            account: {
-              accountId: accountId,
-            },
-          },
+  async getAssetTransactions(assetId: string, accountId: string) {
+    try {
+      const asset = await this.assetRepository.findOne({
+        where: { id: assetId, wallets: { account: { accountId } } },
+        relations: { wallets: { account: true }, transactions: true },
+        order: {
+          transactions: { timestamp: 'DESC' },
         },
-      },
-      order: {
-        timestamp: 'DESC',
-      },
-      take: count,
-      skip: start,
-      cache: 1000 * 60,
-    })
+      })
+
+      if (asset && asset.transactions.length) {
+        return asset.transactions.map((transaction) => {
+          return {
+            ...transaction,
+            network: asset.network,
+          }
+        })
+      }
+      return []
+    } catch (err) {
+      Sentry.captureException(
+        `getAssetTransactions(): assetId(${assetId}): ${err.message}`,
+      )
+
+      throw new InternalServerErrorException(err.message)
+    }
   }
 
   async getAssetsByIds(assetIds: string[]) {

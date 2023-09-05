@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 
 export class RefreshTokenDto {
@@ -16,6 +16,14 @@ export class RefreshTokenDto {
   })
   @IsOptional()
   platform: EPlatform
+
+  @ApiProperty({
+    description: 'App flavor',
+    enum: [EFlavor.FCAT, EFlavor.Greens],
+    default: EFlavor.FCAT,
+  })
+  @IsOptional()
+  flavor: EFlavor
 
   @ApiProperty({
     description:

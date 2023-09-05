@@ -4,7 +4,7 @@ import { IAuthData, IAuthResponse } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 import * as Sentry from '@sentry/node'
 
 @Injectable()
@@ -12,6 +12,7 @@ export class AuthService {
   googleClientId: string
   IOSGoogleClientId: string
   appleClientId: string
+  appleClientIdGreens: string
   constructor(private configService: ConfigService) {
     this.googleClientId = this.configService.get<string>(
       EEnvironment.googleClientID,
@@ -21,6 +22,9 @@ export class AuthService {
     )
     this.appleClientId = this.configService.get<string>(
       EEnvironment.appleClientID,
+    )
+    this.appleClientIdGreens = this.configService.get<string>(
+      EEnvironment.appleClientIDGreens,
     )
   }
 
@@ -58,7 +62,10 @@ export class AuthService {
       try {
         const jwtClaims = await verifyAppleToken({
           idToken: data.idToken,
-          clientId: this.appleClientId,
+          clientId:
+            data.flavor == EFlavor.FCAT
+              ? this.appleClientId
+              : this.appleClientIdGreens,
         })
 
         return {

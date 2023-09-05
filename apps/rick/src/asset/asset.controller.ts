@@ -41,15 +41,8 @@ export class AssetController {
   async getAssetTransactions(
     @Param('assetId') assetId: string,
     @Body('accountId') accountId: string,
-    @Query('start') start: number,
-    @Query('count') count: number,
   ) {
-    return this.assetService.getAssetTransactions(
-      assetId,
-      accountId,
-      start,
-      count,
-    )
+    return this.assetService.getAssetTransactions(assetId, accountId)
   }
 
   @Get(':assetId/portfolio')

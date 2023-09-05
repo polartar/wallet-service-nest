@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt'
 import { AccountsService } from '../accounts/accounts.service'
 import { BootstrapService } from '../bootstrap/bootstrap.service'
 import { IAccessTokenPayload } from '../bootstrap/bootstrap.types'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 
 @Injectable()
 export class AuthService {
@@ -67,6 +67,7 @@ export class AuthService {
     provider: EAuth | 'Anonymous',
     providerToken: string,
     platform: EPlatform,
+    flavor: EFlavor,
     accountId: string,
     deviceId: string,
     otp: string,
@@ -76,6 +77,7 @@ export class AuthService {
         providerToken,
         provider,
         platform,
+        flavor,
         accountId,
       )
       if (accountId !== userResponse.account.id) {

@@ -53,15 +53,11 @@ export class WalletController {
   async getWalletTransaction(
     @Param('walletId') walletId: string,
     @Query('accountId') accountId: string,
-    @Query('start') start: number,
-    @Query('count') count: number,
   ) {
     try {
       return await this.walletService.getUserWalletTransaction(
         accountId,
         walletId,
-        start,
-        count,
       )
     } catch (e) {
       Sentry.captureException(e.message + ' in getWalletHistory')

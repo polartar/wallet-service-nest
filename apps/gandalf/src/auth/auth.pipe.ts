@@ -2,7 +2,7 @@ import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
 import Joi = require('joi')
 
 import { IAuthData } from './auth.types'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 
 @Injectable()
 export class LoginValidationPipe implements PipeTransform {
@@ -10,6 +10,7 @@ export class LoginValidationPipe implements PipeTransform {
     idToken: Joi.string(),
     type: Joi.string().valid(EAuth.Google, EAuth.Apple),
     platform: Joi.string().valid(EPlatform.Android, EPlatform.IOS).optional(),
+    flavor: Joi.string().valid(EFlavor.FCAT, EFlavor.Greens).optional(),
     accountId: Joi.string(),
     accountShard: Joi.string().optional(),
     iCloudShard: Joi.string().optional(),

@@ -21,6 +21,7 @@ export class AccountsController {
       data.provider,
       data.providerToken,
       data.platform,
+      data.flavor,
       data.otp,
       data.accountShard,
       data.iCloudShard,

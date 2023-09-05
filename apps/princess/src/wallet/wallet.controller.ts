@@ -21,7 +21,7 @@ import {
   GetWalletPortfolioDto,
   WalletPortfolioSwaggerResponse,
 } from './dto/get-wallet-portfolio.dto'
-import { GetWalletTransactionDto } from './dto/get-wallet-transaction.dto'
+import { WalletTransactionSwaggerResponse } from './dto/get-wallet-transaction.dto'
 import { AddAssetDto } from './dto/add-asset.dto'
 
 @Controller('wallet')
@@ -43,20 +43,13 @@ export class WalletsController {
   }
 
   @Get(':walletId/transactions')
-  @ApiOkResponse({ type: WalletSwaggerResponse })
+  @ApiOkResponse({ type: [WalletTransactionSwaggerResponse] })
   @ApiOperation({
     summary:
       'Time series data, where date is timestamp (number), and the value of that date.',
   })
-  async getWalletTransaction(
-    @Param('walletId') walletId: string,
-    @Query() query: GetWalletTransactionDto,
-  ) {
-    return await this.walletService.getWalletTransaction(
-      walletId,
-      query.start,
-      query.count,
-    )
+  async getWalletTransaction(@Param('walletId') walletId: string) {
+    return await this.walletService.getWalletTransaction(walletId)
   }
 
   @Get(':walletId/portfolio')

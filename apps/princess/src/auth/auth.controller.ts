@@ -34,6 +34,7 @@ export class AuthController {
       data.provider,
       data.providerToken,
       data.platform,
+      data.flavor,
       data.accountId,
       data.deviceId,
       data.otp,
