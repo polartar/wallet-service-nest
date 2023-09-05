@@ -1,14 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { TotpService } from './totp.service'
-import { CreatePairingDto } from './dto/create-pairing-dto'
+import { CheckPairingDto } from './dto/check-pairing-dto'
 
 @Controller()
 export class TotpController {
   constructor(private readonly service: TotpService) {}
 
   @Post('pair')
-  createPair(@Body() data: CreatePairingDto) {
-    return this.service.createPair(data)
+  checkPair(@Body() data: CheckPairingDto) {
+    return this.service.checkPair(data)
   }
 
   @Post('device')

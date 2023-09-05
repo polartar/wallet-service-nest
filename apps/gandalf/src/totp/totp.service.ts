@@ -5,7 +5,7 @@ import { DeviceEntity } from './device.entity'
 import { Repository } from 'typeorm'
 import { FindPairingDto } from './dto/find-paring-dto'
 import * as Sentry from '@sentry/node'
-import { CreatePairingDto } from './dto/create-pairing-dto'
+import { CheckPairingDto } from './dto/check-pairing-dto'
 
 @Injectable()
 export class TotpService {
@@ -30,7 +30,7 @@ export class TotpService {
     })
   }
 
-  async createPair(pair: CreatePairingDto) {
+  async checkPair(pair: CheckPairingDto) {
     const device = await this.lookup({
       deviceId: pair.deviceId,
     })
