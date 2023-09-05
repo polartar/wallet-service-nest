@@ -20,7 +20,7 @@ import { AssetService } from '../asset/asset.service'
 export class WalletsService {
   rickApiUrl: string
   gandalfApiUrl: string
-  bristleApiUrl: string
+  kafoApiUrl: string
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
@@ -29,9 +29,7 @@ export class WalletsService {
     private readonly assetService: AssetService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
-    this.bristleApiUrl = this.configService.get<string>(
-      EEnvironment.bristleAPIUrl,
-    )
+    this.kafoApiUrl = this.configService.get<string>(EEnvironment.kafoAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
     )
@@ -144,7 +142,7 @@ export class WalletsService {
 
     const coinsResponse = await this.apiCall(
       EAPIMethod.POST,
-      this.bristleApiUrl,
+      this.kafoApiUrl,
       'sync',
       { parts },
     )
