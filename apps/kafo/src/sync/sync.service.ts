@@ -5,12 +5,6 @@ import zlib = require('zlib')
 
 @Injectable()
 export class SyncService {
-  static welcomeMessage = 'Bristle is up and running'
-
-  get welcomeMessage() {
-    return SyncService.welcomeMessage
-  }
-
   async Gunzip(str: string) {
     return new Promise((resolve, reject) => {
       const buf = Buffer.from(str, 'base64')

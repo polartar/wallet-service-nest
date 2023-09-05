@@ -11,6 +11,8 @@ describe('Auth Pipe', () => {
       flavor: EFlavor.FCAT,
       platform: EPlatform.Android,
       accountId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
+      deviceId: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
+      otp: '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87',
     }
 
     expect(pipe.transform(authBody)).toBe(authBody)

@@ -6,11 +6,6 @@ import { SyncService } from './sync.service'
 export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
-  @Get()
-  welcome() {
-    return this.syncService.welcomeMessage
-  }
-
   @Post('')
   async verifyPayload(@Body() data: { parts: string[] }) {
     return this.syncService.verifyPayload(data.parts)

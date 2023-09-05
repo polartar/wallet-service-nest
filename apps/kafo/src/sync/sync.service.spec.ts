@@ -29,10 +29,6 @@ describe('SyncService', () => {
     service = app.get<SyncService>(SyncService)
   })
 
-  it('should return "Welcome to bristle!"', () => {
-    expect(service.welcomeMessage).toEqual(SyncService.welcomeMessage)
-  })
-
   // it('should verify the payload', async () => {
   //   const message = { message1: 'property1' }
   //   const messageBuffer = Buffer.from(JSON.stringify(message))
