@@ -19,7 +19,6 @@ import { AssetService } from '../asset/asset.service'
 @Injectable()
 export class WalletsService {
   rickApiUrl: string
-  fluffyApiUrl: string
   gandalfApiUrl: string
   bristleApiUrl: string
 
@@ -35,9 +34,6 @@ export class WalletsService {
     )
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
-    )
-    this.fluffyApiUrl = this.configService.get<string>(
-      EEnvironment.fluffyAPIUrl,
     )
   }
 

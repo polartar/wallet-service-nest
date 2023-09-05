@@ -10,8 +10,6 @@ export const Environment = () => {
       process.env.RICK_API_URL || 'http://localhost:3333',
     [EEnvironment.gandalfAPIUrl]:
       process.env.GANDALF_API_URL || 'http://localhost:3333',
-    [EEnvironment.fluffyAPIUrl]:
-      process.env.FLUFFY_API_URL || 'http://localhost:3333',
     [EEnvironment.kafoAPIUrl]:
       process.env.KAFO_API_URL || 'http://localhost:3333',
     [EEnvironment.version]: process.env.VERSION || '1.0',

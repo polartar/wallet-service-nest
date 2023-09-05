@@ -6,6 +6,8 @@ export type IAuthData = {
   flavor: EFlavor
   platform: EPlatform
   accountId: string
+  deviceId: string
+  otp: string
   accountShard?: string
   iCloudShard?: string
   vaultShard?: string

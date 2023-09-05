@@ -14,7 +14,6 @@ import * as Sentry from '@sentry/node'
 @Injectable()
 export class BootstrapService {
   gandalfApiUrl: string
-  fluffyApiUrl: string
   rickApiUrl: string
 
   constructor(
@@ -25,16 +24,13 @@ export class BootstrapService {
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
     )
-    this.fluffyApiUrl = this.configService.get<string>(
-      EEnvironment.fluffyAPIUrl,
-    )
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
   }
 
   async createDevice(): Promise<IDeviceCreateResponse> {
     try {
       const deviceResponse = await firstValueFrom(
-        this.httpService.post(`${this.fluffyApiUrl}/device`),
+        this.httpService.post(`${this.gandalfApiUrl}/totp/device`),
       )
 
       const tmpEmail = `any${deviceResponse.data.deviceId}@gmail.com`

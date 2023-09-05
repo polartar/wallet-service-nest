@@ -1,11 +1,13 @@
 import { ConfigService } from '@nestjs/config'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { IAuthData, IAuthResponse } from './auth.types'
 import { OAuth2Client } from 'google-auth-library'
 import verifyAppleToken from 'verify-apple-id-token'
 import { EEnvironment } from '../environments/environment.types'
 import { EAuth, EFlavor, EPlatform } from '@rana/core'
 import * as Sentry from '@sentry/node'
+import { AccountService } from '../account/account.service'
+import { TotpService } from '../totp/totp.service'
 
 @Injectable()
 export class AuthService {
@@ -13,7 +15,11 @@ export class AuthService {
   IOSGoogleClientId: string
   appleClientId: string
   appleClientIdGreens: string
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private accountService: AccountService,
+    private totpService: TotpService,
+  ) {
     this.googleClientId = this.configService.get<string>(
       EEnvironment.googleClientID,
     )
@@ -28,7 +34,7 @@ export class AuthService {
     )
   }
 
-  async authorize(data: IAuthData): Promise<IAuthResponse> {
+  async tokenAuthorize(data: IAuthData): Promise<IAuthResponse> {
     if (data.type === EAuth.Google) {
       const googleClientId =
         data.platform === EPlatform.Android
@@ -80,6 +86,50 @@ export class AuthService {
       }
     } else {
       throw new Error('Unsupported type')
+    }
+  }
+
+  async auth(data: IAuthData) {
+    try {
+      await this.totpService.checkPair({
+        userId: data.accountId,
+        deviceId: data.deviceId,
+        otp: data.otp,
+      })
+      const { name, email } = await this.tokenAuthorize(data)
+
+      let account = await this.accountService.lookup({ email })
+
+      if (account) {
+        return {
+          is_new: false,
+          account,
+        }
+      } else if (data.accountId) {
+        account = await this.accountService.updateAnonymousAccount(
+          data.accountId,
+          name,
+          email,
+          {
+            accountShard: data.accountShard,
+            iCloudShard: data.iCloudShard,
+            vaultShard: data.vaultShard,
+            passcodeKey: data.passcodeKey,
+            recoveryKey: data.recoveryKey,
+            serverShard: data.serverShard,
+          },
+        )
+
+        return {
+          is_new: true,
+          account: account,
+        }
+      } else {
+        throw new Error('User not exists')
+      }
+    } catch (e) {
+      Sentry.captureMessage(`Auth(): ${e.message}`)
+      throw new BadRequestException(e?.message)
     }
   }
 }

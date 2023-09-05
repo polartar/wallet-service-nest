@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common'
 import { TotpService } from './totp.service'
 import { CheckPairingDto } from './dto/check-pairing-dto'
 
-@Controller()
+@Controller('totp')
 export class TotpController {
   constructor(private readonly service: TotpService) {}
 

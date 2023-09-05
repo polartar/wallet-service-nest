@@ -79,6 +79,8 @@ export class AuthService {
         platform,
         flavor,
         accountId,
+        deviceId,
+        otp,
       )
       if (accountId !== userResponse.account.id) {
         throw new ForbiddenException(`Wrong account Id: ${accountId}`)
@@ -89,8 +91,6 @@ export class AuthService {
         accountId,
       )
     }
-
-    await this.accountService.checkPair(accountId, deviceId, otp)
 
     const payload = {
       type: provider,

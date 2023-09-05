@@ -4,7 +4,6 @@ export enum EEnvironment {
   infuraAPIKey = 'infura_api_key',
   rickAPIUrl = 'rick_api_url',
   gandalfAPIUrl = 'gandalf_api_url',
-  fluffyAPIUrl = 'fluffy_api_url',
   kafoAPIUrl = 'kafo_api_url',
   version = 'version',
   bristleAPIUrl = 'bristle_api_url',

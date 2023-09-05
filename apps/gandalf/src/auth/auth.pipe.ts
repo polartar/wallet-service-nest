@@ -12,6 +12,8 @@ export class LoginValidationPipe implements PipeTransform {
     platform: Joi.string().valid(EPlatform.Android, EPlatform.IOS).optional(),
     flavor: Joi.string().valid(EFlavor.FCAT, EFlavor.Greens).optional(),
     accountId: Joi.string(),
+    deviceId: Joi.string(),
+    otp: Joi.string(),
     accountShard: Joi.string().optional(),
     iCloudShard: Joi.string().optional(),
     vaultShard: Joi.string().optional(),

@@ -23,7 +23,6 @@ import { UpdateShardsDto } from './dto/update-shards.dto'
 @Injectable()
 export class AccountsService {
   rickApiUrl: string
-  fluffyApiUrl: string
   gandalfApiUrl: string
 
   constructor(
@@ -35,9 +34,6 @@ export class AccountsService {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.gandalfApiUrl = this.configService.get<string>(
       EEnvironment.gandalfAPIUrl,
-    )
-    this.fluffyApiUrl = this.configService.get<string>(
-      EEnvironment.fluffyAPIUrl,
     )
   }
 
@@ -98,7 +94,6 @@ export class AccountsService {
     const deviceId = this.getDeviceIdFromRequest()
 
     const accountId = this.getAccountIdFromRequest()
-    // await this.checkPair(accountId, deviceId, otp)
 
     const user = await this.getUserFromIdToken(
       providerToken,
@@ -106,6 +101,8 @@ export class AccountsService {
       platform,
       flavor,
       accountId,
+      deviceId,
+      otp,
       {
         accountShard,
         iCloudShard,
@@ -152,6 +149,8 @@ export class AccountsService {
     platform: EPlatform,
     flavor: EFlavor,
     accountId: string,
+    deviceId: string,
+    otp: string,
     optionalParams?: IShard,
   ) {
     try {
@@ -162,6 +161,8 @@ export class AccountsService {
           type,
           platform,
           accountId,
+          deviceId,
+          otp,
           ...optionalParams,
         }),
       )
@@ -177,7 +178,7 @@ export class AccountsService {
   }
 
   async checkPair(accountId: string, deviceId: string, otp: string) {
-    return this.apiCall(EAPIMethod.POST, this.fluffyApiUrl, 'pair', {
+    return this.apiCall(EAPIMethod.POST, this.gandalfApiUrl, 'totp/pair', {
       userId: accountId,
       deviceId,
       otp,
