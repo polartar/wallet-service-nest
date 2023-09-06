@@ -720,6 +720,7 @@ export class AssetService {
         return asset.transactions.map((transaction) => {
           return {
             ...transaction,
+            timestamp: +transaction.timestamp,
             network: asset.network,
           }
         })

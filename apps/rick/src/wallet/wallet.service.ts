@@ -88,6 +88,7 @@ export class WalletService {
           delete transaction.asset
           return {
             ...transaction,
+            timestamp: +transaction.timestamp,
             network,
           }
         })
