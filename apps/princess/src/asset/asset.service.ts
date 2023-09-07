@@ -58,11 +58,9 @@ export class AssetService {
   }
 
   async createAsset(data: CreateAssetDto) {
-    let asset
     if (data.xPub) {
       return await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     } else {
-<<<<<<< HEAD
       const { asset, isNew } = await this.rickApiCall(
         EAPIMethod.POST,
         'asset',
@@ -74,9 +72,6 @@ export class AssetService {
           network: asset.network,
         })
       }
-=======
-      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
->>>>>>> main
       return [asset]
     }
   }

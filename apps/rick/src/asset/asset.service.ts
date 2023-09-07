@@ -456,22 +456,15 @@ export class AssetService {
       publicKey,
     )
 
-    // if (isNew) {
-    //   if (
-    //     network === ENetworks.ETHEREUM ||
-    //     network === ENetworks.ETHEREUM_TEST
-    //   ) {
-    //     await this.portfolioService.updateCurrentEthWallets()
-    //     this.portfolioService.fetchEthereumTransactions(network)
-    //   }
-    // }
-
     return {
-      id: asset.id,
-      address,
-      network,
-      index,
-      publicKey,
+      isNew,
+      asset: {
+        id: asset.id,
+        address,
+        network,
+        index,
+        publicKey,
+      },
     }
   }
 
@@ -625,12 +618,13 @@ export class AssetService {
 
       const assets = await Promise.all(
         discoverResponse.data.data.map(async (item: IXPubInfo) => {
-          return await this.createAsset(
+          const { asset } = await this.createAsset(
             item.address,
             item.index,
             network,
             item.publickey,
           )
+          return asset
         }),
       )
 
@@ -647,7 +641,13 @@ export class AssetService {
           `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
-      return this.createAsset(address, index, network, publicKey)
+      const { asset } = await this.createAsset(
+        address,
+        index,
+        network,
+        publicKey,
+      )
+      return asset
     }
   }
 
