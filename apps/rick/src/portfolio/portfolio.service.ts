@@ -222,7 +222,7 @@ export class PortfolioService {
     const receiverAddresses = transaction.out.map((out) => out.addr)
     const postUpdatedAddresses = []
     const updatedAddresses = []
-
+    const price = await this.assetService.getCurrentUSDPrice(ECoinTypes.BITCOIN)
     try {
       await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
@@ -230,9 +230,7 @@ export class PortfolioService {
           const lastTransaction =
             await this.assetService.getLastTransactionFromAssetId(asset.id)
           const newHistoryData: ITransaction[] = []
-          const price = await this.assetService.getCurrentUSDPrice(
-            ECoinTypes.BITCOIN,
-          )
+
           if (senderAddresses.includes(asset.address)) {
             // handle if there are two senders with same address
             const inputs = transaction.inputs
