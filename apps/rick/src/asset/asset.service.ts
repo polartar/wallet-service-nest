@@ -455,15 +455,15 @@ export class AssetService {
       publicKey,
     )
 
-    if (isNew) {
-      if (
-        network === ENetworks.ETHEREUM ||
-        network === ENetworks.ETHEREUM_TEST
-      ) {
-        await this.portfolioService.updateCurrentEthWallets()
-        this.portfolioService.fetchEthereumTransactions(network)
-      }
-    }
+    // if (isNew) {
+    //   if (
+    //     network === ENetworks.ETHEREUM ||
+    //     network === ENetworks.ETHEREUM_TEST
+    //   ) {
+    //     await this.portfolioService.updateCurrentEthWallets()
+    //     this.portfolioService.fetchEthereumTransactions(network)
+    //   }
+    // }
 
     return {
       isNew,

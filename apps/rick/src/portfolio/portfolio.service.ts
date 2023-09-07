@@ -179,7 +179,7 @@ export class PortfolioService {
         ? this.activeEthAssets
         : this.activeTestEthAssets
 
-    this.alchemyInstance
+    await this.alchemyInstance
       .forNetwork(
         network === ENetworks.ETHEREUM
           ? Network.ETH_MAINNET
@@ -406,5 +406,16 @@ export class PortfolioService {
     } catch (err) {
       /* continue regardless of error */
     }
+  }
+
+  async getAlchemyInstanceCount() {
+    const mainnetCount = await this.alchemyInstance
+      .forNetwork(Network.ETH_MAINNET)
+      .ws.listenerCount()
+    const goerliCount = await this.alchemyInstance
+      .forNetwork(Network.ETH_GOERLI)
+      .ws.listenerCount()
+
+    return { mainnetCount, goerliCount }
   }
 }

@@ -78,11 +78,15 @@ export class BootstrapService {
       throw new BadRequestException(err.message)
     }
   }
-  getInfo(isIncludeHealthCheck = false): IGetInfoResponse {
+  async getInfo(isIncludeHealthCheck = false): Promise<IGetInfoResponse> {
     const info: IGetInfoResponse = {
       minAppVersion: '1.0.15',
       latestAppVersion: '1.0.16',
       serverVersion: '2.0.1',
+      alchemyInfo: {
+        mainnetCount: 0,
+        goerliCount: 0,
+      },
     }
     if (isIncludeHealthCheck) {
       info.self = {
@@ -94,6 +98,12 @@ export class BootstrapService {
         'etherscan.io': 'down',
       }
     }
+
+    const alchmeyInfo = await firstValueFrom(
+      this.httpService.get(`${this.rickApiUrl}/wallet/alchemy-status`),
+    )
+    info.alchemyInfo = alchmeyInfo.data
+
     return info
   }
 

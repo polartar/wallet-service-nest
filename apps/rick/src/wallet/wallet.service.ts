@@ -51,15 +51,26 @@ export class WalletService {
     this.startFetchBTC()
   }
 
-  async startFetchBTC() {
+  async startFetchTransactions() {
     await this.assetService.confirmWalletBalances()
+    this.startFetchBTC()
+    this.startFetchEthereum()
+  }
+
+  async startFetchBTC() {
     await this.portfolioService.subscribeBTCTransaction()
   }
 
-  async startFetchEthereum() {
+  async startFetchEthereum(network?: ENetworks) {
     await this.portfolioService.updateCurrentEthWallets()
-    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
+    if (!network || network === ENetworks.ETHEREUM) {
+      await this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
+    }
+    if (!network || network === ENetworks.ETHEREUM_TEST) {
+      await this.portfolioService.fetchEthereumTransactions(
+        ENetworks.ETHEREUM_TEST,
+      )
+    }
   }
 
   async getUserWalletTransaction(
@@ -537,5 +548,9 @@ export class WalletService {
     } catch (err) {
       throw new BadRequestException(err.message)
     }
+  }
+
+  async getAlchemyStatus() {
+    return await this.portfolioService.getAlchemyInstanceCount()
   }
 }

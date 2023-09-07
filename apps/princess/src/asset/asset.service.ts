@@ -75,7 +75,9 @@ export class AssetService {
       )
 
       if (isNew) {
-        this.rickApiCall(EAPIMethod.POST, 'wallet/btc/restart', {})
+        this.rickApiCall(EAPIMethod.POST, 'wallet/restart-subscription', {
+          network: asset.network,
+        })
       }
       return [asset]
     }

@@ -24,4 +24,8 @@ export interface IGetInfoResponse {
     'blockcypher.com': string
     'etherscan.io': string
   }
+  alchemyInfo: {
+    mainnetCount: number
+    goerliCount: number
+  }
 }

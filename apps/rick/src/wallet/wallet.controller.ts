@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { EPeriod } from '@rana/core'
+import { ENetworks, EPeriod } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
@@ -173,8 +173,17 @@ export class WalletController {
     )
   }
 
-  @Post('btc/restart')
-  async restartBTCTransactionFetch() {
-    return await this.walletService.startFetchBTC()
+  @Post('restart-subscription')
+  async restartTransactionSubscription(@Body('network') network: ENetworks) {
+    if (network === ENetworks.ETHEREUM || network === ENetworks.ETHEREUM_TEST) {
+      return await this.walletService.startFetchEthereum(network)
+    } else if (network === ENetworks.BITCOIN) {
+      return await this.walletService.startFetchBTC()
+    }
+  }
+
+  @Get('alchemy-status')
+  async getAlchemyStatus() {
+    return await this.walletService.getAlchemyStatus()
   }
 }

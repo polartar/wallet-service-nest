@@ -20,7 +20,9 @@ export class BootstrapController {
   @Public()
   @Get('info')
   @ApiOkResponse({ type: GetInfoSwaggerResponse })
-  getInfo(@Query('include-health-checks') isIncludeHealthCheck?: boolean) {
-    return this.bootstrapService.getInfo(isIncludeHealthCheck)
+  async getInfo(
+    @Query('include-health-checks') isIncludeHealthCheck?: boolean,
+  ) {
+    return await this.bootstrapService.getInfo(isIncludeHealthCheck)
   }
 }
