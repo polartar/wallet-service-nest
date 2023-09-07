@@ -58,16 +58,11 @@ export class AssetService {
   }
 
   async createAsset(data: CreateAssetDto) {
+    let asset
     if (data.xPub) {
-      const assets = await this.rickApiCall(
-        EAPIMethod.POST,
-        'asset/discover',
-        data,
-      )
-      this.rickApiCall(EAPIMethod.POST, 'wallet/btc/restart', {})
-
-      return assets
+      return await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
     } else {
+<<<<<<< HEAD
       const { asset, isNew } = await this.rickApiCall(
         EAPIMethod.POST,
         'asset',
@@ -79,6 +74,9 @@ export class AssetService {
           network: asset.network,
         })
       }
+=======
+      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
+>>>>>>> main
       return [asset]
     }
   }
@@ -93,11 +91,11 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(assetId: string, start = 0, count = 0) {
+  async getAssetTransactions(assetId: string) {
     const accountId = this.getAccountIdFromRequest()
     return await this.rickApiCall(
       EAPIMethod.GET,
-      `asset/${assetId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+      `asset/${assetId}/transactions?accountId=${accountId}`,
     )
   }
 

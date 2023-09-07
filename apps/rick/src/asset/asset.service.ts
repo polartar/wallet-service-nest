@@ -1,3 +1,4 @@
+import { WalletEntity } from './../wallet/wallet.entity'
 import {
   BadRequestException,
   Inject,
@@ -466,14 +467,11 @@ export class AssetService {
     // }
 
     return {
-      isNew,
-      asset: {
-        id: asset.id,
-        address,
-        network,
-        index,
-        publicKey,
-      },
+      id: asset.id,
+      address,
+      network,
+      index,
+      publicKey,
     }
   }
 
@@ -585,7 +583,7 @@ export class AssetService {
       }),
     ).catch(() => {
       Sentry.captureException(
-        'Princess portfolio/updated api error in updateTransaction()',
+        'Princess portfolio/updated api error in fetchEthereumTransactions()',
       )
     })
   }
@@ -627,13 +625,12 @@ export class AssetService {
 
       const assets = await Promise.all(
         discoverResponse.data.data.map(async (item: IXPubInfo) => {
-          const { asset } = await this.createAsset(
+          return await this.createAsset(
             item.address,
             item.index,
             network,
             item.publickey,
           )
-          return asset
         }),
       )
 
@@ -650,13 +647,7 @@ export class AssetService {
           `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
-      const { asset } = await this.createAsset(
-        address,
-        index,
-        network,
-        publicKey,
-      )
-      return [asset]
+      return this.createAsset(address, index, network, publicKey)
     }
   }
 
@@ -715,30 +706,33 @@ export class AssetService {
     return asset
   }
 
-  async getAssetTransactions(
-    assetId: string,
-    accountId: string,
-    start: number,
-    count: number,
-  ) {
-    return await this.transactionRepository.find({
-      where: {
-        asset: {
-          id: assetId,
-          wallets: {
-            account: {
-              accountId: accountId,
-            },
-          },
+  async getAssetTransactions(assetId: string, accountId: string) {
+    try {
+      const asset = await this.assetRepository.findOne({
+        where: { id: assetId, wallets: { account: { accountId } } },
+        relations: { wallets: { account: true }, transactions: true },
+        order: {
+          transactions: { timestamp: 'DESC' },
         },
-      },
-      order: {
-        timestamp: 'DESC',
-      },
-      take: count,
-      skip: start,
-      cache: 1000 * 60,
-    })
+      })
+
+      if (asset && asset.transactions.length) {
+        return asset.transactions.map((transaction) => {
+          return {
+            ...transaction,
+            timestamp: +transaction.timestamp,
+            network: asset.network,
+          }
+        })
+      }
+      return []
+    } catch (err) {
+      Sentry.captureException(
+        `getAssetTransactions(): assetId(${assetId}): ${err.message}`,
+      )
+
+      throw new InternalServerErrorException(err.message)
+    }
   }
 
   async getAssetsByIds(assetIds: string[]) {

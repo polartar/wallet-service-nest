@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { IAccount, IShard } from './accounts.types'
 import * as Sentry from '@sentry/node'
@@ -86,6 +86,7 @@ export class AccountsService {
     provider: EAuth,
     providerToken: string,
     platform: EPlatform,
+    flavor: EFlavor,
     otp: string,
     accountShard,
     iCloudShard,
@@ -103,6 +104,7 @@ export class AccountsService {
       providerToken,
       provider,
       platform,
+      flavor,
       accountId,
       {
         accountShard,
@@ -148,6 +150,7 @@ export class AccountsService {
     token: string,
     type: EAuth | 'Anonymous',
     platform: EPlatform,
+    flavor: EFlavor,
     accountId: string,
     optionalParams?: IShard,
   ) {
@@ -155,6 +158,7 @@ export class AccountsService {
       const userResponse = await firstValueFrom(
         this.httpService.post(`${this.gandalfApiUrl}/auth`, {
           idToken: token,
+          flavor,
           type,
           platform,
           accountId,

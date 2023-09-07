@@ -9,6 +9,7 @@ export const Environment = () => {
     [EEnvironment.googleClientID]: process.env.GOOGLE_CLIENT_ID,
     [EEnvironment.IOSGoogleClientID]: process.env.IOS_GOOGLE_CLIENT_ID,
     [EEnvironment.appleClientID]: process.env.APPLE_CLIENT_ID,
+    [EEnvironment.appleClientIDGreens]: process.env.GREENS_APPLE_CLIENT_ID,
   }
   return env
 }

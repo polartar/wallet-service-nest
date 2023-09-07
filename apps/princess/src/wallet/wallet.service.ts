@@ -27,6 +27,7 @@ export class WalletsService {
     @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly assetService: AssetService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.bristleApiUrl = this.configService.get<string>(
@@ -79,12 +80,12 @@ export class WalletsService {
     }
   }
 
-  async getWalletTransaction(walletId, start = 0, count = 0) {
+  async getWalletTransaction(walletId) {
     const accountId = this.getAccountIdFromRequest()
     const transactions = await this.apiCall(
       EAPIMethod.GET,
       this.rickApiUrl,
-      `wallet/${walletId}/transactions?accountId=${accountId}&count=${count}&start=${start}`,
+      `wallet/${walletId}/transactions?accountId=${accountId}`,
     )
 
     return transactions
@@ -135,6 +136,8 @@ export class WalletsService {
     } else {
       throw new BadRequestException('Invalid asset ids')
     }
+
+    // return this.addUSDPrice([wallet], EPeriod.Day)
   }
 
   async sync(title: string, parts: string[]) {

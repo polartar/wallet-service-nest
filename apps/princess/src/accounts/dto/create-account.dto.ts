@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { EAuth, EPlatform } from '@rana/core'
+import { EAuth, EFlavor, EPlatform } from '@rana/core'
 import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 export class CreateAccountDto {
   @ApiProperty({
@@ -16,6 +16,14 @@ export class CreateAccountDto {
   })
   @IsOptional()
   platform: EPlatform
+
+  @ApiProperty({
+    description: 'App flavor',
+    enum: [EFlavor.FCAT, EFlavor.Greens],
+    default: EFlavor.FCAT,
+  })
+  @IsOptional()
+  flavor: EFlavor
 
   @ApiProperty({ description: 'token of Google or Apple login' })
   @IsNotEmpty()

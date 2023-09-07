@@ -38,11 +38,6 @@ spec:
               secretKeyRef:
                 name: rick-env-secrets
                 key: ETHERSCAN_API_KEY
-          - name: ALCHEMY_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: rick-env-secrets
-                key: ALCHEMY_API_KEY
           - name: MORALIS_API_KEY
             valueFrom:
               secretKeyRef:

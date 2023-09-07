@@ -14,10 +14,7 @@ import {
   CreateAssetDto,
 } from './dto/create-asset.dto'
 import { AssetSwaggerResponse } from './dto/get-asset-portfolio.dto'
-import {
-  AssetTransactionSwaggerResponse,
-  GetAssetTransactionDto,
-} from './dto/get-asset-transaction.dto'
+import { AssetTransactionSwaggerResponse } from './dto/get-asset-transaction.dto'
 import { EPeriod } from '@rana/core'
 
 @Controller('asset')
@@ -51,15 +48,8 @@ export class AssetController {
   @ApiOperation({
     summary: 'Get Asset',
   })
-  async getAssetTransactions(
-    @Param('assetId') assetId: string,
-    @Query() query: GetAssetTransactionDto,
-  ) {
-    return await this.assetService.getAssetTransactions(
-      assetId,
-      query.start,
-      query.count,
-    )
+  async getAssetTransactions(@Param('assetId') assetId: string) {
+    return await this.assetService.getAssetTransactions(assetId)
   }
 
   @Get(':assetId/portfolio')
