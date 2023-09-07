@@ -47,8 +47,7 @@ export class WalletService {
       EEnvironment.liquidAPIUrl,
     )
 
-    this.startFetchEthereum()
-    this.startFetchBTC()
+    this.startFetchTransactions()
   }
 
   async startFetchTransactions() {
