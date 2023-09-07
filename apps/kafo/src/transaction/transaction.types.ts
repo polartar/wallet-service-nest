@@ -27,6 +27,7 @@ export interface ITransactionInput {
   network: ENetworks
   transferMessage?: string
   publicKey: string
+  ercToken: string
 }
 
 export interface ITransactionPush {

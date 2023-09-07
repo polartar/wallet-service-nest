@@ -128,6 +128,7 @@ export class TransactionService {
     message: string,
     publicKey: string,
     network: ENetworks,
+    ercToken: string,
   ) {
     return await this.transactionAPI(EAPIMethod.POST, `transactions`, network, {
       from,
@@ -140,6 +141,7 @@ export class TransactionService {
         transferMessage: message || '',
         publicKey,
       },
+      ercToken,
     })
   }
 

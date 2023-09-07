@@ -36,6 +36,7 @@ export class TransactionController {
       data.transferMessage,
       data.publicKey,
       data.network,
+      data.ercToken,
     )
   }
 

@@ -20,6 +20,13 @@ export class TransactionInputPipe implements PipeTransform {
     ),
     transferMessage: Joi.string(),
     publicKey: Joi.string().required(),
+    ercToken: Joi.string().custom((value, helper) => {
+      if (isAddress(value) || validate(value)) {
+        return true
+      } else {
+        return helper.message({ custom: 'ercToken is invalid address' })
+      }
+    }),
   })
 
   transform(value: ITransactionInput) {
