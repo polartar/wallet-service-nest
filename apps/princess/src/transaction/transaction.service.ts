@@ -69,6 +69,7 @@ export class TransactionService {
     publicKey: string,
     network: ENetworks,
     transferMessage: string,
+    ercToken: string,
   ) {
     return await this.apiCall(EAPIMethod.POST, `transaction/generate`, {
       from,
@@ -77,6 +78,7 @@ export class TransactionService {
       publicKey,
       network,
       transferMessage,
+      ercToken,
     })
   }
 

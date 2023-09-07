@@ -47,6 +47,13 @@ export class GenerateTransactionDto {
   })
   @IsNotEmpty()
   publicKey: string
+
+  @ApiProperty({
+    description: 'ERC20Token Address',
+    default: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  })
+  @IsOptional()
+  ercToken: string
 }
 
 export class GenerateTransactionSwaggerResponse {
