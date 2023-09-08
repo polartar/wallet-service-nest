@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { ENFTTypes } from './transaction.types'
+import { ENFTTypes, ITokenTransfer } from './transaction.types'
 import * as Sentry from '@sentry/node'
 import { EAPIMethod } from '../wallet/wallet.types'
 
@@ -69,6 +69,7 @@ export class TransactionService {
     publicKey: string,
     network: ENetworks,
     transferMessage: string,
+    tokenTransfer?: ITokenTransfer,
   ) {
     return await this.apiCall(EAPIMethod.POST, `transaction/generate`, {
       from,
@@ -77,6 +78,7 @@ export class TransactionService {
       publicKey,
       network,
       transferMessage,
+      tokenTransfer,
     })
   }
 

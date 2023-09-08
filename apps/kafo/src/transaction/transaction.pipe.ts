@@ -20,6 +20,7 @@ export class TransactionInputPipe implements PipeTransform {
     ),
     transferMessage: Joi.string(),
     publicKey: Joi.string().required(),
+    tokenTransfer: Joi.object(),
   })
 
   transform(value: ITransactionInput) {

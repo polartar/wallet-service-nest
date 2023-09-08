@@ -13,6 +13,8 @@ import {
   INFTTransactionInput,
   IVaultTransactionResponse,
   IVaultTransaction,
+  ITokenTransfer,
+  ITransactionRequest,
 } from './transaction.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
@@ -128,8 +130,9 @@ export class TransactionService {
     message: string,
     publicKey: string,
     network: ENetworks,
+    tokenTransfer: ITokenTransfer,
   ) {
-    return await this.transactionAPI(EAPIMethod.POST, `transactions`, network, {
+    const body: ITransactionRequest = {
       from,
       to,
       value: {
@@ -140,7 +143,19 @@ export class TransactionService {
         transferMessage: message || '',
         publicKey,
       },
-    })
+    }
+    if (tokenTransfer) {
+      body.tokenTransfer = tokenTransfer
+      body.isNft = true
+      body.type = 0
+    }
+
+    return await this.transactionAPI(
+      EAPIMethod.POST,
+      `transactions`,
+      network,
+      body,
+    )
   }
 
   async publish(

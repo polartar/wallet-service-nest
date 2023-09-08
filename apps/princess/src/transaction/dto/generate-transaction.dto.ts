@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { ENetworks } from '@rana/core'
 import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
+import { ITokenTransfer } from '../transaction.types'
 
 export class GenerateTransactionDto {
   @ApiProperty({
@@ -47,6 +48,18 @@ export class GenerateTransactionDto {
   })
   @IsNotEmpty()
   publicKey: string
+
+  @ApiProperty({
+    description: 'NFT transfer object',
+    default: {
+      id: '115287428002803054512504396719852218498736239014001720390934344975496572305428',
+      tokenId: '0x495f947276749ce646f68ac8c248420045cb7b5e',
+      collectionId: '0x495f947276749ce646f68ac8c248420045cb7b5e',
+      type: 'erc1155',
+    },
+  })
+  @IsOptional()
+  tokenTransfer: ITokenTransfer
 }
 
 export class GenerateTransactionSwaggerResponse {

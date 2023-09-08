@@ -20,6 +20,13 @@ export enum EAPIMethod {
   DELETE = 'delete',
   PUT = 'put',
 }
+
+export interface ITokenTransfer {
+  id: string
+  tokenId: string
+  collectionId: string
+  type: string
+}
 export interface ITransactionInput {
   from: string
   to: string
@@ -27,6 +34,7 @@ export interface ITransactionInput {
   network: ENetworks
   transferMessage?: string
   publicKey: string
+  tokenTransfer: ITokenTransfer
 }
 
 export interface ITransactionPush {
@@ -96,4 +104,20 @@ export interface IVaultPublishTransactionInput {
   serializedTransaction: string
   parts: string[]
   network: ENetworks
+}
+
+export interface ITransactionRequest {
+  type?: number
+  from: string
+  to: string
+  value: {
+    value: string
+    factor: number
+  }
+  extra: {
+    transferMessage: string
+    publicKey: string
+  }
+  isNft?: boolean
+  tokenTransfer?: ITokenTransfer
 }

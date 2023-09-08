@@ -51,6 +51,7 @@ export class TransactionController {
       data.publicKey,
       data.network,
       data.transferMessage,
+      data.tokenTransfer,
     )
   }
 
