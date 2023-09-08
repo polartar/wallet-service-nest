@@ -6,7 +6,7 @@ import { ITokenTransfer } from '../transaction.types'
 export class GenerateTransactionDto {
   @ApiProperty({
     description: 'from address of the transaction',
-    default: '0xe456f9A32E5f11035ffBEa0e97D1aAFDA6e60F03',
+    default: '0x3d1683a3ff587f89388eafc8381a7a0fee593ffe',
   })
   @IsNotEmpty()
   from: string
@@ -21,7 +21,7 @@ export class GenerateTransactionDto {
   @ApiProperty({
     description:
       'amount that will be involved in the transaction, this will be ETH/BTC',
-    default: '0.0001',
+    default: '0',
   })
   @IsNotEmpty()
   amount: string
@@ -29,7 +29,7 @@ export class GenerateTransactionDto {
   @ApiProperty({
     description: 'network type',
     enum: ENetworks,
-    default: ENetworks.ETHEREUM_TEST,
+    default: ENetworks.ETHEREUM,
   })
   @IsEnum(ENetworks)
   network: ENetworks
