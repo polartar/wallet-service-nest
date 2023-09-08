@@ -63,6 +63,7 @@ export class NftService {
           metadata: JSON.parse(item.metadata),
           last_token_uri_sync: getTimestamp(item.last_token_uri_sync as string),
           last_metadata_sync: getTimestamp(item.last_metadata_sync as string),
+          network: network,
         })),
       }
     } catch (err) {
