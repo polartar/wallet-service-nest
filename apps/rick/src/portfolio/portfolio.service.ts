@@ -1,5 +1,5 @@
 import { ECoinTypes, EPortfolioType } from '@rana/core'
-import { Inject, Injectable, forwardRef } from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
@@ -14,7 +14,7 @@ import { ITransaction } from '../asset/asset.types'
 import { ETransactionStatuses } from '../wallet/wallet.types'
 
 @Injectable()
-export class PortfolioService {
+export class PortfolioService implements OnModuleInit {
   activeBtcAssets: AssetEntity[]
   activeTestBtcAssets: AssetEntity[]
   princessAPIUrl: string
@@ -22,6 +22,8 @@ export class PortfolioService {
   webhookMainnetId: string
   webhookGoerliId: string
   webhookURL = 'https://dashboard.alchemy.com/api/update-webhook-addresses'
+  updateWebhookURL =
+    'https://dashboard.alchemy.com/api/update-webhook-addresses'
   alchemyAuthToken: string
 
   constructor(
@@ -49,6 +51,19 @@ export class PortfolioService {
     this.alchemyAuthToken = this.configService.get<string>(
       EEnvironment.alchemyAuthToken,
     )
+  }
+
+  async onModuleInit() {
+    const assets = await this.assetService.getAllAssets()
+    const ethereumAddresses = assets
+      .filter((asset) => asset.network === ENetworks.ETHEREUM)
+      .map((asset) => asset.address)
+    const goerliAddresses = assets
+      .filter((asset) => asset.network === ENetworks.ETHEREUM_TEST)
+      .map((asset) => asset.address)
+
+    this.updateAddressesToWebhook(ethereumAddresses, ENetworks.ETHEREUM)
+    this.updateAddressesToWebhook(goerliAddresses, ENetworks.ETHEREUM_TEST)
   }
 
   async updateCurrentWallets() {
@@ -191,7 +206,7 @@ export class PortfolioService {
     }
   }
 
-  async addAddressToWebhook(
+  async addAddressesToWebhook(
     addresses: string[],
     network: ENetworks,
     isRemove = false,
@@ -214,7 +229,33 @@ export class PortfolioService {
         },
       ),
     ).catch((err) => {
-      Sentry.captureException(`Princess addAddressToWebhook(): ${err.message}`)
+      Sentry.captureException(
+        `Princess addAddressesToWebhook(): ${err.message}`,
+      )
+    })
+  }
+
+  async updateAddressesToWebhook(addresses: string[], network: ENetworks) {
+    let webhookId = this.webhookGoerliId
+
+    if (network === ENetworks.ETHEREUM) {
+      webhookId = this.webhookMainnetId
+    }
+    firstValueFrom(
+      this.httpService.put(
+        this.updateWebhookURL,
+        {
+          webhook_id: webhookId,
+          addresses: addresses,
+        },
+        {
+          headers: { 'X-Alchemy-Token': this.alchemyAuthToken },
+        },
+      ),
+    ).catch((err) => {
+      Sentry.captureException(
+        `Princess updateAddressesToWebhook(): ${err.message}`,
+      )
     })
   }
 }

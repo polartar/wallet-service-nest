@@ -459,7 +459,7 @@ export class AssetService {
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        this.portfolioService.addAddressToWebhook([address], network)
+        this.portfolioService.addAddressesToWebhook([address], network)
       } else {
         await this.portfolioService.updateCurrentWallets()
       }
@@ -849,7 +849,7 @@ export class AssetService {
         }
 
         await this.assetRepository.delete({ id: assetId })
-        this.portfolioService.addAddressToWebhook(
+        this.portfolioService.addAddressesToWebhook(
           [asset.address],
           asset.network,
           true,

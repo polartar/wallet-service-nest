@@ -385,11 +385,11 @@ export class WalletService {
         await this.portfolioService.updateCurrentWallets()
         if (isEthereumAsset) {
           const addresses = assets.map((asset) => asset.address)
-          this.portfolioService.addAddressToWebhook(
+          this.portfolioService.addAddressesToWebhook(
             addresses,
             ENetworks.ETHEREUM,
           )
-          this.portfolioService.addAddressToWebhook(
+          this.portfolioService.addAddressesToWebhook(
             addresses,
             ENetworks.ETHEREUM_TEST,
           )
