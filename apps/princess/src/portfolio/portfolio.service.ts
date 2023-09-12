@@ -32,7 +32,8 @@ export class PortfolioService {
   NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
   magicApiUrl: string
-  alchemySigningKey: string
+  alchemyGoerliSigningKey: string
+  alchemyMainnetSigningKey: string
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
@@ -43,8 +44,11 @@ export class PortfolioService {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.magicApiUrl = this.configService.get<string>(EEnvironment.magicAPIUrl)
-    this.alchemySigningKey = this.configService.get<string>(
-      EEnvironment.alchemySigningKey,
+    this.alchemyGoerliSigningKey = this.configService.get<string>(
+      EEnvironment.alchemyGoerliSigningKey,
+    )
+    this.alchemyMainnetSigningKey = this.configService.get<string>(
+      EEnvironment.alchemyMainnetSigningKey,
     )
   }
 
@@ -222,8 +226,10 @@ export class PortfolioService {
       )
   }
 
-  async handleWebhook(data: IWebhookData) {
-    console.log(data)
+  async handleWebhook(data: IWebhookData, network: string) {
+    if (network !== 'mainnet' && network !== 'goerli') {
+      return
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const headers: string[] = (this.request as any).raw.rawHeaders
     const signatureIndex = headers.findIndex(
@@ -231,8 +237,17 @@ export class PortfolioService {
     )
     if (signatureIndex !== -1) {
       const signature = headers[signatureIndex + 1]
-      if (this.isValidSignatureForStringBody(JSON.stringify(data), signature)) {
-        console.log('calling')
+      const signingKey =
+        network === 'mainnet'
+          ? this.alchemyMainnetSigningKey
+          : this.alchemyGoerliSigningKey
+      if (
+        this.isValidSignatureForStringBody(
+          JSON.stringify(data),
+          signature,
+          signingKey,
+        )
+      ) {
         try {
           await firstValueFrom(
             this.httpService.post<AxiosResponse>(
@@ -241,7 +256,6 @@ export class PortfolioService {
             ),
           )
         } catch (err) {
-          console.log(err)
           Sentry.captureException(`handleWebhook(): ${err.message}`)
         }
       }
@@ -251,8 +265,9 @@ export class PortfolioService {
   isValidSignatureForStringBody(
     body: string, // must be raw string body, not json transformed version of the body
     signature: string, // your "x-alchemy-signature" from header
+    signingKey: string,
   ): boolean {
-    const hmac = crypto.createHmac('sha256', this.alchemySigningKey) // Create a HMAC SHA256 hash using the signing key
+    const hmac = crypto.createHmac('sha256', signingKey) // Create a HMAC SHA256 hash using the signing key
     hmac.update(body, 'utf8') // Update the token hash with the request body using utf8
     const digest = hmac.digest('hex')
     return signature === digest
