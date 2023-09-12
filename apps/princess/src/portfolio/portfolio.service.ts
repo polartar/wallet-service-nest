@@ -263,8 +263,8 @@ export class PortfolioService {
   }
 
   isValidSignatureForStringBody(
-    body: string, // must be raw string body, not json transformed version of the body
-    signature: string, // your "x-alchemy-signature" from header
+    body: string,
+    signature: string,
     signingKey: string,
   ): boolean {
     const hmac = crypto.createHmac('sha256', signingKey) // Create a HMAC SHA256 hash using the signing key

@@ -22,11 +22,6 @@ import { AccountEntity } from 'apps/rick/src/account/account.entity'
       username: process.env.RICK_DB_USERNAME || 'myusername',
       password: process.env.RICK_DB_PASSWORD || 'mypassword',
       database: process.env.RICK_DB_NAME || 'rick',
-      //   entities: [
-      //     AssetEntity, //
-      //     TransactionEntity,
-      //   ],
-      // TODO: Maybe disable in production?
       autoLoadEntities: true,
       synchronize: true,
     }),

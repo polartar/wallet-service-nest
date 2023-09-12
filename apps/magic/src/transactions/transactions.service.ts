@@ -4,7 +4,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ECoinTypes, ENetworks, EPortfolioType } from '@rana/core'
+import { ECoinTypes, ENetworks } from '@rana/core'
 import { AssetEntity } from 'apps/rick/src/wallet/asset.entity'
 import { TransactionEntity } from 'apps/rick/src/wallet/transaction.entity'
 import { Repository } from 'typeorm'
@@ -180,24 +180,6 @@ export class TransactionsService {
           : ETransactionStatuses.RECEIVED,
     }
     await this.addHistory(newHistoryData)
-
-    // const postUpdatedAddress = {
-    //   assetId: updatedAsset.id,
-    //   walletIds: updatedAsset.wallets.map((wallet) => wallet.id),
-    //   accountId: updatedAsset.wallets.map((wallet) => wallet.account.id),
-    //   newHistory: newHistoryData,
-    // }
-
-    // firstValueFrom(
-    //   this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-    //     type: EPortfolioType.TRANSACTION,
-    //     data: [postUpdatedAddress],
-    //   }),
-    // ).catch(() => {
-    //   Sentry.captureException(
-    //     'Princess portfolio/updated api error in fetchEthereumTransactions()',
-    //   )
-    // })
   }
 
   async addHistory(data: ITransaction): Promise<TransactionEntity> {
