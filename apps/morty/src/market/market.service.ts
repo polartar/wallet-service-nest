@@ -102,11 +102,11 @@ export class CoinService {
     this.ethClient.on('message', (response) => {
       const res = JSON.parse(response)
 
-      firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/coin/price/eth`, res),
-      ).catch((err) => {
-        Sentry.captureException(`subscribeETHPrice(): ${err.message}`)
-      })
+      // firstValueFrom(
+      //   this.httpService.post(`${this.princessAPIUrl}/coin/price/eth`, res),
+      // ).catch((err) => {
+      //   Sentry.captureException(`subscribeETHPrice(): ${err.message}`)
+      // })
     })
   }
   subscribeBTCPrice() {
@@ -114,14 +114,14 @@ export class CoinService {
       this.btcConnect()
     }
 
-    this.btcClient.on('message', (response) => {
-      const res = JSON.parse(response)
-      firstValueFrom(
-        this.httpService.post(`${this.princessAPIUrl}/coin/price/btc`, res),
-      ).catch((err) => {
-        Sentry.captureException(`subscribeBTCPrice(): ${err.message}`)
-      })
-    })
+    // this.btcClient.on('message', (response) => {
+    //   const res = JSON.parse(response)
+    //   firstValueFrom(
+    //     this.httpService.post(`${this.princessAPIUrl}/coin/price/btc`, res),
+    //   ).catch((err) => {
+    //     Sentry.captureException(`subscribeBTCPrice(): ${err.message}`)
+    //   })
+    // })
   }
 
   ethClose() {

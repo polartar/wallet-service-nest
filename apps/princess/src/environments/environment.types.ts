@@ -6,6 +6,7 @@ export enum EEnvironment {
   gandalfAPIUrl = 'gandalf_api_url',
   fluffyAPIUrl = 'fluffy_api_url',
   kafoAPIUrl = 'kafo_api_url',
+  magicAPIUrl = 'magic_api_url',
   version = 'version',
   bristleAPIUrl = 'bristle_api_url',
   jwtRefreshTokenSecret = 'jwt_refresh_token_secret',

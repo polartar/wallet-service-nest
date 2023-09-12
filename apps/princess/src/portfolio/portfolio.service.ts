@@ -15,6 +15,7 @@ import {
   IUpdatedAssets,
   IUpdatedHistory,
   IWalletHistoryResponse,
+  IWebhookData,
 } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { EEnvironment } from '../environments/environment.types'
@@ -30,6 +31,7 @@ export class PortfolioService {
   TRANSACTION_CREATION_CHANNEL = 'transaction_created'
   NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
+  magicApiUrl: string
   alchemySigningKey: string
 
   constructor(
@@ -40,6 +42,7 @@ export class PortfolioService {
   ) {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.magicApiUrl = this.configService.get<string>(EEnvironment.magicAPIUrl)
     this.alchemySigningKey = this.configService.get<string>(
       EEnvironment.alchemySigningKey,
     )
@@ -219,8 +222,30 @@ export class PortfolioService {
       )
   }
 
-  async handleWebhook(data: any) {
-    console.log(this.request)
+  async handleWebhook(data: IWebhookData) {
+    console.log(data)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const headers: string[] = (this.request as any).raw.rawHeaders
+    const signatureIndex = headers.findIndex(
+      (key) => key === 'X-Alchemy-Signature',
+    )
+    if (signatureIndex !== -1) {
+      const signature = headers[signatureIndex + 1]
+      if (this.isValidSignatureForStringBody(JSON.stringify(data), signature)) {
+        console.log('calling')
+        try {
+          await firstValueFrom(
+            this.httpService.post<AxiosResponse>(
+              `${this.magicApiUrl}/transactions`,
+              data,
+            ),
+          )
+        } catch (err) {
+          console.log(err)
+          Sentry.captureException(`handleWebhook(): ${err.message}`)
+        }
+      }
+    }
   }
 
   isValidSignatureForStringBody(

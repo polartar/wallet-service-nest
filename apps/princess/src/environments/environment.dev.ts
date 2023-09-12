@@ -15,6 +15,8 @@ export const Environment = () => {
       process.env.FLUFFY_API_URL || 'http://localhost:3333',
     [EEnvironment.kafoAPIUrl]:
       process.env.KAFO_API_URL || 'http://localhost:3333',
+    [EEnvironment.magicAPIUrl]:
+      process.env.MAGIC_API_URL || 'http://localhost:3337',
     [EEnvironment.version]: process.env.VERSION || '1.0',
     [EEnvironment.bristleAPIUrl]:
       process.env.BRISTLE_API_URL || 'http://localhost:3333',

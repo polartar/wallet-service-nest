@@ -30,7 +30,6 @@ export class RickGateway
   ) {}
   afterInit() {
     Logger.log('Init')
-    this.coinService.server = this.server
   }
 
   handleDisconnect(client: Socket) {
@@ -40,6 +39,8 @@ export class RickGateway
 
   handleConnection(client: Socket) {
     Logger.log(`Client connected: ${client.id}`)
+    this.coinService.server = this.server
+
     // we should get the account Id from the authorization token
     const accountId = '910f5dbe-d8dc-4480-8e3b-9ea9b1b8cf87'
     this.portfolioService.addClient(accountId, client)

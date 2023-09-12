@@ -78,18 +78,16 @@ export class TransactionsService {
         ? ENetworks.ETHEREUM
         : ENetworks.ETHEREUM_TEST
     const assets = await this.getAssetsByNetwork(network)
-    const currentAddresses = assets.map((asset) => asset.address)
+    const currentAddresses = assets.map((asset) => asset.address.toLowerCase())
 
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
-
       if (currentAddresses.includes(transaction.fromAddress.toLowerCase())) {
         const provider =
           network === ENetworks.ETHEREUM
             ? this.mainnetProvider
             : this.testnetProvider
         const tx = await provider.getTransaction(transaction.hash)
-        console.log({ tx })
 
         const fee = BigNumber.from(tx.gasPrice).mul(BigNumber.from(tx.gasLimit))
         const amount = BigNumber.from(
@@ -160,14 +158,15 @@ export class TransactionsService {
 
     const balance = lastTransaction
       ? BigNumber.from(lastTransaction.balance).sub(amount)
-      : BigNumber.from(transaction.value)
+      : parseEther(transaction.value.toString())
+
     const weiBalance = formatEther(balance)
-    const weiAmount = formatEther(transaction.value)
+    const weiAmount = transaction.value
     const newHistoryData: ITransaction = {
       asset: updatedAsset,
       from: transaction.fromAddress,
       to: transaction.toAddress,
-      cryptoAmount: transaction.value.toString(),
+      cryptoAmount: parseEther(transaction.value.toString()).toString(),
       fiatAmount: (+weiAmount * price).toFixed(2),
       hash: transaction.hash,
       blockNumber: BigNumber.from(transaction.blockNum).toNumber(),

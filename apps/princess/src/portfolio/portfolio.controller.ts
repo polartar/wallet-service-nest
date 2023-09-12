@@ -1,8 +1,9 @@
 import { EPortfolioType } from '@rana/core'
 import { PortfolioService } from './portfolio.service'
-import { IUpdatedAssets } from './portfolio.types'
+import { IUpdatedAssets, IWebhookData } from './portfolio.types'
 import { Body, Controller, ParseEnumPipe, Post } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { Public } from '../gateway/decorators/public.decorator'
 
 @Controller('portfolio')
 @ApiTags('portfolio')
@@ -19,8 +20,9 @@ export class PortfolioController {
   }
 
   @Post('webhook')
+  @Public()
   @ApiOperation({ summary: "This api can't be called directly" })
-  async handleWebhook(@Body('') data: any) {
+  async handleWebhook(@Body('') data: IWebhookData) {
     this.portfolioService.handleWebhook(data)
   }
 }
