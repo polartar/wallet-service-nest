@@ -14,6 +14,7 @@ import {
   ETransactionStatuses,
   IBlockchainTransaction,
   ITransaction,
+  IWebhookData,
 } from './transactions.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
@@ -64,7 +65,8 @@ export class TransactionsService {
     })
   }
 
-  async handleTransaction(data: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async handleTransaction(data: IWebhookData) {
     let event
     try {
       event = data.event

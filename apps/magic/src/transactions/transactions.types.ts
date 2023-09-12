@@ -10,6 +10,13 @@ export enum ETransactionStatuses {
   SENDING = 'sending',
   INTERNAL = 'internal',
 }
+
+export interface IWebhookData {
+  event: {
+    network: string
+    activity: IBlockchainTransaction[]
+  }
+}
 export interface IBlockchainTransaction {
   fromAddress: string
   toAddress: string
