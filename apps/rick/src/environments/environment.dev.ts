@@ -14,6 +14,8 @@ export const Environment = () => {
     [EEnvironment.liquidTestAPIKey]: process.env.LIQUID_TEST_API_KEY,
     [EEnvironment.liquidTestAPIUrl]: process.env.LIQUID_TEST_API_URL,
     [EEnvironment.mortyAPIUrl]: process.env.MORTY_API_URL,
+    [EEnvironment.webhookMainnetId]: process.env.WEBHOOK_MAINNET_ID,
+    [EEnvironment.webhookGoerliId]: process.env.WEBHOOK_GOERLI_ID,
   }
 
   return env

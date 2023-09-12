@@ -457,12 +457,14 @@ export class AssetService {
     )
 
     if (isNew) {
-      await this.portfolioService.updateCurrentWallets()
       if (
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        this.portfolioService.fetchEthereumTransactions(network)
+        // this.portfolioService.fetchEthereumTransactions(network)
+        this.portfolioService.addAddressToWebhook([address], network)
+      } else {
+        await this.portfolioService.updateCurrentWallets()
       }
     }
 
