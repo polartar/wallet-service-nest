@@ -17,4 +17,10 @@ export class PortfolioController {
   ) {
     this.portfolioService.handleUpdatedAddresses(type, data)
   }
+
+  @Post('webhook')
+  @ApiOperation({ summary: "This api can't be called directly" })
+  async handleWebhook(@Body('') data: any) {
+    this.portfolioService.handleWebhook(data)
+  }
 }

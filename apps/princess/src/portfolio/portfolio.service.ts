@@ -1,7 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  Injectable,
+  UnauthorizedException,
+  Request,
+  Inject,
+} from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
+import * as crypto from 'crypto'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
@@ -16,6 +22,7 @@ import { ConfigService } from '@nestjs/config'
 import { EPeriod, EPortfolioType } from '@rana/core'
 import { JwtService } from '@nestjs/jwt'
 import * as Sentry from '@sentry/node'
+import { REQUEST } from '@nestjs/core'
 
 @Injectable()
 export class PortfolioService {
@@ -23,14 +30,19 @@ export class PortfolioService {
   TRANSACTION_CREATION_CHANNEL = 'transaction_created'
   NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
+  alchemySigningKey: string
 
   constructor(
+    @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private jwtService: JwtService,
   ) {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.alchemySigningKey = this.configService.get<string>(
+      EEnvironment.alchemySigningKey,
+    )
   }
 
   async getAccountIdFromAccessToken(token: string) {
@@ -205,5 +217,19 @@ export class PortfolioService {
           throw 'An error happened: ' + error.message
         }),
       )
+  }
+
+  async handleWebhook(data: any) {
+    console.log(this.request)
+  }
+
+  isValidSignatureForStringBody(
+    body: string, // must be raw string body, not json transformed version of the body
+    signature: string, // your "x-alchemy-signature" from header
+  ): boolean {
+    const hmac = crypto.createHmac('sha256', this.alchemySigningKey) // Create a HMAC SHA256 hash using the signing key
+    hmac.update(body, 'utf8') // Update the token hash with the request body using utf8
+    const digest = hmac.digest('hex')
+    return signature === digest
   }
 }

@@ -1,14 +1,11 @@
 {
   "recommendations": [
-    // Essentials
-    "esbenp.prettier-vscode", // Formatting
-    "dbaeumer.vscode-eslint", // Linting
-    "firsttris.vscode-jest-runner", // Testing
-    "vivaxy.vscode-conventional-commits", // Commits Help
-
-    // Optionals
-    "nrwl.angular-console", // Workspace
-    "ms-azuretools.vscode-docker", // Docker
-    "eamodio.gitlens" // Git
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "firsttris.vscode-jest-runner",
+    "vivaxy.vscode-conventional-commits",
+    "nrwl.angular-console",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens"
   ]
 }

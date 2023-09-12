@@ -19,6 +19,7 @@ export const Environment = () => {
     [EEnvironment.bristleAPIUrl]:
       process.env.BRISTLE_API_URL || 'http://localhost:3333',
     [EEnvironment.jwtRefreshTokenSecret]: process.env.JWT_REFRESH_TOKEN_SECRET,
+    [EEnvironment.alchemySigningKey]: process.env.ALCHEMY_SIGNING_KEY,
   }
   return env
 }

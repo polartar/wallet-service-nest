@@ -9,4 +9,5 @@ export enum EEnvironment {
   version = 'version',
   bristleAPIUrl = 'bristle_api_url',
   jwtRefreshTokenSecret = 'jwt_refresh_token_secret',
+  alchemySigningKey = 'alchemy_signing_key',
 }
