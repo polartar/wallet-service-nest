@@ -16,6 +16,7 @@ export const Environment = () => {
     [EEnvironment.mortyAPIUrl]: process.env.MORTY_API_URL,
     [EEnvironment.webhookMainnetId]: process.env.WEBHOOK_MAINNET_ID,
     [EEnvironment.webhookGoerliId]: process.env.WEBHOOK_GOERLI_ID,
+    [EEnvironment.alchemyAuthToken]: process.env.ALCHEMY_AUTH_TOKEN,
   }
 
   return env

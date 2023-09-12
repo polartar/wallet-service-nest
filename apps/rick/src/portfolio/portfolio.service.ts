@@ -34,6 +34,7 @@ export class PortfolioService {
   transferIface
   alchemyMainnetKey: string
   alchemyGoerliKey: string
+  alchemyAuthToken: string
 
   constructor(
     private configService: ConfigService,
@@ -56,6 +57,9 @@ export class PortfolioService {
 
     this.webhookMainnetId = this.configService.get<string>(
       EEnvironment.webhookMainnetId,
+    )
+    this.alchemyAuthToken = this.configService.get<string>(
+      EEnvironment.alchemyAuthToken,
     )
 
     // this.alchemyConfigure()
@@ -416,13 +420,13 @@ export class PortfolioService {
     network: ENetworks,
     isRemove = false,
   ) {
-    let webhookId = this.webhookGoerliId
-    let alchemyKey = this.alchemyGoerliKey
+    const webhookId = this.webhookGoerliId
+    // let alchemyKey = this.alchemyGoerliKey
 
-    if (network === ENetworks.ETHEREUM) {
-      webhookId = this.webhookMainnetId
-      alchemyKey = this.alchemyMainnetKey
-    }
+    // if (network === ENetworks.ETHEREUM) {
+    //   webhookId = this.webhookMainnetId
+    //   alchemyKey = this.alchemyMainnetKey
+    // }
 
     firstValueFrom(
       this.httpService.patch(
@@ -433,7 +437,7 @@ export class PortfolioService {
           addresses_to_remove: isRemove ? addresses : [],
         },
         {
-          headers: { 'X-Alchemy-Token': alchemyKey },
+          headers: { 'X-Alchemy-Token': this.alchemyAuthToken },
         },
       ),
     ).catch((err) => {

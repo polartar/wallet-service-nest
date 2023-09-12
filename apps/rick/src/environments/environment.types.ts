@@ -11,4 +11,5 @@ export enum EEnvironment {
   mortyAPIUrl = 'morty_api_url',
   webhookMainnetId = 'webhook_mainnet_id',
   webhookGoerliId = 'webhook_goerli_id',
+  alchemyAuthToken = 'alchemy_auth_token',
 }
