@@ -52,9 +52,7 @@ export class WalletService {
 
   async startFetchEthereum() {
     await this.assetService.confirmWalletBalances()
-    // await this.portfolioService.updateCurrentWallets()
-    // this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-    // this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
+    await this.portfolioService.updateCurrentWallets()
   }
 
   async getUserWalletTransaction(accountId: string, walletId: string) {
@@ -395,10 +393,6 @@ export class WalletService {
             addresses,
             ENetworks.ETHEREUM_TEST,
           )
-          // this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-          // this.portfolioService.fetchEthereumTransactions(
-          //   ENetworks.ETHEREUM_TEST,
-          // )
         }
       }
 

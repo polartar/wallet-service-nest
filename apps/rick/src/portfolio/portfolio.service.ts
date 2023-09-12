@@ -1,17 +1,13 @@
 import { ECoinTypes, EPortfolioType } from '@rana/core'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
-import * as Ethers from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { EEnvironment } from '../environments/environment.types'
 import { HttpService } from '@nestjs/axios'
 import BlockchainSocket = require('blockchain.info/Socket')
 import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
-import { AlchemySubscription, Network } from 'alchemy-sdk'
-import { ethers, BigNumber } from 'ethers'
 import * as Sentry from '@sentry/node'
 import { AssetEntity } from '../wallet/asset.entity'
-import { AlchemyMultichainClient } from './alchemy-multichain-client'
 import { AssetService } from '../asset/asset.service'
 import { formatUnits } from 'ethers/lib/utils'
 import { ITransaction } from '../asset/asset.types'
@@ -19,21 +15,13 @@ import { ETransactionStatuses } from '../wallet/wallet.types'
 
 @Injectable()
 export class PortfolioService {
-  // activeEthAssets: AssetEntity[]
   activeBtcAssets: AssetEntity[]
-  // activeTestEthAssets: AssetEntity[]
   activeTestBtcAssets: AssetEntity[]
-  // provider: Ethers.providers.JsonRpcProvider
   princessAPIUrl: string
   btcSocket
   webhookMainnetId: string
   webhookGoerliId: string
   webhookURL = 'https://dashboard.alchemy.com/api/update-webhook-addresses'
-  alchemyInstance
-  transferFilter
-  transferIface
-  alchemyMainnetKey: string
-  alchemyGoerliKey: string
   alchemyAuthToken: string
 
   constructor(
@@ -61,59 +49,10 @@ export class PortfolioService {
     this.alchemyAuthToken = this.configService.get<string>(
       EEnvironment.alchemyAuthToken,
     )
-
-    // this.alchemyConfigure()
   }
-
-  // alchemyConfigure() {
-  //   const mainnetKey = this.configService.get<string>(
-  //     EEnvironment.alchemyMainnetAPIKey,
-  //   )
-  //   const goerliKey = this.configService.get<string>(
-  //     EEnvironment.alchemyGoerliAPIKey,
-  //   )
-
-  //   const defaultConfig = {
-  //     apiKey: mainnetKey,
-  //     network: Network.ETH_MAINNET,
-  //   }
-  //   const overrides = {
-  //     [Network.ETH_GOERLI]: { apiKey: goerliKey, maxRetries: 10 },
-  //   }
-
-  //   this.alchemyInstance = new AlchemyMultichainClient(defaultConfig, overrides)
-
-  //   this.transferFilter = {
-  //     topics: [
-  //       [
-  //         ethers.utils.id('Transfer(address,address,uint256)'), // ERC721 transfer
-  //         ethers.utils.id(
-  //           'TransferSingle(address,address,address,uint256,uint256)', // ERC1155 transfer
-  //         ),
-  //         ethers.utils.id(
-  //           'TransferBatch(address,address,address,uint256[],uint256[])', // ERC1155 batch transfer
-  //         ),
-  //       ],
-  //     ],
-  //   }
-  //   const transferABI = [
-  //     'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
-  //     'event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)',
-  //     'event TransferBatch(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] values)',
-  //   ]
-  //   this.transferIface = new ethers.utils.Interface(transferABI)
-  // }
 
   async updateCurrentWallets() {
     const assets = await this.assetService.getAllAssets()
-
-    // this.activeEthAssets = assets.filter(
-    //   (address) => address.network === ENetworks.ETHEREUM,
-    // )
-
-    // this.activeTestEthAssets = assets.filter(
-    //   (address) => address.network === ENetworks.ETHEREUM_TEST,
-    // )
 
     this.activeBtcAssets = assets.filter(
       (address) => address.network === ENetworks.BITCOIN,
@@ -126,107 +65,6 @@ export class PortfolioService {
   getCurrentTimeBySeconds() {
     return Math.floor(Date.now() / 1000)
   }
-
-  // subscribeEthereumTransactions(assets: AssetEntity[], network: ENetworks) {
-  //   let sourceAddresses: { from?: string; to?: string }[] = assets.map(
-  //     (asset) => ({
-  //       from: asset.address,
-  //     }),
-  //   )
-
-  //   sourceAddresses = sourceAddresses.concat(
-  //     assets.map((asset) => ({
-  //       to: asset.address,
-  //     })),
-  //   )
-  //   const currentAddresses = assets.map((asset) => asset.address.toLowerCase())
-
-  //   this.alchemyInstance
-  //     .forNetwork(
-  //       network === ENetworks.ETHEREUM
-  //         ? Network.ETH_MAINNET
-  //         : Network.ETH_GOERLI,
-  //     )
-  //     .ws.on(
-  //       {
-  //         method: AlchemySubscription.MINED_TRANSACTIONS,
-  //         addresses: sourceAddresses,
-  //         includeRemoved: true,
-  //         hashesOnly: false,
-  //       },
-  //       (tx) => {
-  //         try {
-  //           if (currentAddresses.includes(tx.transaction.from.toLowerCase())) {
-  //             const fee = BigNumber.from(tx.transaction.gasPrice).mul(
-  //               BigNumber.from(tx.transaction.gas),
-  //             )
-  //             const amount = BigNumber.from(tx.transaction.value).add(fee)
-  //             const updatedAddress = assets.find(
-  //               (asset) =>
-  //                 asset.address.toLowerCase() ===
-  //                 tx.transaction.from.toLowerCase(),
-  //             )
-  //             this.assetService.updateTransaction(
-  //               updatedAddress,
-  //               tx,
-  //               amount,
-  //               fee,
-  //             )
-  //           }
-
-  //           if (currentAddresses.includes(tx.transaction.to.toLowerCase())) {
-  //             const amount = BigNumber.from(0).sub(
-  //               BigNumber.from(tx.transaction.value),
-  //             )
-  //             const updatedAddress = assets.find(
-  //               (asset) =>
-  //                 asset.address.toLowerCase() ===
-  //                 tx.transaction.to.toLowerCase(),
-  //             )
-  //             this.assetService.updateTransaction(
-  //               updatedAddress,
-  //               tx,
-  //               amount,
-  //               BigNumber.from('0'),
-  //             )
-  //           }
-  //         } catch (err) {
-  //           Sentry.captureException(
-  //             `${err.message} in subscribeEthereumTransactions: (${tx}) `,
-  //           )
-  //         }
-  //       },
-  //     )
-  // }
-
-  // async fetchEthereumTransactions(network: ENetworks) {
-  //   const assets =
-  //     network === ENetworks.ETHEREUM
-  //       ? this.activeEthAssets
-  //       : this.activeTestEthAssets
-
-  //   this.alchemyInstance
-  //     .forNetwork(
-  //       network === ENetworks.ETHEREUM
-  //         ? Network.ETH_MAINNET
-  //         : Network.ETH_GOERLI,
-  //     )
-  //     .ws.removeAllListeners()
-  //   this.subscribeEthereumTransactions(assets, network)
-  //   this.subscribeNFTTransferEvents()
-
-  //   this.alchemyInstance
-  //     .forNetwork(
-  //       network === ENetworks.ETHEREUM
-  //         ? Network.ETH_MAINNET
-  //         : Network.ETH_GOERLI,
-  //     )
-  //     .ws.on('error', () => {
-  //       Sentry.captureException(
-  //         'fetchEthereumTransactions: Alchemy socket error',
-  //       )
-  //     })
-  // }
 
   async onBTCTransaction(transaction) {
     if (!this.activeBtcAssets) {
@@ -353,87 +191,22 @@ export class PortfolioService {
     }
   }
 
-  // notifyNFTUpdate(sourceAddress: string, network: ENetworks) {
-  //   const sourceAssets =
-  //     network === ENetworks.ETHEREUM
-  //       ? this.activeEthAssets
-  //       : this.activeTestEthAssets
-  //   const assetEntity = sourceAssets.find(
-  //     (address) => address.address.toLowerCase() === sourceAddress,
-  //   )
-  //   firstValueFrom(
-  //     this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-  //       type: EPortfolioType.NFT,
-  //       data: [
-  //         {
-  //           addressId: assetEntity.id,
-  //           walletIds: assetEntity.wallets.map((wallet) => wallet.id),
-  //           accountIds: assetEntity.wallets.map((wallet) => wallet.account.id),
-  //         },
-  //       ],
-  //     }),
-  //   ).catch((err) => {
-  //     Sentry.captureException(`notifyNFTUpdate(): ${err.message}`)
-  //   })
-  // }
-
-  // subscribeNFTTransferEvents() {
-  //   // listen NFT transfer events on Mainnet
-  //   this.alchemyInstance
-  //     .forNetwork(Network.ETH_MAINNET)
-  //     .ws.on(this.transferFilter, async (log) => {
-  //       this.analyzeLog(log, ENetworks.ETHEREUM)
-  //     })
-
-  //   // listen NFT transfer events on Goerli
-  //   this.alchemyInstance
-  //     .forNetwork(Network.ETH_GOERLI)
-  //     .ws.on(this.transferFilter, async (log) => {
-  //       this.analyzeLog(log, ENetworks.ETHEREUM_TEST)
-  //     })
-  // }
-
-  // // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // analyzeLog(log: any, network: ENetworks) {
-  //   try {
-  //     const currentAddresses: string[] = this.activeTestEthAssets.map(
-  //       (address) => address.address.toLowerCase(),
-  //     )
-  //     const { args } = this.transferIface.parseLog(log)
-  //     const fromAddress = args.from.toLowerCase()
-  //     const toAddress = args.to.toLowerCase()
-
-  //     if (currentAddresses.includes(fromAddress)) {
-  //       this.notifyNFTUpdate(fromAddress, network)
-  //     }
-
-  //     if (currentAddresses.includes(toAddress) && fromAddress !== toAddress) {
-  //       this.notifyNFTUpdate(toAddress, network)
-  //     }
-  //   } catch (err) {
-  //     /* continue regardless of error */
-  //   }
-  // }
-
   async addAddressToWebhook(
     addresses: string[],
     network: ENetworks,
     isRemove = false,
   ) {
-    const webhookId = this.webhookGoerliId
-    // let alchemyKey = this.alchemyGoerliKey
+    let webhookId = this.webhookGoerliId
 
-    // if (network === ENetworks.ETHEREUM) {
-    //   webhookId = this.webhookMainnetId
-    //   alchemyKey = this.alchemyMainnetKey
-    // }
-
+    if (network === ENetworks.ETHEREUM) {
+      webhookId = this.webhookMainnetId
+    }
     firstValueFrom(
       this.httpService.patch(
         this.webhookURL,
         {
           webhook_id: webhookId,
-          address: isRemove ? [] : addresses,
+          addresses_to_add: isRemove ? [] : addresses,
           addresses_to_remove: isRemove ? addresses : [],
         },
         {
@@ -441,7 +214,7 @@ export class PortfolioService {
         },
       ),
     ).catch((err) => {
-      Sentry.captureException(`Princess portfolio/updated: ${err.message}`)
+      Sentry.captureException(`Princess addAddressToWebhook(): ${err.message}`)
     })
   }
 }

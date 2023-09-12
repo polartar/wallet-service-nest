@@ -1,4 +1,3 @@
-import { WalletEntity } from './../wallet/wallet.entity'
 import {
   BadRequestException,
   Inject,
@@ -276,7 +275,6 @@ export class AssetService {
         : this.goerliProvider
 
     const currentBalance = await provider.getBalance(asset.address)
-
     let balance = currentBalance
     let page = 1
 
@@ -461,7 +459,6 @@ export class AssetService {
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        // this.portfolioService.fetchEthereumTransactions(network)
         this.portfolioService.addAddressToWebhook([address], network)
       } else {
         await this.portfolioService.updateCurrentWallets()
@@ -812,8 +809,6 @@ export class AssetService {
       return res.data
     } catch (err) {
       Sentry.captureException(err.message + 'in getHistoricalData()')
-
-      throw new InternalServerErrorException(err.message)
     }
   }
 
@@ -825,12 +820,13 @@ export class AssetService {
       return res.data.price
     } catch (err) {
       Sentry.captureException(err.message + 'in getCurrentUSDPrice()')
-
-      throw new InternalServerErrorException(err.message)
     }
   }
 
   getUSDPrice(source: IMarketData[], timestamp: number) {
+    if (!source) {
+      return 0
+    }
     const index = source.findIndex(
       (market) =>
         new Date(market.periodEnd).getTime() / 1000 >= +timestamp &&
@@ -853,6 +849,11 @@ export class AssetService {
         }
 
         await this.assetRepository.delete({ id: assetId })
+        this.portfolioService.addAddressToWebhook(
+          [asset.address],
+          asset.network,
+          true,
+        )
       }
     } catch (err) {
       Sentry.captureException(`deleteAsset(): ${err.message}`, {
