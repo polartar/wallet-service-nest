@@ -9,4 +9,7 @@ export enum EEnvironment {
   liquidAPIUrl = 'liquid__api_url',
   liquidTestAPIUrl = 'liquid_test_api_url',
   mortyAPIUrl = 'morty_api_url',
+  webhookMainnetId = 'webhook_mainnet_id',
+  webhookGoerliId = 'webhook_goerli_id',
+  alchemyAuthToken = 'alchemy_auth_token',
 }

@@ -63,3 +63,10 @@ export interface IUpdatedAssets {
     timestamp: number
   }
 }
+
+export interface IWebhookData {
+  event: {
+    network: string
+    activity: []
+  }
+}

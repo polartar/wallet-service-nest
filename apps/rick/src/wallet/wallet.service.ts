@@ -53,8 +53,6 @@ export class WalletService {
   async startFetchEthereum() {
     await this.assetService.confirmWalletBalances()
     await this.portfolioService.updateCurrentWallets()
-    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-    this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM_TEST)
   }
 
   async getUserWalletTransaction(accountId: string, walletId: string) {
@@ -386,8 +384,13 @@ export class WalletService {
       if (assets.length > 0) {
         await this.portfolioService.updateCurrentWallets()
         if (isEthereumAsset) {
-          this.portfolioService.fetchEthereumTransactions(ENetworks.ETHEREUM)
-          this.portfolioService.fetchEthereumTransactions(
+          const addresses = assets.map((asset) => asset.address)
+          this.portfolioService.addAddressesToWebhook(
+            addresses,
+            ENetworks.ETHEREUM,
+          )
+          this.portfolioService.addAddressesToWebhook(
+            addresses,
             ENetworks.ETHEREUM_TEST,
           )
         }

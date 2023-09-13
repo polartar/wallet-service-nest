@@ -1,7 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  Injectable,
+  UnauthorizedException,
+  Request,
+  Inject,
+} from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
+import * as crypto from 'crypto'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
@@ -9,6 +15,7 @@ import {
   IUpdatedAssets,
   IUpdatedHistory,
   IWalletHistoryResponse,
+  IWebhookData,
 } from './portfolio.types'
 import { Socket } from 'socket.io'
 import { EEnvironment } from '../environments/environment.types'
@@ -16,6 +23,7 @@ import { ConfigService } from '@nestjs/config'
 import { EPeriod, EPortfolioType } from '@rana/core'
 import { JwtService } from '@nestjs/jwt'
 import * as Sentry from '@sentry/node'
+import { REQUEST } from '@nestjs/core'
 
 @Injectable()
 export class PortfolioService {
@@ -23,14 +31,25 @@ export class PortfolioService {
   TRANSACTION_CREATION_CHANNEL = 'transaction_created'
   NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
+  magicApiUrl: string
+  alchemyGoerliSigningKey: string
+  alchemyMainnetSigningKey: string
 
   constructor(
+    @Inject(REQUEST) private readonly request: Request,
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private jwtService: JwtService,
   ) {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.magicApiUrl = this.configService.get<string>(EEnvironment.magicAPIUrl)
+    this.alchemyGoerliSigningKey = this.configService.get<string>(
+      EEnvironment.alchemyGoerliSigningKey,
+    )
+    this.alchemyMainnetSigningKey = this.configService.get<string>(
+      EEnvironment.alchemyMainnetSigningKey,
+    )
   }
 
   async getAccountIdFromAccessToken(token: string) {
@@ -205,5 +224,52 @@ export class PortfolioService {
           throw 'An error happened: ' + error.message
         }),
       )
+  }
+
+  async handleWebhook(data: IWebhookData, network: string) {
+    if (network !== 'mainnet' && network !== 'goerli') {
+      return
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const headers: string[] = (this.request as any).raw.rawHeaders
+    const signatureIndex = headers.findIndex(
+      (key) => key === 'X-Alchemy-Signature',
+    )
+    if (signatureIndex !== -1) {
+      const signature = headers[signatureIndex + 1]
+      const signingKey =
+        network === 'mainnet'
+          ? this.alchemyMainnetSigningKey
+          : this.alchemyGoerliSigningKey
+      if (
+        this.isValidSignatureForStringBody(
+          JSON.stringify(data),
+          signature,
+          signingKey,
+        )
+      ) {
+        try {
+          await firstValueFrom(
+            this.httpService.post<AxiosResponse>(
+              `${this.magicApiUrl}/transactions`,
+              data,
+            ),
+          )
+        } catch (err) {
+          Sentry.captureException(`handleWebhook(): ${err.message}`)
+        }
+      }
+    }
+  }
+
+  isValidSignatureForStringBody(
+    body: string,
+    signature: string,
+    signingKey: string,
+  ): boolean {
+    const hmac = crypto.createHmac('sha256', signingKey) // Create a HMAC SHA256 hash using the signing key
+    hmac.update(body, 'utf8') // Update the token hash with the request body using utf8
+    const digest = hmac.digest('hex')
+    return signature === digest
   }
 }
