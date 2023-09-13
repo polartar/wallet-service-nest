@@ -1,3 +1,4 @@
+import { Network } from 'alchemy-sdk'
 import { BigNumber, ethers } from 'ethers'
 import { HttpService } from '@nestjs/axios'
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
@@ -8,12 +9,19 @@ import { ECoinTypes, ENetworks } from '@rana/core'
 import { AssetEntity } from 'apps/rick/src/wallet/asset.entity'
 import { TransactionEntity } from 'apps/rick/src/wallet/transaction.entity'
 import { Repository } from 'typeorm'
-import { formatEther, parseEther } from 'ethers/lib/utils'
+import {
+  formatEther,
+  formatUnits,
+  parseEther,
+  parseUnits,
+} from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import {
   ETransactionStatuses,
   IBlockchainTransaction,
+  ICryptoAPITransaction,
   ITransaction,
+  ITransactionWebhookData,
   IWebhookData,
 } from './transactions.types'
 import { firstValueFrom } from 'rxjs'
@@ -192,5 +200,77 @@ export class TransactionsService {
 
   getCurrentTimeBySeconds() {
     return Math.floor(Date.now() / 1000)
+  }
+
+  async handleCryptoApiTransaction(data: ITransactionWebhookData) {
+    let transaction: ICryptoAPITransaction
+    try {
+      transaction = data.data.item
+    } catch (err) {
+      return
+    }
+    let network
+
+    if (transaction.blockchain === 'bitcoin') {
+      if (transaction.network === 'mainnet') {
+        network = ENetworks.BITCOIN
+      } else if (transaction.network === 'testnet') {
+        network = ENetworks.BITCOIN_TEST
+      } else return
+    } else if (transaction.blockchain === 'ethereum') {
+      if (transaction.network === 'mainnet') {
+        network = ENetworks.ETHEREUM
+      } else if (transaction.network === 'testnet') {
+        network = ENetworks.ETHEREUM_TEST
+      } else return
+    } else {
+      return
+    }
+    const assets = await this.getAssetsByNetwork(network)
+    const currentAddresses = assets.map((asset) => asset.address.toLowerCase())
+
+    try {
+      if (currentAddresses.includes(transaction.address.toLowerCase())) {
+        const updatedAsset = assets.find(
+          (asset) =>
+            asset.address.toLowerCase() === transaction.address.toLowerCase(),
+        )
+        const lastTransaction = await this.getLastTransactionFromAssetId(
+          updatedAsset.id,
+        )
+        const price = await this.getCurrentUSDPrice(ECoinTypes.BITCOIN)
+        let amount = parseUnits(transaction.amount, 8)
+        if (transaction.direction === 'incoming') {
+          amount = BigNumber.from(0).sub(amount)
+        }
+
+        const balance = lastTransaction
+          ? BigNumber.from(lastTransaction.balance).sub(amount)
+          : parseUnits(transaction.amount, 8)
+
+        const weiBalance = formatUnits(balance, 8)
+        const weiAmount = transaction.amount
+        const newHistoryData: ITransaction = {
+          asset: updatedAsset,
+          from: transaction.direction === 'incoming' ? '' : transaction.address,
+          to: transaction.direction === 'outcoming' ? '' : transaction.address,
+          cryptoAmount: parseUnits(transaction.amount.toString(), 8).toString(),
+          fiatAmount: (+weiAmount * price).toFixed(2),
+          hash: transaction.minedInBlock.hash,
+          blockNumber: transaction.minedInBlock.timestamp,
+          balance: balance.toString(),
+          usdPrice: (+weiBalance * price).toFixed(2),
+          timestamp: this.getCurrentTimeBySeconds(),
+          fee: '',
+          status:
+            transaction.direction === 'outcoming'
+              ? ETransactionStatuses.SENT
+              : ETransactionStatuses.RECEIVED,
+        }
+        await this.addHistory(newHistoryData)
+      }
+
+      // eslint-disable-next-line no-empty
+    } catch (err) {}
   }
 }

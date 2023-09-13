@@ -17,6 +17,7 @@ export const Environment = () => {
     [EEnvironment.webhookMainnetId]: process.env.WEBHOOK_MAINNET_ID,
     [EEnvironment.webhookGoerliId]: process.env.WEBHOOK_GOERLI_ID,
     [EEnvironment.alchemyAuthToken]: process.env.ALCHEMY_AUTH_TOKEN,
+    [EEnvironment.cryptoApiKey]: process.env.CRYPTO_API_KEY,
   }
 
   return env

@@ -39,3 +39,27 @@ export interface ITransaction {
   fee: string
   blockNumber?: number
 }
+export interface ITransactionWebhookData {
+  apiVersion: string
+  referenceId: string
+  idempotencyKey: string
+  data: {
+    product: string
+    event: string
+    item: ICryptoAPITransaction
+  }
+}
+export interface ICryptoAPITransaction {
+  blockchain: string
+  network: string
+  address: string
+  minedInBlock: {
+    height: number
+    hash: string
+    timestamp: number
+  }
+  transactionId: string
+  amount: string
+  unit: string
+  direction: string
+}

@@ -12,6 +12,7 @@ import * as crypto from 'crypto'
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
   ISockets,
+  ITransactionWebhookData,
   IUpdatedAssets,
   IUpdatedHistory,
   IWalletHistoryResponse,
@@ -271,5 +272,18 @@ export class PortfolioService {
     hmac.update(body, 'utf8') // Update the token hash with the request body using utf8
     const digest = hmac.digest('hex')
     return signature === digest
+  }
+
+  async handleTransactionWebhook(data: ITransactionWebhookData) {
+    try {
+      await firstValueFrom(
+        this.httpService.post<AxiosResponse>(
+          `${this.magicApiUrl}/transactions/crypto-api`,
+          data,
+        ),
+      )
+    } catch (err) {
+      Sentry.captureException(`handleWebhook(): ${err.message}`)
+    }
   }
 }

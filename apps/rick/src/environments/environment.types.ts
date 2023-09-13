@@ -12,4 +12,5 @@ export enum EEnvironment {
   webhookMainnetId = 'webhook_mainnet_id',
   webhookGoerliId = 'webhook_goerli_id',
   alchemyAuthToken = 'alchemy_auth_token',
+  cryptoApiKey = 'crypto_api_key',
 }

@@ -70,3 +70,26 @@ export interface IWebhookData {
     activity: []
   }
 }
+export interface ITransactionWebhookData {
+  apiVersion: string
+  referenceId: string
+  idempotencyKey: string
+  data: {
+    product: string
+    event: string
+    item: {
+      blockchain: string
+      network: string
+      address: string
+      minedInBlock: {
+        height: number
+        hash: string
+        timestamp: number
+      }
+      transactionId: string
+      amount: string
+      unit: string
+      direction: string
+    }
+  }
+}

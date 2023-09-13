@@ -25,7 +25,8 @@ export class PortfolioService implements OnModuleInit {
   updateWebhookURL =
     'https://dashboard.alchemy.com/api/update-webhook-addresses'
   alchemyAuthToken: string
-
+  btcWebhookURL = 'https://rest.cryptoapis.io/blockchain-events'
+  cryptoApiKey: string
   constructor(
     private configService: ConfigService,
     @Inject(forwardRef(() => AssetService))
@@ -51,6 +52,10 @@ export class PortfolioService implements OnModuleInit {
     this.alchemyAuthToken = this.configService.get<string>(
       EEnvironment.alchemyAuthToken,
     )
+    this.cryptoApiKey = this.configService.get<string>(
+      EEnvironment.cryptoApiKey,
+    )
+    this.addAddressToWebhook('', ENetworks.BITCOIN)
   }
 
   async onModuleInit() {
@@ -256,6 +261,41 @@ export class PortfolioService implements OnModuleInit {
       Sentry.captureException(
         `Princess updateAddressesToWebhook(): ${err.message}`,
       )
+    })
+  }
+
+  async addAddressToWebhook(address: string, network: ENetworks) {
+    const blockchain =
+      network === ENetworks.BITCOIN || network === ENetworks.BITCOIN_TEST
+        ? 'bitcoin'
+        : 'ethereum'
+    const net =
+      network === ENetworks.BITCOIN || network === ENetworks.ETHEREUM
+        ? 'mainnet'
+        : 'testnet'
+    firstValueFrom(
+      this.httpService.post(
+        `${this.btcWebhookURL}/${blockchain}/${net}/subscriptions/address-coins-transactions-confirmed`,
+        {
+          context: 'subscription',
+          data: {
+            item: {
+              address,
+              allowDuplicates: false,
+              callbackSecretKey: 'yourSecretKey',
+              callbackUrl:
+                'https://5dcc-102-129-146-73.ngrok-free.app/portfolio/transaction-webhook',
+              receiveCallbackOn: 3,
+            },
+          },
+        },
+        {
+          headers: { 'X-Api-Key': this.cryptoApiKey },
+        },
+      ),
+    ).catch((err) => {
+      console.log(err.response.data)
+      Sentry.captureException(`Princess addAddressToWebhook(): ${err.message}`)
     })
   }
 }
