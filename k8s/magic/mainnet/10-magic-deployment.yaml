@@ -44,6 +44,10 @@ spec:
               configMapKeyRef:
                 name: magic-sentry-config
                 key: sentry_environment
+          - name: RICK_DB_HOST
+            value: "rick-db-service.mainnet.svc.cluster.local"
+          - name: RICK_DB_PORT
+            value: "5432"
         envFrom:
         - configMapRef:
             name: proxyconfig
