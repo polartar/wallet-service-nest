@@ -53,6 +53,21 @@ spec:
               secretKeyRef:
                 name: rick-env-secrets
                 key: ALCHEMY_GOERLI_API_KEY
+          - name: WEBHOOK_MAINNET_ID
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: WEBHOOK_MAINNET_ID
+          - name: WEBHOOK_GOERLI_ID
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: WEBHOOK_GOERLI_ID
+          - name: ALCHEMY_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: ALCHEMY_AUTH_TOKEN
           - name: LIQUID_TEST_API_KEY
             value: a
           - name: LIQUID_TEST_API_URL
@@ -93,9 +108,9 @@ spec:
           requests:
             cpu: "100m"
             memory: "64Mi"
-          limits:
-            cpu: "500m"
-            memory: "1024Mi"
+          # limits:
+          #   cpu: "500m"
+          #   memory: "1024Mi"
       imagePullSecrets:
         - name: gitlabregistry
       volumes:

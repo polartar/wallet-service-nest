@@ -44,6 +44,18 @@ spec:
             value: "http://kafo.mainnet.svc.cluster.local"
           - name: BRISTLE_API_URL
             value: "http://bristle.mainnet.svc.cluster.local"
+          - name: MAGIC_API_URL
+            value: "http://magic.mainnet.svc.cluster.local"
+          - name: ALCHEMY_GOERLI_SIGNING_KEY
+            valueFrom:
+              secretKeyRef:
+                name: princess-env-secrets
+                key: ALCHEMY_GOERLI_SIGNING_KEY
+          - name: ALCHEMY_MAINNET_SIGNING_KEY
+            valueFrom:
+              secretKeyRef:
+                name: princess-env-secrets
+                key: ALCHEMY_MAINNET_SIGNING_KEY
           - name: FIDELITY_CLIENT_ID
             valueFrom:
               secretKeyRef:
