@@ -384,13 +384,18 @@ export class WalletService {
       if (assets.length > 0) {
         await this.portfolioService.updateCurrentWallets()
         if (isEthereumAsset) {
-          const addresses = assets.map((asset) => asset.address)
+          const mainnetAddresses = assets
+            .filter((asset) => asset.network === ENetworks.ETHEREUM)
+            .map((asset) => asset.address)
           this.portfolioService.addAddressesToWebhook(
-            addresses,
+            mainnetAddresses,
             ENetworks.ETHEREUM,
           )
+          const testAddresses = assets
+            .filter((asset) => asset.network === ENetworks.ETHEREUM_TEST)
+            .map((asset) => asset.address)
           this.portfolioService.addAddressesToWebhook(
-            addresses,
+            testAddresses,
             ENetworks.ETHEREUM_TEST,
           )
         }

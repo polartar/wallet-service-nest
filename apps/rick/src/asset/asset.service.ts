@@ -845,11 +845,16 @@ export class AssetService {
         }
 
         await this.assetRepository.delete({ id: assetId })
-        this.portfolioService.addAddressesToWebhook(
-          [asset.address],
-          asset.network,
-          true,
-        )
+        if (
+          asset.network === ENetworks.ETHEREUM ||
+          asset.network === ENetworks.ETHEREUM_TEST
+        ) {
+          this.portfolioService.addAddressesToWebhook(
+            [asset.address],
+            asset.network,
+            true,
+          )
+        }
       }
     } catch (err) {
       Sentry.captureException(`deleteAsset(): ${err.message}`, {
