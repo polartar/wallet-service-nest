@@ -71,6 +71,9 @@ export class TransactionsService {
     try {
       event = data.event
     } catch (err) {
+      Sentry.captureException(
+        `handleTransaction(): wrong event: ${JSON.stringify(data)}`,
+      )
       return
     }
     const network =
@@ -98,7 +101,7 @@ export class TransactionsService {
             asset.address.toLowerCase() ===
             transaction.fromAddress.toLowerCase(),
         )
-        this.updateTransaction(updatedAsset, transaction, amount, fee)
+        await this.updateTransaction(updatedAsset, transaction, amount, fee)
       }
 
       if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
@@ -109,15 +112,18 @@ export class TransactionsService {
           (asset) =>
             asset.address.toLowerCase() === transaction.toAddress.toLowerCase(),
         )
-        this.updateTransaction(
+        await this.updateTransaction(
           updatedAsset,
           transaction,
           amount,
           BigNumber.from('0'),
         )
       }
-      // eslint-disable-next-line no-empty
-    } catch (err) {}
+    } catch (err) {
+      Sentry.captureException(
+        `handleTransaction(): ${err.message}: ${JSON.stringify(data)}`,
+      )
+    }
   }
   async getLastTransactionFromAssetId(assetId: string) {
     return await this.transactionRepository.findOne({
