@@ -8,6 +8,7 @@ import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
 import * as crypto from 'crypto'
+import * as requestIp from 'request-ip'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
 import {
@@ -34,6 +35,7 @@ export class PortfolioService {
   magicApiUrl: string
   alchemyGoerliSigningKey: string
   alchemyMainnetSigningKey: string
+  ALCHEMY_IPS = ['54.236.136.17', '34.237.24.169']
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
@@ -226,65 +228,23 @@ export class PortfolioService {
       )
   }
 
-  async handleWebhook(data: IWebhookData, network: string) {
-    if (network !== 'mainnet' && network !== 'goerli') {
+  async handleWebhook(data: IWebhookData) {
+    const ip = requestIp.getClientIp(this.request)
+
+    if (!this.ALCHEMY_IPS.includes(ip)) {
+      Sentry.captureException(`handleWebhook(): Invalid Ip(${ip})`)
       return
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const headers: string[] = (this.request as any).raw.rawHeaders
-    const signatureIndex = headers.findIndex(
-      (key) => key === 'X-Alchemy-Signature',
-    )
-    if (signatureIndex !== -1) {
-      const signature = headers[signatureIndex + 1]
-      const signingKey =
-        network === 'mainnet'
-          ? this.alchemyMainnetSigningKey
-          : this.alchemyGoerliSigningKey
-      if (
-        this.isValidSignatureForStringBody(
-          JSON.stringify(data),
-          signature,
-          signingKey,
-        )
-      ) {
-        Sentry.captureMessage(`handleWebhook(): wrong signature`, {
-          extra: {
-            body: JSON.stringify(data),
-            signature,
-            signingKey,
-          },
-        })
-        try {
-          await firstValueFrom(
-            this.httpService.post<AxiosResponse>(
-              `${this.magicApiUrl}/transactions`,
-              data,
-            ),
-          )
-        } catch (err) {
-          Sentry.captureException(`handleWebhook(): ${err.message}`)
-        }
-      } else {
-        Sentry.captureException(`handleWebhook(): wrong signature`, {
-          extra: {
-            body: JSON.stringify(data),
-            signature,
-            signingKey,
-          },
-        })
-      }
-    }
-  }
 
-  isValidSignatureForStringBody(
-    body: string,
-    signature: string,
-    signingKey: string,
-  ): boolean {
-    const hmac = crypto.createHmac('sha256', signingKey) // Create a HMAC SHA256 hash using the signing key
-    hmac.update(body, 'utf8') // Update the token hash with the request body using utf8
-    const digest = hmac.digest('hex')
-    return signature === digest
+    try {
+      await firstValueFrom(
+        this.httpService.post<AxiosResponse>(
+          `${this.magicApiUrl}/transactions`,
+          data,
+        ),
+      )
+    } catch (err) {
+      Sentry.captureException(`handleWebhook(): ${err.message}`)
+    }
   }
 }
