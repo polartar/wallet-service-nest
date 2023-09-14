@@ -248,6 +248,13 @@ export class PortfolioService {
           signingKey,
         )
       ) {
+        Sentry.captureMessage(`handleWebhook(): wrong signature`, {
+          extra: {
+            body: JSON.stringify(data),
+            signature,
+            signingKey,
+          },
+        })
         try {
           await firstValueFrom(
             this.httpService.post<AxiosResponse>(
