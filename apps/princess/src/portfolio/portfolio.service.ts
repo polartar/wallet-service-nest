@@ -7,7 +7,6 @@ import {
 import { HttpService } from '@nestjs/axios'
 import { AxiosResponse, AxiosError } from 'axios'
 import { BigNumber } from 'ethers'
-import * as crypto from 'crypto'
 import * as requestIp from 'request-ip'
 
 import { Observable, catchError, firstValueFrom } from 'rxjs'
@@ -33,8 +32,6 @@ export class PortfolioService {
   NFT_UPDATE_CHANNEL = 'nft_updated'
   rickApiUrl: string
   magicApiUrl: string
-  alchemyGoerliSigningKey: string
-  alchemyMainnetSigningKey: string
   ALCHEMY_IPS = ['54.236.136.17', '34.237.24.169']
 
   constructor(
@@ -46,12 +43,6 @@ export class PortfolioService {
     this.clients = {}
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
     this.magicApiUrl = this.configService.get<string>(EEnvironment.magicAPIUrl)
-    this.alchemyGoerliSigningKey = this.configService.get<string>(
-      EEnvironment.alchemyGoerliSigningKey,
-    )
-    this.alchemyMainnetSigningKey = this.configService.get<string>(
-      EEnvironment.alchemyMainnetSigningKey,
-    )
   }
 
   async getAccountIdFromAccessToken(token: string) {
