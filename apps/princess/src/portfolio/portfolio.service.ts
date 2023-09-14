@@ -261,7 +261,12 @@ export class PortfolioService {
       } else {
         Sentry.captureException(
           `handleWebhook(): wrong signature (${JSON.stringify(data)})`,
-          {},
+          {
+            tags: {
+              signature,
+              signingKey,
+            },
+          },
         )
       }
     }
