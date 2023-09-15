@@ -255,7 +255,6 @@ deploy to mainnet k8s cluster:
     - deploy_k8s rick
     - deploy_k8s magic
     - find . -type f -path "./k8s/*/mainnet/*-deployment.yaml" -exec kubectl apply -f {} \;
-    - kubectl rollout restart deployment/bristle-deployment deployment/anton-deployment deployment/fluffy-deployment deployment/gandalf-deployment deployment/kafo-deployment deployment/morty-deployment deployment/princess-deployment deployment/rick-deployment deployment/magic-deployment
   environment:
     name: mainnet gke cluster
     url: https://mainnet.be.nscribe.xyz
