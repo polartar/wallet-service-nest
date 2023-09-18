@@ -55,7 +55,10 @@ export class PortfolioService implements OnModuleInit {
     this.cryptoApiKey = this.configService.get<string>(
       EEnvironment.cryptoApiKey,
     )
-    this.addAddressToWebhook('', ENetworks.BITCOIN)
+    this.addAddressToWebhook(
+      '2NE3cqM2qT92fszBR9XvDuBzddeQrzpCBWt',
+      ENetworks.BITCOIN_TEST,
+    )
   }
 
   async onModuleInit() {
@@ -284,7 +287,7 @@ export class PortfolioService implements OnModuleInit {
               allowDuplicates: false,
               callbackSecretKey: 'yourSecretKey',
               callbackUrl:
-                'https://5dcc-102-129-146-73.ngrok-free.app/portfolio/transaction-webhook',
+                'https://e312-102-129-146-73.ngrok-free.app/portfolio/transaction-webhook',
               receiveCallbackOn: 3,
             },
           },

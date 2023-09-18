@@ -41,3 +41,4 @@ Thumbs.db
 
 # k8s secrets
 *-secrets.yaml
+cryptoapisverifydomain.txt
