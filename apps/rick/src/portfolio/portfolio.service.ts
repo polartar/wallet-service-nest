@@ -27,6 +27,7 @@ export class PortfolioService implements OnModuleInit {
   alchemyAuthToken: string
   btcWebhookURL = 'https://rest.cryptoapis.io/blockchain-events'
   cryptoApiKey: string
+  cryptoApiSecretKey: string
   constructor(
     private configService: ConfigService,
     @Inject(forwardRef(() => AssetService))
@@ -54,6 +55,9 @@ export class PortfolioService implements OnModuleInit {
     )
     this.cryptoApiKey = this.configService.get<string>(
       EEnvironment.cryptoApiKey,
+    )
+    this.cryptoApiSecretKey = this.configService.get<string>(
+      EEnvironment.cryptoApiSecretKey,
     )
     this.addAddressToWebhook(
       '2NE3cqM2qT92fszBR9XvDuBzddeQrzpCBWt',
@@ -285,9 +289,9 @@ export class PortfolioService implements OnModuleInit {
             item: {
               address,
               allowDuplicates: false,
-              callbackSecretKey: 'yourSecretKey',
+              callbackSecretKey: this.cryptoApiSecretKey,
               callbackUrl:
-                'https://e312-102-129-146-73.ngrok-free.app/portfolio/transaction-webhook',
+                'https://mainnet.be.nscribe.xyz/portfolio/transaction-webhook',
               receiveCallbackOn: 3,
             },
           },
@@ -297,7 +301,6 @@ export class PortfolioService implements OnModuleInit {
         },
       ),
     ).catch((err) => {
-      console.log(err.response.data)
       Sentry.captureException(`Princess addAddressToWebhook(): ${err.message}`)
     })
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Res, StreamableFile } from '@nestjs/common'
+import { Controller, Get, StreamableFile } from '@nestjs/common'
 
 import { AppService } from './app.service'
 import { createReadStream } from 'fs'
@@ -14,8 +14,7 @@ export class AppController {
     try {
       const file = createReadStream('./cryptoapisverifydomain.txt')
       return new StreamableFile(file)
-    } catch (err) {
-      console.log(err)
-    }
+      // eslint-disable-next-line no-empty
+    } catch (err) {}
   }
 }

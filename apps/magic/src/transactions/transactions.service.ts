@@ -248,6 +248,7 @@ export class TransactionsService {
     } else {
       return
     }
+
     const assets = await this.getAssetsByNetwork(network)
     const currentAddresses = assets.map((asset) => asset.address.toLowerCase())
 
@@ -275,24 +276,31 @@ export class TransactionsService {
         const newHistoryData: ITransaction = {
           asset: updatedAsset,
           from: transaction.direction === 'incoming' ? '' : transaction.address,
-          to: transaction.direction === 'outcoming' ? '' : transaction.address,
+          to: transaction.direction === 'outgoing' ? '' : transaction.address,
           cryptoAmount: parseUnits(transaction.amount.toString(), 8).toString(),
           fiatAmount: (+weiAmount * price).toFixed(2),
           hash: transaction.minedInBlock.hash,
-          blockNumber: transaction.minedInBlock.timestamp,
+          blockNumber: transaction.minedInBlock.height,
           balance: balance.toString(),
           usdPrice: (+weiBalance * price).toFixed(2),
-          timestamp: this.getCurrentTimeBySeconds(),
+          timestamp: transaction.minedInBlock.timestamp,
           fee: '',
           status:
-            transaction.direction === 'outcoming'
+            transaction.direction === 'outgoing'
               ? ETransactionStatuses.SENT
               : ETransactionStatuses.RECEIVED,
         }
+
         await this.addHistory(newHistoryData)
       }
 
       // eslint-disable-next-line no-empty
-    } catch (err) {}
+    } catch (err) {
+      Sentry.captureMessage(`handleCryptoApiTransaction(): ${err.message}`, {
+        extra: {
+          body: JSON.stringify(data),
+        },
+      })
+    }
   }
 }

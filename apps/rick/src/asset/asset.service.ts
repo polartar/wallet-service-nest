@@ -346,7 +346,7 @@ export class AssetService {
 
     let currentBalance = balance
     const allHistories = await Promise.all(
-      transactions.slice(from).map((record) => {
+      transactions.slice(from).map(async (record) => {
         const prevBalance = currentBalance
         currentBalance = record.spent
           ? currentBalance - record.value
@@ -355,7 +355,7 @@ export class AssetService {
           btcMarketHistories,
           getTimestamp(record.confirmed),
         )
-        return this.addHistory({
+        return await this.addHistory({
           asset: asset,
           from: record.spent ? asset.address : '',
           to: record.spent ? '' : asset.address,
@@ -365,7 +365,7 @@ export class AssetService {
           fee: '0',
           blockNumber: record.block_height,
           balance: prevBalance.toString(),
-          usdPrice: (+formatUnits(balance, 8) * price).toFixed(2),
+          usdPrice: (+formatUnits(prevBalance, 8) * price).toFixed(2),
           timestamp: getTimestamp(record.confirmed),
           status: record.spent
             ? ETransactionStatuses.SENT
@@ -385,6 +385,7 @@ export class AssetService {
       )
 
       if (transactions.length > 0) {
+        asset.transactions = asset.transactions.concat(transactions)
         return asset
       }
     } catch (err) {

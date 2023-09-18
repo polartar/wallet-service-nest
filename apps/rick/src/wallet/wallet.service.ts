@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -20,11 +21,12 @@ import { PortfolioService } from '../portfolio/portfolio.service'
 import { AssetEntity } from './asset.entity'
 
 @Injectable()
-export class WalletService {
+export class WalletService implements OnModuleInit {
   alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
   liquidAPIUrl: string
+  static initialized = false
 
   constructor(
     private configService: ConfigService,
@@ -46,8 +48,11 @@ export class WalletService {
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
     )
+  }
 
-    this.startFetchEthereum()
+  async onModuleInit() {
+    if (!WalletService.initialized) await this.startFetchEthereum()
+    WalletService.initialized = true
   }
 
   async startFetchEthereum() {

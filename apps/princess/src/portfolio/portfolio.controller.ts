@@ -37,7 +37,6 @@ export class PortfolioController {
   @Public()
   @ApiOperation({ summary: "This api can't be called directly" })
   async handleTransactionWebhook(@Body('') data: ITransactionWebhookData) {
-    console.log({ data })
     this.portfolioService.handleTransactionWebhook(data)
   }
 }

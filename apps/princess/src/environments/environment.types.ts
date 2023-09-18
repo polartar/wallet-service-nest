@@ -10,4 +10,5 @@ export enum EEnvironment {
   version = 'version',
   bristleAPIUrl = 'bristle_api_url',
   jwtRefreshTokenSecret = 'jwt_refresh_token_secret',
+  cryptoApiSecretKey = 'crypto_api_secret_key',
 }
