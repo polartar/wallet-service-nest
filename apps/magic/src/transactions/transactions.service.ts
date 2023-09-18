@@ -79,6 +79,12 @@ export class TransactionsService {
     try {
       event = data.event
     } catch (err) {
+      Sentry.captureMessage(`handleTransaction(): wrong event`, {
+        extra: {
+          body: JSON.stringify(data),
+        },
+      })
+
       return
     }
     const network =
@@ -90,6 +96,7 @@ export class TransactionsService {
 
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
+
       if (currentAddresses.includes(transaction.fromAddress.toLowerCase())) {
         const provider =
           network === ENetworks.ETHEREUM
@@ -106,7 +113,7 @@ export class TransactionsService {
             asset.address.toLowerCase() ===
             transaction.fromAddress.toLowerCase(),
         )
-        this.updateTransaction(updatedAsset, transaction, amount, fee)
+        await this.updateTransaction(updatedAsset, transaction, amount, fee)
       }
 
       if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
@@ -117,15 +124,20 @@ export class TransactionsService {
           (asset) =>
             asset.address.toLowerCase() === transaction.toAddress.toLowerCase(),
         )
-        this.updateTransaction(
+        await this.updateTransaction(
           updatedAsset,
           transaction,
           amount,
           BigNumber.from('0'),
         )
       }
-      // eslint-disable-next-line no-empty
-    } catch (err) {}
+    } catch (err) {
+      Sentry.captureMessage(`handleTransaction(): ${err.message}`, {
+        extra: {
+          body: JSON.stringify(data),
+        },
+      })
+    }
   }
   async getLastTransactionFromAssetId(assetId: string) {
     return await this.transactionRepository.findOne({
@@ -159,35 +171,45 @@ export class TransactionsService {
     amount: BigNumber,
     fee: BigNumber,
   ) {
-    const lastTransaction = await this.getLastTransactionFromAssetId(
-      updatedAsset.id,
-    )
-    const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
+    try {
+      const lastTransaction = await this.getLastTransactionFromAssetId(
+        updatedAsset.id,
+      )
+      const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
 
-    const balance = lastTransaction
-      ? BigNumber.from(lastTransaction.balance).sub(amount)
-      : parseEther(transaction.value.toString())
+      const balance = lastTransaction
+        ? BigNumber.from(lastTransaction.balance).sub(amount)
+        : parseEther(transaction.value.toString())
 
-    const weiBalance = formatEther(balance)
-    const weiAmount = transaction.value
-    const newHistoryData: ITransaction = {
-      asset: updatedAsset,
-      from: transaction.fromAddress,
-      to: transaction.toAddress,
-      cryptoAmount: parseEther(transaction.value.toString()).toString(),
-      fiatAmount: (+weiAmount * price).toFixed(2),
-      hash: transaction.hash,
-      blockNumber: BigNumber.from(transaction.blockNum).toNumber(),
-      balance: balance.toString(),
-      usdPrice: (+weiBalance * price).toFixed(2),
-      timestamp: this.getCurrentTimeBySeconds(),
-      fee: fee.toString(),
-      status:
-        updatedAsset.address === transaction.fromAddress
-          ? ETransactionStatuses.SENT
-          : ETransactionStatuses.RECEIVED,
+      const weiBalance = formatEther(balance)
+      const weiAmount = transaction.value
+      const newHistoryData: ITransaction = {
+        asset: updatedAsset,
+        from: transaction.fromAddress,
+        to: transaction.toAddress,
+        cryptoAmount: parseEther(transaction.value.toString()).toString(),
+        fiatAmount: (+weiAmount * price).toFixed(2),
+        hash: transaction.hash,
+        blockNumber: BigNumber.from(transaction.blockNum).toNumber(),
+        balance: balance.toString(),
+        usdPrice: (+weiBalance * price).toFixed(2),
+        timestamp: this.getCurrentTimeBySeconds(),
+        fee: fee.toString(),
+        status:
+          updatedAsset.address === transaction.fromAddress
+            ? ETransactionStatuses.SENT
+            : ETransactionStatuses.RECEIVED,
+      }
+      await this.addHistory(newHistoryData)
+    } catch (err) {
+      Sentry.captureException(`updateTransaction(): ${err.message}`, {
+        extra: {
+          transaction,
+          amount,
+          fee,
+        },
+      })
     }
-    await this.addHistory(newHistoryData)
   }
 
   async addHistory(data: ITransaction): Promise<TransactionEntity> {

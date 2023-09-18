@@ -125,7 +125,7 @@ export class AssetService {
 
   async getEthPartialHistory(
     asset: AssetEntity,
-    toBlock: number,
+    firstBlock: number,
     balance: BigNumber,
     page: number,
   ): Promise<{ balance: BigNumber; transactions: TransactionEntity[] }> {
@@ -135,7 +135,7 @@ export class AssetService {
         : 'api-goerli.etherscan.io'
     }/api?module=account&action=txlist&address=${
       asset.address
-    }&startblock=0&endblock=${toBlock}&sort=desc&apikey=${
+    }&startblock=${firstBlock}&sort=desc&apikey=${
       this.etherscanAPIKey
     }&page=${page}&offset=${this.offset}`
 
@@ -268,7 +268,7 @@ export class AssetService {
     return { balance: currentBalance, transactions: histories }
   }
 
-  async getEthHistory(asset: AssetEntity, toBlock = 99999999) {
+  async getEthHistory(asset: AssetEntity, firstBlock = 0) {
     const provider =
       asset.network === ENetworks.ETHEREUM
         ? this.mainnetProvider
@@ -280,7 +280,7 @@ export class AssetService {
 
     while (page) {
       const { balance: nextBalance, transactions } =
-        await this.getEthPartialHistory(asset, toBlock, balance, page++)
+        await this.getEthPartialHistory(asset, firstBlock, balance, page++)
       balance = nextBalance
 
       if (transactions.length > 0) {
@@ -295,16 +295,12 @@ export class AssetService {
   }
 
   async confirmETHBalance(asset: AssetEntity): Promise<AssetEntity> {
-    const transactions = asset.transactions.sort((a, b) => {
-      if (a.blockNumber > b.blockNumber) {
-        return 1
-      }
-      return -1
-    })
+    const transactions = asset.transactions
     const lastBlockNumber =
       transactions && transactions.length > 0
-        ? (transactions[0].blockNumber || 1) - 1
-        : 99999999
+        ? (transactions[0].blockNumber || 1) + 1
+        : 0
+
     const response = await this.getEthHistory(asset, lastBlockNumber)
 
     if (response !== null) {
@@ -849,11 +845,16 @@ export class AssetService {
         }
 
         await this.assetRepository.delete({ id: assetId })
-        this.portfolioService.addAddressesToWebhook(
-          [asset.address],
-          asset.network,
-          true,
-        )
+        if (
+          asset.network === ENetworks.ETHEREUM ||
+          asset.network === ENetworks.ETHEREUM_TEST
+        ) {
+          this.portfolioService.addAddressesToWebhook(
+            [asset.address],
+            asset.network,
+            true,
+          )
+        }
       }
     } catch (err) {
       Sentry.captureException(`deleteAsset(): ${err.message}`, {

@@ -5,7 +5,7 @@ import {
   IUpdatedAssets,
   IWebhookData,
 } from './portfolio.types'
-import { Body, Controller, Param, ParseEnumPipe, Post } from '@nestjs/common'
+import { Body, Controller, ParseEnumPipe, Post } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { Public } from '../gateway/decorators/public.decorator'
 
@@ -28,10 +28,9 @@ export class PortfolioController {
   @ApiOperation({ summary: "This api can't be called directly" })
   async handleWebhook(
     @Body('') data: IWebhookData,
-    @Param('network') network: string,
+    // @Param('network') network: string,
   ) {
-    console.log({ data })
-    this.portfolioService.handleWebhook(data, network)
+    this.portfolioService.handleWebhook(data)
   }
 
   @Post('transaction-webhook')
