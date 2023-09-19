@@ -124,13 +124,18 @@ export class TransactionService {
   }
 
   async getTransactionFee(body: ITransactionRequest, network: ENetworks) {
-    const response = await this.transactionAPI(
-      EAPIMethod.POST,
-      `transactions/fee`,
-      network,
-      body,
-    )
-    return response.data.fee.fee
+    try {
+      const response = await this.transactionAPI(
+        EAPIMethod.POST,
+        `transactions/fee`,
+        network,
+        body,
+      )
+      return response.data.fee.fee
+    } catch (err) {
+      Sentry.captureException(`getTransactionFee(): ${err.message}`)
+      throw new BadRequestException("Can't get the fee")
+    }
   }
 
   async generateTransaction(
@@ -159,6 +164,7 @@ export class TransactionService {
       body.isNft = true
       body.type = 0
     }
+
     const fee = await this.getTransactionFee(body, network)
     body.fee = {
       fee: fee,
