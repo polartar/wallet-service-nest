@@ -647,6 +647,7 @@ export class AssetService {
       order: {
         transactions: {
           timestamp: 'DESC',
+          from: 'DESC',
         },
       },
     })
