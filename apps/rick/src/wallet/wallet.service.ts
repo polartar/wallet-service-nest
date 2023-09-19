@@ -77,6 +77,7 @@ export class WalletService {
         },
         order: {
           timestamp: 'DESC',
+          from: 'DESC',
         },
         cache: 1000 * 60,
       })
@@ -270,6 +271,7 @@ export class WalletService {
       .orderBy('wallet.id', 'ASC')
       // .orderBy('assets.address', 'ASC')
       .orderBy('assets.transactions.timestamp', 'ASC')
+      .orderBy('assets.transactions.from', 'DESC')
 
     const wallet = await queryBuilder.getOne()
 
