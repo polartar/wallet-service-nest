@@ -120,4 +120,10 @@ export interface ITransactionRequest {
   }
   isNft?: boolean
   tokenTransfer?: ITokenTransfer
+  fee?: {
+    fee: {
+      value: string
+      factor: number
+    }
+  }
 }
