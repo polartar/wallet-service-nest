@@ -123,6 +123,16 @@ export class TransactionService {
     }
   }
 
+  async getTransactionFee(body: ITransactionRequest, network: ENetworks) {
+    const response = await this.transactionAPI(
+      EAPIMethod.POST,
+      `transactions/fee`,
+      network,
+      body,
+    )
+    return response.data.fee.fee
+  }
+
   async generateTransaction(
     from: string,
     to: string,
@@ -148,6 +158,10 @@ export class TransactionService {
       body.tokenTransfer = tokenTransfer
       body.isNft = true
       body.type = 0
+    }
+    const fee = await this.getTransactionFee(body, network)
+    body.fee = {
+      fee: fee,
     }
 
     return await this.transactionAPI(
