@@ -334,8 +334,6 @@ export class AssetService {
       return []
     }
 
-    const balance = txResponse.data.balance
-
     const transactions = txResponse.data.txrefs
 
     const btcMarketHistories = await this.getHistoricalData(
@@ -344,32 +342,28 @@ export class AssetService {
       getTimestamp(transactions[0].confirmed),
     )
 
-    let currentBalance = balance
     const allHistories = await Promise.all(
       transactions.slice(from).map((record) => {
-        const prevBalance = currentBalance
-        currentBalance = record.spent
-          ? currentBalance - record.value
-          : currentBalance + record.value
         const price = this.getUSDPrice(
           btcMarketHistories,
           getTimestamp(record.confirmed),
         )
         return this.addHistory({
           asset: asset,
-          from: record.spent ? asset.address : '',
-          to: record.spent ? '' : asset.address,
+          from: record.tx_output_n === -1 ? asset.address : '',
+          to: record.tx_input_n === -1 ? asset.address : '',
           cryptoAmount: record.value.toString(),
           fiatAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
           hash: record.tx_hash,
           fee: '0',
           blockNumber: record.block_height,
-          balance: prevBalance.toString(),
-          usdPrice: (+formatUnits(balance, 8) * price).toFixed(2),
+          balance: record.ref_balance.toString(),
+          usdPrice: (+formatUnits(record.ref_balance, 8) * price).toFixed(2),
           timestamp: getTimestamp(record.confirmed),
-          status: record.spent
-            ? ETransactionStatuses.SENT
-            : ETransactionStatuses.RECEIVED,
+          status:
+            record.tx_output_n === -1
+              ? ETransactionStatuses.SENT
+              : ETransactionStatuses.RECEIVED,
         })
       }),
     )
