@@ -50,7 +50,7 @@ export class WalletService {
 
   async confirmWalletBalances() {
     await this.assetService.confirmWalletBalances()
-    await this.portfolioService.updateCurrentWallets()
+    // await this.portfolioService.updateCurrentWallets()
   }
 
   async getUserWalletTransaction(accountId: string, walletId: string) {
@@ -382,7 +382,6 @@ export class WalletService {
       const walletEntity = await this.walletRepository.save(prototype)
 
       if (assets.length > 0) {
-        await this.portfolioService.updateCurrentWallets()
         if (isEthereumAsset) {
           const mainnetAddresses = assets
             .filter((asset) => asset.network === ENetworks.ETHEREUM)
