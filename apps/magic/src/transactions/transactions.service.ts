@@ -245,7 +245,7 @@ export class TransactionsService implements OnModuleInit {
       })
 
       this.btcSocket.on('error', (err) => {
-        Sentry.captureException(`subscribeBtcTransaction(): ${err.messag}`)
+        Sentry.captureException(`subscribeBtcTransaction(): ${err.message}`)
       })
     }
   }
