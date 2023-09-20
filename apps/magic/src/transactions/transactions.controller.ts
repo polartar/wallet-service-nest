@@ -10,4 +10,9 @@ export class TransactionsController {
   async handleTransaction(@Body() data: IWebhookData) {
     this.transactionService.handleTransaction(data)
   }
+
+  @Post('subscribe-btc')
+  async subscribeBtcTransaction() {
+    await this.transactionService.subscribeBtcTransaction()
+  }
 }

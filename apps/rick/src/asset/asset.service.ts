@@ -8,13 +8,7 @@ import {
 import { AssetEntity } from '../wallet/asset.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
-import {
-  ECoinTypes,
-  ENetworks,
-  EPortfolioType,
-  EXPubCurrency,
-  getTimestamp,
-} from '@rana/core'
+import { ECoinTypes, ENetworks, EXPubCurrency, getTimestamp } from '@rana/core'
 import { ConfigService } from '@nestjs/config'
 import { ethers, BigNumber } from 'ethers'
 import { EEnvironment } from '../environments/environment.types'
@@ -450,17 +444,18 @@ export class AssetService {
         network === ENetworks.ETHEREUM_TEST
       ) {
         this.portfolioService.addAddressesToWebhook([address], network)
-      } else {
-        await this.portfolioService.updateCurrentWallets()
       }
     }
 
     return {
-      id: asset.id,
-      address,
-      network,
-      index,
-      publicKey,
+      asset: {
+        id: asset.id,
+        address,
+        network,
+        index,
+        publicKey,
+      },
+      isNew,
     }
   }
 
@@ -512,68 +507,6 @@ export class AssetService {
       order: {
         timestamp: 'DESC',
       },
-    })
-  }
-
-  async updateTransaction(
-    updatedAsset: AssetEntity,
-    tx: {
-      transaction: {
-        from: string
-        to: string
-        value: BigNumber
-        hash: string
-        blockNumber: string
-      }
-    },
-    amount: BigNumber,
-    fee: BigNumber,
-  ) {
-    const lastTransaction = await this.getLastTransactionFromAssetId(
-      updatedAsset.id,
-    )
-    const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
-
-    const balance = lastTransaction
-      ? BigNumber.from(lastTransaction.balance).sub(amount)
-      : BigNumber.from(tx.transaction.value)
-    const weiBalance = formatEther(balance)
-    const weiAmount = formatEther(tx.transaction.value)
-    const newHistoryData: ITransaction = {
-      asset: updatedAsset,
-      from: tx.transaction.from,
-      to: tx.transaction.to,
-      cryptoAmount: tx.transaction.value.toString(),
-      fiatAmount: (+weiAmount * price).toFixed(2),
-      hash: tx.transaction.hash,
-      blockNumber: BigNumber.from(tx.transaction.blockNumber).toNumber(),
-      balance: balance.toString(),
-      usdPrice: (+weiBalance * price).toFixed(2),
-      timestamp: this.portfolioService.getCurrentTimeBySeconds(),
-      fee: fee.toString(),
-      status:
-        updatedAsset.address === tx.transaction.from
-          ? ETransactionStatuses.SENT
-          : ETransactionStatuses.RECEIVED,
-    }
-    await this.addHistory(newHistoryData)
-
-    const postUpdatedAddress = {
-      assetId: updatedAsset.id,
-      walletIds: updatedAsset.wallets.map((wallet) => wallet.id),
-      accountId: updatedAsset.wallets.map((wallet) => wallet.account.id),
-      newHistory: newHistoryData,
-    }
-
-    firstValueFrom(
-      this.httpService.post(`${this.princessAPIUrl}/portfolio/updated`, {
-        type: EPortfolioType.TRANSACTION,
-        data: [postUpdatedAddress],
-      }),
-    ).catch(() => {
-      Sentry.captureException(
-        'Princess portfolio/updated api error in fetchEthereumTransactions()',
-      )
     })
   }
 
@@ -800,17 +733,6 @@ export class AssetService {
       return res.data
     } catch (err) {
       Sentry.captureException(err.message + 'in getHistoricalData()')
-    }
-  }
-
-  async getCurrentUSDPrice(coinType: ECoinTypes): Promise<number> {
-    try {
-      const res = await firstValueFrom(
-        this.httpService.get(`${this.mortyApiUrl}/api/market/${coinType}`),
-      )
-      return res.data.price
-    } catch (err) {
-      Sentry.captureException(err.message + 'in getCurrentUSDPrice()')
     }
   }
 

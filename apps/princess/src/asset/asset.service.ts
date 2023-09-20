@@ -13,11 +13,12 @@ import { CreateAssetDto } from './dto/create-asset.dto'
 import { EAPIMethod } from '../wallet/wallet.types'
 import { firstValueFrom } from 'rxjs'
 import * as Sentry from '@sentry/node'
-import { EPeriod } from '@rana/core'
+import { ENetworks, EPeriod } from '@rana/core'
 
 @Injectable()
 export class AssetService {
   rickApiUrl: string
+  magicApiUrl: string
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
@@ -25,6 +26,7 @@ export class AssetService {
     private readonly httpService: HttpService,
   ) {
     this.rickApiUrl = this.configService.get<string>(EEnvironment.rickAPIUrl)
+    this.magicApiUrl = this.configService.get<string>(EEnvironment.magicAPIUrl)
   }
 
   getAccountIdFromRequest(): string {
@@ -58,11 +60,33 @@ export class AssetService {
   }
 
   async createAsset(data: CreateAssetDto) {
-    let asset
+    // let asset
     if (data.xPub) {
-      return await this.rickApiCall(EAPIMethod.POST, 'asset/discover', data)
+      const assets = await this.rickApiCall(
+        EAPIMethod.POST,
+        'asset/discover',
+        data,
+      )
+      await this.rickApiCall(EAPIMethod.POST, 'wallet/subscribe-btc')
+      return assets.map((asset) => asset.asset)
     } else {
-      asset = await this.rickApiCall(EAPIMethod.POST, 'asset', data)
+      const { asset, isNew } = await this.rickApiCall(
+        EAPIMethod.POST,
+        'asset',
+        data,
+      )
+
+      if (isNew && asset.network === ENetworks.BITCOIN) {
+        try {
+          await firstValueFrom(
+            this.httpService.post(
+              `${this.magicApiUrl}/transactions/subscribe-btc`,
+            ),
+          )
+        } catch (err) {
+          Sentry.captureException(`handleWebhook(): ${err.message}`)
+        }
+      }
       return [asset]
     }
   }

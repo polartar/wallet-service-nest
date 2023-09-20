@@ -101,6 +101,7 @@ export class CoinService {
 
     this.ethClient.on('message', (response) => {
       const res = JSON.parse(response)
+      // Todo: real time update using websocket
 
       // firstValueFrom(
       //   this.httpService.post(`${this.princessAPIUrl}/coin/price/eth`, res),
