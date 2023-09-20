@@ -255,7 +255,6 @@ export class TransactionsService implements OnModuleInit {
   }
 
   async onBTCTransaction(transaction) {
-    console.log({ transaction })
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
