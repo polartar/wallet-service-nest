@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import {
@@ -8,9 +8,7 @@ import {
 } from '@nestjs/common'
 import {
   EAPIMethod,
-  ENFTTypes,
   IFeeResponse,
-  INFTTransactionInput,
   IVaultTransactionResponse,
   IVaultTransaction,
   ITokenTransfer,
@@ -19,25 +17,13 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import { ENetworks, EXPubCurrency } from '@rana/core'
-import { formatEther, hexlify } from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
-import { Transaction } from '@ethereumjs/tx'
-import { Common } from '@ethereumjs/common'
-import * as BJSON from 'buffer-json'
 import zlib = require('zlib')
 import * as ur from '@ngraveio/bc-ur'
 
 @Injectable()
 export class TransactionService {
-  mainnetProvider: ethers.providers.JsonRpcProvider
-  testnetProvider: ethers.providers.JsonRpcProvider
-  ERC721ABI = [
-    'function safeTransferFrom(address to, address from, uint256 tokenId)',
-  ]
-  ERC1155ABI = [
-    'function safeTransferFrom(address to, address from, uint256 tokenId, uint256 amount, bytes data)',
-  ]
   payloadPrivateKey: string
   liquidAPIKey: string
   liquidTestAPIKey: string
@@ -52,7 +38,6 @@ export class TransactionService {
       this.configService.get<string>(EEnvironment.payloadPrivateKey),
     )
 
-    const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     this.liquidAPIKey = this.configService.get<string>(
       EEnvironment.liquidAPIKey,
     )
@@ -64,15 +49,6 @@ export class TransactionService {
     )
     this.liquidTestAPIUrl = this.configService.get<string>(
       EEnvironment.liquidTestAPIUrl,
-    )
-
-    this.mainnetProvider = new ethers.providers.InfuraProvider(
-      'mainnet',
-      infura_key,
-    )
-    this.testnetProvider = new ethers.providers.InfuraProvider(
-      'goerli',
-      infura_key,
     )
   }
 
@@ -254,127 +230,6 @@ export class TransactionService {
     } catch (err) {
       throw new InternalServerErrorException('Invalid private key')
     }
-  }
-
-  async generateNFTTransaction(
-    tx: INFTTransactionInput,
-  ): Promise<IVaultTransactionResponse> {
-    const nftTransaction = tx as INFTTransactionInput
-    const iface = new ethers.utils.Interface(
-      nftTransaction.type === ENFTTypes.ERC1155
-        ? this.ERC1155ABI
-        : this.ERC721ABI,
-    )
-    const data =
-      nftTransaction.type === ENFTTypes.ERC1155
-        ? iface.encodeFunctionData('safeTransferFrom', [
-            nftTransaction.from,
-            nftTransaction.to,
-            nftTransaction.tokenId,
-            nftTransaction.amount,
-            '0x',
-          ])
-        : iface.encodeFunctionData('safeTransferFrom', [
-            nftTransaction.from,
-            nftTransaction.to,
-            nftTransaction.tokenId,
-          ])
-    const provider =
-      tx.network === ENetworks.ETHEREUM
-        ? this.mainnetProvider
-        : this.testnetProvider
-    try {
-      const txCount = await provider.getTransactionCount(tx.from, 'latest')
-      const gasPrice = await provider.getGasPrice()
-      const txParams = {
-        nonce: txCount,
-        gasPrice: hexlify(gasPrice),
-        gasLimit: '0x156AB',
-        to: (tx as INFTTransactionInput).contractAddress,
-        value: '0x0',
-        data: data,
-      }
-
-      const common = new Common({
-        chain: Number(tx.network === ENetworks.ETHEREUM ? 1 : 5),
-      })
-      const nativeTransaction = new Transaction(txParams, {
-        common,
-      })
-
-      const fee = BigNumber.from('0x156AB').mul(gasPrice)
-      const transaction: IVaultTransaction = {
-        type: 2,
-        from: tx.from,
-        to: tx.to,
-        value: {
-          value: '0',
-          factor: 0,
-        },
-        extra: {
-          publicKey: tx.publicKey,
-        },
-        fee: {
-          fee: {
-            value: formatEther(fee),
-            factor: 0,
-          },
-        },
-        signingPayloads: [
-          {
-            address: tx.from,
-            publickey: tx.publicKey,
-            tosign: nativeTransaction.getMessageToSign().toString('hex'),
-          },
-        ],
-        nativeTransaction,
-      }
-
-      const signedPayload = this.signPayload(JSON.stringify(transaction))
-      return {
-        ...transaction,
-        signedPayload,
-        serializedTransaction: this.serializeTransaction(transaction),
-      }
-    } catch (err) {
-      Sentry.captureException(`generateNFTTransaction(): ${err.message}`)
-
-      throw new BadRequestException(err.message)
-    }
-  }
-
-  async publishNFTTransaction(signedHash: string, network: ENetworks) {
-    try {
-      const provider =
-        network === ENetworks.ETHEREUM
-          ? this.mainnetProvider
-          : this.testnetProvider
-      const response = await provider.sendTransaction(signedHash)
-
-      return {
-        success: true,
-        data: response,
-      }
-    } catch (err) {
-      Sentry.captureException(`publishNFTTransaction(): ${err.message}`)
-
-      throw new BadRequestException(err.message)
-    }
-  }
-
-  serializeTransaction(transaction: IVaultTransaction): string {
-    const tx = {
-      ...transaction,
-      nativeTransaction: transaction?.nativeTransaction
-        ? { ...transaction.nativeTransaction }
-        : '',
-    }
-    if (tx.nativeTransaction) {
-      tx.nativeTransaction = transaction.nativeTransaction
-        .serialize()
-        .toString('hex')
-    }
-    return BJSON.stringify(tx)
   }
 
   getNetworkInfo(network: ENetworks) {

@@ -29,7 +29,6 @@
     "bitcoin-address-validation": "^2.2.1",
     "bitcoinjs-lib": "^6.1.0",
     "blockchain.info": "^2.12.1",
-    "buffer-json": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "coinmarketcap-api": "^3.1.1",

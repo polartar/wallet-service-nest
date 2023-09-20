@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { ENetworks } from '@rana/core'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
-import { ENFTTypes, ITokenTransfer } from './transaction.types'
+import { ITokenTransfer } from './transaction.types'
 import * as Sentry from '@sentry/node'
 import { EAPIMethod } from '../wallet/wallet.types'
 
@@ -88,40 +88,6 @@ export class TransactionService {
     network: ENetworks,
   ) {
     return await this.apiCall(EAPIMethod.POST, 'transaction/publish', {
-      serializedTransaction,
-      signedPayloads,
-      network,
-    })
-  }
-
-  async generateNFTTransaction(
-    from: string,
-    to: string,
-    contractAddress: string,
-    publicKey: string,
-    tokenId: number,
-    type: ENFTTypes,
-    network: ENetworks,
-    amount?: number,
-  ) {
-    return await this.apiCall(EAPIMethod.POST, `transaction/nft/generate`, {
-      from,
-      to,
-      contractAddress,
-      tokenId,
-      type,
-      amount,
-      publicKey,
-      network,
-    })
-  }
-
-  async publishNFTTransaction(
-    serializedTransaction: string,
-    signedPayloads: [],
-    network: ENetworks,
-  ) {
-    return this.apiCall(EAPIMethod.POST, `transaction/nft/publish`, {
       serializedTransaction,
       signedPayloads,
       network,

@@ -14,7 +14,6 @@ import {
   GenerateTransactionSwaggerResponse,
   PublishTransactionSwaggerResponse,
 } from './dto/generate-transaction.dto'
-import { GenerateNFTTransactionDto } from './dto/generate-nft-transaction.dto'
 import { TransactionFeeSwaggerResponse } from './dto/transaction-fee-response.dto'
 import { PublishTransactionDto } from './dto/publish-transaction.dto'
 import { GenerateVaultTransactionDto } from './dto/generate-vault-transaction.dto'
@@ -62,37 +61,6 @@ export class TransactionController {
   })
   async publishTransaction(@Body() data: PublishTransactionDto) {
     return this.transactionService.publishTransaction(
-      data.serializedTransaction,
-      data.signedPayloads,
-      data.network,
-    )
-  }
-
-  @Post('nft')
-  @ApiOkResponse({ type: GenerateTransactionSwaggerResponse })
-  @ApiOperation({
-    summary: 'Generate NFT transfer transaction hash',
-  })
-  async generateNFTTransaction(@Body() data: GenerateNFTTransactionDto) {
-    return this.transactionService.generateNFTTransaction(
-      data.from,
-      data.to,
-      data.contract_address,
-      data.public_key,
-      data.tokenId,
-      data.type,
-      data.network,
-      data.amount,
-    )
-  }
-
-  @Post('nft/publish')
-  @ApiOkResponse({ type: PublishTransactionSwaggerResponse })
-  @ApiOperation({
-    summary: 'Publish the transaction',
-  })
-  async publishNFTTransaction(@Body() data: PublishTransactionDto) {
-    return this.transactionService.publishNFTTransaction(
       data.serializedTransaction,
       data.signedPayloads,
       data.network,
