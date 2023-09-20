@@ -43,22 +43,6 @@ export interface ITransactionPush {
   network: ENetworks
 }
 
-export interface INFTTransactionInput {
-  from: string
-  to: string
-  contractAddress: string
-  tokenId: number
-  amount?: number
-  type: ENFTTypes
-  publicKey: string
-  network: ENetworks
-}
-
-export enum ENFTTypes {
-  ERC721 = 'ERC721',
-  ERC1155 = 'ERC1155',
-}
-
 export interface IVaultTransaction {
   type: number
   from: string
