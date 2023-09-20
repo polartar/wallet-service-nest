@@ -243,6 +243,11 @@ export class TransactionsService implements OnModuleInit {
       this.btcSocket.onTransaction((transaction) => {
         this.onBTCTransaction(transaction)
       })
+      this.btcSocket.on('open', () => console.log('open'))
+      this.btcSocket.on('close', () => console.log('close'))
+      this.btcSocket.on('error', (err) => {
+        Sentry.captureException(`subscribeBtcTransaction(): ${err.messag}`)
+      })
     }
   }
 
@@ -251,6 +256,7 @@ export class TransactionsService implements OnModuleInit {
   }
 
   async onBTCTransaction(transaction) {
+    console.log({ transaction })
     const senderAddresses = transaction.inputs.map(
       (input) => input.prev_out.addr,
     )
