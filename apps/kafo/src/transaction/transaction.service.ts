@@ -139,6 +139,7 @@ export class TransactionService {
       body.tokenTransfer = tokenTransfer
       body.isNft = true
       body.type = 0
+      body.value.value = '1'
     }
 
     const fee = await this.getTransactionFee(body, network)
