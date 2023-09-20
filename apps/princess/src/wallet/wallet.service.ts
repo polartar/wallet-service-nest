@@ -206,4 +206,12 @@ export class WalletsService {
       },
     )
   }
+
+  async confirmBalances() {
+    return this.apiCall(
+      EAPIMethod.POST,
+      this.rickApiUrl,
+      `wallet/confirm-balances`,
+    )
+  }
 }

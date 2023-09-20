@@ -128,4 +128,9 @@ export class WalletsController {
   ) {
     return await this.walletService.addAsset(walletId, data.assetId)
   }
+
+  @Post('confirm-balances')
+  async confirmBalances() {
+    return await this.walletService.confirmBalances()
+  }
 }
