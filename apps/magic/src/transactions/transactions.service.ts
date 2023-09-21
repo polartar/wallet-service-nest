@@ -111,7 +111,11 @@ export class TransactionsService implements OnModuleInit {
 
         const fee = BigNumber.from(tx.gasPrice).mul(BigNumber.from(tx.gasLimit))
         const amount = BigNumber.from(
-          parseEther(transaction.value.toString()),
+          parseEther(
+            transaction.value.toLocaleString('en-US', {
+              maximumFractionDigits: 9,
+            }),
+          ),
         ).add(fee)
         const updatedAsset = assets.find(
           (asset) =>
@@ -123,7 +127,11 @@ export class TransactionsService implements OnModuleInit {
 
       if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
         const amount = BigNumber.from(0).sub(
-          parseEther(transaction.value.toString()),
+          parseEther(
+            transaction.value.toLocaleString('en-US', {
+              maximumFractionDigits: 9,
+            }),
+          ),
         )
         const updatedAsset = assets.find(
           (asset) =>
@@ -184,7 +192,11 @@ export class TransactionsService implements OnModuleInit {
 
       const balance = lastTransaction
         ? BigNumber.from(lastTransaction.balance).sub(amount)
-        : parseEther(transaction.value.toString())
+        : parseEther(
+            transaction.value.toLocaleString('en-US', {
+              maximumFractionDigits: 9,
+            }),
+          )
 
       const weiBalance = formatEther(balance)
       const weiAmount = transaction.value
@@ -192,7 +204,11 @@ export class TransactionsService implements OnModuleInit {
         asset: updatedAsset,
         from: transaction.fromAddress,
         to: transaction.toAddress,
-        cryptoAmount: parseEther(transaction.value.toString()).toString(),
+        cryptoAmount: parseEther(
+          transaction.value.toLocaleString('en-US', {
+            maximumFractionDigits: 9,
+          }),
+        ).toString(),
         fiatAmount: (+weiAmount * price).toFixed(2),
         hash: transaction.hash,
         blockNumber: BigNumber.from(transaction.blockNum).toNumber(),
