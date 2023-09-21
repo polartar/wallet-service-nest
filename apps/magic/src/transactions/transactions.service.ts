@@ -102,7 +102,7 @@ export class TransactionsService implements OnModuleInit {
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
 
-      if (currentAddresses.includes(transaction.fromAddress.toLowerCase())) {
+      if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
         const provider =
           network === ENetworks.ETHEREUM
             ? this.mainnetProvider
@@ -111,7 +111,11 @@ export class TransactionsService implements OnModuleInit {
 
         const fee = BigNumber.from(tx.gasPrice).mul(BigNumber.from(tx.gasLimit))
         const amount = BigNumber.from(
-          parseEther(transaction.value.toString()),
+          parseEther(
+            transaction.value.toLocaleString('en-US', {
+              maximumFractionDigits: 9,
+            }),
+          ),
         ).add(fee)
         const updatedAsset = assets.find(
           (asset) =>
@@ -121,9 +125,13 @@ export class TransactionsService implements OnModuleInit {
         await this.updateTransaction(updatedAsset, transaction, amount, fee)
       }
 
-      if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
+      if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
         const amount = BigNumber.from(0).sub(
-          parseEther(transaction.value.toString()),
+          parseEther(
+            transaction.value.toLocaleString('en-US', {
+              maximumFractionDigits: 9,
+            }),
+          ),
         )
         const updatedAsset = assets.find(
           (asset) =>
@@ -182,9 +190,14 @@ export class TransactionsService implements OnModuleInit {
       )
       const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
 
-      const balance = lastTransaction
-        ? BigNumber.from(lastTransaction.balance).sub(amount)
-        : parseEther(transaction.value.toString())
+      const balance =
+        lastTransaction && lastTransaction.balance
+          ? BigNumber.from(lastTransaction.balance).sub(amount)
+          : parseEther(
+              transaction.value.toLocaleString('en-US', {
+                maximumFractionDigits: 9,
+              }),
+            )
 
       const weiBalance = formatEther(balance)
       const weiAmount = transaction.value
@@ -192,14 +205,18 @@ export class TransactionsService implements OnModuleInit {
         asset: updatedAsset,
         from: transaction.fromAddress,
         to: transaction.toAddress,
-        cryptoAmount: parseEther(transaction.value.toString()).toString(),
+        cryptoAmount: parseEther(
+          transaction.value.toLocaleString('en-US', {
+            maximumFractionDigits: 9,
+          }),
+        ).toString(),
         fiatAmount: (+weiAmount * price).toFixed(2),
         hash: transaction.hash,
         blockNumber: BigNumber.from(transaction.blockNum).toNumber(),
         balance: balance.toString(),
         usdPrice: (+weiBalance * price).toFixed(2),
         timestamp: this.getCurrentTimeBySeconds(),
-        fee: fee.toString(),
+        fee: fee?.toString(),
         status:
           updatedAsset.address === transaction.fromAddress
             ? ETransactionStatuses.SENT
