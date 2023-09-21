@@ -524,7 +524,7 @@ export class AssetService {
         apiKey = this.liquidAPIKey
       } else {
         apiURL = this.liquidTestAPIUrl
-        apiKey = this.liquidAPIKey
+        apiKey = this.liquidTestAPIKey
       }
 
       if (
