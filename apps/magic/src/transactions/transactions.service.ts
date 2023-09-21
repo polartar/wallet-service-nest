@@ -102,7 +102,7 @@ export class TransactionsService implements OnModuleInit {
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
 
-      if (currentAddresses.includes(transaction.fromAddress.toLowerCase())) {
+      if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
         const provider =
           network === ENetworks.ETHEREUM
             ? this.mainnetProvider
@@ -125,7 +125,7 @@ export class TransactionsService implements OnModuleInit {
         await this.updateTransaction(updatedAsset, transaction, amount, fee)
       }
 
-      if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
+      if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
         const amount = BigNumber.from(0).sub(
           parseEther(
             transaction.value.toLocaleString('en-US', {
@@ -190,13 +190,14 @@ export class TransactionsService implements OnModuleInit {
       )
       const price = await this.getCurrentUSDPrice(ECoinTypes.ETHEREUM)
 
-      const balance = lastTransaction
-        ? BigNumber.from(lastTransaction.balance).sub(amount)
-        : parseEther(
-            transaction.value.toLocaleString('en-US', {
-              maximumFractionDigits: 9,
-            }),
-          )
+      const balance =
+        lastTransaction && lastTransaction.balance
+          ? BigNumber.from(lastTransaction.balance).sub(amount)
+          : parseEther(
+              transaction.value.toLocaleString('en-US', {
+                maximumFractionDigits: 9,
+              }),
+            )
 
       const weiBalance = formatEther(balance)
       const weiAmount = transaction.value
@@ -215,7 +216,7 @@ export class TransactionsService implements OnModuleInit {
         balance: balance.toString(),
         usdPrice: (+weiBalance * price).toFixed(2),
         timestamp: this.getCurrentTimeBySeconds(),
-        fee: fee.toString(),
+        fee: fee?.toString(),
         status:
           updatedAsset.address === transaction.fromAddress
             ? ETransactionStatuses.SENT
