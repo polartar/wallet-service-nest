@@ -67,6 +67,7 @@ export class AssetService {
         'asset/discover',
         data,
       )
+
       const assets = response.map((item) => item.asset)
       if (assets.some((asset) => asset.network === ENetworks.BITCOIN)) {
         try {
