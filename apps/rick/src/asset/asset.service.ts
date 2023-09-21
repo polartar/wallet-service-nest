@@ -569,7 +569,8 @@ export class AssetService {
           `addAddressesFromXPub(): ${err.message}: ${xPub}`,
         )
       }
-      return this.createAsset(address, index, network, publicKey)
+      const asset = await this.createAsset(address, index, network, publicKey)
+      return [asset]
     }
   }
 
