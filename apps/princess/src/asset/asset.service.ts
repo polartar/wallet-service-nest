@@ -62,13 +62,25 @@ export class AssetService {
   async createAsset(data: CreateAssetDto) {
     // let asset
     if (data.xPub) {
-      const assets = await this.rickApiCall(
+      const response = await this.rickApiCall(
         EAPIMethod.POST,
         'asset/discover',
         data,
       )
-      await this.rickApiCall(EAPIMethod.POST, 'wallet/subscribe-btc')
-      return assets.map((asset) => asset.asset)
+      const assets = response.map((item) => item.asset)
+      if (assets.some((asset) => asset.network === ENetworks.BITCOIN)) {
+        try {
+          await firstValueFrom(
+            this.httpService.post(
+              `${this.magicApiUrl}/transactions/subscribe-btc`,
+            ),
+          )
+        } catch (err) {
+          Sentry.captureException(`handleWebhook(): ${err.message}`)
+        }
+      }
+
+      return assets
     } else {
       const { asset, isNew } = await this.rickApiCall(
         EAPIMethod.POST,
