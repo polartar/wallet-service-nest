@@ -146,6 +146,7 @@ export class AssetService {
         throw new BadRequestException(response.data.message)
       }
     } catch (err) {
+      Sentry.captureException(`getEthPartialHistory(): ${err.message}`)
       return { balance, transactions: [] }
     }
 
