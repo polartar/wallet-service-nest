@@ -53,6 +53,12 @@ export class WalletService {
     // await this.portfolioService.updateCurrentWallets()
   }
 
+  async confirmWalletBalances(address: string, network: ENetworks) {
+    const asset = this.assetService.getAsset()
+    await this.assetService.confirmETHBalance(addres)
+    // await this.portfolioService.updateCurrentWallets()
+  }
+
   async getUserWalletTransaction(accountId: string, walletId: string) {
     try {
       const transactions = await this.transactionRepository.find({
