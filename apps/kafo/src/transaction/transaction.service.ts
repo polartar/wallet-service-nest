@@ -21,6 +21,7 @@ import * as Sentry from '@sentry/node'
 import * as crypto from 'crypto'
 import zlib = require('zlib')
 import * as ur from '@ngraveio/bc-ur'
+import { getAddress } from 'ethers/lib/utils'
 
 @Injectable()
 export class TransactionService {
@@ -124,8 +125,8 @@ export class TransactionService {
     tokenTransfer: ITokenTransfer,
   ) {
     const body: ITransactionRequest = {
-      from,
-      to,
+      from: getAddress(from),
+      to: getAddress(to),
       value: {
         value: amount,
         factor: 0,
