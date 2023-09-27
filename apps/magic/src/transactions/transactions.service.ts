@@ -101,6 +101,9 @@ export class TransactionsService implements OnModuleInit {
 
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
+      if (transaction.asset !== 'ETH') {
+        transaction.value = 0
+      }
 
       if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
         const provider =
@@ -147,7 +150,7 @@ export class TransactionsService implements OnModuleInit {
     } catch (err) {
       Sentry.captureMessage(`handleTransaction(): ${err.message}`, {
         extra: {
-          body: JSON.stringify(data),
+          body: JSON.stringify(event.activity),
         },
       })
     }

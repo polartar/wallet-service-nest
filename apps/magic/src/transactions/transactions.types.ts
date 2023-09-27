@@ -23,6 +23,7 @@ export interface IBlockchainTransaction {
   value: number
   hash: string
   blockNum: BigNumber
+  asset: string
 }
 export interface ITransaction {
   asset: AssetEntity
