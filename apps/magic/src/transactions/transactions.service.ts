@@ -150,7 +150,7 @@ export class TransactionsService implements OnModuleInit {
     } catch (err) {
       Sentry.captureMessage(`handleTransaction(): ${err.message}`, {
         extra: {
-          body: JSON.stringify(data),
+          body: JSON.stringify(event.activity),
         },
       })
     }
