@@ -1,6 +1,6 @@
 import { ENetworks } from '@rana/core'
 import { AssetEntity } from '../wallet/asset.entity'
-import { ETransactionStatuses } from '../wallet/wallet.types'
+import { ETransactionStatuses, INftAttribute } from '../wallet/wallet.types'
 import { INFTInfo } from '../nft/nft.types'
 
 export interface IBTCTransactionResponse {
@@ -56,6 +56,19 @@ export class ITransaction {
   blockNumber?: number
 }
 
+export interface INft {
+  id: string
+  network: ENetworks
+  contractType: string
+  ownerOf: string
+  hash: string
+  name: string
+  tokenId: string
+  description: string
+  image: string
+  externalUrl: string
+  attributes: INftAttribute[]
+}
 export interface IAssetDetail {
   id: string
   balance?: {
@@ -66,7 +79,7 @@ export interface IAssetDetail {
   index: number
   address: string
   publicKey: string
-  nfts: INFTInfo[]
+  nfts: INft[]
 }
 
 export interface IXPubInfo {

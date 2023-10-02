@@ -438,6 +438,7 @@ export class AssetService {
       network,
       publicKey,
     )
+    this.nftService.getNFTAssets(asset)
 
     if (isNew) {
       if (
@@ -445,7 +446,6 @@ export class AssetService {
         network === ENetworks.ETHEREUM_TEST
       ) {
         this.portfolioService.addAddressesToWebhook([address], network)
-        this.nftService.getNFTAssets(address, network)
       }
     }
 
@@ -602,7 +602,7 @@ export class AssetService {
         fiat: '0',
         crypto: '0',
       },
-      nfts: [],
+      nfts: assetEntity.nfts,
     }
 
     if (transactions.length > 0) {
@@ -611,23 +611,7 @@ export class AssetService {
         crypto: transactions[0].balance,
       }
     }
-
-    // if (
-    //   assetEntity.network === ENetworks.ETHEREUM ||
-    //   assetEntity.network === ENetworks.ETHEREUM_TEST
-    // ) {
-    //   try {
-    //     const nftResponse = await this.nftService.getNFTAssets(
-    //       assetEntity.address,
-    //       assetEntity.network,
-    //       1,
-    //     )
-
-    //     asset.nfts = nftResponse.nfts
-    //   } catch (err) {
-    //     Sentry.captureMessage(`getAsset(): ${err.message}`)
-    //   }
-    // }
+    console.log({ asset })
 
     return asset
   }

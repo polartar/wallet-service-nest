@@ -30,10 +30,7 @@ export class AssetController {
 
   // Need to confirm account verification
   @Get(':assetId')
-  async getAsset(
-    @Param('assetId') assetId: string,
-    // @Query('accountId') accountId: number,
-  ) {
+  async getAsset(@Param('assetId') assetId: string) {
     return this.assetService.getAsset(assetId)
   }
 

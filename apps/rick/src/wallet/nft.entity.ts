@@ -30,19 +30,19 @@ export class NftEntity {
   @Column()
   hash: string
 
-  @Column()
+  @Column({ nullable: true })
   name: string
 
   @Column()
   tokenId: string
 
-  @Column()
+  @Column({ nullable: true })
   description: string
 
-  @Column()
+  @Column({ nullable: true })
   image: string
 
-  @Column()
+  @Column({ nullable: true })
   externalUrl: string
 
   @Column({
