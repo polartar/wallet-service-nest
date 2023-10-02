@@ -50,7 +50,11 @@ export class WalletService {
 
   async confirmWalletBalances() {
     await this.assetService.confirmWalletBalances()
-    // await this.portfolioService.updateCurrentWallets()
+  }
+
+  async confirmAddressBalance(address: string, network: ENetworks) {
+    const asset = await this.assetService.getFullAsset(address, network)
+    await this.assetService.confirmWalletBalances([asset])
   }
 
   async getUserWalletTransaction(accountId: string, walletId: string) {

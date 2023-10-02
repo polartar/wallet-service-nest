@@ -214,4 +214,16 @@ export class WalletsService {
       `wallet/confirm-balances`,
     )
   }
+
+  async confirmAddressBalance(address: string, network: ENetworks) {
+    return this.apiCall(
+      EAPIMethod.POST,
+      this.rickApiUrl,
+      `wallet/confirm-balance`,
+      {
+        address,
+        network,
+      },
+    )
+  }
 }
