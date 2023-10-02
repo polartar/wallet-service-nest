@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common'
 import { WalletService } from './wallet.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
-import { EPeriod } from '@rana/core'
+import { ENetworks, EPeriod } from '@rana/core'
 import * as Sentry from '@sentry/node'
 import { AddXPubs } from './dto/add-xpubs'
 import { CombineWalletDto } from './dto/combine-wallet.dto'
@@ -172,5 +172,12 @@ export class WalletController {
   @Post('confirm-balances')
   async confirmBalances() {
     await this.walletService.confirmWalletBalances()
+  }
+
+  @Post('confirm-balance')
+  async confirmAddressBalance(
+    @Body() data: { address: string; network: ENetworks },
+  ) {
+    await this.walletService.confirmAddressBalance(data.address, data.network)
   }
 }
