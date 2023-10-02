@@ -9,6 +9,7 @@ import { WalletEntity } from '../wallet/wallet.entity'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { NftService } from '../nft/nft.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
+import { NftEntity } from '../wallet/nft.entity'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PortfolioService } from '../portfolio/portfolio.service'
       AccountEntity,
       AssetEntity,
       TransactionEntity,
+      NftEntity,
     ]),
     HttpModule.register({
       timeout: 600000, // 10 mins

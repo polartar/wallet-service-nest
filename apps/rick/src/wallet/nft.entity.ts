@@ -18,7 +18,7 @@ export class NftEntity {
   @JoinColumn()
   asset: AssetEntity
 
-  @Column()
+  @Column('text')
   network: ENetworks
 
   @Column({ nullable: true })
@@ -45,9 +45,8 @@ export class NftEntity {
   @Column()
   externalUrl: string
 
-  @Column()
+  @Column({
+    type: 'jsonb',
+  })
   attributes: INftAttribute[]
-
-  @Column('bigint')
-  timestamp: number
 }
