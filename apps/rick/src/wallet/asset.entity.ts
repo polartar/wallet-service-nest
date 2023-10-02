@@ -10,6 +10,7 @@ import {
 } from 'typeorm'
 import { ENetworks, getTimestamp } from '@rana/core'
 import { TransactionEntity } from './transaction.entity'
+import { NftEntity } from './nft.entity'
 
 @Entity()
 export class AssetEntity {
@@ -40,6 +41,10 @@ export class AssetEntity {
   @OneToMany(() => TransactionEntity, (transaction) => transaction.asset)
   @JoinColumn()
   transactions: TransactionEntity[]
+
+  @OneToMany(() => NftEntity, (transaction) => transaction.asset)
+  @JoinColumn()
+  nfts: NftEntity[]
 
   @BeforeInsert()
   public setCreatedAt() {

@@ -19,6 +19,7 @@ export interface INFTInfo {
   block_number_minted: string
   token_uri?: string
   metadata?: string
+  token_hash: string
   last_metadata_sync?: string | number
   last_token_uri_sync?: string | number
 }

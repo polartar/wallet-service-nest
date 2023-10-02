@@ -445,6 +445,7 @@ export class AssetService {
         network === ENetworks.ETHEREUM_TEST
       ) {
         this.portfolioService.addAddressesToWebhook([address], network)
+        this.nftService.getNFTAssets(address, network)
       }
     }
 
@@ -578,7 +579,7 @@ export class AssetService {
   async getAsset(assetId: string) {
     const assetEntity = await this.assetRepository.findOne({
       where: { id: assetId },
-      relations: { transactions: true },
+      relations: { transactions: true, nfts: true },
       order: {
         transactions: {
           timestamp: 'DESC',
@@ -611,22 +612,22 @@ export class AssetService {
       }
     }
 
-    if (
-      assetEntity.network === ENetworks.ETHEREUM ||
-      assetEntity.network === ENetworks.ETHEREUM_TEST
-    ) {
-      try {
-        const nftResponse = await this.nftService.getNFTAssets(
-          assetEntity.address,
-          assetEntity.network,
-          1,
-        )
+    // if (
+    //   assetEntity.network === ENetworks.ETHEREUM ||
+    //   assetEntity.network === ENetworks.ETHEREUM_TEST
+    // ) {
+    //   try {
+    //     const nftResponse = await this.nftService.getNFTAssets(
+    //       assetEntity.address,
+    //       assetEntity.network,
+    //       1,
+    //     )
 
-        asset.nfts = nftResponse.nfts
-      } catch (err) {
-        Sentry.captureMessage(`getAsset(): ${err.message}`)
-      }
-    }
+    //     asset.nfts = nftResponse.nfts
+    //   } catch (err) {
+    //     Sentry.captureMessage(`getAsset(): ${err.message}`)
+    //   }
+    // }
 
     return asset
   }
@@ -700,17 +701,16 @@ export class AssetService {
   }
 
   async getNFTAssets(assetId: string, pageNumber: number) {
-    const asset = await this.assetRepository.findOne({ where: { id: assetId } })
+    const asset = await this.assetRepository.findOne({
+      where: { id: assetId },
+      relations: { nfts: true },
+    })
     if (!asset) {
       Sentry.captureException(`getNFTAssets(): AssetId(${assetId}) Not found`)
 
       throw new BadRequestException('Not found asset')
     }
-    return this.nftService.getNFTAssets(
-      asset.address,
-      asset.network,
-      pageNumber,
-    )
+    return asset.nfts
   }
 
   updateAssets(assets: AssetEntity[]) {

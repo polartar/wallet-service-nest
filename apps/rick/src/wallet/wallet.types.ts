@@ -19,3 +19,8 @@ export enum ETransactionStatuses {
   SENDING = 'sending',
   INTERNAL = 'internal',
 }
+
+export interface INftAttribute {
+  traitType: string
+  value: string
+}
