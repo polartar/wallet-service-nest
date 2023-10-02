@@ -218,20 +218,21 @@ export class AssetService {
           record.timeStamp,
         )
 
-        const newHistory: ITransaction = {
-          asset,
-          from: record.from || '',
-          to: record.to || '',
-          hash: record.hash,
-          cryptoAmount: value.toString(),
-          fiatAmount: (+formatEther(value) * price).toFixed(2),
-          balance: prevBalance.toString(),
-          usdPrice: (+formatEther(prevBalance) * price).toFixed(2),
-          timestamp: +record.timeStamp,
-          status,
-          blockNumber: record.blockNumber,
-          fee: status === ETransactionStatuses.SENT ? fee.toString() : '0',
-        }
+        const newHistory = new TransactionEntity()
+        newHistory.asset = asset
+        newHistory.from = record.from || ''
+        newHistory.to = record.to || ''
+        newHistory.hash = record.hash
+        newHistory.cryptoAmount = value.toString()
+        newHistory.fiatAmount = (+formatEther(value) * price).toFixed(2)
+        newHistory.balance = prevBalance.toString()
+        newHistory.usdPrice = (+formatEther(prevBalance) * price).toFixed(2)
+        newHistory.timestamp = +record.timeStamp
+        newHistory.status = status
+        newHistory.blockNumber = record.blockNumber
+        newHistory.fee =
+          status === ETransactionStatuses.SENT ? fee.toString() : '0'
+
         // parse the transaction
         if (value.isZero()) {
           let iface = new ethers.utils.Interface(ERC721ABI)
@@ -254,11 +255,11 @@ export class AssetService {
           }
         }
 
-        const history = await this.addHistory(newHistory)
-
-        return history
+        return newHistory
       }),
     )
+
+    await this.transactionRepository.insert(histories)
 
     return { balance: currentBalance, transactions: histories }
   }
@@ -337,31 +338,34 @@ export class AssetService {
       getTimestamp(transactions[0].confirmed),
     )
 
-    const allHistories = await Promise.all(
-      transactions.slice(from).map((record) => {
-        const price = this.getUSDPrice(
-          btcMarketHistories,
-          getTimestamp(record.confirmed),
-        )
-        return this.addHistory({
-          asset: asset,
-          from: record.tx_output_n === -1 ? asset.address : '',
-          to: record.tx_input_n === -1 ? asset.address : '',
-          cryptoAmount: record.value.toString(),
-          fiatAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
-          hash: record.tx_hash,
-          fee: '0',
-          blockNumber: record.block_height,
-          balance: record.ref_balance.toString(),
-          usdPrice: (+formatUnits(record.ref_balance, 8) * price).toFixed(2),
-          timestamp: getTimestamp(record.confirmed),
-          status:
-            record.tx_output_n === -1
-              ? ETransactionStatuses.SENT
-              : ETransactionStatuses.RECEIVED,
-        })
-      }),
-    )
+    const allHistories = transactions.slice(from).map((record) => {
+      const price = this.getUSDPrice(
+        btcMarketHistories,
+        getTimestamp(record.confirmed),
+      )
+      const newHistory = new TransactionEntity()
+      newHistory.asset = asset
+      newHistory.from = record.tx_output_n === -1 ? asset.address : ''
+      newHistory.to = record.tx_input_n === -1 ? asset.address : ''
+      newHistory.cryptoAmount = record.value.toString()
+      newHistory.fiatAmount = (+formatUnits(record.value, 8) * price).toFixed(2)
+      newHistory.hash = record.tx_hash
+      newHistory.fee = '0'
+      newHistory.blockNumber = record.block_height
+      newHistory.balance = record.ref_balance.toString()
+      newHistory.usdPrice = (
+        +formatUnits(record.ref_balance, 8) * price
+      ).toFixed(2)
+      newHistory.timestamp = getTimestamp(record.confirmed)
+      newHistory.status =
+        record.tx_output_n === -1
+          ? ETransactionStatuses.SENT
+          : ETransactionStatuses.RECEIVED
+
+      return newHistory
+    })
+
+    await this.transactionRepository.insert(allHistories)
 
     return allHistories
   }
