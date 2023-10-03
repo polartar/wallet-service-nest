@@ -615,7 +615,6 @@ export class AssetService {
         crypto: transactions[0].balance,
       }
     }
-    console.log({ asset })
 
     return asset
   }

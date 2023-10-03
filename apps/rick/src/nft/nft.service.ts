@@ -61,7 +61,7 @@ export class NftService {
     }
 
     const entities: NftEntity[] = nfts.map((nft) => {
-      const metadata = JSON.parse(nft.metadata)
+      const metadata = nft.metadata ? JSON.parse(nft.metadata) : {}
       const prototype = new NftEntity()
       prototype.asset = assetEntity
       prototype.name = metadata.name

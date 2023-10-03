@@ -128,90 +128,98 @@ export class TransactionsService implements OnModuleInit {
     network: ENetworks,
     currentAddresses: string[],
   ) {
-    if (transaction.erc721TokenId) {
-      // erc721
-      const tokenId = BigNumber.from(transaction.erc721TokenId).toString()
-      if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
-        await this.nftRepository.delete({
-          network: network,
-          ownerOf: transaction.fromAddress,
-          tokenId: tokenId,
-          collectionAddress: transaction.rawContract.address,
-        })
-        return
-      }
-      if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
-        const response = await Moralis.EvmApi.nft.getNFTMetadata({
-          address: transaction.rawContract.address,
-          chain:
-            network === ENetworks.ETHEREUM
-              ? EvmChain.ETHEREUM
-              : EvmChain.GOERLI,
-          tokenId: tokenId,
-        })
-        const obj = response.toJSON()
-        const asset = await this.assetRepository.findOne({
-          where: {
-            address: getAddress(transaction.toAddress),
+    try {
+      if (transaction.erc721TokenId) {
+        // erc721
+        const tokenId = BigNumber.from(transaction.erc721TokenId).toString()
+        if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
+          await this.nftRepository.delete({
             network: network,
-          },
-        })
-        await this.storeNft(asset, obj)
-      }
-    } else if (transaction.erc1155Metadata) {
-      //erc1155
-      if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
-        await Promise.all(
-          transaction.erc1155Metadata.map(async (metadata) => {
-            const tokenId = BigNumber.from(metadata.tokenId).toString()
-            const nftEntity = await this.nftRepository.findOne({
-              where: {
-                network: network,
-                ownerOf: transaction.fromAddress,
+            ownerOf: transaction.fromAddress,
+            tokenId: tokenId,
+            collectionAddress: transaction.rawContract.address,
+          })
+          return
+        }
+        if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
+          const response = await Moralis.EvmApi.nft.getNFTMetadata({
+            address: transaction.rawContract.address,
+            chain:
+              network === ENetworks.ETHEREUM
+                ? EvmChain.ETHEREUM
+                : EvmChain.GOERLI,
+            tokenId: tokenId,
+          })
+          const obj = response.toJSON()
+          const asset = await this.assetRepository.findOne({
+            where: {
+              address: getAddress(transaction.toAddress),
+              network: network,
+            },
+          })
+          await this.storeNft(asset, obj)
+        }
+      } else if (transaction.erc1155Metadata) {
+        //erc1155
+        if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
+          await Promise.all(
+            transaction.erc1155Metadata.map(async (metadata) => {
+              const tokenId = BigNumber.from(metadata.tokenId).toString()
+              const nftEntity = await this.nftRepository.findOne({
+                where: {
+                  network: network,
+                  ownerOf: transaction.fromAddress,
+                  tokenId: tokenId,
+                  collectionAddress: transaction.rawContract.address,
+                },
+              })
+              const amount = BigNumber.from(metadata.value).toNumber()
+              if (+nftEntity.amount <= amount) {
+                await this.nftRepository.delete({
+                  id: nftEntity.id,
+                })
+              } else {
+                await this.nftRepository.update(nftEntity.id, {
+                  amount: (+nftEntity.amount - +amount).toString(),
+                })
+              }
+            }),
+          )
+          return
+        }
+
+        if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
+          const asset = await this.assetRepository.findOne({
+            where: {
+              address: getAddress(transaction.toAddress),
+              network: network,
+            },
+          })
+          Promise.all(
+            transaction.erc1155Metadata.map(async (metadata) => {
+              const tokenId = BigNumber.from(metadata.tokenId).toString()
+              const response = await Moralis.EvmApi.nft.getNFTMetadata({
+                address: transaction.rawContract.address,
+                chain:
+                  network === ENetworks.ETHEREUM
+                    ? EvmChain.ETHEREUM
+                    : EvmChain.GOERLI,
                 tokenId: tokenId,
-                collectionAddress: transaction.rawContract.address,
-              },
-            })
-            const amount = BigNumber.from(metadata.value).toNumber()
-            if (+nftEntity.amount <= amount) {
-              await this.nftRepository.delete({
-                id: nftEntity.id,
               })
-            } else {
-              await this.nftRepository.update(nftEntity.id, {
-                amount: (+nftEntity.amount - +amount).toString(),
-              })
-            }
-          }),
-        )
-        return
+
+              const obj = response.toJSON()
+
+              await this.storeNft(asset, obj)
+            }),
+          )
+        }
       }
-
-      if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
-        const asset = await this.assetRepository.findOne({
-          where: {
-            address: getAddress(transaction.toAddress),
-            network: network,
-          },
-        })
-        Promise.all(
-          transaction.erc1155Metadata.map(async (metadata) => {
-            const tokenId = BigNumber.from(metadata.tokenId).toString()
-            const response = await Moralis.EvmApi.nft.getNFTMetadata({
-              address: transaction.rawContract.address,
-              chain:
-                network === ENetworks.ETHEREUM
-                  ? EvmChain.ETHEREUM
-                  : EvmChain.GOERLI,
-              tokenId: tokenId,
-            })
-
-            const obj = response.toJSON()
-
-            await this.storeNft(asset, obj)
-          }),
-        )
-      }
+    } catch (err) {
+      Sentry.captureException(`handleNftTransaction(): ${err.message}`, {
+        extra: {
+          body: JSON.stringify(transaction),
+        },
+      })
     }
   }
 
