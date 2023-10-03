@@ -22,4 +22,5 @@ export interface INFTInfo {
   token_hash: string
   last_metadata_sync?: string | number
   last_token_uri_sync?: string | number
+  amount?: string
 }

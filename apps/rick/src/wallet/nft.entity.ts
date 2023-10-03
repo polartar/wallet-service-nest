@@ -36,11 +36,17 @@ export class NftEntity {
   @Column()
   tokenId: string
 
+  @Column()
+  collectionAddress: string
+
   @Column({ nullable: true })
   description: string
 
   @Column({ nullable: true })
   image: string
+
+  @Column({ nullable: true })
+  amount: string
 
   @Column({ nullable: true })
   externalUrl: string

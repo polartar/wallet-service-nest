@@ -65,6 +65,7 @@ export class NftService {
       const prototype = new NftEntity()
       prototype.asset = assetEntity
       prototype.name = metadata.name
+      prototype.collectionAddress = nft.token_address
       prototype.description = metadata.description
       prototype.image = metadata.image
       prototype.externalUrl = metadata.externalUrl
@@ -76,6 +77,7 @@ export class NftService {
         : []
       prototype.ownerOf = nft.owner_of
       prototype.hash = nft.token_hash
+      prototype.amount = nft.amount
       prototype.contractType = nft.contract_type
       prototype.network = assetEntity.network
       prototype.tokenId = nft.token_id
