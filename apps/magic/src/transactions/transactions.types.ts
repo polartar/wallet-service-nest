@@ -17,6 +17,10 @@ export interface IWebhookData {
     activity: IBlockchainTransaction[]
   }
 }
+interface ERC1155Metadata {
+  tokenId: string
+  value: string
+}
 export interface IBlockchainTransaction {
   fromAddress: string
   toAddress: string
@@ -24,6 +28,26 @@ export interface IBlockchainTransaction {
   hash: string
   blockNum: BigNumber
   asset: string
+  category: string
+  erc721TokenId?: string
+  erc1155Metadata?: ERC1155Metadata[]
+  rawContract?: {
+    address: string
+  }
+}
+
+export interface INFTInfo {
+  token_address: string
+  token_id: string
+  contract_type: string
+  owner_of?: string
+  block_number?: string
+  token_uri?: string
+  metadata?: string
+  token_hash?: string
+  last_metadata_sync?: string | number
+  last_token_uri_sync?: string | number
+  amount?: string
 }
 export interface ITransaction {
   asset: AssetEntity
