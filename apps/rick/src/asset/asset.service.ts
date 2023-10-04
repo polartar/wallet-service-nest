@@ -442,14 +442,14 @@ export class AssetService {
       network,
       publicKey,
     )
-    this.nftService.getNFTAssets(asset)
 
     if (isNew) {
       if (
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        this.portfolioService.addAddressesToWebhook([address], network)
+        await this.portfolioService.addAddressesToWebhook([address], network)
+        await this.nftService.getNFTAssets(asset)
       }
     }
 

@@ -18,6 +18,7 @@ import { AccountService } from '../account/account.service'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { AssetEntity } from './asset.entity'
+import { getAddress } from 'ethers/lib/utils'
 
 @Injectable()
 export class WalletService {
@@ -341,8 +342,15 @@ export class WalletService {
             return await Promise.all(
               coin.wallets.map(async (wallet) => {
                 for (const newAccount of wallet.accounts) {
+                  let address = newAccount.address
+                  if (
+                    network === ENetworks.ETHEREUM ||
+                    network === ENetworks.ETHEREUM_TEST
+                  ) {
+                    address = getAddress(address)
+                  }
                   const { asset } = await this.assetService.addAsset(
-                    newAccount.address,
+                    address,
                     newAccount.index,
                     network,
                     newAccount.publickey,
@@ -352,7 +360,7 @@ export class WalletService {
                   if (network === ENetworks.ETHEREUM) {
                     isEthereumAsset = true
                     const { asset } = await this.assetService.addAsset(
-                      newAccount.address,
+                      address,
                       newAccount.index,
                       ENetworks.ETHEREUM_TEST,
                       newAccount.publickey,
@@ -386,14 +394,14 @@ export class WalletService {
           const mainnetAddresses = assets
             .filter((asset) => asset.network === ENetworks.ETHEREUM)
             .map((asset) => asset.address)
-          this.portfolioService.addAddressesToWebhook(
+          await this.portfolioService.addAddressesToWebhook(
             mainnetAddresses,
             ENetworks.ETHEREUM,
           )
           const testAddresses = assets
             .filter((asset) => asset.network === ENetworks.ETHEREUM_TEST)
             .map((asset) => asset.address)
-          this.portfolioService.addAddressesToWebhook(
+          await this.portfolioService.addAddressesToWebhook(
             testAddresses,
             ENetworks.ETHEREUM_TEST,
           )
