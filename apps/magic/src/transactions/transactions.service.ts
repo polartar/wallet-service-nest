@@ -90,9 +90,6 @@ export class TransactionsService implements OnModuleInit {
         },
       },
       relations: {
-        // wallets: {
-        //   account: true,
-        // },
         transactions: true,
       },
     })
@@ -438,9 +435,6 @@ export class TransactionsService implements OnModuleInit {
       (input) => input.prev_out.addr,
     )
     const receiverAddresses = transaction.out.map((out) => out.addr)
-    // const postUpdatedAddresses = []
-    // const updatedAddresses = []
-
     const currentAddresses = this.activeBtcAssets.map((asset) => asset.address)
 
     if (
@@ -453,7 +447,6 @@ export class TransactionsService implements OnModuleInit {
     try {
       await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
-          // const transactions = asset.transactions || []
           const lastTransaction = await this.getLastTransactionFromAssetId(
             asset.id,
           )
