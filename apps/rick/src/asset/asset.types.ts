@@ -67,7 +67,7 @@ export interface INft {
   description: string
   image: string
   externalUrl: string
-  attributes: INftAttribute[]
+  attributes: string
 }
 export interface IAssetDetail {
   id: string

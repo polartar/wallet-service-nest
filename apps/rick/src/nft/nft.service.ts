@@ -70,13 +70,14 @@ export class NftService {
       prototype.description = metadata.description
       prototype.image = metadata.image
       prototype.externalUrl = metadata.externalUrl
-      const attributes: INftAttribute[] = metadata.attriutes
+
+      const attributes: INftAttribute[] = metadata.attributes
         ? metadata.attributes.map((attribute) => ({
             traitType: attribute.trait_type,
             value: attribute.value,
           }))
         : []
-      prototype.attributes = attributes.toString()
+      prototype.attributes = JSON.stringify(attributes)
       prototype.ownerOf = nft.owner_of
       prototype.hash = nft.token_hash
       prototype.amount = nft.amount
