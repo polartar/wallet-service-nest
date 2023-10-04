@@ -10,6 +10,7 @@ import { ENetworks } from '@rana/core'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { AssetEntity } from '../wallet/asset.entity'
+import { INftAttribute } from '../wallet/wallet.types'
 
 @Injectable()
 export class NftService {
@@ -69,12 +70,13 @@ export class NftService {
       prototype.description = metadata.description
       prototype.image = metadata.image
       prototype.externalUrl = metadata.externalUrl
-      prototype.attributes = metadata.attriutes
+      const attributes: INftAttribute[] = metadata.attriutes
         ? metadata.attributes.map((attribute) => ({
             traitType: attribute.trait_type,
             value: attribute.value,
           }))
         : []
+      prototype.attributes = attributes.toString()
       prototype.ownerOf = nft.owner_of
       prototype.hash = nft.token_hash
       prototype.amount = nft.amount

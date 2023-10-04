@@ -51,8 +51,6 @@ export class NftEntity {
   @Column({ nullable: true })
   externalUrl: string
 
-  @Column({
-    type: 'jsonb',
-  })
-  attributes: INftAttribute[]
+  @Column()
+  attributes: string
 }

@@ -28,6 +28,7 @@ import BlockchainSocket = require('blockchain.info/Socket')
 import Moralis from 'moralis'
 import { EvmChain } from '@moralisweb3/common-evm-utils'
 import { NftEntity } from 'apps/rick/src/wallet/nft.entity'
+import { INftAttribute } from 'apps/rick/src/wallet/wallet.types'
 
 @Injectable()
 export class TransactionsService implements OnModuleInit {
@@ -104,12 +105,13 @@ export class TransactionsService implements OnModuleInit {
     prototype.description = metadata.description
     prototype.image = metadata.image
     prototype.externalUrl = metadata.externalUrl
-    prototype.attributes = metadata.attriutes
+    const attributes: INftAttribute[] = metadata.attriutes
       ? metadata.attributes.map((attribute) => ({
           traitType: attribute.trait_type,
           value: attribute.value,
         }))
       : []
+    prototype.attributes = attributes.toString()
     prototype.ownerOf = nft.owner_of
     prototype.hash = nft.token_hash
     prototype.amount = nft.amount
