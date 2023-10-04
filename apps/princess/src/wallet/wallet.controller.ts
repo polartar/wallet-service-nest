@@ -23,6 +23,8 @@ import {
 } from './dto/get-wallet-portfolio.dto'
 import { WalletTransactionSwaggerResponse } from './dto/get-wallet-transaction.dto'
 import { AddAssetDto } from './dto/add-asset.dto'
+import { ENetworks } from '@rana/core'
+import { ConfirmBalanceDto } from './dto/confirm-balance.dto'
 
 @Controller('wallet')
 @ApiTags('wallet')
@@ -132,5 +134,13 @@ export class WalletsController {
   @Post('confirm-balances')
   async confirmBalances() {
     return await this.walletService.confirmBalances()
+  }
+
+  @Post('confirm-balance')
+  async confirmAddressBalance(@Body() data: ConfirmBalanceDto) {
+    return await this.walletService.confirmAddressBalance(
+      data.address,
+      data.network,
+    )
   }
 }

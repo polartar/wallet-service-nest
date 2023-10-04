@@ -763,4 +763,27 @@ export class AssetService {
       })
     }
   }
+
+  async getFullAsset(
+    address: string,
+    network: ENetworks,
+  ): Promise<AssetEntity> {
+    return await this.assetRepository.findOne({
+      where: {
+        address,
+        network,
+      },
+      order: {
+        transactions: {
+          timestamp: 'DESC',
+        },
+      },
+      relations: {
+        wallets: {
+          account: true,
+        },
+        transactions: true,
+      },
+    })
+  }
 }

@@ -53,6 +53,11 @@ export class WalletService {
     await this.assetService.confirmWalletBalances()
   }
 
+  async confirmAddressBalance(address: string, network: ENetworks) {
+    const asset = await this.assetService.getFullAsset(address, network)
+    await this.assetService.confirmWalletBalances([asset])
+  }
+
   async getUserWalletTransaction(accountId: string, walletId: string) {
     try {
       const transactions = await this.transactionRepository.find({
