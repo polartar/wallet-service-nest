@@ -51,7 +51,6 @@ export class WalletService {
 
   async confirmWalletBalances() {
     await this.assetService.confirmWalletBalances()
-    // await this.portfolioService.updateCurrentWallets()
   }
 
   async getUserWalletTransaction(accountId: string, walletId: string) {
@@ -264,11 +263,9 @@ export class WalletService {
           start_at: timeInPast,
         },
       )
-      // .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
       .where('account.id = :accountId', { accountId })
       .where('wallet.id = :walletId', { walletId })
       .orderBy('wallet.id', 'ASC')
-      // .orderBy('assets.address', 'ASC')
       .orderBy('assets.transactions.timestamp', 'ASC')
       .orderBy('assets.transactions.from', 'DESC')
 

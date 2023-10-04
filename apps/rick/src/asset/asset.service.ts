@@ -177,87 +177,80 @@ export class AssetService {
     )
 
     let currentBalance = balance
-    const histories = await Promise.all(
-      transactions.map(async (record) => {
-        const prevBalance = currentBalance
+    const histories = transactions.map((record) => {
+      const prevBalance = currentBalance
 
-        const fee =
-          record.gasUsed === '0'
-            ? BigNumber.from('0')
-            : BigNumber.from(record.gasUsed).mul(
-                BigNumber.from(record.gasPrice),
-              )
-        const value = BigNumber.from(record.value)
+      const fee =
+        record.gasUsed === '0'
+          ? BigNumber.from('0')
+          : BigNumber.from(record.gasUsed).mul(BigNumber.from(record.gasPrice))
+      const value = BigNumber.from(record.value)
 
-        const walletAddress = asset.address.toLowerCase()
-        let status
-        if (record.from?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.add(fee)
-          if (record.isError === '0') {
-            currentBalance = currentBalance.add(value)
-            status = ETransactionStatuses.SENT
-          } else {
-            status = ETransactionStatuses.FAILED
-          }
+      const walletAddress = asset.address.toLowerCase()
+      let status
+      if (record.from?.toLowerCase() === walletAddress) {
+        currentBalance = currentBalance.add(fee)
+        if (record.isError === '0') {
+          currentBalance = currentBalance.add(value)
+          status = ETransactionStatuses.SENT
+        } else {
+          status = ETransactionStatuses.FAILED
         }
+      }
 
-        //consider if transferred itself
-        if (record.to?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.sub(value)
-          status =
-            record.isError === '0'
-              ? ETransactionStatuses.RECEIVED
-              : ETransactionStatuses.FAILED
-        }
-        if (record.type === 'call') {
-          status = ETransactionStatuses.INTERNAL
-        }
+      //consider if transferred itself
+      if (record.to?.toLowerCase() === walletAddress) {
+        currentBalance = currentBalance.sub(value)
+        status =
+          record.isError === '0'
+            ? ETransactionStatuses.RECEIVED
+            : ETransactionStatuses.FAILED
+      }
+      if (record.type === 'call') {
+        status = ETransactionStatuses.INTERNAL
+      }
 
-        const price = await this.getUSDPrice(
-          ethMarketHistories,
-          record.timeStamp,
-        )
+      const price = this.getUSDPrice(ethMarketHistories, record.timeStamp)
 
-        const newHistory = new TransactionEntity()
-        newHistory.asset = asset
-        newHistory.from = record.from || ''
-        newHistory.to = record.to || ''
-        newHistory.hash = record.hash
-        newHistory.cryptoAmount = value.toString()
-        newHistory.fiatAmount = (+formatEther(value) * price).toFixed(2)
-        newHistory.balance = prevBalance.toString()
-        newHistory.usdPrice = (+formatEther(prevBalance) * price).toFixed(2)
-        newHistory.timestamp = +record.timeStamp
-        newHistory.status = status
-        newHistory.blockNumber = record.blockNumber
-        newHistory.fee =
-          status === ETransactionStatuses.SENT ? fee.toString() : '0'
+      const newHistory = new TransactionEntity()
+      newHistory.asset = asset
+      newHistory.from = record.from || ''
+      newHistory.to = record.to || ''
+      newHistory.hash = record.hash
+      newHistory.cryptoAmount = value.toString()
+      newHistory.fiatAmount = (+formatEther(value) * price).toFixed(2)
+      newHistory.balance = prevBalance.toString()
+      newHistory.usdPrice = (+formatEther(prevBalance) * price).toFixed(2)
+      newHistory.timestamp = +record.timeStamp
+      newHistory.status = status
+      newHistory.blockNumber = record.blockNumber
+      newHistory.fee =
+        status === ETransactionStatuses.SENT ? fee.toString() : '0'
 
-        // parse the transaction
-        if (value.isZero()) {
-          let iface = new ethers.utils.Interface(ERC721ABI)
-          let response
+      // parse the transaction
+      if (value.isZero()) {
+        let iface = new ethers.utils.Interface(ERC721ABI)
+        let response
+        try {
+          response = iface.parseTransaction({ data: record.input })
+        } catch (err) {
+          iface = new ethers.utils.Interface(ERC1155ABI)
           try {
             response = iface.parseTransaction({ data: record.input })
           } catch (err) {
-            iface = new ethers.utils.Interface(ERC1155ABI)
-            try {
-              response = iface.parseTransaction({ data: record.input })
-            } catch (err) {
-              // continue regardless of error
-            }
-          }
-          // only track the transfer functions
-          if (response && response.name.toLowerCase().includes('transfer')) {
-            const { from, tokenId, id } = response.args
-            newHistory.from = from || record.from
-            newHistory.tokenId = tokenId?.toString() || id?.toString()
+            // continue regardless of error
           }
         }
+        // only track the transfer functions
+        if (response && response.name.toLowerCase().includes('transfer')) {
+          const { from, tokenId, id } = response.args
+          newHistory.from = from || record.from
+          newHistory.tokenId = tokenId?.toString() || id?.toString()
+        }
+      }
 
-        return newHistory
-      }),
-    )
+      return newHistory
+    })
 
     await this.transactionRepository.insert(histories)
 
