@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rick-sentry-config
-  namespace: default
-data:
-  sentry_dsn: "http://94a7810ebd1d44cd8a4f3205a5698e25@10.207.0.2:9000/3"
-  sentry_traces_sample_rate: "0.25"
-  sentry_environment: "testnet_staging"
