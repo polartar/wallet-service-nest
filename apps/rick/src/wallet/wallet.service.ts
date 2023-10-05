@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -19,13 +20,15 @@ import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { AssetEntity } from './asset.entity'
 import { getAddress } from 'ethers/lib/utils'
+import { NftService } from '../nft/nft.service'
 
 @Injectable()
-export class WalletService {
+export class WalletService implements OnModuleInit {
   alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
   liquidAPIUrl: string
+  static INITIALIZED = false
 
   constructor(
     private configService: ConfigService,
@@ -36,6 +39,7 @@ export class WalletService {
     private readonly accountService: AccountService,
     private readonly assetService: AssetService,
     private readonly portfolioService: PortfolioService,
+    private readonly nftService: NftService,
   ) {
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
@@ -47,6 +51,23 @@ export class WalletService {
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
     )
+  }
+
+  async onModuleInit() {
+    if (WalletService.INITIALIZED === true) return
+
+    if (await this.nftService.IsEmptyTransactions()) {
+      const assets = await this.assetService.getAllAssets()
+      for (let i = 0; i < assets.length; i++) {
+        if (
+          assets[i].network === ENetworks.ETHEREUM ||
+          assets[i].network === ENetworks.ETHEREUM_TEST
+        ) {
+          await this.nftService.getNftTransactions(assets[i])
+        }
+      }
+    }
+    WalletService.INITIALIZED = true
   }
 
   async confirmWalletBalances() {

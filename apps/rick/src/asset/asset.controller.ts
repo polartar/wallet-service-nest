@@ -51,10 +51,10 @@ export class AssetController {
   }
 
   @Get(':assetId/nft')
-  async getNFTAssets(
+  async getNftTransactions(
     @Param('assetId') assetId: string,
     @Query('pageNumber') pageNumber?: number,
   ) {
-    return this.assetService.getNFTAssets(assetId, pageNumber)
+    return this.assetService.getNftTransactions(assetId, pageNumber)
   }
 }

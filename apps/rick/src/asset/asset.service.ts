@@ -442,7 +442,7 @@ export class AssetService {
         network === ENetworks.ETHEREUM_TEST
       ) {
         await this.portfolioService.addAddressesToWebhook([address], network)
-        await this.nftService.getNFTAssets(asset)
+        await this.nftService.getNftTransactions(asset)
       }
     }
 
@@ -680,13 +680,15 @@ export class AssetService {
     else return null
   }
 
-  async getNFTAssets(assetId: string, pageNumber: number) {
+  async getNftTransactions(assetId: string, pageNumber: number) {
     const asset = await this.assetRepository.findOne({
       where: { id: assetId },
       relations: { nfts: true },
     })
     if (!asset) {
-      Sentry.captureException(`getNFTAssets(): AssetId(${assetId}) Not found`)
+      Sentry.captureException(
+        `getNftTransactions(): AssetId(${assetId}) Not found`,
+      )
 
       throw new BadRequestException('Not found asset')
     }

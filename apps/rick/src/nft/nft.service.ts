@@ -29,7 +29,18 @@ export class NftService {
     }
   }
 
-  async getNFTAssets(asset: AssetEntity): Promise<boolean> {
+  async IsEmptyTransactions(): Promise<boolean> {
+    try {
+      const [, count] = await this.nftRepository.findAndCount()
+      return count === 0
+    } catch (err) {
+      Sentry.captureException(`getNftTransactions(): ${err.mesage}`)
+
+      throw new InternalServerErrorException(err.message)
+    }
+  }
+
+  async getNftTransactions(asset: AssetEntity): Promise<boolean> {
     try {
       let response = await Moralis.EvmApi.nft.getWalletNFTs({
         address: asset.address,
@@ -50,7 +61,7 @@ export class NftService {
 
       return true
     } catch (err) {
-      Sentry.captureException(`getNFTAssets(): ${err.mesage}`)
+      Sentry.captureException(`getNftTransactions(): ${err.mesage}`)
 
       throw new InternalServerErrorException(err.message)
     }

@@ -6,7 +6,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { AssetEntity } from './asset.entity'
-import { INftAttribute } from './wallet.types'
 import { ENetworks } from '@rana/core'
 
 @Entity()
