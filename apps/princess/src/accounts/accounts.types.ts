@@ -30,4 +30,5 @@ export interface IShard {
   recoveryKey: string
   serverShard: string
   vaultShard: string
+  googleDriveShard: string
 }
