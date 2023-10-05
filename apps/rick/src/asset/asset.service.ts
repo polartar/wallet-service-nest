@@ -36,6 +36,7 @@ import {
   isAddress,
 } from 'ethers/lib/utils'
 import { Network, validate } from 'bitcoin-address-validation'
+import { NftEntity } from '../wallet/nft.entity'
 
 @Injectable()
 export class AssetService {
@@ -599,7 +600,7 @@ export class AssetService {
         fiat: '0',
         crypto: '0',
       },
-      nfts: assetEntity.nfts,
+      nfts: this.utilizeNfts(assetEntity.nfts),
     }
 
     if (transactions.length > 0) {
@@ -692,7 +693,25 @@ export class AssetService {
 
       throw new BadRequestException('Not found asset')
     }
-    return asset.nfts
+    return this.utilizeNfts(asset.nfts)
+  }
+
+  utilizeNfts(nfts: NftEntity[]) {
+    return nfts.map((nft) => ({
+      metadata: {
+        name: nft.name,
+        description: nft.name,
+        image: nft.image,
+        externalUrl: nft.externalUrl,
+        attributes: nft.attributes ? JSON.parse(nft.attributes) : [],
+      },
+      owner_of: nft.ownerOf,
+      contract_type: nft.contractType,
+      token_hash: nft.hash,
+      network: nft.network,
+      collection_address: nft.collectionAddress,
+      token_id: nft.tokenId,
+    }))
   }
 
   updateAssets(assets: AssetEntity[]) {

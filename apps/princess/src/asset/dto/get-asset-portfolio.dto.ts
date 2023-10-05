@@ -57,21 +57,34 @@ export class AssetSwaggerResponse {
   @ApiProperty({
     example: [
       {
-        id: 'a22d1d1c-6fa7-403d-8681-c254e3c20284',
+        metadata: {
+          name: 'Capsule Card #3',
+          description: 'Capsule Card #3',
+          image:
+            'ipfs://QmbZfyLc11tEySZpum4DH7uS1ZjS4LNe53by4KaWVsCivq/card3.png',
+          externalUrl: null,
+          attributes: [
+            { traitType: 'Nose', value: 'Base' },
+            { traitType: 'Eyebrows', value: 'Neutral' },
+            { traitType: 'Skin Tone', value: 'Neutral' },
+            { traitType: 'Hair Front', value: 'Messy Layered' },
+            { traitType: 'Head Accessory', value: 'Big Side Horns' },
+            { traitType: 'Eyes', value: 'Upturned' },
+            { traitType: 'Eye Color', value: 'Red' },
+            { traitType: 'Mouth', value: 'Eyetooth' },
+            { traitType: 'Outfit', value: 'Red Wave Qipao' },
+            { traitType: 'Hair Back', value: 'Wide Long' },
+            { traitType: 'Hair Color', value: 'Light Blonde' },
+            { traitType: 'Appendage', value: 'Dragon Wings' },
+            { traitType: 'Background', value: 'Green' },
+          ],
+        },
+        owner_of: '0xe456f9a32e5f11035ffbea0e97d1aafda6e60f03',
+        contract_type: 'ERC1155',
+        token_hash: '1b3f18c73d9348586c56263d13d6b733',
         network: 'eth_goerli',
-        contractType: 'ERC721',
-        ownerOf: '0xe456f9a32e5f11035ffbea0e97d1aafda6e60f03',
-        hash: '0f2f852ab00044fd261f531bffc34577',
-        name: 'Asuna #7',
-        tokenId: '7',
-        collectionAddress: '0xc5b8758773a69ae33b8d8b95f75de2f626498c29',
-        description:
-          'Glimpse into 10,000 unique lives lived by Asuna through this collection of hand-drawn, anime-inspired NFTs by Zumi and Hagglefish.',
-        image: 'ipfs://QmfDxCgZ7gKwPrDMHs9jS3HAkH8GAysCWBZTMoSqPqgUDV/7.jpg',
-        amount: '1',
-        externalUrl: null,
-        attributes:
-          '[{"traitType":"Nose","value":"Base"},{"traitType":"Eyebrows","value":"Neutral"},{"traitType":"Skin Tone","value":"Neutral"},{"traitType":"Hair Front","value":"Messy Layered"},{"traitType":"Head Accessory","value":"Big Side Horns"},{"traitType":"Eyes","value":"Upturned"},{"traitType":"Eye Color","value":"Red"},{"traitType":"Mouth","value":"Eyetooth"},{"traitType":"Outfit","value":"Red Wave Qipao"},{"traitType":"Hair Back","value":"Wide Long"},{"traitType":"Hair Color","value":"Light Blonde"},{"traitType":"Appendage","value":"Dragon Wings"},{"traitType":"Background","value":"Green"}]',
+        collection_address: '0x816c99843ebcdce2d247cec7f3f5f3972d14070c',
+        token_id: '211',
       },
     ],
   })

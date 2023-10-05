@@ -79,7 +79,7 @@ export interface IAssetDetail {
   index: number
   address: string
   publicKey: string
-  nfts: INft[]
+  nfts: any[]
 }
 
 export interface IXPubInfo {
