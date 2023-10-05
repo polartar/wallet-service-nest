@@ -477,6 +477,7 @@ export class WalletService {
       )
       try {
         await this.walletRepository.delete({
+          id: walletId,
           account: { accountId: accountId },
         })
       } catch (err) {
