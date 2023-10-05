@@ -35,11 +35,6 @@ spec:
               secretKeyRef:
                 name: kafo-env-secrets
                 key: BLOCKCYPHER_TOKEN
-          - name: INFURA_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: rick-env-secrets
-                key: INFURA_API_KEY
           - name: NODE_ENV
             value: "production"
           - name: SENTRY_DSN
