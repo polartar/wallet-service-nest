@@ -29,6 +29,7 @@ export class AccountsController {
       data.recoveryKey,
       data.serverShard,
       data.vaultShard,
+      data.googleDriveShard,
     )
   }
 

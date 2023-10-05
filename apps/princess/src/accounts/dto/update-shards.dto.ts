@@ -17,6 +17,11 @@ export class UpdateShardsDto {
   iCloudShard: string
 
   @ApiProperty({
+    example: 'Google drive shard',
+  })
+  googleDriveShard: string
+
+  @ApiProperty({
     example: 'vault shard',
   })
   vaultShard: string

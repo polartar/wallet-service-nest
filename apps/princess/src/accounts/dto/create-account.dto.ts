@@ -49,6 +49,11 @@ export class CreateAccountDto {
   iCloudShard: string
 
   @ApiProperty({
+    example: 'Google Drive Shard',
+  })
+  googleDriveShard: string
+
+  @ApiProperty({
     example: 'vault shard',
   })
   vaultShard: string

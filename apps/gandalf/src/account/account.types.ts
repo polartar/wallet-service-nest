@@ -7,6 +7,7 @@ export type IAccountUpdate = {
   passcodeKey?: string
   recoveryKey?: string
   serverShard?: string
+  googleDriveShard?: string
 }
 
 export interface IShard {
@@ -16,4 +17,5 @@ export interface IShard {
   recoveryKey: string
   serverShard: string
   vaultShard: string
+  googleDriveShard: string
 }

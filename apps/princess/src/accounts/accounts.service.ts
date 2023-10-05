@@ -94,6 +94,7 @@ export class AccountsService {
     recoveryKey,
     serverShard,
     vaultShard,
+    googleDriveShard,
   ) {
     const deviceId = this.getDeviceIdFromRequest()
 
@@ -113,6 +114,7 @@ export class AccountsService {
         recoveryKey,
         serverShard,
         vaultShard,
+        googleDriveShard,
       },
     )
 

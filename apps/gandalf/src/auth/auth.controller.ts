@@ -46,6 +46,7 @@ export class AuthController {
             passcodeKey: data.passcodeKey,
             recoveryKey: data.recoveryKey,
             serverShard: data.serverShard,
+            googleDriveShard: data.googleDriveShard,
           },
         )
 
