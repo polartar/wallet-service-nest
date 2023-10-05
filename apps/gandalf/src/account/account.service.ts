@@ -75,6 +75,7 @@ export class AccountService {
       passcodeKey: '',
       recoveryKey: '',
       serverShard: '',
+      googleDriveShard: '',
     })
   }
 
@@ -99,6 +100,7 @@ export class AccountService {
         passcodeKey: shards.passcodeKey,
         recoveryKey: shards.recoveryKey,
         serverShard: shards.serverShard,
+        googleDriveShard: shards.googleDriveShard,
       })
       account.name = name
       account.email = email

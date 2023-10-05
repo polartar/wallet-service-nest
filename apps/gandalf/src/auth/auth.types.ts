@@ -12,6 +12,7 @@ export type IAuthData = {
   passcodeKey?: string
   recoveryKey?: string
   serverShard?: string
+  googleDriveShard?: string
 }
 
 export type IAuthResponse = {

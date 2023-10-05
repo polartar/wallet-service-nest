@@ -28,4 +28,7 @@ export class AccountEntity {
 
   @Column({ nullable: true })
   vaultShard: string
+
+  @Column({ nullable: true })
+  googleDriveShard: string
 }

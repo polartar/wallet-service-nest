@@ -18,6 +18,7 @@ export class LoginValidationPipe implements PipeTransform {
     passcodeKey: Joi.string().optional(),
     recoveryKey: Joi.string().optional(),
     serverShard: Joi.string().optional(),
+    googleDriveShard: Joi.string().optional(),
   })
 
   transform(value: IAuthData) {
