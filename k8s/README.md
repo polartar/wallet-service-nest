@@ -28,6 +28,7 @@ Open the following deployment YAML files
 ./k8s/kafo/mainnet/10-kafo-deployment.yaml
 ./k8s/morty/mainnet/10-morty-deployment.yaml
 ./k8s/gandalf/mainnet/30-gandalf-deployment.yaml
+./k8s/magic/mainnet/30-magic-deployment.yaml
 ```
 
 and change the `imagePullSecrets` in them to match the name of your private registry dockerconfig you configured in the step above. 
@@ -56,8 +57,10 @@ Once all the opaque secrets are configured in the cluster,
 `kubectl apply -f` the yaml files inside `./k8s/*/mainnet/*.yaml` (please only apply the ones inside the mainnet folder for now). You can also use the below command:
 
 ```
-find . -type f -path "./k8s/*/mainnet/*-deployment.yaml" -exec kubectl apply -f {} \;
+find . -type f -path "./k8s/*/mainnet/*.yaml" -exec kubectl apply -f {} \;
 ```
+
+For the yaml files that are in the root of `./k8s` and `./k8s/princess`, apply those only after inspecting and editing those files. (modify domain according to your DNS for ingress, add your letsencrypt email for the cluster issuer etc)
 
 # Notes on configuring ingress
 
