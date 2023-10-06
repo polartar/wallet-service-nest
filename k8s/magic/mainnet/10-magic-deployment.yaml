@@ -48,6 +48,11 @@ spec:
             value: "rick-db-service.mainnet.svc.cluster.local"
           - name: RICK_DB_PORT
             value: "5432"
+          - name: MORALIS_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rick-env-secrets
+                key: MORALIS_API_KEY
         envFrom:
         - configMapRef:
             name: proxyconfig
