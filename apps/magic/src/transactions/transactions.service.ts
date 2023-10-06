@@ -8,17 +8,27 @@ import { ECoinTypes, ENetworks } from '@rana/core'
 import { AssetEntity } from 'apps/rick/src/wallet/asset.entity'
 import { TransactionEntity } from 'apps/rick/src/wallet/transaction.entity'
 import { Repository } from 'typeorm'
-import { formatEther, formatUnits, parseEther } from 'ethers/lib/utils'
+import {
+  formatEther,
+  formatUnits,
+  getAddress,
+  parseEther,
+} from 'ethers/lib/utils'
 import * as Sentry from '@sentry/node'
 import {
   ETransactionStatuses,
   IBlockchainTransaction,
+  INFTInfo,
   ITransaction,
   IWebhookData,
 } from './transactions.types'
 import { firstValueFrom } from 'rxjs'
 import { EEnvironment } from '../environments/environment.types'
 import BlockchainSocket = require('blockchain.info/Socket')
+import Moralis from 'moralis'
+import { EvmChain } from '@moralisweb3/common-evm-utils'
+import { NftEntity } from 'apps/rick/src/wallet/nft.entity'
+import { INftAttribute } from 'apps/rick/src/wallet/wallet.types'
 
 @Injectable()
 export class TransactionsService implements OnModuleInit {
@@ -37,6 +47,8 @@ export class TransactionsService implements OnModuleInit {
     private readonly assetRepository: Repository<AssetEntity>,
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
+    @InjectRepository(NftEntity)
+    private readonly nftRepository: Repository<NftEntity>,
   ) {
     const infura_key = this.configService.get<string>(EEnvironment.infuraAPIKey)
     this.mortyApiUrl = this.configService.get<string>(EEnvironment.mortyAPIUrl)
@@ -49,6 +61,15 @@ export class TransactionsService implements OnModuleInit {
       'goerli',
       infura_key,
     )
+
+    const moralisAPIKey = this.configService.get<string>(
+      EEnvironment.moralisAPIKey,
+    )
+    if (!Moralis.Core.isStarted) {
+      Moralis.start({
+        apiKey: moralisAPIKey,
+      })
+    }
   }
 
   async onModuleInit() {
@@ -70,12 +91,136 @@ export class TransactionsService implements OnModuleInit {
         },
       },
       relations: {
-        // wallets: {
-        //   account: true,
-        // },
         transactions: true,
       },
     })
+  }
+
+  async storeNft(assetEntity: AssetEntity, nft: INFTInfo) {
+    const metadata = nft.metadata ? JSON.parse(nft.metadata) : {}
+    const prototype = new NftEntity()
+    prototype.asset = assetEntity
+    prototype.name = metadata.name
+    prototype.collectionAddress = nft.token_address
+    prototype.description = metadata.description
+    prototype.image = metadata.image
+    prototype.externalUrl = metadata.externalUrl
+
+    const attributes: INftAttribute[] = metadata.attriutes
+      ? metadata.attributes.map((attribute) => ({
+          traitType: attribute.trait_type,
+          value: attribute.value,
+        }))
+      : []
+    prototype.attributes = JSON.stringify(attributes)
+    prototype.ownerOf = nft.owner_of
+    prototype.hash = nft.token_hash
+    prototype.amount = nft.amount
+    prototype.contractType = nft.contract_type
+    prototype.network = assetEntity.network
+    prototype.tokenId = nft.token_id
+
+    await this.nftRepository.insert(prototype)
+  }
+
+  async handleNftTransaction(
+    transaction: IBlockchainTransaction,
+    network: ENetworks,
+    currentAddresses: string[],
+  ) {
+    try {
+      if (transaction.erc721TokenId) {
+        // erc721
+        const tokenId = BigNumber.from(transaction.erc721TokenId).toString()
+        if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
+          await this.nftRepository.delete({
+            network: network,
+            ownerOf: transaction.fromAddress,
+            tokenId: tokenId,
+            collectionAddress: transaction.rawContract.address,
+          })
+          return
+        }
+        if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
+          const response = await Moralis.EvmApi.nft.getNFTMetadata({
+            address: transaction.rawContract.address,
+            chain:
+              network === ENetworks.ETHEREUM
+                ? EvmChain.ETHEREUM
+                : EvmChain.GOERLI,
+            tokenId: tokenId,
+          })
+          const obj = response.toJSON()
+          const asset = await this.assetRepository.findOne({
+            where: {
+              address: getAddress(transaction.toAddress),
+              network: network,
+            },
+          })
+          await this.storeNft(asset, obj)
+        }
+      } else if (transaction.erc1155Metadata) {
+        //erc1155
+        if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
+          await Promise.all(
+            transaction.erc1155Metadata.map(async (metadata) => {
+              const tokenId = BigNumber.from(metadata.tokenId).toString()
+              const nftEntity = await this.nftRepository.findOne({
+                where: {
+                  network: network,
+                  ownerOf: transaction.fromAddress,
+                  tokenId: tokenId,
+                  collectionAddress: transaction.rawContract.address,
+                },
+              })
+              const amount = BigNumber.from(metadata.value).toNumber()
+              if (+nftEntity.amount <= amount) {
+                await this.nftRepository.delete({
+                  id: nftEntity.id,
+                })
+              } else {
+                await this.nftRepository.update(nftEntity.id, {
+                  amount: (+nftEntity.amount - +amount).toString(),
+                })
+              }
+            }),
+          )
+          return
+        }
+
+        if (currentAddresses.includes(transaction.toAddress.toLowerCase())) {
+          const asset = await this.assetRepository.findOne({
+            where: {
+              address: getAddress(transaction.toAddress),
+              network: network,
+            },
+          })
+          Promise.all(
+            transaction.erc1155Metadata.map(async (metadata) => {
+              const tokenId = BigNumber.from(metadata.tokenId).toString()
+              const response = await Moralis.EvmApi.nft.getNFTMetadata({
+                address: transaction.rawContract.address,
+                chain:
+                  network === ENetworks.ETHEREUM
+                    ? EvmChain.ETHEREUM
+                    : EvmChain.GOERLI,
+                tokenId: tokenId,
+              })
+
+              const obj = response.toJSON()
+
+              await this.storeNft(asset, obj)
+            }),
+          )
+        }
+      }
+    } catch (err) {
+      Sentry.captureException(`handleNftTransaction(): ${err.message}`, {
+        extra: {
+          body: JSON.stringify(transaction),
+        },
+      })
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,7 +247,21 @@ export class TransactionsService implements OnModuleInit {
     try {
       const transaction: IBlockchainTransaction = event.activity[0]
       if (transaction.asset !== 'ETH') {
-        transaction.value = 0
+        if (
+          transaction.category == 'token' ||
+          transaction.category == 'erc1155'
+        ) {
+          if (transaction.fromAddress === transaction.toAddress) {
+            return
+          }
+
+          await this.handleNftTransaction(
+            transaction,
+            network,
+            currentAddresses,
+          )
+        }
+        return
       }
 
       if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
@@ -279,9 +438,6 @@ export class TransactionsService implements OnModuleInit {
       (input) => input.prev_out.addr,
     )
     const receiverAddresses = transaction.out.map((out) => out.addr)
-    // const postUpdatedAddresses = []
-    // const updatedAddresses = []
-
     const currentAddresses = this.activeBtcAssets.map((asset) => asset.address)
 
     if (
@@ -294,7 +450,6 @@ export class TransactionsService implements OnModuleInit {
     try {
       await Promise.all(
         this.activeBtcAssets.map(async (asset) => {
-          // const transactions = asset.transactions || []
           const lastTransaction = await this.getLastTransactionFromAssetId(
             asset.id,
           )

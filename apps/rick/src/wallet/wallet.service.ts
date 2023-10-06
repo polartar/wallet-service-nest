@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common'
 import { WalletEntity } from './wallet.entity'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -18,13 +19,16 @@ import { AccountService } from '../account/account.service'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { AssetEntity } from './asset.entity'
+import { getAddress } from 'ethers/lib/utils'
+import { NftService } from '../nft/nft.service'
 
 @Injectable()
-export class WalletService {
+export class WalletService implements OnModuleInit {
   alchemyInstance
   princessAPIUrl: string
   liquidAPIKey: string
   liquidAPIUrl: string
+  static INITIALIZED = false
 
   constructor(
     private configService: ConfigService,
@@ -35,6 +39,7 @@ export class WalletService {
     private readonly accountService: AccountService,
     private readonly assetService: AssetService,
     private readonly portfolioService: PortfolioService,
+    private readonly nftService: NftService,
   ) {
     this.princessAPIUrl = this.configService.get<string>(
       EEnvironment.princessAPIUrl,
@@ -46,6 +51,23 @@ export class WalletService {
     this.liquidAPIUrl = this.configService.get<string>(
       EEnvironment.liquidAPIUrl,
     )
+  }
+
+  async onModuleInit() {
+    if (WalletService.INITIALIZED === true) return
+
+    if (await this.nftService.IsEmptyTransactions()) {
+      const assets = await this.assetService.getAllAssets()
+      for (let i = 0; i < assets.length; i++) {
+        if (
+          assets[i].network === ENetworks.ETHEREUM ||
+          assets[i].network === ENetworks.ETHEREUM_TEST
+        ) {
+          await this.nftService.getNftTransactions(assets[i])
+        }
+      }
+    }
+    WalletService.INITIALIZED = true
   }
 
   async confirmWalletBalances() {
@@ -267,11 +289,9 @@ export class WalletService {
           start_at: timeInPast,
         },
       )
-      // .where('accounts.accountId IN (:...accounts)', { accounts: [accountId] })
       .where('account.id = :accountId', { accountId })
       .where('wallet.id = :walletId', { walletId })
       .orderBy('wallet.id', 'ASC')
-      // .orderBy('assets.address', 'ASC')
       .orderBy('assets.transactions.timestamp', 'ASC')
       .orderBy('assets.transactions.from', 'DESC')
 
@@ -345,8 +365,15 @@ export class WalletService {
             return await Promise.all(
               coin.wallets.map(async (wallet) => {
                 for (const newAccount of wallet.accounts) {
+                  let address = newAccount.address
+                  if (
+                    network === ENetworks.ETHEREUM ||
+                    network === ENetworks.ETHEREUM_TEST
+                  ) {
+                    address = getAddress(address)
+                  }
                   const { asset } = await this.assetService.addAsset(
-                    newAccount.address,
+                    address,
                     newAccount.index,
                     network,
                     newAccount.publickey,
@@ -356,7 +383,7 @@ export class WalletService {
                   if (network === ENetworks.ETHEREUM) {
                     isEthereumAsset = true
                     const { asset } = await this.assetService.addAsset(
-                      newAccount.address,
+                      address,
                       newAccount.index,
                       ENetworks.ETHEREUM_TEST,
                       newAccount.publickey,
@@ -390,14 +417,14 @@ export class WalletService {
           const mainnetAddresses = assets
             .filter((asset) => asset.network === ENetworks.ETHEREUM)
             .map((asset) => asset.address)
-          this.portfolioService.addAddressesToWebhook(
+          await this.portfolioService.addAddressesToWebhook(
             mainnetAddresses,
             ENetworks.ETHEREUM,
           )
           const testAddresses = assets
             .filter((asset) => asset.network === ENetworks.ETHEREUM_TEST)
             .map((asset) => asset.address)
-          this.portfolioService.addAddressesToWebhook(
+          await this.portfolioService.addAddressesToWebhook(
             testAddresses,
             ENetworks.ETHEREUM_TEST,
           )

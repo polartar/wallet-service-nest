@@ -30,10 +30,7 @@ export class AssetController {
 
   // Need to confirm account verification
   @Get(':assetId')
-  async getAsset(
-    @Param('assetId') assetId: string,
-    // @Query('accountId') accountId: number,
-  ) {
+  async getAsset(@Param('assetId') assetId: string) {
     return this.assetService.getAsset(assetId)
   }
 
@@ -54,10 +51,10 @@ export class AssetController {
   }
 
   @Get(':assetId/nft')
-  async getNFTAssets(
+  async getNftTransactions(
     @Param('assetId') assetId: string,
     @Query('pageNumber') pageNumber?: number,
   ) {
-    return this.assetService.getNFTAssets(assetId, pageNumber)
+    return this.assetService.getNftTransactions(assetId, pageNumber)
   }
 }

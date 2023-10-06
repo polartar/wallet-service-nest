@@ -5,6 +5,7 @@ import { AccountEntity } from './account.entity'
 import { WalletEntity } from '../wallet/wallet.entity'
 import { TransactionEntity } from '../wallet/transaction.entity'
 import { AssetEntity } from '../wallet/asset.entity'
+import { NftEntity } from '../wallet/nft.entity'
 
 describe('AccountService', () => {
   let service: AccountService
@@ -18,10 +19,11 @@ describe('AccountService', () => {
           dropSchema: true,
           synchronize: true,
           entities: [
-            AccountEntity, //
+            AccountEntity,
             WalletEntity,
             TransactionEntity,
             AssetEntity,
+            NftEntity,
           ],
         }),
         TypeOrmModule.forFeature([
@@ -29,6 +31,7 @@ describe('AccountService', () => {
           WalletEntity,
           TransactionEntity,
           AssetEntity,
+          NftEntity,
         ]),
       ],
       providers: [AccountService],

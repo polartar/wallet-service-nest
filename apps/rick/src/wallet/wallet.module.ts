@@ -12,6 +12,7 @@ import { AssetEntity } from './asset.entity'
 import { AssetService } from '../asset/asset.service'
 import { PortfolioService } from '../portfolio/portfolio.service'
 import { NftService } from '../nft/nft.service'
+import { NftEntity } from './nft.entity'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NftService } from '../nft/nft.service'
       AccountEntity,
       AssetEntity,
       TransactionEntity,
+      NftEntity,
     ]),
     PortfolioModule,
     AccountModule,

@@ -36,6 +36,7 @@ import {
   isAddress,
 } from 'ethers/lib/utils'
 import { Network, validate } from 'bitcoin-address-validation'
+import { NftEntity } from '../wallet/nft.entity'
 
 @Injectable()
 export class AssetService {
@@ -177,88 +178,82 @@ export class AssetService {
     )
 
     let currentBalance = balance
-    const histories = await Promise.all(
-      transactions.map(async (record) => {
-        const prevBalance = currentBalance
+    const histories = transactions.map((record) => {
+      const prevBalance = currentBalance
 
-        const fee =
-          record.gasUsed === '0'
-            ? BigNumber.from('0')
-            : BigNumber.from(record.gasUsed).mul(
-                BigNumber.from(record.gasPrice),
-              )
-        const value = BigNumber.from(record.value)
+      const fee =
+        record.gasUsed === '0'
+          ? BigNumber.from('0')
+          : BigNumber.from(record.gasUsed).mul(BigNumber.from(record.gasPrice))
+      const value = BigNumber.from(record.value)
 
-        const walletAddress = asset.address.toLowerCase()
-        let status
-        if (record.from?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.add(fee)
-          if (record.isError === '0') {
-            currentBalance = currentBalance.add(value)
-            status = ETransactionStatuses.SENT
-          } else {
-            status = ETransactionStatuses.FAILED
-          }
+      const walletAddress = asset.address.toLowerCase()
+      let status
+      if (record.from?.toLowerCase() === walletAddress) {
+        currentBalance = currentBalance.add(fee)
+        if (record.isError === '0') {
+          currentBalance = currentBalance.add(value)
+          status = ETransactionStatuses.SENT
+        } else {
+          status = ETransactionStatuses.FAILED
         }
+      }
 
-        //consider if transferred itself
-        if (record.to?.toLowerCase() === walletAddress) {
-          currentBalance = currentBalance.sub(value)
-          status =
-            record.isError === '0'
-              ? ETransactionStatuses.RECEIVED
-              : ETransactionStatuses.FAILED
-        }
-        if (record.type === 'call') {
-          status = ETransactionStatuses.INTERNAL
-        }
+      //consider if transferred itself
+      if (record.to?.toLowerCase() === walletAddress) {
+        currentBalance = currentBalance.sub(value)
+        status =
+          record.isError === '0'
+            ? ETransactionStatuses.RECEIVED
+            : ETransactionStatuses.FAILED
+      }
+      if (record.type === 'call') {
+        status = ETransactionStatuses.INTERNAL
+      }
 
-        const price = await this.getUSDPrice(
-          ethMarketHistories,
-          record.timeStamp,
-        )
+      const price = this.getUSDPrice(ethMarketHistories, record.timeStamp)
 
-        const newHistory: ITransaction = {
-          asset,
-          from: record.from || '',
-          to: record.to || '',
-          hash: record.hash,
-          cryptoAmount: value.toString(),
-          fiatAmount: (+formatEther(value) * price).toFixed(2),
-          balance: prevBalance.toString(),
-          usdPrice: (+formatEther(prevBalance) * price).toFixed(2),
-          timestamp: +record.timeStamp,
-          status,
-          blockNumber: record.blockNumber,
-          fee: status === ETransactionStatuses.SENT ? fee.toString() : '0',
-        }
-        // parse the transaction
-        if (value.isZero()) {
-          let iface = new ethers.utils.Interface(ERC721ABI)
-          let response
+      const newHistory = new TransactionEntity()
+      newHistory.asset = asset
+      newHistory.from = record.from || ''
+      newHistory.to = record.to || ''
+      newHistory.hash = record.hash
+      newHistory.cryptoAmount = value.toString()
+      newHistory.fiatAmount = (+formatEther(value) * price).toFixed(2)
+      newHistory.balance = prevBalance.toString()
+      newHistory.usdPrice = (+formatEther(prevBalance) * price).toFixed(2)
+      newHistory.timestamp = +record.timeStamp
+      newHistory.status = status
+      newHistory.blockNumber = record.blockNumber
+      newHistory.fee =
+        status === ETransactionStatuses.SENT ? fee.toString() : '0'
+
+      // parse the transaction
+      if (value.isZero()) {
+        let iface = new ethers.utils.Interface(ERC721ABI)
+        let response
+        try {
+          response = iface.parseTransaction({ data: record.input })
+        } catch (err) {
+          iface = new ethers.utils.Interface(ERC1155ABI)
           try {
             response = iface.parseTransaction({ data: record.input })
           } catch (err) {
-            iface = new ethers.utils.Interface(ERC1155ABI)
-            try {
-              response = iface.parseTransaction({ data: record.input })
-            } catch (err) {
-              // continue regardless of error
-            }
-          }
-          // only track the transfer functions
-          if (response && response.name.toLowerCase().includes('transfer')) {
-            const { from, tokenId, id } = response.args
-            newHistory.from = from || record.from
-            newHistory.tokenId = tokenId?.toString() || id?.toString()
+            // continue regardless of error
           }
         }
+        // only track the transfer functions
+        if (response && response.name.toLowerCase().includes('transfer')) {
+          const { from, tokenId, id } = response.args
+          newHistory.from = from || record.from
+          newHistory.tokenId = tokenId?.toString() || id?.toString()
+        }
+      }
 
-        const history = await this.addHistory(newHistory)
+      return newHistory
+    })
 
-        return history
-      }),
-    )
+    await this.transactionRepository.insert(histories)
 
     return { balance: currentBalance, transactions: histories }
   }
@@ -337,31 +332,34 @@ export class AssetService {
       getTimestamp(transactions[0].confirmed),
     )
 
-    const allHistories = await Promise.all(
-      transactions.slice(from).map((record) => {
-        const price = this.getUSDPrice(
-          btcMarketHistories,
-          getTimestamp(record.confirmed),
-        )
-        return this.addHistory({
-          asset: asset,
-          from: record.tx_output_n === -1 ? asset.address : '',
-          to: record.tx_input_n === -1 ? asset.address : '',
-          cryptoAmount: record.value.toString(),
-          fiatAmount: (+formatUnits(record.value, 8) * price).toFixed(2),
-          hash: record.tx_hash,
-          fee: '0',
-          blockNumber: record.block_height,
-          balance: record.ref_balance.toString(),
-          usdPrice: (+formatUnits(record.ref_balance, 8) * price).toFixed(2),
-          timestamp: getTimestamp(record.confirmed),
-          status:
-            record.tx_output_n === -1
-              ? ETransactionStatuses.SENT
-              : ETransactionStatuses.RECEIVED,
-        })
-      }),
-    )
+    const allHistories = transactions.slice(from).map((record) => {
+      const price = this.getUSDPrice(
+        btcMarketHistories,
+        getTimestamp(record.confirmed),
+      )
+      const newHistory = new TransactionEntity()
+      newHistory.asset = asset
+      newHistory.from = record.tx_output_n === -1 ? asset.address : ''
+      newHistory.to = record.tx_input_n === -1 ? asset.address : ''
+      newHistory.cryptoAmount = record.value.toString()
+      newHistory.fiatAmount = (+formatUnits(record.value, 8) * price).toFixed(2)
+      newHistory.hash = record.tx_hash
+      newHistory.fee = '0'
+      newHistory.blockNumber = record.block_height
+      newHistory.balance = record.ref_balance.toString()
+      newHistory.usdPrice = (
+        +formatUnits(record.ref_balance, 8) * price
+      ).toFixed(2)
+      newHistory.timestamp = getTimestamp(record.confirmed)
+      newHistory.status =
+        record.tx_output_n === -1
+          ? ETransactionStatuses.SENT
+          : ETransactionStatuses.RECEIVED
+
+      return newHistory
+    })
+
+    await this.transactionRepository.insert(allHistories)
 
     return allHistories
   }
@@ -444,7 +442,8 @@ export class AssetService {
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        this.portfolioService.addAddressesToWebhook([address], network)
+        await this.portfolioService.addAddressesToWebhook([address], network)
+        await this.nftService.getNftTransactions(asset)
       }
     }
 
@@ -578,7 +577,7 @@ export class AssetService {
   async getAsset(assetId: string) {
     const assetEntity = await this.assetRepository.findOne({
       where: { id: assetId },
-      relations: { transactions: true },
+      relations: { transactions: true, nfts: true },
       order: {
         transactions: {
           timestamp: 'DESC',
@@ -601,30 +600,13 @@ export class AssetService {
         fiat: '0',
         crypto: '0',
       },
-      nfts: [],
+      nfts: this.utilizeNfts(assetEntity.nfts),
     }
 
     if (transactions.length > 0) {
       asset.balance = {
         fiat: transactions[0].usdPrice,
         crypto: transactions[0].balance,
-      }
-    }
-
-    if (
-      assetEntity.network === ENetworks.ETHEREUM ||
-      assetEntity.network === ENetworks.ETHEREUM_TEST
-    ) {
-      try {
-        const nftResponse = await this.nftService.getNFTAssets(
-          assetEntity.address,
-          assetEntity.network,
-          1,
-        )
-
-        asset.nfts = nftResponse.nfts
-      } catch (err) {
-        Sentry.captureMessage(`getAsset(): ${err.message}`)
       }
     }
 
@@ -699,18 +681,37 @@ export class AssetService {
     else return null
   }
 
-  async getNFTAssets(assetId: string, pageNumber: number) {
-    const asset = await this.assetRepository.findOne({ where: { id: assetId } })
+  async getNftTransactions(assetId: string, pageNumber: number) {
+    const asset = await this.assetRepository.findOne({
+      where: { id: assetId },
+      relations: { nfts: true },
+    })
     if (!asset) {
-      Sentry.captureException(`getNFTAssets(): AssetId(${assetId}) Not found`)
+      Sentry.captureException(
+        `getNftTransactions(): AssetId(${assetId}) Not found`,
+      )
 
       throw new BadRequestException('Not found asset')
     }
-    return this.nftService.getNFTAssets(
-      asset.address,
-      asset.network,
-      pageNumber,
-    )
+    return this.utilizeNfts(asset.nfts)
+  }
+
+  utilizeNfts(nfts: NftEntity[]) {
+    return nfts.map((nft) => ({
+      metadata: {
+        name: nft.name,
+        description: nft.name,
+        image: nft.image,
+        externalUrl: nft.externalUrl,
+        attributes: nft.attributes ? JSON.parse(nft.attributes) : [],
+      },
+      owner_of: nft.ownerOf,
+      contract_type: nft.contractType,
+      token_hash: nft.hash,
+      network: nft.network,
+      collection_address: nft.collectionAddress,
+      token_id: nft.tokenId,
+    }))
   }
 
   updateAssets(assets: AssetEntity[]) {

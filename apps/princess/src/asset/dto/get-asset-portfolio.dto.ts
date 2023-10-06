@@ -57,25 +57,34 @@ export class AssetSwaggerResponse {
   @ApiProperty({
     example: [
       {
-        token_address: '0xb66a603f4cfe17e3d27b87a8bfcad319856518b8',
-        token_id:
-          '30215980622330187411918288900688501299580125367569939549692495857307848015879',
-        owner_of: '0x42cda393bbe6d079501b98cc9ccf1906901b10bf',
-        block_number: '15881936',
-        block_number_minted: '14707663',
-        token_hash: 'ff54a4ee4547eabd7d2f00af02955e45',
-        amount: '2',
+        metadata: {
+          name: 'Capsule Card #3',
+          description: 'Capsule Card #3',
+          image:
+            'ipfs://QmbZfyLc11tEySZpum4DH7uS1ZjS4LNe53by4KaWVsCivq/card3.png',
+          externalUrl: null,
+          attributes: [
+            { traitType: 'Nose', value: 'Base' },
+            { traitType: 'Eyebrows', value: 'Neutral' },
+            { traitType: 'Skin Tone', value: 'Neutral' },
+            { traitType: 'Hair Front', value: 'Messy Layered' },
+            { traitType: 'Head Accessory', value: 'Big Side Horns' },
+            { traitType: 'Eyes', value: 'Upturned' },
+            { traitType: 'Eye Color', value: 'Red' },
+            { traitType: 'Mouth', value: 'Eyetooth' },
+            { traitType: 'Outfit', value: 'Red Wave Qipao' },
+            { traitType: 'Hair Back', value: 'Wide Long' },
+            { traitType: 'Hair Color', value: 'Light Blonde' },
+            { traitType: 'Appendage', value: 'Dragon Wings' },
+            { traitType: 'Background', value: 'Green' },
+          ],
+        },
+        owner_of: '0xe456f9a32e5f11035ffbea0e97d1aafda6e60f03',
         contract_type: 'ERC1155',
-        name: 'Rarible',
-        symbol: 'RARI',
-        token_uri:
-          'https://ipfs.moralis.io:2053/ipfs/QmNjTf5nZ3qfoSaUyx3wSJmhuymFKb8QGH7BtPgw95VQN1',
-        metadata:
-          '{"name":"Demo Gods #5","description":"Tormented NFT stuck in limbo","image":"ipfs://ipfs/QmZ7nuzrgtEFGGXjaNzDuBToRyYQDspw7CVnEdENZJT1Nv/image.gif","external_url":"https://rarible.com/token/0xb66a603f4cfe17e3d27b87a8bfcad319856518b8:30215980622330187411918288900688501299580125367569939549692495857307848015879","attributes":[{"key":"Type","trait_type":"Type","value":"Loader"},{"key":"Magic","trait_type":"Magic","value":"Unknown"},{"key":"Minted","trait_type":"Minted","value":"No"},{"key":"NFT Type","trait_type":"NFT Type","value":"1155"}]}',
-        last_token_uri_sync: 1669667944,
-        last_metadata_sync: 1688475619,
-        minter_address: "ERC1155 tokens don't have a single minter",
-        possible_spam: false,
+        token_hash: '1b3f18c73d9348586c56263d13d6b733',
+        network: 'eth_goerli',
+        collection_address: '0x816c99843ebcdce2d247cec7f3f5f3972d14070c',
+        token_id: '211',
       },
     ],
   })
