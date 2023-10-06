@@ -442,8 +442,8 @@ export class AssetService {
         network === ENetworks.ETHEREUM ||
         network === ENetworks.ETHEREUM_TEST
       ) {
-        await this.portfolioService.addAddressesToWebhook([address], network)
-        await this.nftService.getNftTransactions(asset)
+        this.portfolioService.addAddressesToWebhook([address], network)
+        this.nftService.getNftTransactions(asset)
       }
     }
 
