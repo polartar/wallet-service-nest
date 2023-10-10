@@ -264,47 +264,44 @@ export class TransactionsService implements OnModuleInit {
         return
       }
 
-      if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
-        const provider =
-          network === ENetworks.ETHEREUM
-            ? this.mainnetProvider
-            : this.testnetProvider
-        const tx = await provider.getTransaction(transaction.hash)
-
-        const fee = BigNumber.from(tx.gasPrice).mul(BigNumber.from(tx.gasLimit))
-        const amount = BigNumber.from(
-          parseEther(
-            transaction.value.toLocaleString('en-US', {
-              maximumFractionDigits: 9,
-            }),
-          ),
-        ).add(fee)
-        const updatedAsset = assets.find(
-          (asset) =>
-            asset.address.toLowerCase() ===
-            transaction.fromAddress.toLowerCase(),
-        )
-        await this.updateTransaction(updatedAsset, transaction, amount, fee)
-      }
-
-      if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
-        const amount = BigNumber.from(0).sub(
+      if (
+        currentAddresses.includes(transaction.fromAddress?.toLowerCase()) ||
+        currentAddresses.includes(transaction.toAddress?.toLowerCase())
+      ) {
+        let selectedAddress
+        let amount = BigNumber.from(0).sub(
           parseEther(
             transaction.value.toLocaleString('en-US', {
               maximumFractionDigits: 9,
             }),
           ),
         )
-        const updatedAsset = assets.find(
-          (asset) =>
-            asset.address.toLowerCase() === transaction.toAddress.toLowerCase(),
+        let fee = BigNumber.from('0')
+
+        if (currentAddresses.includes(transaction.fromAddress?.toLowerCase())) {
+          selectedAddress = transaction.fromAddress.toLowerCase()
+
+          const provider =
+            network === ENetworks.ETHEREUM
+              ? this.mainnetProvider
+              : this.testnetProvider
+          const tx = await provider.getTransaction(transaction.hash)
+
+          fee = BigNumber.from(tx.gasPrice).mul(BigNumber.from(tx.gasLimit))
+          amount = amount.add(fee)
+        }
+
+        if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
+          if (selectedAddress) {
+            amount = fee
+          }
+          selectedAddress = transaction.toAddress.toLowerCase()
+        }
+
+        const selectedAsset = assets.find(
+          (asset) => asset.address.toLowerCase() === selectedAddress,
         )
-        await this.updateTransaction(
-          updatedAsset,
-          transaction,
-          amount,
-          BigNumber.from('0'),
-        )
+        await this.updateTransaction(selectedAsset, transaction, amount, fee)
       }
     } catch (err) {
       Sentry.captureMessage(`handleTransaction(): ${err.message}`, {
@@ -343,7 +340,7 @@ export class TransactionsService implements OnModuleInit {
   async updateTransaction(
     updatedAsset: AssetEntity,
     transaction: IBlockchainTransaction,
-    amount: BigNumber,
+    modifiedAmount: BigNumber,
     fee: BigNumber,
   ) {
     try {
@@ -354,7 +351,7 @@ export class TransactionsService implements OnModuleInit {
 
       const balance =
         lastTransaction && lastTransaction.balance
-          ? BigNumber.from(lastTransaction.balance).sub(amount)
+          ? BigNumber.from(lastTransaction.balance).sub(modifiedAmount)
           : parseEther(
               transaction.value.toLocaleString('en-US', {
                 maximumFractionDigits: 9,
@@ -389,7 +386,7 @@ export class TransactionsService implements OnModuleInit {
       Sentry.captureException(`updateTransaction(): ${err.message}`, {
         extra: {
           transaction,
-          amount,
+          modifiedAmount,
           fee,
         },
       })
