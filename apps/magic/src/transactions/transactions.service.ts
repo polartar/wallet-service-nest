@@ -269,12 +269,10 @@ export class TransactionsService implements OnModuleInit {
         currentAddresses.includes(transaction.toAddress?.toLowerCase())
       ) {
         let selectedAddress
-        let amount = BigNumber.from(0).sub(
-          parseEther(
-            transaction.value.toLocaleString('en-US', {
-              maximumFractionDigits: 9,
-            }),
-          ),
+        let amount = parseEther(
+          transaction.value.toLocaleString('en-US', {
+            maximumFractionDigits: 9,
+          }),
         )
         let fee = BigNumber.from('0')
 
@@ -294,7 +292,10 @@ export class TransactionsService implements OnModuleInit {
         if (currentAddresses.includes(transaction.toAddress?.toLowerCase())) {
           if (selectedAddress) {
             amount = fee
+          } else {
+            amount = amount.mul(-1)
           }
+
           selectedAddress = transaction.toAddress.toLowerCase()
         }
 
@@ -360,6 +361,7 @@ export class TransactionsService implements OnModuleInit {
 
       const weiBalance = formatEther(balance)
       const weiAmount = transaction.value
+
       const newHistoryData: ITransaction = {
         asset: updatedAsset,
         from: transaction.fromAddress,
@@ -381,6 +383,7 @@ export class TransactionsService implements OnModuleInit {
             ? ETransactionStatuses.SENT
             : ETransactionStatuses.RECEIVED,
       }
+
       await this.addHistory(newHistoryData)
     } catch (err) {
       Sentry.captureException(`updateTransaction(): ${err.message}`, {
