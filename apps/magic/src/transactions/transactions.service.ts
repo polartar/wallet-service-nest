@@ -237,6 +237,7 @@ export class TransactionsService implements OnModuleInit {
 
       return
     }
+
     const network =
       event.network === 'ETH_MAINNET'
         ? ENetworks.ETHEREUM
@@ -379,7 +380,8 @@ export class TransactionsService implements OnModuleInit {
         timestamp: this.getCurrentTimeBySeconds(),
         fee: fee?.toString(),
         status:
-          updatedAsset.address === transaction.fromAddress
+          updatedAsset.address.toLowerCase() ===
+          transaction.fromAddress?.toLowerCase()
             ? ETransactionStatuses.SENT
             : ETransactionStatuses.RECEIVED,
       }
